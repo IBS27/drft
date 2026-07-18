@@ -1,0 +1,5 @@
+{
+  "name": "drft",
+  "private": true,
+  "workspaces": ["apps/*", "packages/*"]
+}

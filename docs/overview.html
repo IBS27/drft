@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>drft — Product &amp; Tech Overview</title>
+<style>
+  :root {
+    --bg: #faf9f7;
+    --surface: #ffffff;
+    --ink: #1a1a1a;
+    --ink-soft: #55524c;
+    --ink-faint: #8a867e;
+    --accent: #b4540a;
+    --accent-soft: #fdf0e4;
+    --border: #e7e4de;
+    --code-bg: #f4f2ee;
+    --mono: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141311;
+      --surface: #1d1c19;
+      --ink: #ece9e3;
+      --ink-soft: #b5b0a6;
+      --ink-faint: #7d786e;
+      --accent: #e8965a;
+      --accent-soft: #2b2118;
+      --border: #2e2c27;
+      --code-bg: #232119;
+    }
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.65;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 780px; margin: 0 auto; padding: 4rem 1.5rem 6rem; }
+
+  /* ---------- header ---------- */
+  header { margin-bottom: 4rem; }
+  .kicker {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.75rem;
+  }
+  h1 { font-size: 2.4rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1.15; }
+  .tagline { margin-top: 0.75rem; font-size: 1.15rem; color: var(--ink-soft); max-width: 34rem; }
+
+  /* ---------- sections ---------- */
+  section { margin-bottom: 3.5rem; }
+  h2 {
+    font-size: 1.35rem;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+    margin-bottom: 1.1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  h2 .num {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--ink-faint);
+    margin-right: 0.6rem;
+    font-weight: 400;
+  }
+  h3 { font-size: 1rem; font-weight: 650; margin: 1.4rem 0 0.4rem; }
+  p { margin-bottom: 0.9rem; color: var(--ink-soft); }
+  p strong, li strong { color: var(--ink); font-weight: 600; }
+  ul { list-style: none; }
+  li { padding-left: 1.2rem; position: relative; margin-bottom: 0.5rem; color: var(--ink-soft); }
+  li::before { content: "–"; position: absolute; left: 0; color: var(--accent); }
+  code {
+    font-family: var(--mono);
+    font-size: 0.85em;
+    background: var(--code-bg);
+    padding: 0.1em 0.4em;
+    border-radius: 4px;
+  }
+
+  /* ---------- concept cards ---------- */
+  .duo { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1.25rem 0; }
+  @media (max-width: 600px) { .duo { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.25rem 1.4rem;
+  }
+  .card .label {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+  }
+  .card h3 { margin: 0 0 0.4rem; }
+  .card p { margin: 0; font-size: 0.95rem; }
+
+  .callout {
+    background: var(--accent-soft);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    padding: 1rem 1.25rem;
+    margin: 1.25rem 0;
+    font-size: 0.95rem;
+    color: var(--ink-soft);
+  }
+  .callout strong { color: var(--ink); }
+
+  /* ---------- stack table ---------- */
+  table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.95rem; }
+  th {
+    text-align: left;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 500;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  td { padding: 0.65rem 0.75rem; border-bottom: 1px solid var(--border); vertical-align: top; color: var(--ink-soft); }
+  td:first-child { color: var(--ink); font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+
+  /* ---------- flow ---------- */
+  .flow {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.25rem 1.4rem;
+    margin: 1.25rem 0;
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    line-height: 2;
+    overflow-x: auto;
+    white-space: nowrap;
+    color: var(--ink-soft);
+  }
+  .flow b { color: var(--accent); font-weight: 600; }
+  .flow .arrow { color: var(--ink-faint); padding: 0 0.4rem; }
+
+  /* ---------- tree ---------- */
+  pre.tree {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.4rem 1.6rem;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    line-height: 1.75;
+    color: var(--ink-soft);
+  }
+  pre.tree .dir { color: var(--ink); font-weight: 600; }
+  pre.tree .hl { color: var(--accent); font-weight: 600; }
+  pre.tree .cm { color: var(--ink-faint); }
+
+  footer {
+    margin-top: 4rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.85rem;
+    color: var(--ink-faint);
+    font-family: var(--mono);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="kicker">Product &amp; Tech Overview</div>
+  <h1>drft</h1>
+  <p class="tagline">A space for unfinished thoughts — capture ideas the instant they occur, then develop them later with a thinking partner.</p>
+</header>
+
+<!-- ============ 1. CONCEPT ============ -->
+<section>
+  <h2><span class="num">01</span>The Idea</h2>
+  <p>Not a task manager. Not a notes app. A home for thoughts that <em>aren't anything yet</em> — fragments that today either get lost or rot untouched in a notes app.</p>
+
+  <div class="duo">
+    <div class="card">
+      <div class="label">Capture · iOS Widget</div>
+      <h3>Effortless in</h3>
+      <p>A thought occurs, you type or dictate it in seconds from the home or lock screen. No filing, no tagging, no deciding where it goes.</p>
+    </div>
+    <div class="card">
+      <div class="label">Develop · Web Workspace</div>
+      <h3>A thinking partner</h3>
+      <p>Asks useful questions, connects related thoughts, challenges assumptions, gathers context — helping each fragment mature into an opinion, project, experiment, or concept.</p>
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>The bet:</strong> existing tools fail at the middle. Notes apps are graveyards; task managers force premature structure. The interesting work happens <strong>between capture and conclusion</strong> — and nothing today is designed for that incubation phase.
+  </div>
+
+  <p><strong>Success metric:</strong> "thoughts I captured actually came back to me and became clearer" — not "number of notes stored." The <strong>return loop</strong> is the hard design problem: the product must pull you back (resurfacing, questions waiting for you), not passively wait.</p>
+</section>
+
+<!-- ============ 2. STACK ============ -->
+<section>
+  <h2><span class="num">02</span>Tech Stack</h2>
+
+  <table>
+    <tr><th>Layer</th><th>Choice</th><th>Why</th></tr>
+    <tr>
+      <td>Mobile</td>
+      <td>Native iOS — Swift / SwiftUI</td>
+      <td>WidgetKit + App Intents give the best capture widget experience; on-device dictation is free, fast, and offline.</td>
+    </tr>
+    <tr>
+      <td>Web</td>
+      <td>Vite + React + TypeScript (SPA)</td>
+      <td>Workspace lives behind a login — no SEO, no SSR needed. Convex is the backend, so Next.js adds complexity for nothing.</td>
+    </tr>
+    <tr>
+      <td>Routing</td>
+      <td>TanStack Router</td>
+      <td>Type-safe, pairs well with a Vite SPA.</td>
+    </tr>
+    <tr>
+      <td>Styling</td>
+      <td>Tailwind + shadcn/ui</td>
+      <td>Fast to build, consistent, easy to make tasteful.</td>
+    </tr>
+    <tr>
+      <td>Backend</td>
+      <td>Convex</td>
+      <td>Database, built-in <strong>vector search</strong> (related thoughts), <strong>scheduled functions</strong> (resurfacing), and actions for all LLM calls. Official Swift client (beta).</td>
+    </tr>
+    <tr>
+      <td>Auth</td>
+      <td>Clerk</td>
+      <td>Native iOS SDK plus first-class Convex integration via JWT — one auth story across both clients.</td>
+    </tr>
+    <tr>
+      <td>AI</td>
+      <td>GPT via Vercel AI SDK</td>
+      <td>Top-tier model for interactive thinking-partner sessions; cheap model for background work (embeddings, tagging, linking). AI SDK keeps models swappable, streaming for free.</td>
+    </tr>
+    <tr>
+      <td>Push</td>
+      <td>APNs</td>
+      <td>The re-engagement loop is core product, not an add-on.</td>
+    </tr>
+    <tr>
+      <td>Hosting</td>
+      <td>Vercel</td>
+      <td>Static SPA hosting, zero friction.</td>
+    </tr>
+    <tr>
+      <td>Repo</td>
+      <td>Bun workspaces monorepo</td>
+      <td><code>apps/ios</code> · <code>apps/web</code> · <code>packages/backend</code>. Bun is package manager + script runner; browser and Convex are the actual runtimes. Turborepo only when builds get slow.</td>
+    </tr>
+  </table>
+
+  <h3>Architecture in one line</h3>
+  <div class="flow">
+    iOS widget <span class="arrow">→</span> <b>Convex mutation</b> <span class="cm">(capture is dumb &amp; instant)</span> <span class="arrow">→</span> <b>async action</b> <span class="cm">(embed · link · generate questions)</span> <span class="arrow">→</span> web workspace + <b>push</b> close the loop
+  </div>
+
+  <div class="callout">
+    <strong>Biggest stack risk:</strong> the Swift ↔ Convex/Clerk edge — both SDKs are younger than their JS counterparts. Worth a quick spike before committing.
+  </div>
+</section>
+
+<!-- ============ 3. STRUCTURE ============ -->
+<section>
+  <h2><span class="num">03</span>Project Structure</h2>
+
+<pre class="tree">
+<span class="dir">drft/</span>
+├── <span class="dir">apps/</span>
+│   ├── <span class="hl">ios/</span>                        <span class="cm"># Xcode project (not part of Bun workspace)</span>
+│   │   ├── <span class="dir">Drft/</span>                   <span class="cm"># Main app target</span>
+│   │   │   ├── App/                <span class="cm"># Entry point, root views</span>
+│   │   │   ├── Features/           <span class="cm"># Capture, ThoughtList, Settings</span>
+│   │   │   ├── Services/           <span class="cm"># ConvexClient, ClerkAuth, Dictation</span>
+│   │   │   └── Shared/             <span class="cm"># Models, extensions, design tokens</span>
+│   │   ├── <span class="dir">DrftWidget/</span>             <span class="cm"># Widget extension target (capture widget)</span>
+│   │   └── Drft.xcodeproj
+│   │
+│   └── <span class="hl">web/</span>                        <span class="cm"># Vite + React SPA</span>
+│       ├── <span class="dir">src/</span>
+│       │   ├── routes/             <span class="cm"># TanStack Router (file-based)</span>
+│       │   ├── features/           <span class="cm"># thoughts/, workspace/, settings/</span>
+│       │   │   └── thoughts/       <span class="cm">#   components, hooks per feature</span>
+│       │   ├── components/ui/      <span class="cm"># shadcn/ui</span>
+│       │   ├── lib/                <span class="cm"># convex client, clerk, utils</span>
+│       │   └── main.tsx
+│       └── index.html
+│
+├── <span class="dir">docs/</span>                       <span class="cm"># Project docs (this overview, future specs)</span>
+│   └── overview.html
+│
+├── <span class="dir">packages/</span>
+│   └── <span class="hl">backend/</span>                    <span class="cm"># Convex — the entire backend</span>
+│       └── <span class="dir">convex/</span>
+│           ├── schema.ts           <span class="cm"># thoughts, connections, questions</span>
+│           ├── thoughts.ts         <span class="cm"># capture mutation, queries</span>
+│           ├── enrichment.ts       <span class="cm"># actions: embed, link, generate questions</span>
+│           ├── resurfacing.ts      <span class="cm"># scheduled functions + push triggers</span>
+│           ├── ai/                 <span class="cm"># prompt templates, model routing</span>
+│           └── _generated/
+│
+├── package.json                    <span class="cm"># workspace root ("workspaces": ["apps/*", "packages/*"])</span>
+├── bun.lock
+└── turbo.json                      <span class="cm"># optional, add when builds get slow</span>
+</pre>
+
+  <h3>Key decisions baked in</h3>
+  <ul>
+    <li><strong><code>packages/backend</code>, not <code>apps/web/convex</code></strong> — both clients consume it; web imports generated API types directly (<code>@drft/backend</code>), iOS talks to the deployment.</li>
+    <li><strong>Feature folders over type folders</strong> on both clients — <code>features/thoughts/</code> holds its own components and hooks rather than global piles.</li>
+    <li><strong>iOS lives in the monorepo but outside the Bun workspace</strong> — no JS tooling touches it; co-located for shared context only.</li>
+    <li><strong><code>ai/</code> isolated inside convex</strong> — prompts and model routing in one place, so tuning the thinking-partner never touches business logic.</li>
+    <li><strong>Start flat, split later</strong> — <code>thoughts.ts</code> can hold everything until enrichment logic justifies its own file.</li>
+  </ul>
+</section>
+
+<footer>drft · overview · July 2026</footer>
+
+</div>
+</body>
+</html>
