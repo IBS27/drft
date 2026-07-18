@@ -74,6 +74,7 @@
   }
   h3 { font-size: 1rem; font-weight: 650; margin: 1.4rem 0 0.4rem; }
   p { margin-bottom: 0.9rem; color: var(--ink-soft); }
+  a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
   p strong, li strong { color: var(--ink); font-weight: 600; }
   ul { list-style: none; }
   li { padding-left: 1.2rem; position: relative; margin-bottom: 0.5rem; color: var(--ink-soft); }
@@ -209,6 +210,8 @@
   </div>
 
   <p><strong>Success metric:</strong> "thoughts I captured actually came back to me and became clearer" — not "number of notes stored." The <strong>return loop</strong> is the hard design problem: the product must pull you back (resurfacing, questions waiting for you), not passively wait.</p>
+
+  <p><strong>Design:</strong> both clients follow the <a href="design.html">Stillness design language</a> — one thought at a time, near-monochrome, the interface receding until the fragment is the only thing in the room. Light and dark mode specs, tokens included.</p>
 </section>
 
 <!-- ============ 2. STACK ============ -->
@@ -305,8 +308,9 @@
 │       │   └── main.tsx
 │       └── index.html
 │
-├── <span class="dir">docs/</span>                       <span class="cm"># Project docs (this overview, future specs)</span>
-│   └── overview.html
+├── <span class="dir">docs/</span>                       <span class="cm"># Project docs</span>
+│   ├── overview.html               <span class="cm"># this overview</span>
+│   └── <span class="hl">design.html</span>                 <span class="cm"># the design — "Stillness", light + dark</span>
 │
 ├── <span class="dir">packages/</span>
 │   └── <span class="hl">backend/</span>                    <span class="cm"># Convex — the entire backend</span>

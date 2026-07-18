@@ -1,0 +1,1316 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>drft — design directions</title>
+<style>
+/* ============================================================
+   drft — ten design directions
+   Each .page is a self-contained theme showing the same product
+   (iPhone capture + web workspace) in that design language.
+   ============================================================ */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+button { font: inherit; border: 0; background: none; cursor: pointer; color: inherit; }
+ul { list-style: none; }
+
+/* ---------- page shell ---------- */
+.page { display: none; min-height: 100vh; flex-direction: column; padding: 44px clamp(20px, 5vw, 64px) 110px; }
+.page.on { display: flex; animation: pagein .45s ease both; }
+@keyframes pagein { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+.crumb { font-size: 11px; letter-spacing: .18em; text-transform: uppercase; opacity: .45; }
+.head { margin-top: 40px; max-width: 720px; }
+.head .no { font-size: 12px; letter-spacing: .22em; opacity: .5; }
+.head h1 { font-size: clamp(30px, 4.4vw, 46px); line-height: 1.05; margin-top: 10px; font-weight: 600; }
+.head p { margin-top: 12px; font-size: 15px; line-height: 1.55; opacity: .72; max-width: 52ch; }
+.meta { display: flex; align-items: center; gap: 18px; margin-top: 18px; }
+.sws { display: flex; gap: 6px; }
+.sw { width: 15px; height: 15px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(0,0,0,.12); }
+.typeline { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; opacity: .5; }
+
+.stage { display: flex; align-items: flex-end; justify-content: center; gap: clamp(28px, 5vw, 64px); flex-wrap: wrap; margin: 52px auto 0; width: 100%; max-width: 1120px; }
+
+/* ---------- iPhone frame ---------- */
+.phone { width: 256px; flex: none; border-radius: 47px; padding: 9px; }
+.phone .scr { aspect-ratio: 393 / 830; border-radius: 38px; overflow: hidden; position: relative; display: flex; flex-direction: column; }
+.island { position: absolute; left: 50%; top: 9px; transform: translateX(-50%); width: 84px; height: 24px; border-radius: 13px; background: #060606; z-index: 6; }
+.sb { display: flex; justify-content: space-between; align-items: center; padding: 14px 22px 0; font-size: 11px; font-weight: 600; }
+.batt { width: 19px; height: 9px; border: 1px solid currentColor; border-radius: 3px; opacity: .8; position: relative; }
+.batt::before { content: ""; position: absolute; inset: 1px; right: 5px; background: currentColor; border-radius: 1px; }
+.batt::after { content: ""; position: absolute; right: -3px; top: 2px; width: 2px; height: 4px; background: currentColor; border-radius: 0 2px 2px 0; }
+.homebar { width: 96px; height: 4px; border-radius: 2px; margin: 6px auto 7px; flex: none; }
+
+/* ---------- MacBook frame ---------- */
+.mac { width: min(700px, 100%); flex: none; }
+.mac .lid { border-radius: 15px 15px 0 0; padding: 11px 11px 13px; }
+.mac .scr { aspect-ratio: 16 / 9.8; border-radius: 7px; overflow: hidden; display: flex; flex-direction: column; position: relative; }
+.mac .base { height: 12px; margin: 0 -24px; border-radius: 0 0 13px 13px; position: relative; }
+.mac .base::before { content: ""; position: absolute; left: 50%; top: 0; transform: translateX(-50%); width: 96px; height: 5px; border-radius: 0 0 7px 7px; background: rgba(0,0,0,.14); }
+
+.tbar { display: flex; align-items: center; padding: 7px 10px; position: relative; flex: none; }
+.dots { display: flex; gap: 5px; }
+.dots i { width: 8px; height: 8px; border-radius: 50%; display: block; }
+.tbar .ttl { position: absolute; left: 0; right: 0; text-align: center; font-size: 9.5px; letter-spacing: .08em; opacity: .55; pointer-events: none; }
+
+.caret { display: inline-block; width: 1.5px; height: .95em; vertical-align: -.12em; background: currentColor; animation: blink 1.1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+
+/* ---------- pager ---------- */
+.pager { position: fixed; right: 18px; bottom: 18px; z-index: 50; display: flex; align-items: center; gap: 3px; padding: 5px; border-radius: 999px; background: rgba(16,17,22,.72); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: 0 6px 24px rgba(0,0,0,.25), inset 0 0 0 .5px rgba(255,255,255,.14); }
+.pager button { width: 27px; height: 27px; border-radius: 50%; font-size: 11.5px; font-weight: 600; color: rgba(255,255,255,.72); font-family: ui-sans-serif, -apple-system, sans-serif; transition: all .18s ease; }
+.pager button:hover { color: #fff; }
+.pager button.on { background: #fff; color: #111; }
+
+/* ============================================================
+   01 — MANUSCRIPT · ink on warm paper, serif, margin notes
+   ============================================================ */
+#d1 { background: #F3EDE0; color: #221D14; font-family: "Charter", "Iowan Old Style", "Palatino", Georgia, serif; }
+#d1 .head h1 { font-weight: 500; letter-spacing: -.01em; }
+#d1 .phone { background: #35302a; box-shadow: 0 24px 60px rgba(60,45,20,.28), inset 0 0 0 1.5px rgba(255,255,255,.14); }
+#d1 .phone .scr { background: #FAF6EC; }
+#d1 .homebar { background: rgba(34,29,20,.28); }
+#d1 .mac .lid { background: linear-gradient(#e8e2d4, #ddd6c6); box-shadow: 0 30px 70px rgba(60,45,20,.25), inset 0 0 0 1px rgba(255,255,255,.5); }
+#d1 .mac .scr { background: #FAF6EC; }
+#d1 .mac .base { background: linear-gradient(#e5decf, #c9c1ae); }
+
+#d1 .tbar { border-bottom: 1px solid #E4DCC8; background: #F6F1E4; }
+#d1 .dots i { background: #D8CFB8; }
+#d1 .p-top { padding: 12px 22px 0; display: flex; justify-content: space-between; align-items: baseline; }
+#d1 .wordmark { font-size: 15px; font-style: italic; }
+#d1 .cap-label { font-size: 9px; letter-spacing: .22em; text-transform: uppercase; color: #A79D85; }
+#d1 .p-body { flex: 1; padding: 26px 24px 0; }
+#d1 .p-date { font-size: 9.5px; letter-spacing: .2em; text-transform: uppercase; color: #A79D85; margin-bottom: 14px; }
+#d1 .p-thought { font-size: 21px; line-height: 1.38; letter-spacing: -.005em; }
+#d1 .p-hint { margin-top: 18px; font-size: 12px; font-style: italic; color: #A79D85; }
+#d1 .p-actions { display: flex; gap: 10px; padding: 0 20px 12px; align-items: center; }
+#d1 .p-mic { width: 42px; height: 42px; border-radius: 50%; border: 1px solid #D9D0BA; display: grid; place-items: center; color: #7A7057; font-size: 15px; }
+#d1 .p-keep { flex: 1; height: 42px; border-radius: 21px; background: #B4451F; color: #FBF3E9; font-family: inherit; font-size: 14px; letter-spacing: .04em; }
+#d1 .p-foot { text-align: center; font-size: 9.5px; font-style: italic; color: #B3A98F; padding-bottom: 10px; }
+
+#d1 .wsp { flex: 1; display: flex; min-height: 0; }
+#d1 .side { width: 172px; flex: none; border-right: 1px solid #E4DCC8; padding: 12px 0 0; background: #F6F1E4; }
+#d1 .side h3 { font-size: 8.5px; letter-spacing: .22em; text-transform: uppercase; color: #A79D85; padding: 0 14px 8px; font-weight: 400; }
+#d1 .side li { padding: 8px 14px 8px 12px; border-left: 2px solid transparent; display: flex; gap: 8px; justify-content: space-between; align-items: baseline; }
+#d1 .side li.on { border-left-color: #B4451F; background: #FAF6EC; }
+#d1 .side .t { font-size: 10.5px; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+#d1 .side .age { font-size: 8.5px; color: #B3A98F; flex: none; }
+#d1 .main { flex: 1; padding: 22px 28px; overflow: hidden; }
+#d1 .m-date { font-size: 8.5px; letter-spacing: .22em; text-transform: uppercase; color: #A79D85; }
+#d1 .m-thought { font-size: 19px; line-height: 1.4; margin-top: 10px; max-width: 34ch; }
+#d1 .margin-note { float: right; width: 168px; margin: 4px 0 10px 18px; padding-left: 10px; border-left: 2px solid #B4451F; font-style: italic; font-size: 10.5px; line-height: 1.5; color: #8A4A2E; }
+#d1 .margin-note .who { display: block; font-style: normal; font-size: 7.5px; letter-spacing: .2em; text-transform: uppercase; color: #C29B85; margin-bottom: 4px; }
+#d1 .m-rel { clear: both; margin-top: 16px; font-size: 10px; color: #7A7057; }
+#d1 .m-rel a { color: #221D14; text-decoration: underline; text-underline-offset: 2px; text-decoration-color: #C9BFA4; margin-right: 8px; }
+#d1 .m-reply { margin-top: 14px; border-top: 1px solid #E4DCC8; padding-top: 10px; font-style: italic; font-size: 11px; color: #B3A98F; }
+
+/* ============================================================
+   02 — NOCTURNE · thinking after dark, constellation of thoughts
+   ============================================================ */
+#d2 { background: #0A0C11; color: #E7EAF2; font-family: ui-sans-serif, -apple-system, "SF Pro Text", "Inter", sans-serif; }
+#d2 .head p { opacity: .6; }
+#d2 .sw { box-shadow: inset 0 0 0 1px rgba(255,255,255,.18); }
+#d2 .phone { background: #1a1d26; box-shadow: 0 24px 70px rgba(0,0,0,.7), 0 0 90px rgba(122,116,255,.13), inset 0 0 0 1.5px rgba(255,255,255,.13); }
+#d2 .phone .scr { background: radial-gradient(120% 70% at 50% -10%, #1A1E30 0%, #0C0E16 55%); }
+#d2 .homebar { background: rgba(255,255,255,.25); }
+#d2 .mac .lid { background: #16181f; box-shadow: 0 34px 80px rgba(0,0,0,.7), 0 0 110px rgba(122,116,255,.1), inset 0 0 0 1px rgba(255,255,255,.09); }
+#d2 .mac .scr { background: #0D0F16; }
+#d2 .mac .base { background: linear-gradient(#20232c, #0d0e13); }
+
+#d2 .tbar { background: #10121A; border-bottom: 1px solid rgba(255,255,255,.06); }
+#d2 .dots i { background: rgba(255,255,255,.14); }
+#d2 .stars i { position: absolute; border-radius: 50%; background: #fff; opacity: .28; width: 2px; height: 2px; }
+#d2 .p-top { padding: 14px 22px 0; display: flex; justify-content: space-between; align-items: center; }
+#d2 .wordmark { font-size: 13px; font-weight: 700; letter-spacing: .02em; }
+#d2 .p-count { font-size: 9.5px; color: #8A91A6; }
+#d2 .p-body { flex: 1; padding: 30px 24px 0; position: relative; }
+#d2 .p-label { font-size: 9px; letter-spacing: .2em; text-transform: uppercase; color: #6F76FF; margin-bottom: 12px; }
+#d2 .p-thought { font-size: 19px; line-height: 1.42; font-weight: 500; letter-spacing: -.01em; text-shadow: 0 0 24px rgba(140,135,255,.35); }
+#d2 .p-hint { margin-top: 16px; font-size: 11px; color: #5A6076; }
+#d2 .p-actions { display: flex; gap: 10px; padding: 0 20px 12px; }
+#d2 .p-mic { width: 42px; height: 42px; border-radius: 14px; background: #171A26; box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); display: grid; place-items: center; color: #9BA2BC; font-size: 14px; }
+#d2 .p-keep { flex: 1; height: 42px; border-radius: 14px; background: linear-gradient(135deg, #7D78F2, #5A54D6); color: #fff; font-size: 13px; font-weight: 600; box-shadow: 0 6px 22px rgba(110,104,240,.4); }
+
+#d2 .wsp { flex: 1; display: flex; min-height: 0; }
+#d2 .rail { width: 34px; flex: none; border-right: 1px solid rgba(255,255,255,.06); display: flex; flex-direction: column; align-items: center; gap: 14px; padding-top: 14px; color: #565D73; font-size: 12px; }
+#d2 .rail b { color: #8F8AF4; }
+#d2 .list { width: 168px; flex: none; border-right: 1px solid rgba(255,255,255,.06); padding: 10px 8px; }
+#d2 .list h3 { font-size: 8px; letter-spacing: .22em; text-transform: uppercase; color: #565D73; padding: 2px 6px 8px; font-weight: 600; }
+#d2 .list li { padding: 7px 8px; border-radius: 8px; margin-bottom: 2px; }
+#d2 .list li.on { background: #171A26; box-shadow: inset 0 0 0 1px rgba(143,138,244,.35); }
+#d2 .list .t { font-size: 9.5px; line-height: 1.35; color: #C6CBDC; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+#d2 .list .age { font-size: 7.5px; color: #565D73; margin-top: 3px; display: block; }
+#d2 .main { flex: 1; padding: 16px 18px; min-width: 0; }
+#d2 .constellation { margin: 0 0 10px; }
+#d2 .m-thought { font-size: 16px; line-height: 1.45; font-weight: 500; max-width: 40ch; }
+#d2 .m-rel { margin-top: 12px; display: flex; gap: 6px; flex-wrap: wrap; }
+#d2 .m-rel span { font-size: 8.5px; color: #A9AFE8; background: rgba(143,138,244,.1); box-shadow: inset 0 0 0 1px rgba(143,138,244,.28); border-radius: 999px; padding: 3px 8px; }
+#d2 .partner { width: 190px; flex: none; border-left: 1px solid rgba(255,255,255,.06); padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+#d2 .partner h3 { font-size: 8px; letter-spacing: .22em; text-transform: uppercase; color: #6F76FF; font-weight: 600; }
+#d2 .bubble { background: #141726; border-radius: 10px; padding: 8px 10px; font-size: 9.5px; line-height: 1.5; color: #C6CBDC; box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
+#d2 .p-input { margin-top: auto; border-radius: 10px; background: #10121C; box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); padding: 8px 10px; font-size: 9px; color: #565D73; }
+
+/* ============================================================
+   03 — INDEX · an archive of maybes, card-catalog Swiss grid
+   ============================================================ */
+#d3 { background: #F4F4F1; color: #131313; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; }
+#d3 .mono, #d3 .tbar .ttl { font-family: "SF Mono", ui-monospace, "Menlo", monospace; }
+#d3 .head h1 { font-weight: 700; letter-spacing: -.03em; text-transform: uppercase; }
+#d3 .sw { border-radius: 2px; }
+#d3 .phone { background: #1b1b1b; box-shadow: 0 24px 60px rgba(0,0,0,.28), inset 0 0 0 1.5px rgba(255,255,255,.16); }
+#d3 .phone .scr { background: #FFFFFF; }
+#d3 .homebar { background: rgba(0,0,0,.28); }
+#d3 .mac .lid { background: linear-gradient(#e9e9e9, #d9d9d9); box-shadow: 0 30px 70px rgba(0,0,0,.22), inset 0 0 0 1px rgba(255,255,255,.6); }
+#d3 .mac .scr { background: #FFFFFF; }
+#d3 .mac .base { background: linear-gradient(#e4e4e4, #c6c6c6); }
+
+#d3 .tbar { background: #fff; border-bottom: 1px solid #E3E3E0; }
+#d3 .dots i { background: #DCDCD8; }
+#d3 .p-top { padding: 12px 20px 0; display: flex; justify-content: space-between; align-items: baseline; font-family: "SF Mono", ui-monospace, monospace; font-size: 9px; letter-spacing: .12em; }
+#d3 .p-top .no { color: #1F3BE8; }
+#d3 .p-body { flex: 1; padding: 24px 20px 0; border-top: 1px solid #EDEDEA; margin-top: 12px; }
+#d3 .p-thought { font-size: 22px; line-height: 1.18; font-weight: 700; letter-spacing: -.025em; }
+#d3 .p-hint { margin-top: 16px; font-family: "SF Mono", ui-monospace, monospace; font-size: 8.5px; letter-spacing: .1em; color: #9B9B95; text-transform: uppercase; }
+#d3 .p-actions { display: flex; gap: 8px; padding: 0 16px 12px; }
+#d3 .p-mic { width: 42px; height: 42px; border: 1.5px solid #131313; display: grid; place-items: center; font-size: 14px; }
+#d3 .p-keep { flex: 1; height: 42px; background: #131313; color: #fff; font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+#d3 .p-keep b { color: #7B8CFF; font-weight: 700; }
+
+#d3 .wsp { flex: 1; display: grid; grid-template-columns: 178px 1fr 158px; min-height: 0; }
+#d3 .col { border-right: 1px solid #E9E9E5; padding: 12px; min-width: 0; }
+#d3 .col:last-child { border-right: 0; }
+#d3 .colhead { font-family: "SF Mono", ui-monospace, monospace; font-size: 7.5px; letter-spacing: .18em; color: #9B9B95; padding-bottom: 8px; border-bottom: 1px solid #E9E9E5; margin-bottom: 8px; display: flex; justify-content: space-between; }
+#d3 .idx li { padding: 7px 0; border-bottom: 1px solid #F0F0EC; display: flex; gap: 8px; align-items: baseline; }
+#d3 .idx .n { font-family: "SF Mono", ui-monospace, monospace; font-size: 7.5px; color: #9B9B95; flex: none; }
+#d3 .idx li.on .n { color: #1F3BE8; }
+#d3 .idx .t { font-size: 9.5px; line-height: 1.3; font-weight: 500; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+#d3 .idx li.on .t { color: #1F3BE8; }
+#d3 .m-no { font-family: "SF Mono", ui-monospace, monospace; font-size: 8px; letter-spacing: .14em; color: #9B9B95; display: flex; justify-content: space-between; align-items: center; }
+#d3 .stamp { font-family: "SF Mono", ui-monospace, monospace; border: 1.5px solid #1F3BE8; color: #1F3BE8; font-size: 7px; letter-spacing: .16em; padding: 2px 6px; transform: rotate(-2deg); }
+#d3 .m-thought { font-size: 19px; line-height: 1.15; font-weight: 700; letter-spacing: -.025em; margin-top: 14px; max-width: 24ch; }
+#d3 .m-rel { margin-top: 16px; display: flex; gap: 6px; flex-wrap: wrap; }
+#d3 .m-rel span { font-family: "SF Mono", ui-monospace, monospace; font-size: 7.5px; letter-spacing: .08em; border: 1px solid #D8D8D3; padding: 3px 7px; color: #55554F; }
+#d3 .q { padding: 8px 0; border-bottom: 1px solid #F0F0EC; }
+#d3 .q .qn { font-family: "SF Mono", ui-monospace, monospace; font-size: 7.5px; color: #1F3BE8; display: block; margin-bottom: 3px; }
+#d3 .q p { font-size: 9px; line-height: 1.45; color: #33332F; }
+
+/* ============================================================
+   04 — GREENHOUSE · ideas that grow, warm botanical calm
+   ============================================================ */
+#d4 { background: #E9EEDF; color: #29321F; font-family: "Avenir Next", "Avenir", "Seravek", ui-rounded, ui-sans-serif, sans-serif; }
+#d4 .head h1 { font-weight: 600; letter-spacing: -.01em; }
+#d4 .phone { background: #3a4232; box-shadow: 0 24px 60px rgba(48,62,32,.3), inset 0 0 0 1.5px rgba(255,255,255,.18); }
+#d4 .phone .scr { background: #F6F8EF; }
+#d4 .homebar { background: rgba(41,50,31,.25); }
+#d4 .mac .lid { background: linear-gradient(#dfe5d2, #ccd4bc); box-shadow: 0 30px 70px rgba(48,62,32,.26), inset 0 0 0 1px rgba(255,255,255,.55); }
+#d4 .mac .scr { background: #F6F8EF; }
+#d4 .mac .base { background: linear-gradient(#d8dfc8, #b7c0a5); }
+
+#d4 .tbar { background: #EFF3E4; border-bottom: 1px solid #DEE5CE; }
+#d4 .dots i { background: #CBD3B8; }
+#d4 .p-top { padding: 12px 22px 0; display: flex; justify-content: space-between; align-items: center; }
+#d4 .wordmark { font-size: 14px; font-weight: 700; color: #3E4F2F; }
+#d4 .p-chip { font-size: 8.5px; font-weight: 600; color: #5F7C4B; background: #E3EAD3; border-radius: 999px; padding: 3px 8px; }
+#d4 .p-card { margin: 22px 16px 0; background: #FDFEF9; border-radius: 20px; padding: 18px 16px; box-shadow: 0 10px 30px rgba(63,79,44,.1); flex: none; }
+#d4 .p-label { font-size: 9px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: #9AA982; margin-bottom: 10px; }
+#d4 .p-thought { font-size: 17.5px; line-height: 1.42; font-weight: 500; }
+#d4 .p-hint { padding: 14px 22px; font-size: 11px; color: #8B9975; flex: 1; }
+#d4 .p-actions { display: flex; gap: 10px; padding: 0 16px 12px; }
+#d4 .p-mic { width: 44px; height: 44px; border-radius: 50%; background: #FDFEF9; box-shadow: 0 4px 14px rgba(63,79,44,.12); display: grid; place-items: center; color: #5F7C4B; font-size: 15px; }
+#d4 .p-keep { flex: 1; height: 44px; border-radius: 22px; background: #5F7C4B; color: #F4F8EA; font-size: 13.5px; font-weight: 600; box-shadow: 0 8px 20px rgba(95,124,75,.35); }
+
+#d4 .wsp { flex: 1; display: flex; min-height: 0; }
+#d4 .side { width: 176px; flex: none; padding: 12px 10px; background: #EFF3E4; border-right: 1px solid #DEE5CE; }
+#d4 .side h3 { font-size: 8.5px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: #9AA982; padding: 2px 6px 8px; }
+#d4 .side li { padding: 7px 8px; border-radius: 12px; margin-bottom: 2px; }
+#d4 .side li.on { background: #FDFEF9; box-shadow: 0 3px 10px rgba(63,79,44,.1); }
+#d4 .side .t { font-size: 9.5px; line-height: 1.35; font-weight: 500; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+#d4 .stage-dots { display: flex; gap: 3px; margin-top: 4px; align-items: center; }
+#d4 .stage-dots i { width: 5px; height: 5px; border-radius: 50%; background: #D5DDC2; }
+#d4 .stage-dots i.f { background: #5F7C4B; }
+#d4 .stage-dots .age { font-size: 7.5px; color: #9AA982; margin-left: auto; }
+#d4 .main { flex: 1; padding: 16px 20px; min-width: 0; }
+#d4 .m-head { display: flex; align-items: center; gap: 8px; }
+#d4 .m-stage { font-size: 8px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: #5F7C4B; background: #E3EAD3; border-radius: 999px; padding: 3px 8px; }
+#d4 .m-age { font-size: 8.5px; color: #9AA982; }
+#d4 .m-thought { font-size: 16.5px; line-height: 1.45; font-weight: 500; margin-top: 12px; max-width: 42ch; }
+#d4 .g-bubble { margin-top: 14px; background: #FDFEF9; border-radius: 16px; padding: 12px 14px; box-shadow: 0 8px 24px rgba(63,79,44,.1); max-width: 380px; }
+#d4 .g-bubble .who { display: flex; align-items: center; gap: 6px; font-size: 8px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: #9AA982; margin-bottom: 6px; }
+#d4 .g-bubble .who i { width: 14px; height: 14px; border-radius: 50%; background: #5F7C4B; color: #F4F8EA; display: grid; place-items: center; font-size: 8px; font-style: normal; }
+#d4 .g-bubble p { font-size: 10px; line-height: 1.55; color: #414E33; }
+#d4 .m-rel { margin-top: 12px; display: flex; gap: 6px; flex-wrap: wrap; }
+#d4 .m-rel span { font-size: 8.5px; font-weight: 600; color: #5F7C4B; background: #E9EEDA; border-radius: 999px; padding: 4px 9px; }
+#d4 .m-reply { margin-top: 12px; max-width: 380px; background: #fff; border-radius: 999px; padding: 8px 14px; font-size: 9.5px; color: #9AA982; box-shadow: inset 0 0 0 1px #E0E6CF; }
+
+/* ============================================================
+   05 — AURORA · soft focus, frosted glass over morning light
+   ============================================================ */
+#d5 { color: #1B2140; font-family: -apple-system, "SF Pro Display", ui-sans-serif, "Inter", sans-serif;
+      background: radial-gradient(90% 70% at 12% 8%, #DCE6FF 0%, transparent 60%),
+                  radial-gradient(80% 60% at 88% 18%, #EFDDF7 0%, transparent 55%),
+                  radial-gradient(90% 70% at 55% 100%, #D8F1E9 0%, transparent 60%), #EFF1F8; }
+#d5 .head h1 { font-weight: 700; letter-spacing: -.025em; background: linear-gradient(100deg, #33406E, #5B7CFA 55%, #9D5CF6); -webkit-background-clip: text; background-clip: text; color: transparent; }
+#d5 .phone { background: #f3f4f9; box-shadow: 0 28px 70px rgba(64,84,160,.3), inset 0 0 0 1.5px rgba(255,255,255,.9); }
+#d5 .phone .scr { background: radial-gradient(120% 60% at 18% 0%, #D6E2FF 0%, transparent 55%),
+                              radial-gradient(110% 60% at 95% 22%, #EFDBF9 0%, transparent 55%),
+                              radial-gradient(120% 70% at 50% 110%, #D3F0E6 0%, transparent 60%), #F2F4FB; }
+#d5 .island { background: #0a0a0c; }
+#d5 .homebar { background: rgba(27,33,64,.3); }
+#d5 .mac .lid { background: linear-gradient(#f2f3f8, #e2e4ee); box-shadow: 0 34px 80px rgba(64,84,160,.28), inset 0 0 0 1px rgba(255,255,255,.8); }
+#d5 .mac .scr { background: radial-gradient(80% 90% at 8% 0%, #D6E2FF 0%, transparent 55%),
+                            radial-gradient(70% 80% at 96% 12%, #EFDBF9 0%, transparent 50%),
+                            radial-gradient(90% 80% at 60% 115%, #D3F0E6 0%, transparent 55%), #F2F4FB; }
+#d5 .mac .base { background: linear-gradient(#eceef5, #cdd0dd); }
+
+#d5 .glass { background: rgba(255,255,255,.55); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); box-shadow: inset 0 0 0 1px rgba(255,255,255,.75), 0 8px 28px rgba(64,84,160,.12); }
+#d5 .tbar { background: rgba(255,255,255,.45); backdrop-filter: blur(14px); border-bottom: 1px solid rgba(255,255,255,.7); }
+#d5 .dots i { background: rgba(27,33,64,.14); }
+#d5 .p-top { padding: 12px 22px 0; display: flex; justify-content: space-between; align-items: center; }
+#d5 .wordmark { font-size: 14px; font-weight: 800; letter-spacing: -.02em; background: linear-gradient(100deg, #5B7CFA, #9D5CF6); -webkit-background-clip: text; background-clip: text; color: transparent; }
+#d5 .p-chip { font-size: 8.5px; font-weight: 600; color: #4A5390; border-radius: 999px; padding: 3px 9px; background: rgba(255,255,255,.55); box-shadow: inset 0 0 0 1px rgba(255,255,255,.8); }
+#d5 .p-card { margin: 20px 14px 0; border-radius: 22px; padding: 18px 16px; flex: none; }
+#d5 .p-label { font-size: 9px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: #8B93BE; margin-bottom: 10px; }
+#d5 .p-thought { font-size: 18px; line-height: 1.4; font-weight: 600; letter-spacing: -.015em; }
+#d5 .p-hint { padding: 14px 22px; font-size: 10.5px; color: #7C84AF; flex: 1; }
+#d5 .p-actions { display: flex; gap: 10px; padding: 0 14px 12px; }
+#d5 .p-mic { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; color: #5B7CFA; font-size: 15px; }
+#d5 .p-keep { flex: 1; height: 44px; border-radius: 22px; background: linear-gradient(100deg, #5B7CFA, #9D5CF6); color: #fff; font-size: 13.5px; font-weight: 700; box-shadow: 0 10px 26px rgba(107,102,246,.38); }
+
+#d5 .wsp { flex: 1; display: flex; min-height: 0; gap: 10px; padding: 10px; }
+#d5 .side { width: 168px; flex: none; border-radius: 14px; padding: 10px 8px; }
+#d5 .side h3 { font-size: 8px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: #8B93BE; padding: 2px 6px 8px; }
+#d5 .side li { padding: 7px 8px; border-radius: 10px; margin-bottom: 2px; }
+#d5 .side li.on { background: rgba(255,255,255,.75); box-shadow: inset 0 0 0 1px rgba(255,255,255,.9), 0 4px 12px rgba(64,84,160,.12); }
+#d5 .side .t { font-size: 9.5px; line-height: 1.35; font-weight: 500; color: #303A66; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+#d5 .side .age { font-size: 7.5px; color: #8B93BE; margin-top: 3px; display: block; }
+#d5 .main { flex: 1; border-radius: 14px; padding: 16px 18px; min-width: 0; }
+#d5 .m-label { font-size: 8px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: #8B93BE; }
+#d5 .m-thought { font-size: 17px; line-height: 1.42; font-weight: 600; letter-spacing: -.015em; margin-top: 10px; max-width: 40ch; }
+#d5 .a-bubble { margin-top: 14px; border-radius: 14px; padding: 11px 13px; background: rgba(255,255,255,.65); box-shadow: inset 0 0 0 1px rgba(255,255,255,.85), 0 6px 20px rgba(64,84,160,.1); max-width: 360px; }
+#d5 .a-bubble .who { font-size: 8px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; margin-bottom: 5px; background: linear-gradient(100deg, #5B7CFA, #9D5CF6); -webkit-background-clip: text; background-clip: text; color: transparent; }
+#d5 .a-bubble p { font-size: 10px; line-height: 1.55; color: #39426F; }
+#d5 .m-rel { margin-top: 12px; display: flex; gap: 6px; flex-wrap: wrap; }
+#d5 .m-rel span { font-size: 8.5px; font-weight: 600; color: #4A5390; border-radius: 999px; padding: 4px 9px; background: rgba(255,255,255,.5); box-shadow: inset 0 0 0 1px rgba(255,255,255,.8); }
+#d5 .m-reply { margin-top: 12px; max-width: 360px; border-radius: 999px; padding: 8px 14px; font-size: 9.5px; color: #8B93BE; background: rgba(255,255,255,.6); box-shadow: inset 0 0 0 1px rgba(255,255,255,.85); }
+
+/* ============================================================
+   06 — GALLERY · thoughts as works in progress, hung and lit
+   ============================================================ */
+#d6 { background: #EDEBE6; color: #26251F; font-family: "Helvetica Neue", ui-sans-serif, sans-serif; }
+#d6 .head h1 { font-weight: 500; letter-spacing: -.01em; }
+#d6 .phone { background: #2e2c27; box-shadow: 0 24px 60px rgba(50,45,30,.3), inset 0 0 0 1.5px rgba(255,255,255,.16); }
+#d6 .phone .scr { background: radial-gradient(120% 50% at 50% 0%, #F8F7F2 0%, #F1EFE9 70%); }
+#d6 .homebar { background: rgba(38,37,31,.25); }
+#d6 .mac .lid { background: linear-gradient(#e6e4dd, #d8d5cc); box-shadow: 0 30px 70px rgba(50,45,30,.24), inset 0 0 0 1px rgba(255,255,255,.55); }
+#d6 .mac .scr { background: #F4F2ED; }
+#d6 .mac .base { background: linear-gradient(#e2e0d8, #c6c3b8); }
+#d6 .tbar { background: #F4F2ED; border-bottom: 1px solid #E2DFD6; }
+#d6 .dots i { background: #D9D6CB; }
+#d6 .p-top { padding: 12px 22px 0; display: flex; justify-content: space-between; font-size: 8px; letter-spacing: .26em; color: #98937F; }
+#d6 .art { margin: 26px 26px 0; background: #FFFFFF; border: 5px solid #4A4336; box-shadow: 0 12px 26px rgba(50,45,30,.18), inset 0 0 0 1px rgba(0,0,0,.06); padding: 20px 14px; text-align: center; flex: none; }
+#d6 .art .work { font-family: "Charter", "Iowan Old Style", Georgia, serif; font-style: italic; font-size: 15px; line-height: 1.5; }
+#d6 .plaq { margin: 14px auto 0; width: fit-content; max-width: 80%; background: #FBFAF6; border: 1px solid #DFDCD2; border-left: 3px solid #9C7A3C; padding: 7px 12px; text-align: left; }
+#d6 .plaq .t1 { font-family: "Charter", "Iowan Old Style", Georgia, serif; font-style: italic; font-size: 10.5px; }
+#d6 .plaq .t2 { font-size: 7.5px; letter-spacing: .12em; text-transform: uppercase; color: #98937F; margin-top: 3px; }
+#d6 .p-hint { flex: 1; text-align: center; padding-top: 16px; font-size: 10px; color: #A29C8A; }
+#d6 .p-actions { display: flex; gap: 10px; padding: 0 18px 12px; }
+#d6 .p-mic { width: 42px; height: 42px; border-radius: 50%; border: 1px solid #CFCBBE; display: grid; place-items: center; color: #7E7866; font-size: 14px; }
+#d6 .p-keep { flex: 1; height: 42px; background: #26251F; color: #F4F2ED; font-size: 11px; letter-spacing: .2em; text-transform: uppercase; }
+#d6 .wsp { flex: 1; display: flex; min-height: 0; }
+#d6 .side { width: 170px; flex: none; border-right: 1px solid #E2DFD6; background: #F0EEE8; padding: 12px 0 0; }
+#d6 .side h3 { font-size: 8px; letter-spacing: .24em; text-transform: uppercase; color: #98937F; padding: 0 14px 8px; font-weight: 500; }
+#d6 .side li { padding: 8px 14px 8px 12px; border-left: 2px solid transparent; display: flex; gap: 8px; justify-content: space-between; align-items: baseline; }
+#d6 .side li.on { border-left-color: #9C7A3C; background: #F8F7F2; }
+#d6 .side .t { font-size: 9.5px; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+#d6 .side .age { font-size: 7.5px; color: #ABA694; flex: none; }
+#d6 .wall { flex: 1; background: radial-gradient(70% 60% at 50% 0%, #FAF9F5 0%, #F2F0EA 70%); display: flex; gap: 20px; padding: 24px 26px; min-width: 0; }
+#d6 .exhibit { flex: 1; min-width: 0; }
+#d6 .wall .art { margin: 0; max-width: 300px; padding: 22px 18px; }
+#d6 .wall .art .work { font-size: 14px; }
+#d6 .wall .plaq { margin: 14px 0 0; }
+#d6 .curator { width: 170px; flex: none; align-self: flex-start; background: #FBFAF6; border: 1px solid #DFDCD2; padding: 12px; }
+#d6 .curator .lbl { font-size: 7px; letter-spacing: .24em; text-transform: uppercase; color: #9C7A3C; }
+#d6 .curator p { font-family: "Charter", "Iowan Old Style", Georgia, serif; font-size: 10px; line-height: 1.55; color: #4A463C; margin-top: 6px; }
+#d6 .curator .rel { margin-top: 10px; font-size: 6.5px; letter-spacing: .14em; text-transform: uppercase; color: #98937F; line-height: 1.9; }
+
+/* ============================================================
+   07 — BROADSHEET · thoughts as morning headlines
+   ============================================================ */
+#d7 { background: #FBFAF5; color: #141412; font-family: "Didot", "Bodoni 72", "Playfair Display", Georgia, serif; }
+#d7 .head h1 { font-weight: 400; font-style: italic; letter-spacing: 0; }
+#d7 .crumb, #d7 .typeline { font-family: "Helvetica Neue", sans-serif; }
+#d7 .phone { background: #1b1b1b; box-shadow: 0 24px 60px rgba(20,20,10,.28), inset 0 0 0 1.5px rgba(255,255,255,.16); }
+#d7 .phone .scr { background: #FCFBF6; }
+#d7 .homebar { background: rgba(20,20,18,.28); }
+#d7 .mac .lid { background: linear-gradient(#e9e8e2, #dad9d1); box-shadow: 0 30px 70px rgba(20,20,10,.22), inset 0 0 0 1px rgba(255,255,255,.6); }
+#d7 .mac .scr { background: #FCFBF6; }
+#d7 .mac .base { background: linear-gradient(#e4e3db, #c8c7bd); }
+#d7 .tbar { background: #FCFBF6; border-bottom: 1px solid #E5E3D8; }
+#d7 .dots i { background: #DDDBCF; }
+#d7 .p-mast { text-align: center; padding: 10px 20px 0; }
+#d7 .p-mast .mark { font-size: 26px; font-style: italic; }
+#d7 .kicker { font-family: "Helvetica Neue", sans-serif; font-size: 6.5px; letter-spacing: .28em; text-transform: uppercase; color: #8B887A; display: flex; align-items: center; gap: 8px; justify-content: center; margin-top: 8px; }
+#d7 .kicker::before, #d7 .kicker::after { content: ""; flex: 1; border-top: 1px solid #E0DECF; }
+#d7 .p-body { flex: 1; padding: 26px 22px 0; text-align: center; }
+#d7 .p-thought { font-size: 21px; line-height: 1.3; font-style: italic; }
+#d7 .p-deck { margin-top: 12px; font-family: "Helvetica Neue", sans-serif; font-size: 8px; letter-spacing: .18em; text-transform: uppercase; color: #A5A292; }
+#d7 .p-actions { display: flex; gap: 10px; padding: 0 20px 12px; }
+#d7 .p-mic { width: 42px; height: 42px; border: 1px solid #141412; border-radius: 50%; display: grid; place-items: center; font-size: 14px; }
+#d7 .p-keep { flex: 1; height: 42px; background: #141412; color: #FCFBF6; font-style: italic; font-size: 15px; font-family: inherit; }
+#d7 .p-foot { text-align: center; font-family: "Helvetica Neue", sans-serif; font-size: 7px; letter-spacing: .2em; text-transform: uppercase; color: #B8B5A4; padding-bottom: 10px; }
+#d7 .mast { display: flex; align-items: baseline; justify-content: space-between; padding: 10px 18px 8px; border-bottom: 3px double #141412; margin: 0 14px; flex: none; }
+#d7 .mast .l, #d7 .mast .r { font-family: "Helvetica Neue", sans-serif; font-size: 7px; letter-spacing: .2em; text-transform: uppercase; color: #8B887A; width: 110px; }
+#d7 .mast .r { text-align: right; }
+#d7 .mast .mark { font-size: 22px; font-style: italic; }
+#d7 .paper { flex: 1; display: grid; grid-template-columns: 1fr 172px; gap: 18px; padding: 14px 32px; min-height: 0; }
+#d7 .h-kick { font-family: "Helvetica Neue", sans-serif; font-size: 7px; letter-spacing: .26em; text-transform: uppercase; color: #B0281E; }
+#d7 .h-line { font-size: 24px; line-height: 1.22; font-style: italic; margin-top: 8px; }
+#d7 .h-by { font-family: "Helvetica Neue", sans-serif; font-size: 7px; letter-spacing: .18em; text-transform: uppercase; color: #A5A292; margin-top: 10px; }
+#d7 .h-body { margin-top: 10px; font-size: 10px; line-height: 1.6; color: #55534A; max-width: 46ch; }
+#d7 .aside { border-left: 1px solid #E0DECF; padding-left: 16px; }
+#d7 .aside .lbl { font-family: "Helvetica Neue", sans-serif; font-size: 7px; letter-spacing: .24em; text-transform: uppercase; color: #B0281E; }
+#d7 .aside .mark { font-size: 34px; line-height: .6; color: #B0281E; margin-top: 10px; }
+#d7 .aside .quote { font-size: 12.5px; line-height: 1.45; font-style: italic; margin-top: 4px; }
+#d7 .aside .rule { border-top: 1px solid #E0DECF; margin: 12px 0 10px; }
+#d7 .aside .see { font-family: "Helvetica Neue", sans-serif; font-size: 7px; letter-spacing: .22em; text-transform: uppercase; color: #A5A292; margin-bottom: 6px; }
+#d7 .aside li { font-size: 10px; font-style: italic; padding: 3px 0; border-bottom: 1px dotted #E0DECF; }
+
+/* ============================================================
+   08 — POP · loud, bordered, sticker energy
+   ============================================================ */
+#d8 { background: #FBEFD9; color: #141414; font-family: "Futura", "Avenir Next", ui-rounded, sans-serif; }
+#d8 .head h1 { font-weight: 800; }
+#d8 .head h1 em { font-style: normal; background: linear-gradient(transparent 58%, #FFC933 58% 94%, transparent 94%); }
+#d8 .sw { box-shadow: inset 0 0 0 1.5px #141414; }
+#d8 .phone { background: #141414; box-shadow: 8px 8px 0 rgba(20,20,20,.9); }
+#d8 .phone .scr { background: #FBEFD9; }
+#d8 .homebar { background: rgba(20,20,20,.35); }
+#d8 .mac .lid { background: #141414; box-shadow: 10px 10px 0 rgba(20,20,20,.9); }
+#d8 .mac .scr { background: #FBEFD9; }
+#d8 .mac .base { background: #141414; }
+#d8 .mac .base::before { background: rgba(255,255,255,.2); }
+#d8 .tbar { background: #FBEFD9; border-bottom: 2px solid #141414; }
+#d8 .dots i { box-shadow: inset 0 0 0 1.5px #141414; }
+#d8 .dots i:nth-child(1) { background: #FF4D8D; }
+#d8 .dots i:nth-child(2) { background: #FFC933; }
+#d8 .dots i:nth-child(3) { background: #3E6FF4; }
+#d8 .p-top { padding: 12px 18px 0; display: flex; justify-content: space-between; align-items: center; }
+#d8 .wordmark { font-size: 17px; font-weight: 800; transform: rotate(-2deg); }
+#d8 .p-chip { font-size: 8.5px; font-weight: 700; background: #FF4D8D; color: #fff; border: 1.5px solid #141414; border-radius: 999px; padding: 3px 8px; box-shadow: 2px 2px 0 #141414; }
+#d8 .p-card { margin: 20px 14px 0; background: #fff; border: 2px solid #141414; border-radius: 16px; padding: 16px 14px; box-shadow: 4px 4px 0 #141414; flex: none; }
+#d8 .p-label { font-size: 8.5px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: #3E6FF4; margin-bottom: 8px; }
+#d8 .p-thought { font-size: 16.5px; line-height: 1.4; font-weight: 600; }
+#d8 .p-hint { padding: 14px 20px; font-size: 10px; font-weight: 600; color: #8D7B5A; flex: 1; }
+#d8 .p-actions { display: flex; gap: 10px; padding: 0 14px 14px; }
+#d8 .p-mic { width: 44px; height: 44px; border-radius: 50%; background: #fff; border: 2px solid #141414; box-shadow: 3px 3px 0 #141414; display: grid; place-items: center; font-size: 15px; }
+#d8 .p-keep { flex: 1; height: 44px; border-radius: 22px; background: #FFC933; border: 2px solid #141414; box-shadow: 3px 3px 0 #141414; font-size: 13.5px; font-weight: 800; }
+#d8 .wsp { flex: 1; display: flex; min-height: 0; gap: 10px; padding: 10px 12px; }
+#d8 .side { width: 170px; flex: none; }
+#d8 .side h3 { font-size: 8.5px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; padding: 2px 4px 8px; }
+#d8 .side li { background: #fff; border: 1.5px solid #141414; border-radius: 10px; padding: 6px 8px; margin-bottom: 6px; }
+#d8 .side li.on { transform: rotate(-1.5deg); box-shadow: 3px 3px 0 #FF4D8D; }
+#d8 .side .t { font-size: 9px; line-height: 1.35; font-weight: 600; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+#d8 .side .age { font-size: 7.5px; font-weight: 700; color: #8D7B5A; margin-top: 2px; display: block; }
+#d8 .main { flex: 1; background: #fff; border: 2px solid #141414; border-radius: 14px; padding: 14px 16px; box-shadow: 5px 5px 0 #141414; min-width: 0; }
+#d8 .m-label { display: inline-block; font-size: 7.5px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; background: #3E6FF4; color: #fff; border: 1.5px solid #141414; border-radius: 999px; padding: 2px 8px; }
+#d8 .m-thought { font-size: 16px; line-height: 1.4; font-weight: 700; margin-top: 10px; max-width: 40ch; }
+#d8 .pop-bubble { margin-top: 12px; background: #FFC933; border: 2px solid #141414; border-radius: 12px; padding: 10px 12px; box-shadow: 3px 3px 0 #141414; max-width: 350px; }
+#d8 .pop-bubble .who { font-size: 7.5px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; margin-bottom: 4px; }
+#d8 .pop-bubble p { font-size: 9.5px; line-height: 1.5; font-weight: 600; }
+#d8 .m-rel { margin-top: 12px; display: flex; gap: 6px; flex-wrap: wrap; }
+#d8 .m-rel span { font-size: 8px; font-weight: 700; border: 1.5px solid #141414; border-radius: 999px; padding: 3px 8px; background: #FDE1EC; }
+#d8 .m-rel span:nth-child(2) { background: #DCE6FF; }
+#d8 .m-rel span:nth-child(3) { background: #FFF3CC; }
+#d8 .m-reply { margin-top: 12px; max-width: 350px; border: 1.5px solid #141414; border-radius: 999px; padding: 7px 12px; font-size: 9px; font-weight: 600; color: #8D7B5A; }
+
+/* ============================================================
+   09 — STILLNESS · one thought at a time, near-monochrome
+   ============================================================ */
+#d9 { background: #FAFAF8; color: #2B2B28; font-family: "Helvetica Neue", ui-sans-serif, sans-serif; font-weight: 300; }
+#d9 .head h1 { font-weight: 200; letter-spacing: .01em; }
+#d9 .head p { font-weight: 400; }
+#d9 .phone { background: #E6E6E2; box-shadow: 0 24px 60px rgba(40,40,35,.16), inset 0 0 0 1.5px rgba(255,255,255,.8); }
+#d9 .phone .scr { background: #FCFCFB; }
+#d9 .island { background: #101010; }
+#d9 .homebar { background: rgba(43,43,40,.18); }
+#d9 .mac .lid { background: linear-gradient(#ececea, #dededa); box-shadow: 0 30px 70px rgba(40,40,35,.14), inset 0 0 0 1px rgba(255,255,255,.7); }
+#d9 .mac .scr { background: #FCFCFB; }
+#d9 .mac .base { background: linear-gradient(#e8e8e4, #cfcfca); }
+#d9 .tbar { background: #FCFCFB; border-bottom: 1px solid #F0F0EC; }
+#d9 .dots i { background: #E4E4E0; }
+#d9 .sb { font-weight: 400; color: #9C9C97; }
+#d9 .p-mark { text-align: center; font-size: 9px; letter-spacing: .5em; text-transform: uppercase; color: #B5B5B0; padding: 18px 0 0 6px; }
+#d9 .p-body { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 0 28px; }
+#d9 .p-thought { font-size: 18.5px; line-height: 1.65; font-weight: 300; }
+#d9 .p-actions { display: flex; justify-content: center; align-items: center; gap: 22px; padding-bottom: 26px; font-size: 10px; letter-spacing: .3em; text-transform: uppercase; color: #9C9C97; }
+#d9 .p-actions .keep { color: #2B2B28; display: flex; align-items: center; gap: 7px; }
+#d9 .reddot { width: 6px; height: 6px; border-radius: 50%; background: #C73E1D; display: inline-block; }
+#d9 .wsp { flex: 1; display: flex; min-height: 0; }
+#d9 .edge { width: 128px; flex: none; padding: 18px 0 0 18px; }
+#d9 .edge li { font-size: 7.5px; color: #B5B5B0; padding: 5px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px; }
+#d9 .edge li.on { color: #2B2B28; }
+#d9 .edge li.on::before { content: ""; display: inline-block; width: 4px; height: 4px; border-radius: 50%; background: #C73E1D; margin-right: 6px; vertical-align: 1px; }
+#d9 .main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 0 40px 0 0; }
+#d9 .m-date { font-size: 7.5px; letter-spacing: .4em; text-transform: uppercase; color: #B5B5B0; }
+#d9 .m-thought { font-size: 20px; line-height: 1.6; font-weight: 300; max-width: 32ch; margin-top: 18px; }
+#d9 .vline { width: 1px; height: 26px; background: #DEDEDA; margin: 20px 0; }
+#d9 .m-q { font-size: 10.5px; line-height: 1.7; color: #83837E; max-width: 40ch; }
+#d9 .m-rel { margin-top: 18px; font-size: 8px; letter-spacing: .2em; text-transform: uppercase; color: #B5B5B0; }
+
+/* ============================================================
+   10 — BLUEPRINT · thoughts as unbuilt schematics
+   ============================================================ */
+#d10 { background: #0D2748; color: #D9E6FA; font-family: ui-sans-serif, -apple-system, sans-serif;
+       background-image: linear-gradient(rgba(130,180,255,.07) 1px, transparent 1px), linear-gradient(90deg, rgba(130,180,255,.07) 1px, transparent 1px);
+       background-size: 26px 26px; }
+#d10 .head h1 { color: #fff; font-weight: 600; }
+#d10 .head p { color: #A8BEDD; opacity: 1; }
+#d10 .crumb { color: #7C9AC4; opacity: 1; }
+#d10 .head .no, #d10 .typeline { color: #7C9AC4; opacity: 1; font-family: "SF Mono", ui-monospace, monospace; }
+#d10 .sw { box-shadow: inset 0 0 0 1px rgba(255,255,255,.25); }
+#d10 .phone { background: #091829; box-shadow: 0 24px 60px rgba(0,10,30,.6), inset 0 0 0 1.5px rgba(150,200,255,.22); }
+#d10 .phone .scr { background: #0F2C52; background-image: linear-gradient(rgba(130,180,255,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(130,180,255,.1) 1px, transparent 1px); background-size: 15px 15px; }
+#d10 .homebar { background: rgba(180,215,255,.3); }
+#d10 .mac .lid { background: #0a1c33; box-shadow: 0 30px 70px rgba(0,10,30,.6), inset 0 0 0 1px rgba(150,200,255,.16); }
+#d10 .mac .scr { background: #0F2C52; background-image: linear-gradient(rgba(130,180,255,.09) 1px, transparent 1px), linear-gradient(90deg, rgba(130,180,255,.09) 1px, transparent 1px); background-size: 17px 17px; }
+#d10 .mac .base { background: linear-gradient(#12325c, #0a1526); }
+#d10 .tbar { background: rgba(9,24,41,.85); border-bottom: 1px solid rgba(130,180,255,.2); }
+#d10 .tbar .ttl { font-family: "SF Mono", ui-monospace, monospace; color: #6FD3FF; opacity: .8; }
+#d10 .dots i { background: rgba(150,200,255,.22); }
+#d10 .p-top { padding: 12px 18px 0; display: flex; justify-content: space-between; font-family: "SF Mono", ui-monospace, monospace; font-size: 8px; letter-spacing: .1em; color: #6FD3FF; }
+#d10 .p-body { flex: 1; padding: 26px 18px 0; }
+#d10 .bp-box { position: relative; border: 1px dashed #6FD3FF; padding: 14px 12px; }
+#d10 .bp-box .tag { position: absolute; top: -7px; left: 8px; background: #0F2C52; padding: 0 5px; font-family: "SF Mono", ui-monospace, monospace; font-size: 6.5px; letter-spacing: .16em; color: #6FD3FF; }
+#d10 .p-thought { font-size: 15.5px; line-height: 1.5; font-weight: 500; color: #fff; }
+#d10 .dim { margin: 22px 4px 0; border-top: 1px solid #6FD3FF; position: relative; opacity: .75; }
+#d10 .dim::before, #d10 .dim::after { content: ""; position: absolute; top: -4px; width: 1px; height: 9px; background: #6FD3FF; }
+#d10 .dim::before { left: 0; } #d10 .dim::after { right: 0; }
+#d10 .dim span { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); font-family: "SF Mono", ui-monospace, monospace; font-size: 6.5px; letter-spacing: .1em; color: #6FD3FF; background: #0F2C52; padding: 0 5px; white-space: nowrap; }
+#d10 .p-hint { margin-top: 24px; font-family: "SF Mono", ui-monospace, monospace; font-size: 7.5px; letter-spacing: .12em; color: #7C9AC4; }
+#d10 .p-actions { display: flex; gap: 8px; padding: 0 14px 14px; font-family: "SF Mono", ui-monospace, monospace; }
+#d10 .p-mic { height: 38px; padding: 0 12px; border: 1px solid rgba(130,180,255,.4); color: #A8BEDD; font-size: 9px; letter-spacing: .1em; }
+#d10 .p-keep { flex: 1; height: 38px; border: 1px solid #6FD3FF; color: #6FD3FF; background: rgba(111,211,255,.08); font-size: 9px; letter-spacing: .14em; }
+#d10 .wsp { flex: 1; display: flex; min-height: 0; position: relative; }
+#d10 .refs { width: 168px; flex: none; border-right: 1px solid rgba(130,180,255,.2); padding: 12px; }
+#d10 .refs h3 { font-family: "SF Mono", ui-monospace, monospace; font-size: 7px; letter-spacing: .2em; color: #6FD3FF; padding-bottom: 8px; border-bottom: 1px solid rgba(130,180,255,.2); margin-bottom: 8px; font-weight: 400; }
+#d10 .refs li { display: flex; gap: 8px; padding: 5px 0; align-items: baseline; }
+#d10 .refs .n { font-family: "SF Mono", ui-monospace, monospace; font-size: 7px; color: #7C9AC4; flex: none; }
+#d10 .refs li.on .n { color: #6FD3FF; }
+#d10 .refs .t { font-size: 8.5px; line-height: 1.35; color: #C4D5EE; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+#d10 .refs li.on .t { color: #fff; }
+#d10 .draft { flex: 1; padding: 22px 24px; min-width: 0; }
+#d10 .draft .bp-box { max-width: 380px; }
+#d10 .draft .p-thought { font-size: 15px; }
+#d10 .rev { margin-top: 18px; max-width: 380px; border-left: 2px solid #6FD3FF; padding-left: 10px; }
+#d10 .rev .lbl { font-family: "SF Mono", ui-monospace, monospace; font-size: 7px; letter-spacing: .18em; color: #6FD3FF; }
+#d10 .rev p { font-size: 9.5px; line-height: 1.55; color: #C4D5EE; margin-top: 4px; }
+#d10 .m-rel { margin-top: 14px; display: flex; gap: 6px; flex-wrap: wrap; }
+#d10 .m-rel span { font-family: "SF Mono", ui-monospace, monospace; font-size: 7px; letter-spacing: .08em; border: 1px solid rgba(130,180,255,.35); color: #A8BEDD; padding: 3px 7px; }
+#d10 .tblock { position: absolute; right: 12px; bottom: 12px; border: 1px solid rgba(130,180,255,.4); font-family: "SF Mono", ui-monospace, monospace; font-size: 6.5px; letter-spacing: .1em; color: #A8BEDD; display: grid; grid-template-columns: auto auto; background: rgba(9,24,41,.7); }
+#d10 .tblock span { padding: 4px 8px; border-top: 1px solid rgba(130,180,255,.25); }
+#d10 .tblock span:nth-child(-n+2) { border-top: 0; }
+#d10 .tblock span:nth-child(odd) { border-right: 1px solid rgba(130,180,255,.25); color: #6FD3FF; }
+
+@media (max-width: 720px) {
+  .stage { align-items: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- ================================================================
+     01 · MANUSCRIPT
+     ================================================================ -->
+<section class="page on" id="d1">
+  <div class="crumb">drft · design directions</div>
+  <header class="head">
+    <div class="no">01 / 10</div>
+    <h1>Manuscript</h1>
+    <p>Thoughts as ink on warm paper. A quiet, literary surface where the AI partner writes in the margins instead of chatting at you. Serif throughout, one persimmon accent, hairline rules.</p>
+    <div class="meta">
+      <div class="sws">
+        <span class="sw" style="background:#FAF6EC"></span>
+        <span class="sw" style="background:#F3EDE0"></span>
+        <span class="sw" style="background:#221D14"></span>
+        <span class="sw" style="background:#B4451F"></span>
+      </div>
+      <span class="typeline">Charter · serif · hairlines</span>
+    </div>
+  </header>
+
+  <div class="stage">
+    <div class="phone">
+      <div class="scr">
+        <div class="island"></div>
+        <div class="sb"><span>9:41</span><span class="batt"></span></div>
+        <div class="p-top"><span class="wordmark">drft</span><span class="cap-label">capture</span></div>
+        <div class="p-body">
+          <div class="p-date">Tue 14 Jul · 9:41 am</div>
+          <div class="p-thought">cities feel more creative because collisions are free<span class="caret"></span></div>
+          <div class="p-hint">no filing. no folders. just keep it.</div>
+        </div>
+        <div class="p-actions">
+          <button class="p-mic">◎</button>
+          <button class="p-keep">keep</button>
+        </div>
+        <div class="p-foot">develops later, on the desk</div>
+        <div class="homebar"></div>
+      </div>
+    </div>
+
+    <div class="mac">
+      <div class="lid">
+        <div class="scr">
+          <div class="tbar"><div class="dots"><i></i><i></i><i></i></div><span class="ttl">drft — drafts</span></div>
+          <div class="wsp">
+            <aside class="side">
+              <h3>Inbox · 14</h3>
+              <ul>
+                <li class="on"><span class="t">cities feel more creative because collisions are free</span><span class="age">2h</span></li>
+                <li><span class="t">what if onboarding is just the product, slowed down</span><span class="age">9h</span></li>
+                <li><span class="t">recipes as version control — forks &amp; merges</span><span class="age">1d</span></li>
+                <li><span class="t">attention is a garden, not a mine</span><span class="age">3d</span></li>
+                <li><span class="t">the best interviews are mostly edited silence</span><span class="age">1w</span></li>
+                <li><span class="t">everyone's second language is autocomplete</span><span class="age">2w</span></li>
+              </ul>
+            </aside>
+            <div class="main">
+              <div class="m-date">Captured Tue 14 Jul · 9:41 am</div>
+              <aside class="margin-note"><span class="who">margin note</span>Is it the collisions themselves — or that cities give you permission to be interrupted?</aside>
+              <div class="m-thought">cities feel more creative because collisions are free</div>
+              <div class="m-rel">related — <a>edited silence</a><a>attention is a garden</a><a>third places</a></div>
+              <div class="m-reply">write back, or let it rest…</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="base"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================
+     02 · NOCTURNE
+     ================================================================ -->
+<section class="page" id="d2">
+  <div class="crumb">drft · design directions</div>
+  <header class="head">
+    <div class="no">02 / 10</div>
+    <h1>Nocturne</h1>
+    <p>Thinking after dark. Near-black surfaces, a periwinkle glow, and thoughts rendered as a small constellation — the partner connects the dots while everything else stays quiet.</p>
+    <div class="meta">
+      <div class="sws">
+        <span class="sw" style="background:#0A0C11"></span>
+        <span class="sw" style="background:#171A26"></span>
+        <span class="sw" style="background:#E7EAF2"></span>
+        <span class="sw" style="background:#8F8AF4"></span>
+      </div>
+      <span class="typeline">SF Pro · dark · glow</span>
+    </div>
+  </header>
+
+  <div class="stage">
+    <div class="phone">
+      <div class="scr">
+        <div class="island"></div>
+        <span class="stars"><i style="top:12%;left:16%"></i><i style="top:20%;left:78%"></i><i style="top:38%;left:88%"></i><i style="top:8%;left:52%"></i><i style="top:47%;left:8%"></i></span>
+        <div class="sb"><span>23:12</span><span class="batt"></span></div>
+        <div class="p-top"><span class="wordmark">drft</span><span class="p-count">142 thoughts</span></div>
+        <div class="p-body">
+          <div class="p-label">Capture</div>
+          <div class="p-thought">cities feel more creative because collisions are free<span class="caret"></span></div>
+          <div class="p-hint">it goes to the constellation. no filing.</div>
+        </div>
+        <div class="p-actions">
+          <button class="p-mic">◎</button>
+          <button class="p-keep">Keep</button>
+        </div>
+        <div class="homebar"></div>
+      </div>
+    </div>
+
+    <div class="mac">
+      <div class="lid">
+        <div class="scr">
+          <div class="tbar"><div class="dots"><i></i><i></i><i></i></div><span class="ttl">drft — nocturne</span></div>
+          <div class="wsp">
+            <div class="rail"><b>✦</b><span>◐</span><span>◌</span></div>
+            <aside class="list">
+              <h3>Recent</h3>
+              <ul>
+                <li class="on"><span class="t">cities feel more creative because collisions are free</span><span class="age">2h ago</span></li>
+                <li><span class="t">what if onboarding is just the product, slowed down</span><span class="age">9h ago</span></li>
+                <li><span class="t">recipes as version control — forks &amp; merges</span><span class="age">1d ago</span></li>
+                <li><span class="t">attention is a garden, not a mine</span><span class="age">3d ago</span></li>
+                <li><span class="t">the best interviews are mostly edited silence</span><span class="age">1w ago</span></li>
+              </ul>
+            </aside>
+            <div class="main">
+              <svg class="constellation" width="100%" height="64" viewBox="0 0 300 64" fill="none">
+                <line x1="60" y1="34" x2="140" y2="18" stroke="#8F8AF4" stroke-opacity=".35"/>
+                <line x1="140" y1="18" x2="215" y2="42" stroke="#8F8AF4" stroke-opacity=".35"/>
+                <line x1="60" y1="34" x2="215" y2="42" stroke="#8F8AF4" stroke-opacity=".15"/>
+                <circle cx="60" cy="34" r="3" fill="#8F8AF4"/>
+                <circle cx="140" cy="18" r="4.5" fill="#8F8AF4"/>
+                <circle cx="140" cy="18" r="9" fill="#8F8AF4" fill-opacity=".18"/>
+                <circle cx="215" cy="42" r="3" fill="#8F8AF4"/>
+                <circle cx="262" cy="20" r="2" fill="#565D73"/>
+                <circle cx="28" cy="14" r="2" fill="#565D73"/>
+                <text x="140" y="8" text-anchor="middle" font-size="6.5" fill="#8A91A6" font-family="ui-sans-serif">collisions</text>
+                <text x="60" y="48" text-anchor="middle" font-size="6.5" fill="#565D73" font-family="ui-sans-serif">edited silence</text>
+                <text x="215" y="56" text-anchor="middle" font-size="6.5" fill="#565D73" font-family="ui-sans-serif">third places</text>
+              </svg>
+              <div class="m-thought">cities feel more creative because collisions are free</div>
+              <div class="m-rel"><span>edited silence</span><span>attention is a garden</span><span>third places</span></div>
+            </div>
+            <aside class="partner">
+              <h3>Partner</h3>
+              <div class="bubble">Is it the collisions themselves — or that cities give you permission to be interrupted?</div>
+              <div class="bubble">You wrote about “edited silence” last week. These might be the same thought.</div>
+              <div class="p-input">think out loud…</div>
+            </aside>
+          </div>
+        </div>
+      </div>
+      <div class="base"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================
+     03 · INDEX
+     ================================================================ -->
+<section class="page" id="d3">
+  <div class="crumb">drft · design directions</div>
+  <header class="head">
+    <div class="no">03 / 10</div>
+    <h1>Index</h1>
+    <p>An archive of maybes. Card-catalog structure, Swiss grid, heavy grotesk headlines and mono metadata. Every fragment gets a number and a stamp — undeveloped, on purpose.</p>
+    <div class="meta">
+      <div class="sws">
+        <span class="sw" style="background:#FFFFFF"></span>
+        <span class="sw" style="background:#F4F4F1"></span>
+        <span class="sw" style="background:#131313"></span>
+        <span class="sw" style="background:#1F3BE8"></span>
+      </div>
+      <span class="typeline">Helvetica + SF Mono · grid</span>
+    </div>
+  </header>
+
+  <div class="stage">
+    <div class="phone">
+      <div class="scr">
+        <div class="island"></div>
+        <div class="sb"><span>9:41</span><span class="batt"></span></div>
+        <div class="p-top"><span class="no">N° 143</span><span>DRFT / CAPTURE</span></div>
+        <div class="p-body">
+          <div class="p-thought">Cities feel more creative because collisions are free<span class="caret"></span></div>
+          <div class="p-hint">Unfiled · Unsorted · Kept</div>
+        </div>
+        <div class="p-actions">
+          <button class="p-mic">◎</button>
+          <button class="p-keep">Keep <b>→</b></button>
+        </div>
+        <div class="homebar"></div>
+      </div>
+    </div>
+
+    <div class="mac">
+      <div class="lid">
+        <div class="scr">
+          <div class="tbar"><div class="dots"><i></i><i></i><i></i></div><span class="ttl">DRFT — CATALOG</span></div>
+          <div class="wsp">
+            <aside class="col">
+              <div class="colhead"><span>INDEX</span><span>142</span></div>
+              <ul class="idx">
+                <li class="on"><span class="n">142</span><span class="t">cities feel more creative because collisions are free</span></li>
+                <li><span class="n">141</span><span class="t">what if onboarding is just the product, slowed down</span></li>
+                <li><span class="n">140</span><span class="t">recipes as version control — forks &amp; merges</span></li>
+                <li><span class="n">139</span><span class="t">attention is a garden, not a mine</span></li>
+                <li><span class="n">138</span><span class="t">the best interviews are mostly edited silence</span></li>
+                <li><span class="n">137</span><span class="t">everyone's second language is autocomplete</span></li>
+              </ul>
+            </aside>
+            <div class="col">
+              <div class="m-no"><span>N° 142 · 14 JUL · 09:41</span><span class="stamp">UNDEVELOPED</span></div>
+              <div class="m-thought">Cities feel more creative because collisions are free</div>
+              <div class="m-rel"><span>N°138 EDITED SILENCE</span><span>N°139 ATTENTION</span><span>N°112 THIRD PLACES</span></div>
+            </div>
+            <aside class="col">
+              <div class="colhead"><span>QUESTIONS</span><span>03</span></div>
+              <div class="q"><span class="qn">01</span><p>Is it the collisions — or the permission to be interrupted?</p></div>
+              <div class="q"><span class="qn">02</span><p>Does remote work price collisions back in?</p></div>
+              <div class="q"><span class="qn">03</span><p>Same claim as N°138, from the other side?</p></div>
+            </aside>
+          </div>
+        </div>
+      </div>
+      <div class="base"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================
+     04 · GREENHOUSE
+     ================================================================ -->
+<section class="page" id="d4">
+  <div class="crumb">drft · design directions</div>
+  <header class="head">
+    <div class="no">04 / 10</div>
+    <h1>Greenhouse</h1>
+    <p>Ideas that grow. Sage and moss, soft rounded cards, humanist type. Every thought has a growth stage — seed, sprout, sapling — and the partner tends rather than interrogates.</p>
+    <div class="meta">
+      <div class="sws">
+        <span class="sw" style="background:#F6F8EF"></span>
+        <span class="sw" style="background:#E9EEDF"></span>
+        <span class="sw" style="background:#29321F"></span>
+        <span class="sw" style="background:#5F7C4B"></span>
+      </div>
+      <span class="typeline">Avenir Next · rounded · soft</span>
+    </div>
+  </header>
+
+  <div class="stage">
+    <div class="phone">
+      <div class="scr">
+        <div class="island"></div>
+        <div class="sb"><span>9:41</span><span class="batt"></span></div>
+        <div class="p-top"><span class="wordmark">drft</span><span class="p-chip">142 growing</span></div>
+        <div class="p-card">
+          <div class="p-label">New seed</div>
+          <div class="p-thought">cities feel more creative because collisions are free<span class="caret"></span></div>
+        </div>
+        <div class="p-hint">no folders, no tags — it grows on its own.</div>
+        <div class="p-actions">
+          <button class="p-mic">◎</button>
+          <button class="p-keep">Plant it</button>
+        </div>
+        <div class="homebar"></div>
+      </div>
+    </div>
+
+    <div class="mac">
+      <div class="lid">
+        <div class="scr">
+          <div class="tbar"><div class="dots"><i></i><i></i><i></i></div><span class="ttl">drft — greenhouse</span></div>
+          <div class="wsp">
+            <aside class="side">
+              <h3>The garden</h3>
+              <ul>
+                <li class="on"><span class="t">cities feel more creative because collisions are free</span><span class="stage-dots"><i class="f"></i><i></i><i></i><span class="age">2h</span></span></li>
+                <li><span class="t">what if onboarding is just the product, slowed down</span><span class="stage-dots"><i class="f"></i><i class="f"></i><i></i><span class="age">9h</span></span></li>
+                <li><span class="t">recipes as version control — forks &amp; merges</span><span class="stage-dots"><i class="f"></i><i class="f"></i><i></i><span class="age">1d</span></span></li>
+                <li><span class="t">attention is a garden, not a mine</span><span class="stage-dots"><i class="f"></i><i class="f"></i><i class="f"></i><span class="age">3d</span></span></li>
+                <li><span class="t">the best interviews are mostly edited silence</span><span class="stage-dots"><i class="f"></i><i></i><i></i><span class="age">1w</span></span></li>
+              </ul>
+            </aside>
+            <div class="main">
+              <div class="m-head"><span class="m-stage">Seed</span><span class="m-age">planted 2 hours ago</span></div>
+              <div class="m-thought">cities feel more creative because collisions are free</div>
+              <div class="g-bubble">
+                <div class="who"><i>✳</i>Partner</div>
+                <p>Is it the collisions themselves — or that cities give you permission to be interrupted? Your note on “edited silence” might be this same idea from the other side.</p>
+              </div>
+              <div class="m-rel"><span>edited silence</span><span>attention is a garden</span><span>third places</span></div>
+              <div class="m-reply">water it — think out loud…</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="base"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================
+     05 · AURORA
+     ================================================================ -->
+<section class="page" id="d5">
+  <div class="crumb">drft · design directions</div>
+  <header class="head">
+    <div class="no">05 / 10</div>
+    <h1>Aurora</h1>
+    <p>Soft focus. Frosted glass panels floating over a slow morning-light gradient — the most iOS-native of the five. Gradient reserved for the partner and primary actions only.</p>
+    <div class="meta">
+      <div class="sws">
+        <span class="sw" style="background:#DCE6FF"></span>
+        <span class="sw" style="background:#EFDDF7"></span>
+        <span class="sw" style="background:#1B2140"></span>
+        <span class="sw" style="background:linear-gradient(100deg,#5B7CFA,#9D5CF6)"></span>
+      </div>
+      <span class="typeline">SF Pro · glass · gradient</span>
+    </div>
+  </header>
+
+  <div class="stage">
+    <div class="phone">
+      <div class="scr">
+        <div class="island"></div>
+        <div class="sb"><span>9:41</span><span class="batt"></span></div>
+        <div class="p-top"><span class="wordmark">drft</span><span class="p-chip">142 thoughts</span></div>
+        <div class="p-card glass">
+          <div class="p-label">Capture</div>
+          <div class="p-thought">cities feel more creative because collisions are free<span class="caret"></span></div>
+        </div>
+        <div class="p-hint">saved in a blink. shaped later.</div>
+        <div class="p-actions">
+          <button class="p-mic glass">◎</button>
+          <button class="p-keep">Keep</button>
+        </div>
+        <div class="homebar"></div>
+      </div>
+    </div>
+
+    <div class="mac">
+      <div class="lid">
+        <div class="scr">
+          <div class="tbar"><div class="dots"><i></i><i></i><i></i></div><span class="ttl">drft</span></div>
+          <div class="wsp">
+            <aside class="side glass">
+              <h3>Thoughts</h3>
+              <ul>
+                <li class="on"><span class="t">cities feel more creative because collisions are free</span><span class="age">2h ago</span></li>
+                <li><span class="t">what if onboarding is just the product, slowed down</span><span class="age">9h ago</span></li>
+                <li><span class="t">recipes as version control — forks &amp; merges</span><span class="age">1d ago</span></li>
+                <li><span class="t">attention is a garden, not a mine</span><span class="age">3d ago</span></li>
+                <li><span class="t">the best interviews are mostly edited silence</span><span class="age">1w ago</span></li>
+              </ul>
+            </aside>
+            <div class="main glass">
+              <div class="m-label">Captured 2 hours ago</div>
+              <div class="m-thought">cities feel more creative because collisions are free</div>
+              <div class="a-bubble">
+                <div class="who">Partner</div>
+                <p>Is it the collisions themselves — or that cities give you permission to be interrupted? This might connect to your note on edited silence.</p>
+              </div>
+              <div class="m-rel"><span>edited silence</span><span>attention is a garden</span><span>third places</span></div>
+              <div class="m-reply">think out loud…</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="base"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================
+     06 · GALLERY
+     ================================================================ -->
+<section class="page" id="d6">
+  <div class="crumb">drft · design directions</div>
+  <header class="head">
+    <div class="no">06 / 10</div>
+    <h1>Gallery</h1>
+    <p>Thoughts as works in progress on a gallery wall. Every fragment is matted, framed and hung with its own placard; the partner leaves a curator's note beside it. Unfinished — but worth exhibiting.</p>
+    <div class="meta">
+      <div class="sws">
+        <span class="sw" style="background:#F4F2ED"></span>
+        <span class="sw" style="background:#EDEBE6"></span>
+        <span class="sw" style="background:#26251F"></span>
+        <span class="sw" style="background:#9C7A3C"></span>
+      </div>
+      <span class="typeline">Helvetica + Charter · frames</span>
+    </div>
+  </header>
+
+  <div class="stage">
+    <div class="phone">
+      <div class="scr">
+        <div class="island"></div>
+        <div class="sb"><span>9:41</span><span class="batt"></span></div>
+        <div class="p-top"><span>DRFT</span><span>COLLECTION · 142</span></div>
+        <div class="art">
+          <div class="work">cities feel more creative because collisions are free<span class="caret"></span></div>
+        </div>
+        <div class="plaq">
+          <div class="t1">Untitled (collisions), 2026</div>
+          <div class="t2">Fragment · typed · 14 Jul, 9:41</div>
+        </div>
+        <div class="p-hint">unfinished, but worth hanging.</div>
+        <div class="p-actions">
+          <button class="p-mic">◎</button>
+          <button class="p-keep">Acquire</button>
+        </div>
+        <div class="homebar"></div>
+      </div>
+    </div>
+
+    <div class="mac">
+      <div class="lid">
+        <div class="scr">
+          <div class="tbar"><div class="dots"><i></i><i></i><i></i></div><span class="ttl">drft — the collection</span></div>
+          <div class="wsp">
+            <aside class="side">
+              <h3>Catalogue · 142</h3>
+              <ul>
+                <li class="on"><span class="t">cities feel more creative because collisions are free</span><span class="age">2h</span></li>
+                <li><span class="t">what if onboarding is just the product, slowed down</span><span class="age">9h</span></li>
+                <li><span class="t">recipes as version control — forks &amp; merges</span><span class="age">1d</span></li>
+                <li><span class="t">attention is a garden, not a mine</span><span class="age">3d</span></li>
+                <li><span class="t">the best interviews are mostly edited silence</span><span class="age">1w</span></li>
+                <li><span class="t">everyone's second language is autocomplete</span><span class="age">2w</span></li>
+              </ul>
+            </aside>
+            <div class="wall">
+              <div class="exhibit">
+                <div class="art">
+                  <div class="work">cities feel more creative because collisions are free</div>
+                </div>
+                <div class="plaq">
+                  <div class="t1">Untitled (collisions), 2026</div>
+                  <div class="t2">Fragment · captured 9:41 · undeveloped</div>
+                </div>
+              </div>
+              <aside class="curator">
+                <div class="lbl">Curator's note</div>
+                <p>Is it the collisions — or the permission to be interrupted? Compare with <em>Untitled (edited silence)</em>, hung one week earlier.</p>
+                <div class="rel">See also — edited silence · attention is a garden · third places</div>
+              </aside>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="base"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================
+     07 · BROADSHEET
+     ================================================================ -->
+<section class="page" id="d7">
+  <div class="crumb">drft · design directions</div>
+  <header class="head">
+    <div class="no">07 / 10</div>
+    <h1>Broadsheet</h1>
+    <p>Every thought is news. High-contrast editorial serif, hairline and double rules, one crimson accent — the partner's question runs beside your fragment as the morning's pull quote.</p>
+    <div class="meta">
+      <div class="sws">
+        <span class="sw" style="background:#FCFBF6"></span>
+        <span class="sw" style="background:#FBFAF5"></span>
+        <span class="sw" style="background:#141412"></span>
+        <span class="sw" style="background:#B0281E"></span>
+      </div>
+      <span class="typeline">Didot · editorial · rules</span>
+    </div>
+  </header>
+
+  <div class="stage">
+    <div class="phone">
+      <div class="scr">
+        <div class="island"></div>
+        <div class="sb"><span>9:41</span><span class="batt"></span></div>
+        <div class="p-mast">
+          <div class="mark">drft</div>
+          <div class="kicker">morning edition — 14 july</div>
+        </div>
+        <div class="p-body">
+          <div class="p-thought">Cities feel more creative because collisions are free<span class="caret"></span></div>
+          <div class="p-deck">Captured 9:41 · Unfiled</div>
+        </div>
+        <div class="p-actions">
+          <button class="p-mic">◎</button>
+          <button class="p-keep">Keep</button>
+        </div>
+        <div class="p-foot">developed in the evening edition</div>
+        <div class="homebar"></div>
+      </div>
+    </div>
+
+    <div class="mac">
+      <div class="lid">
+        <div class="scr">
+          <div class="tbar"><div class="dots"><i></i><i></i><i></i></div><span class="ttl">drft — the daily draft</span></div>
+          <div class="mast">
+            <span class="l">Tuesday 14 July</span>
+            <span class="mark">drft</span>
+            <span class="r">N° 142</span>
+          </div>
+          <div class="paper">
+            <div class="lead">
+              <div class="h-kick">This morning</div>
+              <div class="h-line">Cities feel more creative because collisions are free</div>
+              <div class="h-by">Captured at 9:41 — unfiled, as all things begin</div>
+              <p class="h-body">It arrived unannounced between the coffee and the first meeting, and was kept without ceremony. Whether it survives the evening edition is entirely up to you.</p>
+            </div>
+            <aside class="aside">
+              <div class="lbl">The partner asks</div>
+              <div class="mark">“</div>
+              <div class="quote">Is it the collisions — or the permission to be interrupted?</div>
+              <div class="rule"></div>
+              <div class="see">See also</div>
+              <ul>
+                <li>Edited silence — N°138</li>
+                <li>Attention is a garden — N°139</li>
+                <li>Third places — N°112</li>
+              </ul>
+            </aside>
+          </div>
+        </div>
+      </div>
+      <div class="base"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================
+     08 · POP
+     ================================================================ -->
+<section class="page" id="d8">
+  <div class="crumb">drft · design directions</div>
+  <header class="head">
+    <div class="no">08 / 10</div>
+    <h1><em>Pop</em></h1>
+    <p>Sticker energy. Thick borders, hard offset shadows, sunshine yellow and hot pink on cream — capturing a thought should feel like slapping a sticker on a notebook, not filling in a form.</p>
+    <div class="meta">
+      <div class="sws">
+        <span class="sw" style="background:#FBEFD9"></span>
+        <span class="sw" style="background:#FFC933"></span>
+        <span class="sw" style="background:#FF4D8D"></span>
+        <span class="sw" style="background:#3E6FF4"></span>
+      </div>
+      <span class="typeline">Futura · borders · shadows</span>
+    </div>
+  </header>
+
+  <div class="stage">
+    <div class="phone">
+      <div class="scr">
+        <div class="island"></div>
+        <div class="sb"><span>9:41</span><span class="batt"></span></div>
+        <div class="p-top"><span class="wordmark">drft!</span><span class="p-chip">142 thoughts</span></div>
+        <div class="p-card">
+          <div class="p-label">New thought</div>
+          <div class="p-thought">cities feel more creative because collisions are free<span class="caret"></span></div>
+        </div>
+        <div class="p-hint">stick it anywhere. sort it never.</div>
+        <div class="p-actions">
+          <button class="p-mic">◎</button>
+          <button class="p-keep">Keep it!</button>
+        </div>
+        <div class="homebar"></div>
+      </div>
+    </div>
+
+    <div class="mac">
+      <div class="lid">
+        <div class="scr">
+          <div class="tbar"><div class="dots"><i></i><i></i><i></i></div><span class="ttl">drft — the pile</span></div>
+          <div class="wsp">
+            <aside class="side">
+              <h3>The pile</h3>
+              <ul>
+                <li class="on"><span class="t">cities feel more creative because collisions are free</span><span class="age">2h ago</span></li>
+                <li><span class="t">what if onboarding is just the product, slowed down</span><span class="age">9h ago</span></li>
+                <li><span class="t">recipes as version control — forks &amp; merges</span><span class="age">1d ago</span></li>
+                <li><span class="t">attention is a garden, not a mine</span><span class="age">3d ago</span></li>
+                <li><span class="t">the best interviews are mostly edited silence</span><span class="age">1w ago</span></li>
+              </ul>
+            </aside>
+            <div class="main">
+              <span class="m-label">Fresh</span>
+              <div class="m-thought">cities feel more creative because collisions are free</div>
+              <div class="pop-bubble">
+                <div class="who">Partner says</div>
+                <p>Is it the collisions — or the permission to be interrupted? Your “edited silence” note might be the same idea wearing a different hat.</p>
+              </div>
+              <div class="m-rel"><span>edited silence</span><span>attention is a garden</span><span>third places</span></div>
+              <div class="m-reply">type something back…</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="base"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================
+     09 · STILLNESS
+     ================================================================ -->
+<section class="page" id="d9">
+  <div class="crumb">drft · design directions</div>
+  <header class="head">
+    <div class="no">09 / 10</div>
+    <h1>Stillness</h1>
+    <p>One thought at a time. Near-monochrome, hairlines and air, type set light — the interface recedes until the fragment is the only thing in the room. A single vermilion dot marks now.</p>
+    <div class="meta">
+      <div class="sws">
+        <span class="sw" style="background:#FCFCFB"></span>
+        <span class="sw" style="background:#E6E6E2"></span>
+        <span class="sw" style="background:#2B2B28"></span>
+        <span class="sw" style="background:#C73E1D"></span>
+      </div>
+      <span class="typeline">Helvetica light · air</span>
+    </div>
+  </header>
+
+  <div class="stage">
+    <div class="phone">
+      <div class="scr">
+        <div class="island"></div>
+        <div class="sb"><span>9:41</span><span class="batt"></span></div>
+        <div class="p-mark">drft</div>
+        <div class="p-body">
+          <div class="p-thought">cities feel more creative because collisions are free<span class="caret"></span></div>
+        </div>
+        <div class="p-actions">
+          <span>speak</span>
+          <span class="keep"><span class="reddot"></span>keep</span>
+        </div>
+        <div class="homebar"></div>
+      </div>
+    </div>
+
+    <div class="mac">
+      <div class="lid">
+        <div class="scr">
+          <div class="tbar"><div class="dots"><i></i><i></i><i></i></div><span class="ttl">drft</span></div>
+          <div class="wsp">
+            <aside class="edge">
+              <ul>
+                <li class="on">cities feel more creative…</li>
+                <li>what if onboarding is just…</li>
+                <li>recipes as version control…</li>
+                <li>attention is a garden…</li>
+                <li>the best interviews are…</li>
+                <li>everyone's second language…</li>
+              </ul>
+            </aside>
+            <div class="main">
+              <div class="m-date">Tuesday · 9:41</div>
+              <div class="m-thought">cities feel more creative because collisions are free</div>
+              <div class="vline"></div>
+              <div class="m-q">Is it the collisions — or the permission to be interrupted?</div>
+              <div class="m-rel">edited silence · attention · third places</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="base"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================
+     10 · BLUEPRINT
+     ================================================================ -->
+<section class="page" id="d10">
+  <div class="crumb">drft · design directions</div>
+  <header class="head">
+    <div class="no">10 / 10</div>
+    <h1>Blueprint</h1>
+    <p>Thoughts as unbuilt schematics. Cyanotype blue, a drafting grid, dashed annotation boxes and a proper title block — every fragment is a figure awaiting its next revision.</p>
+    <div class="meta">
+      <div class="sws">
+        <span class="sw" style="background:#0F2C52"></span>
+        <span class="sw" style="background:#0D2748"></span>
+        <span class="sw" style="background:#D9E6FA"></span>
+        <span class="sw" style="background:#6FD3FF"></span>
+      </div>
+      <span class="typeline">SF Mono · grid · cyan</span>
+    </div>
+  </header>
+
+  <div class="stage">
+    <div class="phone">
+      <div class="scr">
+        <div class="island"></div>
+        <div class="sb"><span>9:41</span><span class="batt"></span></div>
+        <div class="p-top"><span>DRFT / CAPTURE</span><span>FIG. 142</span></div>
+        <div class="p-body">
+          <div class="bp-box">
+            <span class="tag">UNDEVELOPED THOUGHT</span>
+            <div class="p-thought">cities feel more creative because collisions are free<span class="caret"></span></div>
+          </div>
+          <div class="dim"><span>≈ 9 WORDS</span></div>
+          <div class="p-hint">// FILED UNDER NOTHING</div>
+        </div>
+        <div class="p-actions">
+          <button class="p-mic">● REC</button>
+          <button class="p-keep">KEEP ⏎</button>
+        </div>
+        <div class="homebar"></div>
+      </div>
+    </div>
+
+    <div class="mac">
+      <div class="lid">
+        <div class="scr">
+          <div class="tbar"><div class="dots"><i></i><i></i><i></i></div><span class="ttl">DRFT — SHEET 142</span></div>
+          <div class="wsp">
+            <aside class="refs">
+              <h3>REF LIST</h3>
+              <ul>
+                <li class="on"><span class="n">142</span><span class="t">cities feel more creative because collisions are free</span></li>
+                <li><span class="n">141</span><span class="t">what if onboarding is just the product, slowed down</span></li>
+                <li><span class="n">140</span><span class="t">recipes as version control — forks &amp; merges</span></li>
+                <li><span class="n">139</span><span class="t">attention is a garden, not a mine</span></li>
+                <li><span class="n">138</span><span class="t">the best interviews are mostly edited silence</span></li>
+              </ul>
+            </aside>
+            <div class="draft">
+              <div class="bp-box">
+                <span class="tag">FIG. 142 — UNDEVELOPED</span>
+                <div class="p-thought">cities feel more creative because collisions are free</div>
+              </div>
+              <div class="rev">
+                <div class="lbl">REV. A — PARTNER</div>
+                <p>Is it the collisions — or the permission to be interrupted? Cross-reference FIG. 138, “edited silence”: possibly the same structure, mirrored.</p>
+              </div>
+              <div class="m-rel"><span>FIG.138 EDITED SILENCE</span><span>FIG.139 ATTENTION</span><span>FIG.112 THIRD PLACES</span></div>
+            </div>
+            <div class="tblock">
+              <span>DRFT</span><span>THOUGHT N°142</span>
+              <span>DATE</span><span>14 JUL 2026</span>
+              <span>SCALE</span><span>1:1</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="base"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ---------- page selector ---------- -->
+<nav class="pager" aria-label="Design pages">
+  <button class="on" data-i="0" title="Manuscript">1</button>
+  <button data-i="1" title="Nocturne">2</button>
+  <button data-i="2" title="Index">3</button>
+  <button data-i="3" title="Greenhouse">4</button>
+  <button data-i="4" title="Aurora">5</button>
+  <button data-i="5" title="Gallery">6</button>
+  <button data-i="6" title="Broadsheet">7</button>
+  <button data-i="7" title="Pop">8</button>
+  <button data-i="8" title="Stillness">9</button>
+  <button data-i="9" title="Blueprint">10</button>
+</nav>
+
+<script>
+const pages = [...document.querySelectorAll('.page')];
+const tabs  = [...document.querySelectorAll('.pager button')];
+let cur = 0;
+
+function go(i) {
+  cur = (i + pages.length) % pages.length;
+  pages.forEach((p, j) => p.classList.toggle('on', j === cur));
+  tabs.forEach((t, j) => t.classList.toggle('on', j === cur));
+  history.replaceState(null, '', '#' + pages[cur].id);
+  window.scrollTo(0, 0);
+}
+
+tabs.forEach(t => t.addEventListener('click', () => go(+t.dataset.i)));
+addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight') go(cur + 1);
+  if (e.key === 'ArrowLeft')  go(cur - 1);
+});
+
+const start = pages.findIndex(p => '#' + p.id === location.hash);
+if (start > 0) go(start);
+</script>
+</body>
+</html>

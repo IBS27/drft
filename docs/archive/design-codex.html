@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Five coordinated iPhone and web design directions for drft." />
+<title>drft — Design Codex</title>
+<style>
+  :root {
+    color-scheme: light;
+    --page-bg: #f4f0e8;
+    --page-ink: #24221f;
+    --page-muted: #6f6a61;
+    --page-line: rgba(36, 34, 31, 0.16);
+    --page-accent: #c64b32;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    --serif: Georgia, "Times New Roman", serif;
+    --mono: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+    --ease: cubic-bezier(.22, 1, .36, 1);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; }
+  html { background: var(--page-bg); }
+  body {
+    background: var(--page-bg);
+    color: var(--page-ink);
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    transition: background-color .45s ease, color .45s ease;
+  }
+  button { color: inherit; font: inherit; }
+
+  .codex {
+    min-height: 100svh;
+    position: relative;
+    isolation: isolate;
+  }
+
+  .topbar {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    left: 0;
+    padding: 22px 28px;
+    pointer-events: none;
+    position: fixed;
+    right: 0;
+    top: 0;
+    z-index: 50;
+  }
+  .brand, .counter {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+  }
+  .brand { font-weight: 700; }
+  .brand span, .counter span { color: var(--page-muted); font-weight: 400; }
+
+  .design-page {
+    display: none;
+    min-height: 100svh;
+    overflow: hidden;
+    padding: 88px clamp(22px, 4vw, 64px) 110px;
+    position: relative;
+  }
+  .design-page.is-active {
+    animation: page-in .65s var(--ease) both;
+    display: block;
+  }
+  @keyframes page-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .page-inner {
+    margin: 0 auto;
+    max-width: 1480px;
+    position: relative;
+    z-index: 2;
+  }
+  .intro {
+    align-items: end;
+    display: grid;
+    gap: 30px;
+    grid-template-columns: minmax(240px, .8fr) minmax(300px, 1.25fr);
+    margin-bottom: clamp(34px, 5vh, 60px);
+  }
+  .eyebrow {
+    color: var(--page-accent);
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .16em;
+    margin-bottom: 13px;
+    text-transform: uppercase;
+  }
+  h1 {
+    font-size: clamp(38px, 5vw, 74px);
+    font-weight: 520;
+    letter-spacing: -.055em;
+    line-height: .95;
+    margin: 0;
+  }
+  .thesis {
+    color: var(--page-muted);
+    font-size: clamp(15px, 1.35vw, 19px);
+    line-height: 1.55;
+    margin: 0;
+    max-width: 660px;
+  }
+  .thesis strong { color: var(--page-ink); font-weight: 600; }
+
+  .devices {
+    align-items: end;
+    display: grid;
+    gap: clamp(30px, 5vw, 88px);
+    grid-template-columns: minmax(210px, .34fr) minmax(600px, 1fr);
+    margin: 0 auto;
+    max-width: 1320px;
+  }
+  .device-group { min-width: 0; }
+  .device-label {
+    align-items: center;
+    color: var(--page-muted);
+    display: flex;
+    font-family: var(--mono);
+    font-size: 9px;
+    gap: 10px;
+    letter-spacing: .12em;
+    margin: 0 0 12px 4px;
+    text-transform: uppercase;
+  }
+  .device-label::before {
+    background: var(--page-accent);
+    border-radius: 50%;
+    content: "";
+    height: 5px;
+    width: 5px;
+  }
+
+  /* Shared device frames */
+  .phone {
+    background: #111;
+    border: 1px solid rgba(255,255,255,.18);
+    border-radius: 48px;
+    box-shadow: 0 30px 60px rgba(0,0,0,.17), inset 0 0 0 1px rgba(255,255,255,.08);
+    margin: 0 auto;
+    max-width: 286px;
+    padding: 8px;
+    position: relative;
+    width: 100%;
+  }
+  .phone::before {
+    background: #090909;
+    border-radius: 0 0 15px 15px;
+    content: "";
+    height: 24px;
+    left: 50%;
+    position: absolute;
+    top: 8px;
+    transform: translateX(-50%);
+    width: 84px;
+    z-index: 5;
+  }
+  .phone-screen {
+    aspect-ratio: 9 / 19.4;
+    border-radius: 40px;
+    overflow: hidden;
+    position: relative;
+  }
+  .phone-home {
+    background: currentColor;
+    border-radius: 10px;
+    bottom: 7px;
+    height: 4px;
+    left: 50%;
+    opacity: .45;
+    position: absolute;
+    transform: translateX(-50%);
+    width: 34%;
+    z-index: 5;
+  }
+  .status {
+    align-items: center;
+    display: flex;
+    font-family: var(--sans);
+    font-size: 9px;
+    font-weight: 650;
+    justify-content: space-between;
+    left: 0;
+    padding: 11px 18px;
+    position: absolute;
+    right: 0;
+    top: 0;
+    z-index: 4;
+  }
+  .status-icons { align-items: center; display: flex; gap: 4px; }
+  .status-icons i { background: currentColor; display: block; height: 6px; opacity: .7; width: 9px; }
+  .status-icons i:first-child { clip-path: polygon(0 100%, 25% 55%, 45% 75%, 75% 25%, 100% 50%, 100% 100%); }
+  .status-icons i:last-child { border-radius: 2px; width: 13px; }
+
+  .laptop {
+    filter: drop-shadow(0 30px 35px rgba(0,0,0,.16));
+    margin: 0 auto;
+    position: relative;
+    width: 100%;
+  }
+  .laptop-lid {
+    background: #151515;
+    border: 1px solid rgba(255,255,255,.2);
+    border-radius: 18px 18px 7px 7px;
+    padding: 8px;
+  }
+  .laptop-screen {
+    aspect-ratio: 16 / 10;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+  }
+  .camera {
+    background: #050505;
+    border-radius: 50%;
+    height: 3px;
+    left: 50%;
+    position: absolute;
+    top: 3px;
+    transform: translateX(-50%);
+    width: 3px;
+    z-index: 5;
+  }
+  .laptop-base {
+    background: linear-gradient(180deg, #d4d4d1, #aeadab);
+    border-radius: 2px 2px 15px 15px;
+    height: 16px;
+    margin-left: -3.5%;
+    position: relative;
+    width: 107%;
+  }
+  .laptop-base::before {
+    background: #9d9c9a;
+    border-radius: 0 0 8px 8px;
+    content: "";
+    height: 5px;
+    left: 42%;
+    position: absolute;
+    top: 0;
+    width: 16%;
+  }
+
+  /* Selector */
+  .selector {
+    align-items: center;
+    backdrop-filter: blur(16px);
+    background: color-mix(in srgb, var(--page-bg) 82%, transparent);
+    border: 1px solid var(--page-line);
+    border-radius: 999px;
+    bottom: 22px;
+    box-shadow: 0 12px 36px rgba(0,0,0,.08);
+    display: flex;
+    gap: 5px;
+    padding: 6px;
+    position: fixed;
+    right: 24px;
+    z-index: 60;
+  }
+  .selector button {
+    align-items: center;
+    background: transparent;
+    border: 0;
+    border-radius: 999px;
+    cursor: pointer;
+    display: flex;
+    height: 32px;
+    justify-content: center;
+    min-width: 32px;
+    padding: 0 10px;
+    transition: background .2s ease, color .2s ease, transform .2s ease;
+  }
+  .selector button:hover { transform: translateY(-1px); }
+  .selector button:focus-visible { outline: 2px solid var(--page-accent); outline-offset: 2px; }
+  .selector .number {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .08em;
+  }
+  .selector button[aria-current="page"] {
+    background: var(--page-ink);
+    color: var(--page-bg);
+  }
+  .selector .arrow { color: var(--page-muted); font-size: 16px; padding: 0; width: 32px; }
+
+  /* 01 — Living Margin */
+  #living-margin { background: #f4f0e8; }
+  #living-margin .devices { grid-template-columns: minmax(210px, .33fr) minmax(600px, 1fr); }
+  .margin-phone { background: #fcfaf5; color: #24221f; }
+  .margin-phone .capture-caption {
+    color: #7c756a;
+    font: 9px/1.3 var(--mono);
+    left: 25px;
+    letter-spacing: .1em;
+    position: absolute;
+    text-transform: uppercase;
+    top: 74px;
+  }
+  .margin-phone .phone-thought {
+    font: 24px/1.28 var(--serif);
+    left: 25px;
+    letter-spacing: -.02em;
+    position: absolute;
+    right: 27px;
+    top: 37%;
+  }
+  .margin-phone .phone-thought::after {
+    animation: blink 1.2s steps(2, jump-none) infinite;
+    background: #c64b32;
+    content: "";
+    display: inline-block;
+    height: 25px;
+    margin-left: 3px;
+    transform: translateY(4px);
+    width: 2px;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+  .margin-phone .phone-actions {
+    align-items: center;
+    bottom: 30px;
+    display: flex;
+    justify-content: space-between;
+    left: 23px;
+    position: absolute;
+    right: 23px;
+  }
+  .margin-phone .quiet-action { color: #756e64; font: 10px var(--mono); }
+  .margin-phone .keep-action {
+    align-items: center;
+    background: #24221f;
+    border-radius: 50%;
+    color: #fcfaf5;
+    display: flex;
+    font-size: 17px;
+    height: 42px;
+    justify-content: center;
+    width: 42px;
+  }
+  .margin-web { background: #e8e2d7; color: #24221f; }
+  .margin-web .web-nav {
+    align-items: center;
+    display: flex;
+    font: 8px var(--mono);
+    justify-content: space-between;
+    left: 0;
+    letter-spacing: .12em;
+    padding: 16px 20px;
+    position: absolute;
+    right: 0;
+    text-transform: uppercase;
+    top: 0;
+  }
+  .margin-web .manuscript {
+    background: #fcfaf5;
+    bottom: 7%;
+    box-shadow: 0 15px 35px rgba(50,42,32,.08);
+    left: 8%;
+    padding: 7% 26% 7% 8%;
+    position: absolute;
+    right: 8%;
+    top: 12%;
+  }
+  .margin-web .folio { color: #8a8277; font: 7px var(--mono); letter-spacing: .12em; text-transform: uppercase; }
+  .margin-web .manuscript h2 {
+    font: 28px/1.12 var(--serif);
+    letter-spacing: -.03em;
+    margin: 12% 0 7%;
+    max-width: 70%;
+  }
+  .margin-web .manuscript p { color: #615b53; font: 10px/1.65 var(--serif); margin: 0; max-width: 70%; }
+  .margin-web .red-mark {
+    border-left: 2px solid #c64b32;
+    height: 24%;
+    left: 6%;
+    position: absolute;
+    top: 34%;
+  }
+  .margin-web .annotation {
+    color: #854232;
+    font: 8px/1.45 var(--sans);
+    position: absolute;
+    right: 5%;
+    width: 18%;
+  }
+  .margin-web .annotation::before {
+    background: #c64b32;
+    content: "";
+    height: 1px;
+    left: -42%;
+    opacity: .6;
+    position: absolute;
+    top: 7px;
+    width: 34%;
+  }
+  .margin-web .a1 { top: 28%; }
+  .margin-web .a2 { top: 58%; }
+  .margin-web .footnote { bottom: 8%; color: #8a8277; font: 7px/1.4 var(--mono); left: 8%; position: absolute; right: 28%; }
+
+  /* 02 — Night Signal */
+  #night-signal {
+    --page-bg: #0b0e12;
+    --page-ink: #f1eee7;
+    --page-muted: #929ba8;
+    --page-line: rgba(241,238,231,.15);
+    --page-accent: #f0a45d;
+    background: #0b0e12;
+  }
+  #night-signal::before {
+    background-image: radial-gradient(circle, rgba(255,255,255,.28) 0 1px, transparent 1.5px);
+    background-position: 11px 17px;
+    background-size: 87px 83px;
+    content: "";
+    inset: 0;
+    opacity: .23;
+    pointer-events: none;
+    position: absolute;
+  }
+  #night-signal h1 { font-weight: 300; letter-spacing: -.045em; }
+  .signal-phone { background: #0c1015; color: #f1eee7; }
+  .signal-phone .signal-label { color: #7e8997; font: 8px var(--mono); left: 22px; letter-spacing: .13em; position: absolute; top: 70px; }
+  .signal-phone .signal-orbit {
+    border: 1px solid rgba(240,164,93,.24);
+    border-radius: 50%;
+    height: 180px;
+    left: 50%;
+    position: absolute;
+    top: 35%;
+    transform: translate(-50%, -50%);
+    width: 180px;
+  }
+  .signal-phone .signal-orbit::before, .signal-phone .signal-orbit::after {
+    border: 1px solid rgba(240,164,93,.12);
+    border-radius: 50%;
+    content: "";
+    inset: 18px;
+    position: absolute;
+  }
+  .signal-phone .signal-orbit::after { inset: 43px; }
+  .signal-phone .signal-dot {
+    animation: pulse 2.4s ease-in-out infinite;
+    background: #f0a45d;
+    border-radius: 50%;
+    box-shadow: 0 0 22px rgba(240,164,93,.65);
+    height: 8px;
+    left: 50%;
+    position: absolute;
+    top: 35%;
+    transform: translate(-50%, -50%);
+    width: 8px;
+  }
+  @keyframes pulse { 50% { box-shadow: 0 0 38px rgba(240,164,93,.85); transform: translate(-50%,-50%) scale(1.22); } }
+  .signal-phone .signal-copy { font-size: 20px; font-weight: 300; left: 25px; letter-spacing: -.025em; line-height: 1.25; position: absolute; right: 25px; text-align: center; top: 48%; }
+  .signal-phone .voice-ring {
+    align-items: center;
+    border: 1px solid #39424e;
+    border-radius: 50%;
+    bottom: 37px;
+    display: flex;
+    height: 46px;
+    justify-content: center;
+    left: 50%;
+    position: absolute;
+    transform: translateX(-50%);
+    width: 46px;
+  }
+  .signal-phone .voice-ring::before { background: #f0a45d; border-radius: 2px; content: ""; height: 13px; width: 6px; }
+  .signal-web { background: #0d1117; color: #f1eee7; }
+  .signal-web::before {
+    background-image: radial-gradient(circle, rgba(255,255,255,.3) 0 .7px, transparent 1px);
+    background-size: 53px 49px;
+    content: "";
+    inset: 0;
+    opacity: .2;
+    position: absolute;
+  }
+  .signal-web .signal-nav { color: #7d8793; display: flex; font: 7px var(--mono); justify-content: space-between; left: 20px; letter-spacing: .1em; position: absolute; right: 20px; top: 17px; }
+  .signal-web .central-signal { left: 50%; position: absolute; text-align: center; top: 50%; transform: translate(-50%, -50%); width: 47%; z-index: 2; }
+  .signal-web .central-signal .coordinate { color: #f0a45d; font: 7px var(--mono); letter-spacing: .12em; }
+  .signal-web .central-signal h2 { font-size: clamp(16px, 2.5vw, 31px); font-weight: 300; letter-spacing: -.04em; line-height: 1.15; margin: 12px 0; }
+  .signal-web .central-signal p { color: #9ca5b0; font: 9px/1.5 var(--serif); margin: auto; max-width: 230px; }
+  .signal-web .big-orbit { border: 1px solid rgba(240,164,93,.16); border-radius: 50%; height: 78%; left: 50%; position: absolute; top: 50%; transform: translate(-50%,-50%); width: 49%; }
+  .signal-web .big-orbit::before { border: 1px solid rgba(117,170,168,.12); border-radius: 50%; content: ""; inset: 13%; position: absolute; }
+  .signal-web .related { color: #a7b0bb; font: 8px/1.4 var(--sans); max-width: 19%; position: absolute; z-index: 3; }
+  .signal-web .related b { color: #75aaa8; display: block; font: 7px var(--mono); margin-bottom: 5px; }
+  .signal-web .r1 { left: 7%; top: 29%; }
+  .signal-web .r2 { bottom: 18%; right: 7%; }
+  .signal-web .r3 { right: 9%; top: 24%; }
+  .signal-web .related::after { background: #75aaa8; border-radius: 50%; content: ""; height: 4px; position: absolute; top: 2px; width: 4px; }
+  .signal-web .r1::after { right: -16px; } .signal-web .r2::after, .signal-web .r3::after { left: -16px; }
+
+  /* 03 — Fold / Unfold */
+  #fold-unfold {
+    --page-bg: #ece9e1;
+    --page-ink: #1e211f;
+    --page-muted: #6d716d;
+    --page-line: rgba(30,33,31,.16);
+    --page-accent: #3159d8;
+    background: #ece9e1;
+  }
+  #fold-unfold h1 { font-stretch: condensed; font-weight: 750; letter-spacing: -.07em; text-transform: uppercase; }
+  .fold-phone { background: #ece9e1; color: #1e211f; }
+  .fold-phone .fold-strip {
+    background: #faf8f2;
+    bottom: 22px;
+    box-shadow: 0 18px 36px rgba(30,33,31,.10);
+    left: 19px;
+    overflow: hidden;
+    position: absolute;
+    right: 19px;
+    top: 39px;
+  }
+  .fold-phone .fold-section { border-bottom: 1px dashed #c9c5bb; min-height: 32%; padding: 28px 19px 20px; position: relative; }
+  .fold-phone .fold-section::after { color: #8b8e89; content: attr(data-fold); font: 7px var(--mono); letter-spacing: .1em; position: absolute; right: 10px; top: 9px; }
+  .fold-phone .fold-section:nth-child(2) { background: #f2efe7; }
+  .fold-phone .fold-kicker { color: #3159d8; font: 7px var(--mono); letter-spacing: .12em; text-transform: uppercase; }
+  .fold-phone .fold-thought { font-size: 17px; font-weight: 650; letter-spacing: -.035em; line-height: 1.18; margin-top: 17px; }
+  .fold-phone .fold-question { color: #555a56; font: 12px/1.45 var(--serif); margin-top: 12px; }
+  .fold-phone .pull { bottom: 15px; color: #3159d8; font: 7px var(--mono); left: 19px; letter-spacing: .1em; position: absolute; text-transform: uppercase; }
+  .fold-phone .corner { border-color: transparent #e26245 transparent transparent; border-style: solid; border-width: 0 28px 28px 0; height: 0; position: absolute; right: 0; top: 0; width: 0; }
+  .fold-web { background: #e2ded4; color: #1e211f; }
+  .fold-web .fold-nav { display: flex; font: 7px var(--mono); justify-content: space-between; left: 18px; letter-spacing: .1em; position: absolute; right: 18px; top: 16px; }
+  .fold-web .accordion { bottom: 10%; display: flex; left: 5%; perspective: 1000px; position: absolute; right: 5%; top: 13%; }
+  .fold-web .panel { border-left: 1px solid #c6c1b6; box-shadow: -8px 12px 24px rgba(31,34,31,.06); flex: 1; padding: 7% 3%; position: relative; transform-origin: left center; }
+  .fold-web .panel:nth-child(odd) { background: #faf8f2; transform: rotateY(2.5deg); }
+  .fold-web .panel:nth-child(even) { background: #f1eee7; transform: rotateY(-2.5deg); }
+  .fold-web .panel:first-child { border-left: 4px solid #3159d8; }
+  .fold-web .panel:last-child { border-right: 4px solid #e26245; }
+  .fold-web .panel small { color: #858982; font: 6px var(--mono); letter-spacing: .1em; text-transform: uppercase; }
+  .fold-web .panel h3 { font-size: clamp(10px, 1.4vw, 17px); letter-spacing: -.04em; line-height: 1.15; margin: 35% 0 12px; }
+  .fold-web .panel p { color: #696d68; font: 8px/1.5 var(--serif); margin: 0; }
+  .fold-web .panel .answer { border-bottom: 1px solid #aeb1ab; color: #3159d8; font: 7px var(--mono); margin-top: 20px; padding-bottom: 6px; }
+  .fold-web .panel .tab { background: #e26245; color: white; font: 6px var(--mono); padding: 5px 7px; position: absolute; right: 0; top: 0; }
+
+  /* 04 — Listening Room */
+  #listening-room {
+    --page-bg: #171312;
+    --page-ink: #f2e9dd;
+    --page-muted: #a99a8b;
+    --page-line: rgba(242,233,221,.14);
+    --page-accent: #d6a65c;
+    background: #171312;
+  }
+  #listening-room::after {
+    background: #7d2d32;
+    content: "";
+    height: 100%;
+    left: 0;
+    opacity: .75;
+    position: absolute;
+    top: 0;
+    width: 5px;
+  }
+  #listening-room h1 { font-family: var(--serif); font-style: italic; font-weight: 400; letter-spacing: -.045em; }
+  .room-phone { background: #1a1514; color: #f2e9dd; }
+  .room-phone .room-num { color: #776d64; font: 7px var(--mono); left: 21px; letter-spacing: .12em; position: absolute; top: 67px; }
+  .room-phone .room-line { background: #7d2d32; height: 43%; left: 24px; position: absolute; top: 26%; width: 2px; }
+  .room-phone .room-thought { bottom: 29%; font: 24px/1.28 var(--serif); left: 42px; letter-spacing: -.02em; position: absolute; right: 26px; }
+  .room-phone .room-cue { bottom: 18%; color: #d6a65c; font: 8px var(--mono); left: 42px; letter-spacing: .08em; position: absolute; }
+  .room-phone .room-mic { align-items: center; border: 1px solid #473b36; border-radius: 50%; bottom: 32px; display: flex; height: 40px; justify-content: center; position: absolute; right: 24px; width: 40px; }
+  .room-phone .room-mic::before { background: #d6a65c; border-radius: 3px; content: ""; height: 12px; width: 6px; }
+  .room-web { background: #191413; color: #f2e9dd; }
+  .room-web .room-nav { color: #897a6e; display: flex; font: 7px var(--mono); justify-content: space-between; left: 19px; letter-spacing: .12em; position: absolute; right: 19px; top: 17px; }
+  .room-web .transcript { bottom: 8%; left: 12%; position: absolute; right: 11%; top: 15%; }
+  .room-web .original { border-left: 3px solid #7d2d32; font: clamp(15px, 2vw, 25px)/1.35 var(--serif); max-width: 52%; padding: 1% 0 1% 4%; }
+  .room-web .exchange { margin-left: 24%; margin-top: 8%; max-width: 58%; }
+  .room-web .cue { color: #d6a65c; font: 7px var(--mono); letter-spacing: .13em; margin-bottom: 12px; text-transform: uppercase; }
+  .room-web .question { font-size: clamp(12px, 1.45vw, 18px); font-weight: 400; line-height: 1.45; }
+  .room-web .response { border-bottom: 1px solid #51443e; color: #b9aa9c; font: 9px var(--serif); margin-top: 22px; padding: 0 0 9px; }
+  .room-web .past { color: #5e534d; font: 9px/1.5 var(--serif); margin-top: 8%; max-width: 47%; }
+  .room-web .offstage { color: #7d7065; font: italic 8px/1.45 var(--serif); position: absolute; right: 0; top: 36%; width: 20%; }
+  .room-web .offstage::before { color: #7d2d32; content: "OFFSTAGE"; display: block; font: 6px var(--mono); letter-spacing: .12em; margin-bottom: 6px; }
+  .room-web .pool-light { background: radial-gradient(ellipse, rgba(214,166,92,.07), transparent 65%); height: 80%; left: 13%; pointer-events: none; position: absolute; top: 8%; width: 67%; }
+
+  /* 05 — Tide Table */
+  #tide-table {
+    --page-bg: #f2f0e8;
+    --page-ink: #203033;
+    --page-muted: #69787a;
+    --page-line: rgba(32,48,51,.15);
+    --page-accent: #d7674f;
+    background: #f2f0e8;
+  }
+  #tide-table h1 { font-weight: 450; }
+  .tide-phone { background: #f2f0e8; color: #203033; }
+  .tide-phone .sky-label { color: #778789; font: 7px var(--mono); left: 22px; letter-spacing: .12em; position: absolute; top: 70px; }
+  .tide-phone .tide-thought { font-size: 21px; font-weight: 450; left: 24px; letter-spacing: -.035em; line-height: 1.25; position: absolute; right: 27px; top: 28%; }
+  .tide-phone .coral-cursor { background: #d7674f; height: 23px; left: 24px; position: absolute; top: 43%; width: 2px; }
+  .tide-phone .water { background: #ded8ca; bottom: 0; height: 37%; left: 0; position: absolute; right: 0; }
+  .tide-phone .tide-arc { border: 1px solid #8fa9a5; border-radius: 50%; height: 90px; left: -10%; position: absolute; top: -43px; width: 120%; }
+  .tide-phone .tide-arc::before, .tide-phone .tide-arc::after { border: 1px solid rgba(143,169,165,.45); border-radius: 50%; content: ""; height: 80px; left: -4%; position: absolute; top: 12px; width: 108%; }
+  .tide-phone .tide-arc::after { top: 28px; }
+  .tide-phone .release { bottom: 44px; color: #4e6467; font: 8px var(--mono); left: 50%; letter-spacing: .11em; position: absolute; text-transform: uppercase; transform: translateX(-50%); white-space: nowrap; }
+  .tide-phone .release::before { background: #d7674f; border-radius: 50%; content: ""; display: inline-block; height: 5px; margin-right: 8px; width: 5px; }
+  .tide-web { background: #f2f0e8; color: #203033; }
+  .tide-web .tide-nav { color: #718082; display: flex; font: 7px var(--mono); justify-content: space-between; left: 20px; letter-spacing: .11em; position: absolute; right: 20px; top: 17px; }
+  .tide-web .shore { background: #ded8ca; bottom: 0; height: 42%; left: 0; position: absolute; right: 0; }
+  .tide-web .wide-arc { border: 1px solid #8fa9a5; border-radius: 50%; height: 50%; left: -5%; position: absolute; top: -22%; width: 110%; }
+  .tide-web .wide-arc::before { border: 1px solid rgba(143,169,165,.5); border-radius: 50%; content: ""; inset: 17px -2%; position: absolute; }
+  .tide-web .active-tide { left: 50%; position: absolute; text-align: center; top: 36%; transform: translate(-50%,-50%); width: 40%; z-index: 3; }
+  .tide-web .return-label { color: #d7674f; font: 7px var(--mono); letter-spacing: .12em; text-transform: uppercase; }
+  .tide-web .active-tide h2 { font: clamp(15px, 2.3vw, 28px)/1.15 var(--serif); letter-spacing: -.025em; margin: 12px 0; }
+  .tide-web .active-tide p { color: #6b7b7d; font: 8px/1.5 var(--sans); margin: auto; max-width: 260px; }
+  .tide-web .shore-note { color: #536669; font: 8px/1.4 var(--serif); position: absolute; z-index: 4; }
+  .tide-web .shore-note::before { background: #d7674f; border-radius: 50%; content: ""; height: 5px; left: -12px; position: absolute; top: 3px; width: 5px; }
+  .tide-web .sn1 { bottom: 17%; left: 13%; max-width: 18%; }
+  .tide-web .sn2 { bottom: 10%; max-width: 19%; right: 13%; }
+  .tide-web .sn3 { bottom: 27%; max-width: 15%; right: 31%; }
+  .tide-web .tide-question { color: #405457; font: 9px var(--sans); left: 50%; position: absolute; text-align: center; top: 69%; transform: translateX(-50%); width: 33%; z-index: 4; }
+  .tide-web .tide-question b { color: #d7674f; font-family: var(--mono); font-size: 7px; letter-spacing: .1em; }
+
+  .hint {
+    bottom: 30px;
+    color: var(--page-muted);
+    font: 8px var(--mono);
+    left: 27px;
+    letter-spacing: .1em;
+    position: fixed;
+    text-transform: uppercase;
+    z-index: 40;
+  }
+
+  @media (max-width: 900px) {
+    .design-page { min-height: auto; padding-bottom: 130px; }
+    .intro { align-items: start; grid-template-columns: 1fr; margin-bottom: 40px; }
+    .devices, #living-margin .devices { align-items: center; grid-template-columns: minmax(180px, 240px) minmax(430px, 1fr); gap: 34px; }
+    .margin-web .manuscript h2 { font-size: 21px; }
+  }
+
+  @media (max-width: 720px) {
+    .topbar { padding: 18px 20px; }
+    .design-page { padding: 78px 18px 120px; }
+    .intro { gap: 16px; }
+    .devices, #living-margin .devices { grid-template-columns: 1fr; }
+    .device-group:first-child { margin: 0 auto; max-width: 270px; width: 78%; }
+    .device-group:last-child { width: 100%; }
+    .laptop-lid { border-radius: 11px 11px 4px 4px; padding: 5px; }
+    .laptop-base { height: 10px; }
+    .selector { bottom: 16px; right: 16px; }
+    .hint { display: none; }
+    .margin-web .manuscript { padding: 9% 8%; }
+    .margin-web .manuscript h2 { font-size: 18px; max-width: 78%; margin-top: 14%; }
+    .margin-web .manuscript p { font-size: 7px; max-width: 72%; }
+    .margin-web .annotation, .margin-web .footnote { display: none; }
+
+    .signal-web .big-orbit { height: 84%; width: 56%; }
+    .signal-web .central-signal { width: 58%; }
+    .signal-web .central-signal h2 { font-size: 16px; }
+    .signal-web .r2, .signal-web .r3 { display: none; }
+    .signal-web .r1 { left: 5%; max-width: 20%; top: 33%; }
+
+    .fold-web .accordion { left: 4%; right: 4%; }
+    .fold-web .panel { padding-left: 2.5%; padding-right: 2.5%; }
+    .fold-web .panel h3 { font-size: 8px; margin-top: 28%; }
+    .fold-web .panel p { font-size: 6px; }
+
+    .room-web .original { font-size: 13px; max-width: 60%; }
+    .room-web .exchange { margin-left: 22%; margin-top: 6%; max-width: 61%; }
+    .room-web .question { font-size: 7px; }
+    .room-web .response, .room-web .past { display: none; }
+    .room-web .offstage { font-size: 6px; right: 1%; width: 19%; }
+
+    .tide-web .active-tide { top: 34%; width: 58%; }
+    .tide-web .active-tide h2 { font-size: 15px; }
+    .tide-web .active-tide p { font-size: 6px; }
+    .tide-web .tide-question { font-size: 7px; top: 72%; width: 42%; }
+    .tide-web .sn2, .tide-web .sn3 { display: none; }
+    .tide-web .sn1 { bottom: 13%; left: 13%; max-width: 25%; }
+  }
+
+  @media (max-width: 430px) {
+    .brand span { display: none; }
+    .counter { font-size: 9px; }
+    h1 { font-size: 42px; }
+    .selector { gap: 2px; padding: 5px; }
+    .selector button { min-width: 29px; padding: 0 8px; }
+    .selector .arrow { display: none; }
+    .phone { max-width: 248px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
+  }
+</style>
+</head>
+<body>
+<main class="codex">
+  <header class="topbar" aria-label="Document header">
+    <div class="brand">drft <span>/ design codex</span></div>
+    <div class="counter"><span id="current-count">01</span> / 05</div>
+  </header>
+
+  <section class="design-page is-active" id="living-margin" data-page="0" data-bg="#f4f0e8" data-ink="#24221f" data-muted="#6f6a61" data-line="rgba(36,34,31,.16)" data-accent="#c64b32" aria-labelledby="title-margin">
+    <div class="page-inner">
+      <div class="intro">
+        <div>
+          <div class="eyebrow">Direction 01 · Editorial</div>
+          <h1 id="title-margin">The Living Margin</h1>
+        </div>
+        <p class="thesis"><strong>Thoughts as unfinished manuscripts.</strong> Capture stays beautifully empty; development happens through questions, marks, and connections in the margins—not inside another chat window.</p>
+      </div>
+      <div class="devices">
+        <div class="device-group">
+          <div class="device-label">iPhone · effortless in</div>
+          <div class="phone">
+            <div class="phone-screen margin-phone">
+              <div class="status"><span>9:41</span><span class="status-icons"><i></i><i></i></span></div>
+              <div class="capture-caption">Leave it unfinished</div>
+              <div class="phone-thought">Maybe anticipation is more useful than motivation</div>
+              <div class="phone-actions"><span class="quiet-action">⌁ dictate</span><span class="keep-action">↑</span></div>
+              <div class="phone-home"></div>
+            </div>
+          </div>
+        </div>
+        <div class="device-group">
+          <div class="device-label">Web · develop the thought</div>
+          <div class="laptop">
+            <div class="laptop-lid"><i class="camera"></i><div class="laptop-screen margin-web">
+              <div class="web-nav"><strong>drft</strong><span>3 thoughts waiting</span><span>···</span></div>
+              <article class="manuscript">
+                <span class="folio">Fragment 147 · returned today</span>
+                <div class="red-mark"></div>
+                <h2>Maybe anticipation is more useful than motivation.</h2>
+                <p>I keep designing systems that rely on feeling ready. But the better systems may create a reason to return before readiness matters.</p>
+                <aside class="annotation a1"><strong>01</strong><br />What would the smallest form of anticipation look like?</aside>
+                <aside class="annotation a2"><strong>02</strong><br />You made a similar distinction in “rituals vs. habits.”</aside>
+                <div class="footnote">Related fragment — “A good prompt should create a little productive tension.”</div>
+              </article>
+            </div></div>
+            <div class="laptop-base"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="design-page" id="night-signal" data-page="1" data-bg="#0b0e12" data-ink="#f1eee7" data-muted="#929ba8" data-line="rgba(241,238,231,.15)" data-accent="#f0a45d" aria-labelledby="title-signal">
+    <div class="page-inner">
+      <div class="intro">
+        <div>
+          <div class="eyebrow">Direction 02 · Atmospheric</div>
+          <h1 id="title-signal">Night Signal</h1>
+        </div>
+        <p class="thesis"><strong>A thought is a signal worth keeping.</strong> Sparse fields, quiet light, and semantic constellations make capturing feel immediate and rediscovery feel like resonance—not filing.</p>
+      </div>
+      <div class="devices">
+        <div class="device-group">
+          <div class="device-label">iPhone · catch a signal</div>
+          <div class="phone">
+            <div class="phone-screen signal-phone">
+              <div class="status"><span>9:41</span><span class="status-icons"><i></i><i></i></span></div>
+              <div class="signal-label">NEW SIGNAL / LIVE</div>
+              <div class="signal-orbit"></div><div class="signal-dot"></div>
+              <div class="signal-copy">Products should remember what people were reaching for.</div>
+              <div class="voice-ring"></div>
+              <div class="phone-home"></div>
+            </div>
+          </div>
+        </div>
+        <div class="device-group">
+          <div class="device-label">Web · find resonance</div>
+          <div class="laptop">
+            <div class="laptop-lid"><i class="camera"></i><div class="laptop-screen signal-web">
+              <div class="signal-nav"><strong>DRFT / FIELD</strong><span>12 JUL · 22:14</span><span>FOCUS 41%</span></div>
+              <div class="big-orbit"></div>
+              <div class="central-signal"><span class="coordinate">SIGNAL 00.147 · RESURFACED</span><h2>Products should remember what people were reaching for.</h2><p>What becomes possible if the tool remembers intent, not just input?</p></div>
+              <div class="related r1"><b>◉ 0.82 resonance</b>Software as a place you return to, not a feed you consume.</div>
+              <div class="related r2"><b>◉ 0.64 resonance</b>Memory can be an interface, not merely storage.</div>
+              <div class="related r3"><b>◉ 0.57 resonance</b>The best reminder contains a reason.</div>
+            </div></div>
+            <div class="laptop-base"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="design-page" id="fold-unfold" data-page="2" data-bg="#ece9e1" data-ink="#1e211f" data-muted="#6d716d" data-line="rgba(30,33,31,.16)" data-accent="#3159d8" aria-labelledby="title-fold">
+    <div class="page-inner">
+      <div class="intro">
+        <div>
+          <div class="eyebrow">Direction 03 · Constructive</div>
+          <h1 id="title-fold">Fold / Unfold</h1>
+        </div>
+        <p class="thesis"><strong>Thinking gives a fragment dimension.</strong> Each idea begins as one compact fold, then opens into questions, contradictions, and reframings across a single continuous surface.</p>
+      </div>
+      <div class="devices">
+        <div class="device-group">
+          <div class="device-label">iPhone · one clean fold</div>
+          <div class="phone">
+            <div class="phone-screen fold-phone">
+              <div class="status"><span>9:41</span><span class="status-icons"><i></i><i></i></span></div>
+              <div class="fold-strip">
+                <div class="corner"></div>
+                <div class="fold-section" data-fold="01 / CAPTURE"><div class="fold-kicker">Unfinished thought</div><div class="fold-thought">Constraints might be a form of creative direction.</div></div>
+                <div class="fold-section" data-fold="02 / WAITING"><div class="fold-kicker">One question</div><div class="fold-question">Which constraint has improved your work recently?</div></div>
+                <div class="fold-section" data-fold="03 / OPEN"><div class="fold-kicker">Pull to develop</div></div>
+              </div>
+              <div class="pull">↑ unfold one question</div>
+              <div class="phone-home"></div>
+            </div>
+          </div>
+        </div>
+        <div class="device-group">
+          <div class="device-label">Web · open the idea</div>
+          <div class="laptop">
+            <div class="laptop-lid"><i class="camera"></i><div class="laptop-screen fold-web">
+              <div class="fold-nav"><strong>DRFT / UNFOLD</strong><span>ORIGINAL → DEVELOPING</span><span>FOCUS</span></div>
+              <div class="accordion">
+                <section class="panel"><small>01 / fragment</small><h3>Constraints might be a form of creative direction.</h3><p>Captured on a walk, without context.</p></section>
+                <section class="panel"><small>02 / question</small><h3>Which constraint has improved your work recently?</h3><div class="answer">write a response…</div></section>
+                <section class="panel"><small>03 / tension</small><h3>Too much freedom can hide the real decision.</h3><p>A useful constraint reduces the surface area without deciding the answer.</p></section>
+                <section class="panel"><span class="tab">NEW</span><small>04 / reframe</small><h3>Design the boundary before the object.</h3><p>A possible principle, waiting to be tested.</p></section>
+              </div>
+            </div></div>
+            <div class="laptop-base"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="design-page" id="listening-room" data-page="3" data-bg="#171312" data-ink="#f2e9dd" data-muted="#a99a8b" data-line="rgba(242,233,221,.14)" data-accent="#d6a65c" aria-labelledby="title-room">
+    <div class="page-inner">
+      <div class="intro">
+        <div>
+          <div class="eyebrow">Direction 04 · Intimate</div>
+          <h1 id="title-room">The Listening Room</h1>
+        </div>
+        <p class="thesis"><strong>One idea receives full attention.</strong> Warm darkness, stage cues, and generous pauses make the partner feel inquisitive and present—without turning reflection into chat.</p>
+      </div>
+      <div class="devices">
+        <div class="device-group">
+          <div class="device-label">iPhone · enter the room</div>
+          <div class="phone">
+            <div class="phone-screen room-phone">
+              <div class="status"><span>9:41</span><span class="status-icons"><i></i><i></i></span></div>
+              <div class="room-num">ROOM 07 · LISTENING</div>
+              <div class="room-line"></div>
+              <div class="room-thought">I think taste might just be attention sustained over time.</div>
+              <div class="room-cue">— keep this thought</div>
+              <div class="room-mic"></div>
+              <div class="phone-home"></div>
+            </div>
+          </div>
+        </div>
+        <div class="device-group">
+          <div class="device-label">Web · a private dialogue</div>
+          <div class="laptop">
+            <div class="laptop-lid"><i class="camera"></i><div class="laptop-screen room-web">
+              <div class="pool-light"></div>
+              <div class="room-nav"><strong>DRFT / ROOM 07</strong><span>PRIVATE · 18 MIN</span><span>LEAVE QUIETLY</span></div>
+              <div class="transcript">
+                <div class="original">I think taste might just be attention sustained over time.</div>
+                <div class="exchange"><div class="cue">— A question, when you're ready</div><div class="question">Is taste the quality of attention—or the memory of what attention revealed?</div><div class="response">I’m not sure yet, but the distinction feels useful…</div><div class="past">Earlier — “You can often recognize care before you can explain quality.”</div></div>
+                <aside class="offstage">A related fragment about patience is waiting nearby.</aside>
+              </div>
+            </div></div>
+            <div class="laptop-base"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="design-page" id="tide-table" data-page="4" data-bg="#f2f0e8" data-ink="#203033" data-muted="#69787a" data-line="rgba(32,48,51,.15)" data-accent="#d7674f" aria-labelledby="title-tide">
+    <div class="page-inner">
+      <div class="intro">
+        <div>
+          <div class="eyebrow">Direction 05 · Organic</div>
+          <h1 id="title-tide">Tide Table</h1>
+        </div>
+        <p class="thesis"><strong>Thoughts return when conditions are right.</strong> A calm shoreline turns resurfacing into the central experience: fragments drift from view, gather context, then come ashore again.</p>
+      </div>
+      <div class="devices">
+        <div class="device-group">
+          <div class="device-label">iPhone · release a thought</div>
+          <div class="phone">
+            <div class="phone-screen tide-phone">
+              <div class="status"><span>9:41</span><span class="status-icons"><i></i><i></i></span></div>
+              <div class="sky-label">DRFT / HIGH WATER 18:42</div>
+              <div class="tide-thought">Maybe good ideas need somewhere to disappear for a while.</div>
+              <div class="coral-cursor"></div>
+              <div class="water"><div class="tide-arc"></div><div class="release">release to drft</div></div>
+              <div class="phone-home"></div>
+            </div>
+          </div>
+        </div>
+        <div class="device-group">
+          <div class="device-label">Web · welcome it back</div>
+          <div class="laptop">
+            <div class="laptop-lid"><i class="camera"></i><div class="laptop-screen tide-web">
+              <div class="tide-nav"><strong>DRFT / SHORE</strong><span>3 THOUGHTS RETURNED</span><span>18 JUL</span></div>
+              <div class="active-tide"><span class="return-label">● returned with context</span><h2>Maybe good ideas need somewhere to disappear for a while.</h2><p>This returned because you wrote about productive distance yesterday.</p></div>
+              <div class="shore"><div class="wide-arc"></div></div>
+              <div class="tide-question"><b>ONE QUESTION</b><br />What should change while an idea is away?</div>
+              <div class="shore-note sn1">Distance can be part of the work.</div>
+              <div class="shore-note sn2">A reminder should contain a reason to care.</div>
+              <div class="shore-note sn3">Forgetting and incubation are not the same.</div>
+            </div></div>
+            <div class="laptop-base"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="hint" aria-hidden="true">Use ← → to explore</div>
+  <nav class="selector" aria-label="Choose a design direction">
+    <button class="arrow" type="button" data-action="previous" aria-label="Previous design">←</button>
+    <button type="button" data-page-target="0" aria-label="View The Living Margin" aria-current="page"><span class="number">01</span></button>
+    <button type="button" data-page-target="1" aria-label="View Night Signal"><span class="number">02</span></button>
+    <button type="button" data-page-target="2" aria-label="View Fold / Unfold"><span class="number">03</span></button>
+    <button type="button" data-page-target="3" aria-label="View The Listening Room"><span class="number">04</span></button>
+    <button type="button" data-page-target="4" aria-label="View Tide Table"><span class="number">05</span></button>
+    <button class="arrow" type="button" data-action="next" aria-label="Next design">→</button>
+  </nav>
+</main>
+
+<script>
+  const pages = [...document.querySelectorAll('.design-page')];
+  const pageButtons = [...document.querySelectorAll('[data-page-target]')];
+  const count = document.querySelector('#current-count');
+  let activePage = 0;
+
+  function showPage(index, updateHash = true) {
+    activePage = (index + pages.length) % pages.length;
+    const page = pages[activePage];
+
+    pages.forEach((item, pageIndex) => {
+      const isActive = pageIndex === activePage;
+      item.classList.toggle('is-active', isActive);
+      item.setAttribute('aria-hidden', String(!isActive));
+    });
+
+    pageButtons.forEach((button, buttonIndex) => {
+      if (buttonIndex === activePage) button.setAttribute('aria-current', 'page');
+      else button.removeAttribute('aria-current');
+    });
+
+    document.documentElement.style.setProperty('--page-bg', page.dataset.bg);
+    document.documentElement.style.setProperty('--page-ink', page.dataset.ink);
+    document.documentElement.style.setProperty('--page-muted', page.dataset.muted);
+    document.documentElement.style.setProperty('--page-line', page.dataset.line);
+    document.documentElement.style.setProperty('--page-accent', page.dataset.accent);
+    count.textContent = String(activePage + 1).padStart(2, '0');
+
+    if (updateHash) history.replaceState(null, '', `#${page.id}`);
+  }
+
+  pageButtons.forEach((button) => {
+    button.addEventListener('click', () => showPage(Number(button.dataset.pageTarget)));
+  });
+
+  document.querySelector('[data-action="previous"]').addEventListener('click', () => showPage(activePage - 1));
+  document.querySelector('[data-action="next"]').addEventListener('click', () => showPage(activePage + 1));
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'ArrowLeft') showPage(activePage - 1);
+    if (event.key === 'ArrowRight') showPage(activePage + 1);
+    if (/^[1-5]$/.test(event.key)) showPage(Number(event.key) - 1);
+  });
+
+  const initialIndex = pages.findIndex((page) => `#${page.id}` === window.location.hash);
+  showPage(initialIndex >= 0 ? initialIndex : 0, initialIndex >= 0);
+</script>
+</body>
+</html>

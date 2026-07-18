@@ -1,0 +1,708 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light" />
+  <title>drft — Five product directions</title>
+  <style>
+    :root {
+      --ease: cubic-bezier(.22, 1, .36, 1);
+      --device-shadow: 0 34px 80px rgba(18, 20, 25, .18), 0 8px 20px rgba(18, 20, 25, .1);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      overflow: hidden;
+      color: #171718;
+      background: #e9e8e5;
+      font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    button { font: inherit; }
+
+    .gallery { position: relative; width: 100vw; height: 100svh; }
+    .design-page {
+      --page-bg: #f3f0ea;
+      position: absolute;
+      inset: 0;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      padding: clamp(22px, 3vw, 46px) clamp(22px, 4.5vw, 72px) clamp(78px, 8vh, 94px);
+      overflow: hidden;
+      background: var(--page-bg);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(14px) scale(.995);
+      transition: opacity .42s var(--ease), transform .5s var(--ease), visibility .42s;
+      pointer-events: none;
+    }
+    .design-page.is-active {
+      opacity: 1;
+      visibility: visible;
+      transform: none;
+      pointer-events: auto;
+      z-index: 2;
+    }
+
+    .page-head {
+      position: relative;
+      z-index: 3;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 28px;
+    }
+    .page-title { max-width: 530px; }
+    .eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      opacity: .52;
+    }
+    .eyebrow::before { content: ""; width: 20px; height: 1px; background: currentColor; }
+    h1 { margin: 0; font-size: clamp(30px, 3.7vw, 58px); line-height: .98; letter-spacing: -.055em; }
+    .page-title > p { margin: 14px 0 0; max-width: 430px; font-size: clamp(12px, 1.15vw, 15px); line-height: 1.55; opacity: .64; }
+    .direction-no { font-size: 11px; font-weight: 700; letter-spacing: .12em; opacity: .35; }
+
+    .device-stage {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 0;
+      margin-top: clamp(12px, 2vh, 24px);
+    }
+    .device-pair {
+      position: relative;
+      width: min(87vw, 1070px);
+      height: min(63vh, 590px);
+    }
+
+    .laptop {
+      position: absolute;
+      right: 0;
+      top: 3%;
+      width: min(72vw, 840px);
+      aspect-ratio: 16 / 10.1;
+      filter: drop-shadow(0 35px 35px rgba(18, 20, 25, .16));
+    }
+    .laptop-lid {
+      position: absolute;
+      inset: 0 3.1% 4.5%;
+      padding: 7px;
+      border: 1px solid rgba(255, 255, 255, .5);
+      border-radius: 19px 19px 7px 7px;
+      background: #27282b;
+      box-shadow: 0 2px 1px rgba(255,255,255,.45) inset, 0 0 0 1px rgba(0,0,0,.25);
+    }
+    .laptop-screen { width: 100%; height: 100%; overflow: hidden; border-radius: 12px 12px 3px 3px; }
+    .camera { position: absolute; z-index: 4; top: 3px; left: 50%; width: 4px; height: 4px; margin-left: -2px; border-radius: 50%; background: #070708; }
+    .laptop-base {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 5.5%;
+      border-radius: 2px 2px 24px 24px;
+      background: linear-gradient(#e8e8e6, #bfc0c0 55%, #9fa0a0);
+      box-shadow: 0 2px 0 rgba(255,255,255,.8) inset, 0 4px 7px rgba(0,0,0,.22);
+    }
+    .laptop-base::after { content: ""; position: absolute; top: 0; left: 42%; width: 16%; height: 38%; border-radius: 0 0 8px 8px; background: #aeb0b0; box-shadow: 0 1px 1px rgba(255,255,255,.5) inset; }
+
+    .iphone {
+      position: absolute;
+      z-index: 5;
+      left: 0;
+      bottom: 0;
+      width: min(19vw, 225px);
+      aspect-ratio: 9 / 19.45;
+      padding: 7px;
+      border-radius: 38px;
+      background: #161719;
+      box-shadow: var(--device-shadow), 0 0 0 1px #4a4b4e, 0 0 0 2px #090a0b;
+    }
+    .iphone::before {
+      content: "";
+      position: absolute;
+      z-index: 10;
+      top: 13px;
+      left: 50%;
+      width: 31%;
+      height: 19px;
+      transform: translateX(-50%);
+      border-radius: 16px;
+      background: #0c0d0e;
+    }
+    .iphone::after {
+      content: "";
+      position: absolute;
+      z-index: 10;
+      bottom: 12px;
+      left: 50%;
+      width: 34%;
+      height: 4px;
+      transform: translateX(-50%);
+      border-radius: 4px;
+      background: rgba(255,255,255,.72);
+      mix-blend-mode: difference;
+    }
+    .iphone-screen { position: relative; width: 100%; height: 100%; overflow: hidden; border-radius: 31px; }
+
+    /* Shared in-product atoms */
+    .app-mark { font-weight: 800; letter-spacing: -.06em; }
+    .avatar { display: grid; place-items: center; width: 25px; height: 25px; border-radius: 50%; font-size: 9px; font-weight: 700; }
+    .tiny-label { font-size: 8px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+    .thought-row { display: flex; gap: 10px; align-items: flex-start; }
+    .thought-row + .thought-row { margin-top: 13px; }
+    .thought-dot { flex: 0 0 auto; width: 6px; height: 6px; margin-top: 6px; border-radius: 50%; }
+    .thought-copy strong { display: block; font-size: 11px; line-height: 1.35; }
+    .thought-copy span { display: block; margin-top: 4px; font-size: 8px; opacity: .5; }
+
+    /* 01 — Editorial */
+    .d1 { --page-bg: #eee8dd; color: #2a2924; font-family: "Avenir Next", Avenir, "Helvetica Neue", sans-serif; }
+    .d1::after { content: ""; position: absolute; right: -8vw; bottom: -25vh; width: 55vw; height: 55vw; border-radius: 50%; border: 1px solid rgba(99,74,47,.12); box-shadow: 0 0 0 70px rgba(99,74,47,.025), 0 0 0 140px rgba(99,74,47,.018); }
+    .d1 h1 { font-family: Iowan Old Style, Baskerville, Georgia, serif; font-weight: 500; letter-spacing: -.05em; }
+    .d1 h1 em { color: #b75432; font-weight: 400; }
+    .editorial-web { display: grid; grid-template-columns: 28% 1fr; height: 100%; background: #f9f6ef; color: #2a2924; }
+    .ed-sidebar { display: flex; flex-direction: column; padding: 5% 8%; border-right: 1px solid #dfd8cc; background: #f1ece3; }
+    .ed-sidebar .app-mark { font-family: Georgia, serif; font-size: 17px; }
+    .ed-nav { margin-top: 24%; }
+    .ed-nav div { padding: 9px 10px; margin: 3px 0; border-radius: 7px; font-size: 9px; color: #756f65; }
+    .ed-nav .selected { background: #dfd7c9; color: #322f2a; font-weight: 700; }
+    .ed-count { float: right; opacity: .5; }
+    .ed-sidebar-foot { margin-top: auto; display: flex; align-items: center; gap: 8px; padding-top: 12px; border-top: 1px solid #ddd5c8; font-size: 8px; }
+    .d1 .avatar { background: #b75432; color: #fff6eb; }
+    .ed-main { padding: 5% 7%; overflow: hidden; }
+    .ed-top { display: flex; align-items: center; justify-content: space-between; color: #7f786e; font-size: 8px; }
+    .ed-date { margin-top: 7%; color: #a0472c; }
+    .ed-main h2 { max-width: 390px; margin: 9px 0 5px; font-family: Iowan Old Style, Baskerville, Georgia, serif; font-size: clamp(18px, 2.1vw, 30px); line-height: 1.05; font-weight: 500; letter-spacing: -.04em; }
+    .ed-sub { font-family: Georgia, serif; color: #777066; font-size: 10px; font-style: italic; }
+    .ed-columns { display: grid; grid-template-columns: 1.1fr .9fr; gap: 8%; margin-top: 6%; }
+    .ed-card { padding: 14px 0; border-top: 1px solid #d9d1c4; }
+    .ed-card.feature { border-top-color: #b75432; }
+    .ed-card p { margin: 7px 0 0; font-family: Georgia, serif; font-size: 10px; line-height: 1.5; }
+    .ed-card .meta { margin-top: 9px; color: #968d80; font-size: 7px; }
+    .ed-prompt { padding: 14px; border: 1px solid #dbd3c5; border-radius: 9px; background: #f1ece3; }
+    .ed-prompt strong { display: block; margin: 8px 0 12px; font-family: Georgia, serif; font-size: 11px; line-height: 1.35; font-weight: 500; }
+    .ed-answer { padding: 8px 10px; border-radius: 6px; background: #f9f6ef; color: #9a9388; font-family: Georgia, serif; font-size: 8px; font-style: italic; }
+    .editorial-phone { display: flex; flex-direction: column; padding: 20% 9% 9%; background: #f8f3ea; color: #2d2b27; }
+    .ed-phone-top { display: flex; align-items: center; justify-content: space-between; font-size: 8px; }
+    .ed-phone-top .app-mark { font-family: Georgia, serif; font-size: 15px; }
+    .ed-day { margin-top: 15%; color: #a0472c; }
+    .editorial-phone h3 { margin: 8px 0 8px; font-family: Iowan Old Style, Georgia, serif; font-size: 24px; line-height: .98; font-weight: 500; letter-spacing: -.05em; }
+    .editorial-phone > p { margin: 0; color: #82796d; font-family: Georgia, serif; font-size: 9px; line-height: 1.45; }
+    .ed-capture { margin-top: auto; padding: 14px; border: 1px solid #dcd3c6; border-radius: 11px; background: #eee7dc; }
+    .ed-capture p { margin: 0 0 16px; font-family: Georgia, serif; font-size: 12px; line-height: 1.35; }
+    .ed-capture-foot { display: flex; align-items: center; justify-content: space-between; color: #8a8175; font-size: 8px; }
+    .ed-send { display: grid; place-items: center; width: 25px; height: 25px; border-radius: 50%; background: #b75432; color: white; font-size: 13px; }
+
+    /* 02 — Nocturne */
+    .d2 { --page-bg: #090d18; color: #f4f5fb; font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+    .d2::before { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 70% 55%, rgba(80, 103, 255, .16), transparent 38%), radial-gradient(circle at 8% 3%, rgba(175, 79, 255, .1), transparent 24%); }
+    .d2 h1 { font-weight: 620; letter-spacing: -.06em; }
+    .d2 h1 span { color: #a6b4ff; }
+    .d2 .laptop-lid { background: #11141d; border-color: #303541; }
+    .nocturne-web { display: grid; grid-template-columns: 22% 1fr; height: 100%; background: #0d1120; color: #f5f6ff; }
+    .no-sidebar { display: flex; flex-direction: column; padding: 6% 8%; background: #0a0d17; border-right: 1px solid #22283a; }
+    .no-logo { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+    .no-orbit { width: 18px; height: 18px; border: 1px solid #8999ff; border-radius: 50%; box-shadow: inset 5px 0 #8999ff; }
+    .no-nav { margin-top: 28%; }
+    .no-nav div { display: flex; align-items: center; gap: 8px; padding: 8px; margin: 3px 0; color: #7c8296; font-size: 8px; }
+    .no-nav div::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: #444b61; }
+    .no-nav .selected { color: #ebeeff; }
+    .no-nav .selected::before { background: #8d9dff; box-shadow: 0 0 10px #8496ff; }
+    .no-meter { margin-top: auto; padding: 12px; border: 1px solid #20263a; border-radius: 10px; background: #101523; }
+    .no-meter strong { display: block; color: #bac4ff; font-size: 8px; }
+    .no-meter span { display: block; margin-top: 5px; color: #646c83; font-size: 7px; }
+    .no-main { position: relative; padding: 5% 6%; overflow: hidden; }
+    .no-top { display: flex; align-items: center; justify-content: space-between; color: #6d748a; font-size: 8px; }
+    .no-ambient { position: absolute; top: 18%; right: 5%; width: 28%; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle at 38% 35%, #d2d7ff 0 2%, #7f90ff 8%, #3f4fad 25%, rgba(41,49,104,.2) 54%, transparent 70%); filter: blur(.3px); opacity: .8; }
+    .no-main h2 { margin: 10% 0 4px; font-size: clamp(18px, 2vw, 28px); letter-spacing: -.05em; font-weight: 600; }
+    .no-main > p { margin: 0; color: #7c849c; font-size: 9px; }
+    .no-stream { position: relative; z-index: 2; width: 64%; margin-top: 7%; }
+    .no-item { display: grid; grid-template-columns: 25px 1fr auto; gap: 10px; align-items: center; padding: 11px 0; border-bottom: 1px solid #20263a; }
+    .no-wave { display: flex; align-items: center; gap: 2px; height: 18px; }
+    .no-wave i { display: block; width: 2px; border-radius: 2px; background: #7f90ff; }
+    .no-wave i:nth-child(1) { height: 5px; } .no-wave i:nth-child(2) { height: 14px; } .no-wave i:nth-child(3) { height: 9px; } .no-wave i:nth-child(4) { height: 17px; } .no-wave i:nth-child(5) { height: 7px; }
+    .no-item strong { display: block; font-size: 9px; font-weight: 550; }
+    .no-item span { display: block; margin-top: 3px; color: #646c83; font-size: 7px; }
+    .no-item time { color: #565e75; font-size: 7px; }
+    .nocturne-phone { display: flex; flex-direction: column; padding: 20% 9% 9%; background: radial-gradient(circle at 50% 42%, #202957, #0c1122 43%, #080b14 70%); color: #f5f6ff; }
+    .no-phone-top { display: flex; align-items: center; justify-content: space-between; font-size: 8px; color: #858da5; }
+    .no-phone-orb { display: grid; place-items: center; width: 110px; height: 110px; margin: 25% auto 0; border-radius: 50%; background: radial-gradient(circle at 37% 32%, #f2f3ff 0 2%, #9dacf8 9%, #5265d2 30%, #28336f 53%, #141a3c 68%); box-shadow: 0 0 45px rgba(104,123,242,.32), 0 0 0 18px rgba(91,109,222,.04); }
+    .no-phone-orb::after { content: ""; width: 76%; height: 76%; border: 1px solid rgba(220,225,255,.25); border-radius: 50%; }
+    .no-listen { margin-top: 18%; text-align: center; }
+    .no-listen strong { display: block; font-size: 13px; font-weight: 520; }
+    .no-listen span { display: block; margin-top: 6px; color: #7f889f; font-size: 8px; }
+    .no-phone-actions { display: flex; align-items: center; justify-content: center; gap: 18px; margin-top: auto; }
+    .no-action { display: grid; place-items: center; width: 33px; height: 33px; border: 1px solid #343d5a; border-radius: 50%; color: #8993ae; font-size: 12px; }
+    .no-action.primary { width: 44px; height: 44px; border: 0; background: #899aff; color: #071021; box-shadow: 0 0 24px rgba(116,136,255,.35); }
+
+    /* 03 — Field Notes */
+    .d3 { --page-bg: #cbd1c0; color: #273027; font-family: ui-monospace, "SFMono-Regular", Menlo, monospace; }
+    .d3::before { content: ""; position: absolute; inset: 0; opacity: .24; background-image: radial-gradient(#55634f .55px, transparent .55px); background-size: 5px 5px; }
+    .d3 h1 { font-family: "Arial Rounded MT Bold", ui-rounded, sans-serif; font-weight: 700; }
+    .d3 h1 span { display: inline-block; padding: .06em .22em .1em; transform: rotate(-2deg); background: #f0b950; color: #2a3128; }
+    .field-web { display: grid; grid-template-columns: 26% 1fr; height: 100%; background: #e5e4d7; color: #293027; }
+    .field-side { display: flex; flex-direction: column; padding: 6% 8%; background: #30382f; color: #edf0df; }
+    .field-logo { font-family: "Arial Rounded MT Bold", sans-serif; font-size: 16px; }
+    .field-logo span { color: #f0b950; }
+    .field-side p { margin: 7px 0 0; color: #aeb7a7; font-size: 7px; line-height: 1.45; }
+    .field-folders { margin-top: 24%; }
+    .field-folder { padding: 9px 8px; border-bottom: 1px dashed #576055; color: #bfc7b6; font-size: 8px; }
+    .field-folder.active { margin: 5px 0; border: 0; border-radius: 3px; background: #f0b950; color: #293027; font-weight: 700; transform: rotate(-1deg); }
+    .field-new { margin-top: auto; padding: 9px; border: 1px dashed #7b8578; text-align: center; font-size: 7px; }
+    .field-main { position: relative; padding: 5% 6%; overflow: hidden; }
+    .field-top { display: flex; align-items: center; justify-content: space-between; font-size: 7px; color: #788074; }
+    .field-main h2 { margin: 8% 0 4px; font-family: "Arial Rounded MT Bold", sans-serif; font-size: clamp(18px, 2.2vw, 31px); letter-spacing: -.04em; }
+    .field-main > p { margin: 0; color: #727a6f; font-size: 8px; }
+    .field-board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 7%; }
+    .field-note { position: relative; min-height: 98px; padding: 14px 12px 12px; box-shadow: 2px 4px 0 rgba(51,58,49,.12); transform: rotate(-1.2deg); }
+    .field-note:nth-child(2) { transform: rotate(1.4deg); background: #e9c2a4; }
+    .field-note:nth-child(3) { transform: rotate(-.4deg); background: #b8d5cc; }
+    .field-note:nth-child(1) { background: #f2d77d; }
+    .field-note::before { content: ""; position: absolute; top: -5px; left: 39%; width: 28%; height: 13px; background: rgba(246,241,219,.6); transform: rotate(2deg); }
+    .field-note .tiny-label { color: #6b6f58; font-size: 6px; }
+    .field-note strong { display: block; margin-top: 9px; font-family: "Arial Rounded MT Bold", sans-serif; font-size: 10px; line-height: 1.25; }
+    .field-note p { margin: 7px 0 0; font-size: 7px; line-height: 1.45; color: #5e665b; }
+    .field-string { margin-top: 7%; padding: 10px 0 0; border-top: 1px dashed #a5a798; color: #73796f; font-size: 7px; }
+    .field-phone { display: flex; flex-direction: column; padding: 20% 9% 9%; background: #e4e4d6; color: #283027; }
+    .field-phone-top { display: flex; align-items: center; justify-content: space-between; font-size: 8px; }
+    .field-phone .app-mark { font-family: "Arial Rounded MT Bold", sans-serif; font-size: 14px; }
+    .field-phone .app-mark span { color: #db9d2f; }
+    .field-phone h3 { margin: 17% 0 5px; font-family: "Arial Rounded MT Bold", sans-serif; font-size: 22px; line-height: 1; letter-spacing: -.05em; }
+    .field-phone > p { margin: 0; color: #777f73; font-size: 8px; line-height: 1.5; }
+    .phone-sticky { position: relative; margin-top: 18%; padding: 18px 15px; background: #f0d274; box-shadow: 2px 4px 0 rgba(54,61,52,.14); transform: rotate(-1.5deg); }
+    .phone-sticky::before { content: ""; position: absolute; top: -6px; left: 36%; width: 31%; height: 14px; background: rgba(247,243,224,.66); }
+    .phone-sticky p { margin: 0; font-family: "Arial Rounded MT Bold", sans-serif; font-size: 12px; line-height: 1.4; }
+    .phone-sticky span { display: block; margin-top: 14px; color: #777052; font-size: 7px; }
+    .field-add { display: flex; align-items: center; justify-content: space-between; margin-top: auto; padding: 10px 12px; border: 1px dashed #989d91; font-size: 8px; }
+    .field-add b { display: grid; place-items: center; width: 25px; height: 25px; border-radius: 50%; background: #30382f; color: #f0b950; font-size: 15px; }
+
+    /* 04 — Precision */
+    .d4 { --page-bg: #e4e6e9; color: #101113; font-family: Arial, Helvetica, sans-serif; }
+    .d4::before { content: ""; position: absolute; inset: 0; background-image: linear-gradient(rgba(17,21,30,.045) 1px, transparent 1px), linear-gradient(90deg, rgba(17,21,30,.045) 1px, transparent 1px); background-size: 44px 44px; }
+    .d4 h1 { font-size: clamp(33px, 4.4vw, 68px); font-weight: 900; letter-spacing: -.075em; text-transform: uppercase; }
+    .d4 h1 span { color: #164ee8; }
+    .precision-web { display: grid; grid-template-rows: 14% 1fr; height: 100%; background: #f7f8fa; color: #0d0f13; }
+    .pr-top { display: grid; grid-template-columns: 20% 1fr auto; align-items: center; padding: 0 3%; border-bottom: 2px solid #0d0f13; }
+    .pr-top .app-mark { font-size: 18px; text-transform: uppercase; }
+    .pr-top nav { display: flex; align-items: center; gap: 20px; font-size: 7px; font-weight: 700; text-transform: uppercase; }
+    .pr-top nav span:first-child { color: #164ee8; }
+    .pr-command { padding: 7px 10px; border: 1px solid #0d0f13; font-size: 7px; font-weight: 700; }
+    .pr-content { display: grid; grid-template-columns: 1.15fr .85fr; overflow: hidden; }
+    .pr-list { padding: 5% 5%; border-right: 1px solid #8d929c; }
+    .pr-heading { display: flex; align-items: flex-end; justify-content: space-between; padding-bottom: 10px; border-bottom: 1px solid #101113; }
+    .pr-heading h2 { margin: 0; font-size: clamp(20px, 2.3vw, 32px); line-height: .95; letter-spacing: -.06em; text-transform: uppercase; }
+    .pr-heading span { font-size: 7px; font-weight: 700; }
+    .pr-row { display: grid; grid-template-columns: 9% 1fr 22%; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #c5c8ce; }
+    .pr-row b { color: #8b9099; font-size: 7px; }
+    .pr-row strong { font-size: 9px; text-transform: uppercase; }
+    .pr-row span { padding: 4px 6px; background: #e3e5e9; font-size: 6px; font-weight: 700; text-transform: uppercase; text-align: center; }
+    .pr-row.active { margin: 0 -5.6%; padding-inline: 5.6%; background: #164ee8; color: white; border: 0; }
+    .pr-row.active b { color: #b9c9ff; }
+    .pr-row.active span { background: #0d0f13; }
+    .pr-inspect { padding: 7% 8%; background: #edeff2; }
+    .pr-inspect .tiny-label { color: #164ee8; }
+    .pr-inspect h3 { margin: 15px 0 9px; font-size: clamp(16px, 1.8vw, 24px); line-height: 1.02; letter-spacing: -.05em; text-transform: uppercase; }
+    .pr-inspect > p { margin: 0; color: #626872; font-size: 8px; line-height: 1.5; }
+    .pr-rule { height: 5px; margin: 18% 0 8%; background: linear-gradient(90deg, #164ee8 58%, #c5c8ce 58%); }
+    .pr-stats { display: flex; justify-content: space-between; font-size: 6px; font-weight: 700; text-transform: uppercase; }
+    .precision-phone { display: flex; flex-direction: column; padding: 19% 8% 9%; background: #f5f6f8; color: #0b0d11; }
+    .pr-phone-top { display: flex; align-items: center; justify-content: space-between; padding-bottom: 10px; border-bottom: 2px solid #0d0f13; }
+    .pr-phone-top .app-mark { font-size: 14px; text-transform: uppercase; }
+    .pr-phone-top span { font-size: 7px; font-weight: 700; }
+    .precision-phone h3 { margin: 18% 0 8px; font-size: 25px; line-height: .92; letter-spacing: -.07em; text-transform: uppercase; }
+    .precision-phone > p { margin: 0; color: #6c7078; font-size: 8px; line-height: 1.45; }
+    .pr-capture-box { margin-top: 17%; padding: 13px; border: 2px solid #0d0f13; background: white; box-shadow: 5px 5px 0 #0d0f13; }
+    .pr-capture-box .tiny-label { color: #164ee8; font-size: 6px; }
+    .pr-capture-box p { margin: 12px 0 20px; font-size: 11px; line-height: 1.35; font-weight: 700; text-transform: uppercase; }
+    .pr-capture-foot { display: flex; align-items: center; justify-content: space-between; font-size: 7px; font-weight: 700; }
+    .pr-submit { padding: 7px 10px; background: #164ee8; color: white; }
+    .pr-index { margin-top: auto; padding-top: 9px; border-top: 1px solid #0d0f13; font-size: 7px; font-weight: 700; }
+
+    /* 05 — Aurora */
+    .d5 { --page-bg: #e9e4f0; color: #231d2f; font-family: "Helvetica Neue", Arial, sans-serif; }
+    .d5::before { content: ""; position: absolute; inset: -25%; background: radial-gradient(circle at 35% 25%, rgba(255,255,255,.9), transparent 24%), radial-gradient(circle at 70% 62%, rgba(190,157,255,.48), transparent 25%), radial-gradient(circle at 42% 76%, rgba(138,214,197,.42), transparent 23%), radial-gradient(circle at 77% 16%, rgba(255,185,167,.38), transparent 22%); filter: blur(45px); }
+    .d5 h1 { font-weight: 450; letter-spacing: -.065em; }
+    .d5 h1 span { font-family: Georgia, serif; font-style: italic; font-weight: 400; color: #7456ad; }
+    .d5 .laptop-lid { background: rgba(28,24,37,.88); }
+    .aurora-web { display: grid; grid-template-columns: 25% 1fr; height: 100%; background: linear-gradient(135deg, #f7f3fa, #e9e5f2 60%, #e1ece8); color: #271f34; }
+    .au-side { display: flex; flex-direction: column; padding: 6% 8%; border-right: 1px solid rgba(72,52,98,.12); background: rgba(255,255,255,.32); backdrop-filter: blur(18px); }
+    .au-brand { font-family: Georgia, serif; font-size: 18px; font-style: italic; }
+    .au-nav { margin-top: 24%; }
+    .au-nav div { padding: 9px 10px; margin: 4px 0; border-radius: 18px; color: #867d91; font-size: 8px; }
+    .au-nav .selected { background: rgba(255,255,255,.72); color: #493765; box-shadow: 0 6px 20px rgba(66,45,92,.08); }
+    .au-profile { display: flex; align-items: center; gap: 8px; margin-top: auto; color: #736a80; font-size: 7px; }
+    .d5 .avatar { background: linear-gradient(135deg, #977ac6, #83bfb0); color: white; }
+    .au-main { position: relative; padding: 5% 6%; overflow: hidden; }
+    .au-main::before { content: ""; position: absolute; top: 2%; right: -6%; width: 46%; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.96), rgba(202,178,240,.5) 34%, rgba(133,204,188,.32) 61%, transparent 70%); filter: blur(8px); }
+    .au-top { position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; color: #8a8095; font-size: 8px; }
+    .au-main h2 { position: relative; z-index: 2; margin: 9% 0 5px; font-size: clamp(19px, 2.2vw, 31px); font-weight: 430; letter-spacing: -.055em; }
+    .au-main > p { position: relative; z-index: 2; margin: 0; color: #867b90; font-family: Georgia, serif; font-size: 9px; font-style: italic; }
+    .au-cards { position: relative; z-index: 2; display: grid; grid-template-columns: 1.1fr .9fr; gap: 14px; margin-top: 7%; }
+    .au-card { padding: 16px; border: 1px solid rgba(91,69,119,.11); border-radius: 15px; background: rgba(255,255,255,.58); box-shadow: 0 15px 38px rgba(74,53,99,.08); backdrop-filter: blur(14px); }
+    .au-card .tiny-label { color: #8065ae; font-size: 6px; }
+    .au-card h3 { margin: 10px 0 7px; font-size: 11px; line-height: 1.25; font-weight: 500; }
+    .au-card p { margin: 0; color: #877d91; font-family: Georgia, serif; font-size: 8px; line-height: 1.45; }
+    .au-thread { margin-top: 11px; padding-top: 9px; border-top: 1px solid rgba(91,69,119,.12); color: #765d9d; font-size: 7px; }
+    .aurora-phone { display: flex; flex-direction: column; padding: 20% 9% 9%; background: radial-gradient(circle at 75% 33%, rgba(202,176,239,.8), transparent 32%), radial-gradient(circle at 20% 75%, rgba(127,199,182,.6), transparent 35%), #f3eff6; color: #2b2238; }
+    .au-phone-top { display: flex; align-items: center; justify-content: space-between; color: #81758d; font-size: 8px; }
+    .au-phone-top .app-mark { font-family: Georgia, serif; font-size: 15px; font-style: italic; font-weight: 500; }
+    .au-greeting { margin-top: 18%; }
+    .au-greeting span { font-size: 8px; color: #7f728c; }
+    .au-greeting h3 { margin: 6px 0 0; font-size: 23px; line-height: 1; letter-spacing: -.06em; font-weight: 450; }
+    .au-glass { margin-top: 17%; padding: 16px 14px; border: 1px solid rgba(91,69,119,.12); border-radius: 18px; background: rgba(255,255,255,.56); box-shadow: 0 18px 40px rgba(73,52,100,.12); backdrop-filter: blur(18px); }
+    .au-glass .tiny-label { color: #7c61a7; font-size: 6px; }
+    .au-glass p { margin: 10px 0 18px; font-family: Georgia, serif; font-size: 11px; line-height: 1.4; }
+    .au-glass-foot { display: flex; align-items: center; justify-content: space-between; color: #82778c; font-size: 7px; }
+    .au-bloom { display: grid; place-items: center; width: 29px; height: 29px; border-radius: 50%; background: linear-gradient(135deg, #9d7bd1, #80c8b6); color: white; box-shadow: 0 6px 14px rgba(107,82,148,.2); }
+    .au-dots { display: flex; justify-content: center; gap: 5px; margin-top: auto; }
+    .au-dots i { width: 5px; height: 5px; border-radius: 50%; background: rgba(73,57,91,.22); }
+    .au-dots i:first-child { width: 15px; border-radius: 5px; background: #8d72b5; }
+
+    /* Gallery selector */
+    .selector {
+      position: fixed;
+      z-index: 20;
+      right: clamp(16px, 2.5vw, 36px);
+      bottom: clamp(16px, 2.5vw, 30px);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px;
+      border: 1px solid rgba(255,255,255,.45);
+      border-radius: 999px;
+      background: rgba(25, 25, 28, .8);
+      box-shadow: 0 10px 30px rgba(0,0,0,.18);
+      backdrop-filter: blur(14px);
+    }
+    .selector button {
+      display: grid;
+      place-items: center;
+      width: 29px;
+      height: 29px;
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
+      background: transparent;
+      color: rgba(255,255,255,.48);
+      cursor: pointer;
+      font-size: 10px;
+      font-weight: 700;
+      transition: background .2s ease, color .2s ease, transform .2s ease;
+    }
+    .selector button:hover { color: white; background: rgba(255,255,255,.1); }
+    .selector button:focus-visible { outline: 2px solid white; outline-offset: 2px; }
+    .selector button.is-active { background: #fff; color: #1e1e21; }
+    .selector .next { margin-left: 2px; border-left: 1px solid rgba(255,255,255,.15); border-radius: 0 50% 50% 0; }
+    .page-indicator { position: fixed; z-index: 15; left: clamp(22px, 4.5vw, 72px); bottom: 30px; font-size: 9px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; opacity: .35; }
+
+    @media (max-width: 900px) {
+      body { overflow: auto; }
+      .gallery { min-height: 100svh; height: auto; }
+      .design-page { position: relative; display: none; min-height: 100svh; height: auto; overflow: hidden; }
+      .design-page.is-active { display: grid; }
+      .device-stage { min-height: 650px; }
+      .device-pair { width: 100%; height: 610px; }
+      .laptop { top: 3%; right: -17%; width: 94vw; }
+      .iphone { left: 4%; width: 190px; }
+    }
+    @media (max-width: 600px) {
+      .design-page { padding-inline: 18px; padding-bottom: 82px; }
+      .page-head { gap: 12px; }
+      .page-title > p { max-width: 90%; }
+      .direction-no { display: none; }
+      .device-stage { min-height: 570px; }
+      .device-pair { height: 550px; }
+      .laptop { top: 2%; right: -49%; width: 148vw; }
+      .iphone { left: 1%; width: 174px; }
+      .page-indicator { display: none; }
+      .selector { right: 13px; bottom: 13px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .design-page, .selector button { transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="gallery" aria-label="Five visual directions for drft">
+    <section class="design-page d1 is-active" data-title="Quiet Editorial" aria-hidden="false">
+      <header class="page-head">
+        <div class="page-title">
+          <div class="eyebrow">Direction one · warm &amp; considered</div>
+          <h1>Quiet <em>Editorial</em></h1>
+          <p>Thoughts feel like material worth publishing. Warm paper, bookish type, and a restrained rust accent turn reflection into a calm daily ritual.</p>
+        </div>
+        <div class="direction-no">DRFT / 01</div>
+      </header>
+      <div class="device-stage">
+        <div class="device-pair">
+          <div class="laptop" aria-label="Quiet Editorial web interface">
+            <div class="laptop-lid"><i class="camera"></i><div class="laptop-screen editorial-web">
+              <aside class="ed-sidebar">
+                <div class="app-mark">drft.</div>
+                <div class="ed-nav">
+                  <div class="selected">Today <span class="ed-count">4</span></div>
+                  <div>All thoughts <span class="ed-count">32</span></div>
+                  <div>Connections</div>
+                  <div>Archive</div>
+                </div>
+                <div class="ed-sidebar-foot"><div class="avatar">S</div><span>Srinivas</span></div>
+              </aside>
+              <div class="ed-main">
+                <div class="ed-top"><span>Friday, July 18</span><span>Search&nbsp;&nbsp;⌘ K</span></div>
+                <div class="tiny-label ed-date">Your return loop</div>
+                <h2>Four thoughts are ready to be revisited.</h2>
+                <div class="ed-sub">A little attention may be enough to move one forward.</div>
+                <div class="ed-columns">
+                  <div>
+                    <article class="ed-card feature">
+                      <div class="tiny-label">Resurfaced · 6 days ago</div>
+                      <p>What if a note could ask for the one missing detail that would make it useful?</p>
+                      <div class="meta">Product · Connected to 3 thoughts</div>
+                    </article>
+                    <article class="ed-card">
+                      <div class="tiny-label">Yesterday · 10:42 PM</div>
+                      <p>The smallest useful version should feel like a conversation, not a filing cabinet.</p>
+                      <div class="meta">Principles · 2 min read</div>
+                    </article>
+                  </div>
+                  <aside class="ed-prompt">
+                    <div class="tiny-label">A question for you</div>
+                    <strong>When you say “useful,” what changed for the person?</strong>
+                    <div class="ed-answer">Start writing a response…</div>
+                  </aside>
+                </div>
+              </div>
+            </div></div><div class="laptop-base"></div>
+          </div>
+          <div class="iphone" aria-label="Quiet Editorial iPhone interface"><div class="iphone-screen editorial-phone">
+            <div class="ed-phone-top"><div class="app-mark">drft.</div><span>•••</span></div>
+            <div class="tiny-label ed-day">Friday evening</div>
+            <h3>What’s on your mind?</h3>
+            <p>No folders. No formatting.<br />Just leave the thought here.</p>
+            <div class="ed-capture">
+              <p>Maybe unfinished ideas need a place that feels unfinished too…</p>
+              <div class="ed-capture-foot"><span>⌁ Dictate</span><b class="ed-send">↑</b></div>
+            </div>
+          </div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="design-page d2" data-title="Nocturne Signal" aria-hidden="true">
+      <header class="page-head">
+        <div class="page-title">
+          <div class="eyebrow">Direction two · immersive &amp; focused</div>
+          <h1>Nocturne <span>Signal</span></h1>
+          <p>A dark, cinematic space for late-night sparks. Voice-first capture and glowing connections make the product feel quietly intelligent, never busy.</p>
+        </div>
+        <div class="direction-no">DRFT / 02</div>
+      </header>
+      <div class="device-stage"><div class="device-pair">
+        <div class="laptop" aria-label="Nocturne Signal web interface">
+          <div class="laptop-lid"><i class="camera"></i><div class="laptop-screen nocturne-web">
+            <aside class="no-sidebar">
+              <div class="no-logo"><i class="no-orbit"></i><b>drft</b></div>
+              <div class="no-nav"><div class="selected">Signal</div><div>Thoughts</div><div>Constellations</div><div>Sessions</div></div>
+              <div class="no-meter"><strong>7 ideas in motion</strong><span>Your thinking has been active this week.</span></div>
+            </aside>
+            <div class="no-main">
+              <div class="no-top"><span>YOUR SIGNAL · LIVE</span><span>⌕&nbsp;&nbsp;&nbsp;⌘ K</span></div>
+              <i class="no-ambient"></i>
+              <h2>Listen for what keeps returning.</h2>
+              <p>Three themes are emerging from your recent captures.</p>
+              <div class="no-stream">
+                <div class="no-item"><div class="no-wave"><i></i><i></i><i></i><i></i><i></i></div><div><strong>Tools for unfinished work</strong><span>5 connected thoughts · growing</span></div><time>NOW</time></div>
+                <div class="no-item"><div class="no-wave"><i></i><i></i><i></i><i></i><i></i></div><div><strong>Designing the return loop</strong><span>3 connected thoughts · new question</span></div><time>2D</time></div>
+                <div class="no-item"><div class="no-wave"><i></i><i></i><i></i><i></i><i></i></div><div><strong>Reducing capture friction</strong><span>8 connected thoughts · active</span></div><time>6D</time></div>
+              </div>
+            </div>
+          </div></div><div class="laptop-base"></div>
+        </div>
+        <div class="iphone" aria-label="Nocturne Signal iPhone interface"><div class="iphone-screen nocturne-phone">
+          <div class="no-phone-top"><b>drft</b><span>00:18</span></div>
+          <div class="no-phone-orb"></div>
+          <div class="no-listen"><strong>I’m listening.</strong><span>Speak the thought before it moves on.</span></div>
+          <div class="no-phone-actions"><div class="no-action">×</div><div class="no-action primary">■</div><div class="no-action">⌨</div></div>
+        </div></div>
+      </div></div>
+    </section>
+
+    <section class="design-page d3" data-title="Field Notes" aria-hidden="true">
+      <header class="page-head">
+        <div class="page-title">
+          <div class="eyebrow">Direction three · tactile &amp; human</div>
+          <h1>Field <span>Notes</span></h1>
+          <p>A friendly digital workbench with the looseness of paper. Ideas can stay messy, move around, and gather context without feeling formally “managed.”</p>
+        </div>
+        <div class="direction-no">DRFT / 03</div>
+      </header>
+      <div class="device-stage"><div class="device-pair">
+        <div class="laptop" aria-label="Field Notes web interface">
+          <div class="laptop-lid"><i class="camera"></i><div class="laptop-screen field-web">
+            <aside class="field-side">
+              <div class="field-logo">drft<span>✦</span></div>
+              <p>A workbench for things<br />that aren’t anything yet.</p>
+              <div class="field-folders"><div class="field-folder active">TODAY’S DESK — 06</div><div class="field-folder">LOOSE ENDS — 12</div><div class="field-folder">TAKING SHAPE — 04</div><div class="field-folder">PUT AWAY — 18</div></div>
+              <div class="field-new">＋ PIN A NEW THOUGHT</div>
+            </aside>
+            <div class="field-main">
+              <div class="field-top"><span>FRI 18 JUL · YOUR DESK</span><span>SHUFFLE ↻</span></div>
+              <h2>See what sticks.</h2>
+              <p>A few loose thoughts have started talking to each other.</p>
+              <div class="field-board">
+                <article class="field-note"><div class="tiny-label">FROM TUESDAY</div><strong>What if notes could expire unless you chose to keep them?</strong><p>Maybe forgetting is part of the product.</p></article>
+                <article class="field-note"><div class="tiny-label">A QUESTION</div><strong>What makes an idea feel ready?</strong><p>Is it clarity, momentum, or another person?</p></article>
+                <article class="field-note"><div class="tiny-label">JUST NOW</div><strong>The interface should leave room for ambiguity.</strong><p>Don’t rush to name the thing.</p></article>
+              </div>
+              <div class="field-string">↳ THREAD FOUND: These may all be about giving thoughts a natural life cycle.</div>
+            </div>
+          </div></div><div class="laptop-base"></div>
+        </div>
+        <div class="iphone" aria-label="Field Notes iPhone interface"><div class="iphone-screen field-phone">
+          <div class="field-phone-top"><div class="app-mark">drft<span>✦</span></div><span>FRI 18</span></div>
+          <h3>Catch it<br />while it’s here.</h3>
+          <p>Messy is welcome.<br />You can make sense of it later.</p>
+          <div class="phone-sticky"><p>The best ideas might need gentle neglect, not organization.</p><span>EDITING · JUST NOW</span></div>
+          <div class="field-add"><span>ADD TO TODAY’S DESK</span><b>↑</b></div>
+        </div></div>
+      </div></div>
+    </section>
+
+    <section class="design-page d4" data-title="Precision Index" aria-hidden="true">
+      <header class="page-head">
+        <div class="page-title">
+          <div class="eyebrow">Direction four · graphic &amp; decisive</div>
+          <h1>Precision <span>Index</span></h1>
+          <p>A crisp, high-contrast system for people who think by sorting and sharpening. Strong typography and one electric blue make every action unambiguous.</p>
+        </div>
+        <div class="direction-no">DRFT / 04</div>
+      </header>
+      <div class="device-stage"><div class="device-pair">
+        <div class="laptop" aria-label="Precision Index web interface">
+          <div class="laptop-lid"><i class="camera"></i><div class="laptop-screen precision-web">
+            <header class="pr-top"><div class="app-mark">drft/</div><nav><span>Index</span><span>Threads</span><span>Review</span></nav><div class="pr-command">⌘ SEARCH</div></header>
+            <div class="pr-content">
+              <div class="pr-list">
+                <div class="pr-heading"><h2>Active<br />Thoughts</h2><span>32 TOTAL / 06 OPEN</span></div>
+                <div class="pr-row"><b>001</b><strong>Design for return, not storage</strong><span>PRINCIPLE</span></div>
+                <div class="pr-row active"><b>002</b><strong>The middle state is the product</strong><span>CORE IDEA</span></div>
+                <div class="pr-row"><b>003</b><strong>Capture must be structureless</strong><span>PRODUCT</span></div>
+                <div class="pr-row"><b>004</b><strong>Questions create momentum</strong><span>BEHAVIOR</span></div>
+              </div>
+              <aside class="pr-inspect">
+                <div class="tiny-label">002 / INSPECTING</div>
+                <h3>The middle state is the product.</h3>
+                <p>Notes apps capture. Task managers execute. Drft is for the uncertain stretch where a fragment becomes something worth acting on.</p>
+                <div class="pr-rule"></div>
+                <div class="pr-stats"><span>5 connections</span><span>12 days active</span></div>
+              </aside>
+            </div>
+          </div></div><div class="laptop-base"></div>
+        </div>
+        <div class="iphone" aria-label="Precision Index iPhone interface"><div class="iphone-screen precision-phone">
+          <div class="pr-phone-top"><div class="app-mark">drft/</div><span>NEW / 033</span></div>
+          <h3>Record<br />the signal.</h3>
+          <p>One thought. No structure.<br />We’ll connect it later.</p>
+          <div class="pr-capture-box"><div class="tiny-label">INPUT / TEXT</div><p>The tool should return with a better question.</p><div class="pr-capture-foot"><span>42 CHAR</span><b class="pr-submit">SAVE ↑</b></div></div>
+          <div class="pr-index">INDEX AUTO-ASSIGNED / 033</div>
+        </div></div>
+      </div></div>
+    </section>
+
+    <section class="design-page d5" data-title="Aurora Mindspace" aria-hidden="true">
+      <header class="page-head">
+        <div class="page-title">
+          <div class="eyebrow">Direction five · soft &amp; intelligent</div>
+          <h1>Aurora <span>Mindspace</span></h1>
+          <p>An ambient, optimistic thinking environment. Translucent layers and gentle color make AI feel like a presence in the room—not another chat box.</p>
+        </div>
+        <div class="direction-no">DRFT / 05</div>
+      </header>
+      <div class="device-stage"><div class="device-pair">
+        <div class="laptop" aria-label="Aurora Mindspace web interface">
+          <div class="laptop-lid"><i class="camera"></i><div class="laptop-screen aurora-web">
+            <aside class="au-side">
+              <div class="au-brand">drft</div>
+              <div class="au-nav"><div class="selected">✦ For you</div><div>◦ All thoughts</div><div>⌁ Connections</div><div>○ Quiet archive</div></div>
+              <div class="au-profile"><div class="avatar">S</div><span>Your space is in sync</span></div>
+            </aside>
+            <div class="au-main">
+              <div class="au-top"><span>GOOD EVENING, SRINIVAS</span><span>Search &nbsp;⌘ K</span></div>
+              <h2>Let’s follow what has energy.</h2>
+              <p>Two of your recent thoughts are beginning to converge.</p>
+              <div class="au-cards">
+                <article class="au-card"><div class="tiny-label">An emerging thread</div><h3>Gentler tools for unfinished work</h3><p>You’ve returned to this idea five times from three different angles.</p><div class="au-thread">Explore the connection →</div></article>
+                <article class="au-card"><div class="tiny-label">A thought to revisit</div><h3>“The prompt should feel like an invitation.”</h3><p>Captured nine days ago.</p><div class="au-thread">Open thought →</div></article>
+              </div>
+            </div>
+          </div></div><div class="laptop-base"></div>
+        </div>
+        <div class="iphone" aria-label="Aurora Mindspace iPhone interface"><div class="iphone-screen aurora-phone">
+          <div class="au-phone-top"><div class="app-mark">drft</div><span>•••</span></div>
+          <div class="au-greeting"><span>A small space to begin</span><h3>Leave a thought<br />with me.</h3></div>
+          <div class="au-glass"><div class="tiny-label">New thought</div><p>I keep thinking about how interfaces can make room for uncertainty…</p><div class="au-glass-foot"><span>⌁ Speak instead</span><b class="au-bloom">↑</b></div></div>
+          <div class="au-dots"><i></i><i></i><i></i></div>
+        </div></div>
+      </div></div>
+    </section>
+  </main>
+
+  <div class="page-indicator" aria-live="polite">01 / Quiet Editorial</div>
+  <nav class="selector" aria-label="Choose a design direction">
+    <button class="is-active" type="button" data-page="0" aria-label="Show design 1" aria-current="page">1</button>
+    <button type="button" data-page="1" aria-label="Show design 2">2</button>
+    <button type="button" data-page="2" aria-label="Show design 3">3</button>
+    <button type="button" data-page="3" aria-label="Show design 4">4</button>
+    <button type="button" data-page="4" aria-label="Show design 5">5</button>
+    <button class="next" type="button" aria-label="Show next design">→</button>
+  </nav>
+
+  <script>
+    (() => {
+      const pages = [...document.querySelectorAll('.design-page')];
+      const numberedButtons = [...document.querySelectorAll('[data-page]')];
+      const nextButton = document.querySelector('.selector .next');
+      const indicator = document.querySelector('.page-indicator');
+      let current = 0;
+
+      function showPage(index) {
+        current = (index + pages.length) % pages.length;
+        pages.forEach((page, pageIndex) => {
+          const active = pageIndex === current;
+          page.classList.toggle('is-active', active);
+          page.setAttribute('aria-hidden', String(!active));
+        });
+        numberedButtons.forEach((button, buttonIndex) => {
+          const active = buttonIndex === current;
+          button.classList.toggle('is-active', active);
+          if (active) button.setAttribute('aria-current', 'page');
+          else button.removeAttribute('aria-current');
+        });
+        const number = String(current + 1).padStart(2, '0');
+        indicator.textContent = `${number} / ${pages[current].dataset.title}`;
+        document.title = `drft — ${pages[current].dataset.title}`;
+      }
+
+      numberedButtons.forEach((button) => {
+        button.addEventListener('click', () => showPage(Number(button.dataset.page)));
+      });
+      nextButton.addEventListener('click', () => showPage(current + 1));
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'ArrowRight' || event.key === 'PageDown') showPage(current + 1);
+        if (event.key === 'ArrowLeft' || event.key === 'PageUp') showPage(current - 1);
+        if (/^[1-5]$/.test(event.key)) showPage(Number(event.key) - 1);
+      });
+    })();
+  </script>
+</body>
+</html>
