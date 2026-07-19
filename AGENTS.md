@@ -4,14 +4,17 @@ A space for unfinished thoughts — instant capture on iOS, an AI thinking-partn
 
 - `apps/web` — Vite + React + TypeScript SPA (bun)
 - `apps/ios` — native Swift/SwiftUI app (planned, outside the Bun workspace)
-- `packages/backend` — Convex backend (planned)
+- `packages/backend` — Convex backend (schema, capture mutation, Clerk auth config)
 - `docs/overview.html` — product & tech overview
 - `docs/experience.html` — the experience: moment-by-moment product spec (capture rules, return loop, partner contract, lifecycle)
 - `docs/design.html` — the design: "Stillness" (light + dark)
 
 ## Commands
 
-From `apps/web`: `bun dev` · `bun run build` · `bun run lint`
+From `apps/web`: `bun dev` · `bun run build` · `bun run lint` · `bun run typecheck`
+From `packages/backend`: `bun run dev` (convex dev) · `bun run typecheck`
+
+Web env lives in `apps/web/.env.local` (see `.env.example`): `VITE_CONVEX_URL`, `VITE_CLERK_PUBLISHABLE_KEY`. The Convex deployment needs `CLERK_JWT_ISSUER_DOMAIN` set (Clerk JWT template named `convex`).
 
 ## Conventions
 
