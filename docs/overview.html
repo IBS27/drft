@@ -243,7 +243,7 @@
     <tr>
       <td>Backend</td>
       <td>Convex</td>
-      <td>Database, built-in <strong>vector search</strong> (related thoughts), <strong>scheduled functions</strong> (resurfacing), and actions for all LLM calls. Official Swift client (beta).</td>
+      <td>Database, built-in <strong>vector search</strong> (related thoughts), <strong>scheduled functions</strong> (resurfacing), and actions for all LLM calls. Official Swift client.</td>
     </tr>
     <tr>
       <td>Auth</td>
@@ -278,7 +278,7 @@
   </div>
 
   <div class="callout">
-    <strong>Biggest stack risk:</strong> the Swift ↔ Convex/Clerk edge — both SDKs are younger than their JS counterparts. Worth a quick spike before committing.
+    <strong>Swift ↔ Convex/Clerk edge — resolved:</strong> Clerk ships an official Convex integration for Swift (<code>clerk-convex-swift</code>, Feb 2026) with a drop-in <code>ClerkConvexAuthProvider</code> that syncs sessions and tokens automatically. The glue library is young (v0.1.0), so when iOS work starts, sanity-check that sign-in plus an authenticated mutation survives a token refresh.
   </div>
 </section>
 
