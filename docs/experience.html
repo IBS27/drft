@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>drft — The Experience</title>
+<style>
+  :root {
+    --bg: #faf9f7;
+    --surface: #ffffff;
+    --ink: #1a1a1a;
+    --ink-soft: #55524c;
+    --ink-faint: #8a867e;
+    --accent: #b4540a;
+    --accent-soft: #fdf0e4;
+    --border: #e7e4de;
+    --code-bg: #f4f2ee;
+    --mono: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141311;
+      --surface: #1d1c19;
+      --ink: #ece9e3;
+      --ink-soft: #b5b0a6;
+      --ink-faint: #7d786e;
+      --accent: #e8965a;
+      --accent-soft: #2b2118;
+      --border: #2e2c27;
+      --code-bg: #232119;
+    }
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.65;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 780px; margin: 0 auto; padding: 4rem 1.5rem 6rem; }
+
+  header { margin-bottom: 4rem; }
+  .kicker {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.75rem;
+  }
+  h1 { font-size: 2.4rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1.15; }
+  .tagline { margin-top: 0.75rem; font-size: 1.15rem; color: var(--ink-soft); max-width: 34rem; }
+
+  section { margin-bottom: 3.5rem; }
+  h2 {
+    font-size: 1.35rem;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+    margin-bottom: 1.1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  h2 .num {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--ink-faint);
+    margin-right: 0.6rem;
+    font-weight: 400;
+  }
+  h3 { font-size: 1rem; font-weight: 650; margin: 1.4rem 0 0.4rem; }
+  p { margin-bottom: 0.9rem; color: var(--ink-soft); }
+  a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+  p strong, li strong { color: var(--ink); font-weight: 600; }
+  ul { list-style: none; }
+  li { padding-left: 1.2rem; position: relative; margin-bottom: 0.5rem; color: var(--ink-soft); }
+  li::before { content: "–"; position: absolute; left: 0; color: var(--accent); }
+  code {
+    font-family: var(--mono);
+    font-size: 0.85em;
+    background: var(--code-bg);
+    padding: 0.1em 0.4em;
+    border-radius: 4px;
+  }
+
+  .trio { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin: 1.25rem 0; }
+  @media (max-width: 640px) { .trio { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.25rem 1.4rem;
+  }
+  .card .label {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+  }
+  .card h3 { margin: 0 0 0.4rem; }
+  .card p { margin: 0; font-size: 0.95rem; }
+
+  .callout {
+    background: var(--accent-soft);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    padding: 1rem 1.25rem;
+    margin: 1.25rem 0;
+    font-size: 0.95rem;
+    color: var(--ink-soft);
+  }
+  .callout strong { color: var(--ink); }
+
+  .scene {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.25rem 1.4rem;
+    margin: 1.25rem 0;
+    font-size: 0.95rem;
+  }
+  .scene .who {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0.75rem 0 0.15rem;
+  }
+  .scene .who:first-child { margin-top: 0; }
+  .scene p { margin-bottom: 0; }
+
+  table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.95rem; }
+  th {
+    text-align: left;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 500;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  td { padding: 0.65rem 0.75rem; border-bottom: 1px solid var(--border); vertical-align: top; color: var(--ink-soft); }
+  td:first-child { color: var(--ink); font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+
+  footer {
+    margin-top: 4rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.85rem;
+    color: var(--ink-faint);
+    font-family: var(--mono);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="kicker">The Experience</div>
+  <h1>drft</h1>
+  <p class="tagline">What exactly happens, moment by moment — from the second a thought occurs to the day you set it down.</p>
+</header>
+
+<!-- ============ 1. THREE MOMENTS ============ -->
+<section>
+  <h2><span class="num">01</span>Three Moments</h2>
+  <p>The whole product is three moments, each with its own device, pace, and rules. Everything else — schema, AI, push — exists to serve one of these.</p>
+
+  <div class="trio">
+    <div class="card">
+      <div class="label">Seconds · iPhone</div>
+      <h3>Capture</h3>
+      <p>A thought occurs at the worst possible time. You get it out of your head and back to your life in under ten seconds.</p>
+    </div>
+    <div class="card">
+      <div class="label">One breath · Push</div>
+      <h3>Return</h3>
+      <p>Once a day, one old thought finds you. Reading the notification is the whole interaction — it replants the thought and asks nothing.</p>
+    </div>
+    <div class="card">
+      <div class="label">Minutes · Web</div>
+      <h3>Develop</h3>
+      <p>When you choose to sit down, questions are already waiting. You think out loud with a partner until you feel like stopping.</p>
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>The division of labor:</strong> the phone plants seeds (in and out), the notification waters them, the web is where you sit with them. No moment ever demands the next one. drft never says "you have 12 unprocessed thoughts."
+  </div>
+</section>
+
+<!-- ============ 2. CAPTURE ============ -->
+<section>
+  <h2><span class="num">02</span>Capture — iOS, capture only</h2>
+
+  <p>You're mid-walk and think: <em>cities feel more creative because collisions are free.</em> You tap the lock-screen widget.</p>
+
+  <h3>What you see</h3>
+  <ul>
+    <li>One screen: an empty text field with the keyboard already up, a <strong>speak</strong> button, a <strong>keep</strong> button. Nothing else.</li>
+    <li>You type or dictate the fragment exactly as it came — no title, no tags, no folder, no "where should this go?"</li>
+    <li>Tap <strong>keep</strong>. A single vermilion dot acknowledges it, the screen dismisses itself. Done.</li>
+  </ul>
+
+  <h3>What you don't see</h3>
+  <p>The mutation lands the raw text instantly, then an async action embeds it, searches for resonant older thoughts, and drafts one or two questions from the partner. All of it stays silent. <strong>The partner is prepared, but waits</strong> — nothing notifies, nothing replies, capture never becomes the start of a conversation you didn't ask for.</p>
+
+  <div class="callout">
+    <strong>iOS is deliberately capture-only.</strong> No list, no reading, no replies on the phone. The app is an inbox slot: widget, dictation, keep, gone. This keeps the iOS surface tiny (fast to ship, phase 4) and protects the product's rhythm — development is a sitting-down activity, not a standing-in-line one.
+  </div>
+
+  <h3>Rules of capture</h3>
+  <ul>
+    <li><strong>Capture must never fail visibly.</strong> If the network is down, the fragment is queued on-device and the dot still confirms. (Queue implementation can come later; the promise is day one.)</li>
+    <li><strong>Capture must never ask a question.</strong> Any decision — even one tap of choice — is friction that loses the fleeting ones.</li>
+    <li><strong>Verbatim in.</strong> The AI never rewrites, titles, or "cleans up" a fragment. Your words are the record.</li>
+  </ul>
+</section>
+
+<!-- ============ 3. RETURN ============ -->
+<section>
+  <h2><span class="num">03</span>Return — one thought a day</h2>
+
+  <p>At a time you chose once in settings — say 8:30, with coffee — one push arrives:</p>
+
+  <div class="scene">
+    <div class="who">drft · 8:30</div>
+    <p><strong>"recipes as version control — forks &amp; merges"</strong> — you kept this two weeks ago. Is a family recipe the trunk, or just somebody's fork that won?</p>
+  </div>
+
+  <p><strong>Reading it is the whole interaction.</strong> The notification carries the thought plus the partner's question — it replants the idea in your head and asks for nothing. Maybe it dissolves into your morning. Maybe it itches all day and you open the workspace that evening. Both are success; the loop's job is re-exposure, not clicks.</p>
+
+  <h3>How the day's thought is chosen</h3>
+  <ul>
+    <li><strong>Never the newest.</strong> Fresh thoughts don't need help returning; the loop exists for week-old and month-old ones.</li>
+    <li><strong>Prefer readiness over recency:</strong> a thought with an unseen question waiting, a new resonance with something recently captured, or a long-dormant fragment that keeps almost-connecting.</li>
+    <li><strong>One per day, maximum.</strong> Scarcity is what makes it a ritual instead of noise. If nothing has genuinely accumulated (early days, thin collection), drft stays silent — silence beats filler.</li>
+    <li><strong>Resting thoughts are exempt.</strong> Once you set a thought down, it is never pushed at you again.</li>
+  </ul>
+
+  <div class="callout">
+    <strong>Why this can't be an afterthought:</strong> the success metric is "thoughts came back to me and became clearer." This daily push is the only mechanism that runs without the user doing anything. It's the product's heartbeat — which is why it ships last (phase 5), once weeks of real captures exist to tune it against.
+  </div>
+</section>
+
+<!-- ============ 4. DEVELOP ============ -->
+<section>
+  <h2><span class="num">04</span>Develop — the web workspace</h2>
+
+  <p>That evening you open drft on your laptop. This is the only surface with any density, and it's still one room:</p>
+
+  <h3>The collection</h3>
+  <ul>
+    <li>Thoughts listed by time — <strong>today / this week / earlier</strong> — first line verbatim, nothing more. No grid of cards, no previews, no counts nagging you.</li>
+    <li>A thought with something waiting for you — an unseen question, a fresh connection — carries the <strong>vermilion dot</strong>. The dot marks <em>now</em>: it is the only color in the room and the only suggestion of where to look.</li>
+    <li>If today's resurfaced thought exists, it sits at the top, held slightly apart.</li>
+  </ul>
+
+  <h3>The thought view</h3>
+  <p>You click the recipes fragment. Your words sit large at the top of the page, exactly as captured. Below, quietly, what accumulated while you were away:</p>
+  <ul>
+    <li>The partner's one or two <strong>prepared questions</strong> — waiting, not demanding. They read as marginalia, not messages.</li>
+    <li><strong>Related thoughts</strong> as small chips (<code>edited silence · attention is a garden</code>) — auto-linked by resonance, one click to jump, one click to dismiss a bad link.</li>
+    <li>A single input: <strong>think out loud</strong>.</li>
+  </ul>
+
+  <h3>A session</h3>
+  <div class="scene">
+    <div class="who">partner</div>
+    <p>Is a family recipe the trunk, or somebody's fork that won?</p>
+    <div class="who">you</div>
+    <p>the fork that won. there is no trunk. grandma's version was already a merge.</p>
+    <div class="who">partner</div>
+    <p>Then what people call "authentic" is just a commit with good marketing. Does that hold for anything else you'd call traditional?</p>
+  </div>
+  <ul>
+    <li>The partner asks <strong>one question at a time</strong>, short, in service of your thought — it probes, connects to your other fragments by name, offers a counterexample, occasionally brings a fact in. It never lectures, never summarizes you back to yourself unasked, never praises.</li>
+    <li>Everything streams; everything is kept. A session has <strong>no end state</strong> — you leave mid-thought and the conversation is simply there next time, along with any new questions the partner prepares from what you said.</li>
+    <li>Your side of the conversation is captured thinking too: it gets embedded and can resonate with future captures just like a fragment does.</li>
+  </ul>
+
+  <h3>Setting a thought down</h3>
+  <p>Some thoughts, after enough sittings, feel finished — not "completed," just done being thought about. One quiet action: <strong>let it rest</strong>, with an optional single line about where it landed (<em>"became the pitch for the recipes app"</em>, or nothing at all). A resting thought leaves the collection and the daily rotation, but stays searchable and linkable — the partner may still say <em>"this echoes something you set down in May."</em> Rest is reversible with one click; some thoughts wake up.</p>
+</section>
+
+<!-- ============ 5. LIFECYCLE ============ -->
+<section>
+  <h2><span class="num">05</span>A Lifecycle Without Stages</h2>
+
+  <p>A thought's real arc — <em>first thought → revisit → sit with it (often for a long time) → set it down</em> — is something the user does, <strong>not a status the system displays</strong>. There is no pipeline, no maturity meter, no "3 of 5 questions answered." A thought that's been circled for six months isn't "stuck"; it's being thought about. That's the product working.</p>
+
+  <table>
+    <tr><th>What exists in the system</th><th>What the user experiences</th></tr>
+    <tr>
+      <td><code>open</code></td>
+      <td>The default and only state a thought is ever "in." It appears in the collection, accrues questions and links, and is eligible for the daily return. How developed it is shows only through its own accumulation — the length of its margin, never a badge.</td>
+    </tr>
+    <tr>
+      <td><code>resting</code></td>
+      <td>The one transition, and the user makes it: <strong>let it rest</strong>, optional closing line. Out of the collection and the rotation; still searchable, still linkable, still part of your thinking's history. Reversible.</td>
+    </tr>
+  </table>
+
+  <div class="callout">
+    <strong>Vocabulary is load-bearing.</strong> Never "done," "complete," "archive," "inbox," or "process." Thoughts are <em>kept</em>, <em>revisited</em>, <em>sat with</em>, <em>set down</em>. The moment the interface implies a thought is supposed to go somewhere, drft has become the task manager it exists to not be.
+  </div>
+</section>
+
+<!-- ============ 6. THE PARTNER ============ -->
+<section>
+  <h2><span class="num">06</span>The Partner's Contract</h2>
+
+  <p>One set of rules governs every AI touchpoint — prepared questions, the daily push, live sessions:</p>
+  <ul>
+    <li><strong>Prepared, but waits.</strong> It works in the background after every capture, and shows nothing until you arrive (the sole exception: the one daily push).</li>
+    <li><strong>Questions over answers.</strong> Its default move is a question that opens the thought further. Facts and counterexamples are seasoning, never the meal.</li>
+    <li><strong>It knows your collection, and only offers it.</strong> Its unique power is connecting today's fragment to March's — always as an offer ("this touches…"), never an auto-merge or auto-tag.</li>
+    <li><strong>It never produces on your behalf.</strong> No auto-summaries, no "turn this into an essay," no rewriting your words. The user's thinking is the artifact; the partner is the room it happens in.</li>
+    <li><strong>It's quiet by temperament.</strong> One or two prepared questions, not five. No follow-up nudges, no cheerleading, no emoji. If it has nothing good to ask, it asks nothing.</li>
+  </ul>
+</section>
+
+<!-- ============ 7. REFUSALS ============ -->
+<section>
+  <h2><span class="num">07</span>What drft Refuses to Do</h2>
+  <p>Anti-features, stated so they stay refused:</p>
+  <ul>
+    <li><strong>No folders, tags, or manual organization</strong> — resonance links are the only structure.</li>
+    <li><strong>No tasks, reminders, or due dates</strong> — the moment a thought has a deadline it belongs in another tool.</li>
+    <li><strong>No streaks, counts-as-guilt, or gamification</strong> — the collection count is a fact, never a scoreboard.</li>
+    <li><strong>No feed, no social, no sharing</strong> (v1) — this is a private room.</li>
+    <li><strong>No AI-generated content masquerading as yours</strong> — every word in a fragment is the user's.</li>
+    <li><strong>No more than one notification a day, ever.</strong></li>
+  </ul>
+</section>
+
+<!-- ============ 8. FOUNDATION ============ -->
+<section>
+  <h2><span class="num">08</span>What This Pins Down for the Foundation</h2>
+  <p>Phase 1 can now be built against decisions instead of guesses:</p>
+
+  <table>
+    <tr><th>Table</th><th>Shape it must have</th></tr>
+    <tr>
+      <td>thoughts</td>
+      <td>verbatim <code>text</code>, <code>createdAt</code>, <code>status: "open" | "resting"</code>, optional <code>restingNote</code> + <code>restedAt</code>, embedding (vector index). No title, no tags, no category — their absence is the product.</td>
+    </tr>
+    <tr>
+      <td>questions</td>
+      <td>partner-drafted per thought: <code>thoughtId</code>, <code>text</code>, <code>seenAt?</code> — "unseen question" is what lights the vermilion dot and feeds resurfacing readiness.</td>
+    </tr>
+    <tr>
+      <td>connections</td>
+      <td><code>fromId</code>, <code>toId</code>, <code>score</code>, <code>dismissedAt?</code> — auto-linked, user-dismissable, never user-curated.</td>
+    </tr>
+    <tr>
+      <td>sessions / messages</td>
+      <td>append-only conversation per thought (<code>role: "you" | "partner"</code>); user messages also get embedded. No session end-state.</td>
+    </tr>
+    <tr>
+      <td>resurfacings</td>
+      <td>log of <code>thoughtId</code> + <code>date</code> — powers "one per day, never repeat too soon, never resting thoughts." (Table lands in phase 1; the scheduler that writes it is phase 5.)</td>
+    </tr>
+  </table>
+
+  <ul>
+    <li><strong>Capture mutation stays dumb:</strong> insert text + timestamp, schedule enrichment, return. Everything intelligent is async.</li>
+    <li><strong>The web capture input for dogfooding</strong> (phase 1) obeys the same capture rules as iOS: one field, keep, no questions asked.</li>
+    <li><strong>Settings are nearly empty by design:</strong> the daily push time is the only real preference the product has.</li>
+  </ul>
+</section>
+
+<footer>drft · the experience · July 2026 · <a href="overview.html">overview</a> · <a href="design.html">design</a></footer>
+
+</div>
+</body>
+</html>

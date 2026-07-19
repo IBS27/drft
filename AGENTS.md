@@ -6,6 +6,7 @@ A space for unfinished thoughts — instant capture on iOS, an AI thinking-partn
 - `apps/ios` — native Swift/SwiftUI app (planned, outside the Bun workspace)
 - `packages/backend` — Convex backend (planned)
 - `docs/overview.html` — product & tech overview
+- `docs/experience.html` — the experience: moment-by-moment product spec (capture rules, return loop, partner contract, lifecycle)
 - `docs/design.html` — the design: "Stillness" (light + dark)
 
 ## Commands
