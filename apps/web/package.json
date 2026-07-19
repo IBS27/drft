@@ -7,13 +7,21 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
+    "typecheck": "tsc -b",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@clerk/clerk-react": "^5.25.0",
+    "@drft/backend": "workspace:*",
+    "@tanstack/react-router": "^1.114.0",
+    "convex": "^1.28.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.1.0",
+    "@tanstack/router-plugin": "^1.114.0",
+    "tailwindcss": "^4.1.0",
     "@types/node": "^24.13.2",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
