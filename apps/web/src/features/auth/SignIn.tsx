@@ -1,4 +1,5 @@
 import { useSignIn } from "@clerk/clerk-react";
+import { useLocation } from "@tanstack/react-router";
 import { useState } from "react";
 
 type Strategy = "oauth_google" | "oauth_apple" | "oauth_github";
@@ -18,6 +19,7 @@ const PROVIDERS: {
 
 export function SignIn() {
   const { signIn, isLoaded } = useSignIn();
+  const redirectUrlComplete = useLocation({ select: (location) => location.href });
   const [pending, setPending] = useState<Strategy | null>(null);
   const [failed, setFailed] = useState(false);
 
@@ -29,7 +31,7 @@ export function SignIn() {
       await signIn.authenticateWithRedirect({
         strategy,
         redirectUrl: "/sso-callback",
-        redirectUrlComplete: "/",
+        redirectUrlComplete,
       });
     } catch {
       setPending(null);
