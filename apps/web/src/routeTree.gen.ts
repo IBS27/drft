@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as RestingRouteImport } from './routes/resting'
+import { Route as SsoCallbackRouteImport } from './routes/sso-callback'
 import { Route as ThoughtThoughtIdRouteImport } from './routes/thought.$thoughtId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -23,6 +24,11 @@ const RestingRoute = RestingRouteImport.update({
   path: '/resting',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SsoCallbackRoute = SsoCallbackRouteImport.update({
+  id: '/sso-callback',
+  path: '/sso-callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ThoughtThoughtIdRoute = ThoughtThoughtIdRouteImport.update({
   id: '/thought/$thoughtId',
   path: '/thought/$thoughtId',
@@ -32,30 +38,34 @@ const ThoughtThoughtIdRoute = ThoughtThoughtIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/resting': typeof RestingRoute
+  '/sso-callback': typeof SsoCallbackRoute
   '/thought/$thoughtId': typeof ThoughtThoughtIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/resting': typeof RestingRoute
+  '/sso-callback': typeof SsoCallbackRoute
   '/thought/$thoughtId': typeof ThoughtThoughtIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/resting': typeof RestingRoute
+  '/sso-callback': typeof SsoCallbackRoute
   '/thought/$thoughtId': typeof ThoughtThoughtIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/resting' | '/thought/$thoughtId'
+  fullPaths: '/' | '/resting' | '/sso-callback' | '/thought/$thoughtId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/resting' | '/thought/$thoughtId'
-  id: '__root__' | '/' | '/resting' | '/thought/$thoughtId'
+  to: '/' | '/resting' | '/sso-callback' | '/thought/$thoughtId'
+  id: '__root__' | '/' | '/resting' | '/sso-callback' | '/thought/$thoughtId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   RestingRoute: typeof RestingRoute
+  SsoCallbackRoute: typeof SsoCallbackRoute
   ThoughtThoughtIdRoute: typeof ThoughtThoughtIdRoute
 }
 
@@ -75,6 +85,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RestingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/sso-callback': {
+      id: '/sso-callback'
+      path: '/sso-callback'
+      fullPath: '/sso-callback'
+      preLoaderRoute: typeof SsoCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/thought/$thoughtId': {
       id: '/thought/$thoughtId'
       path: '/thought/$thoughtId'
@@ -88,6 +105,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   RestingRoute: RestingRoute,
+  SsoCallbackRoute: SsoCallbackRoute,
   ThoughtThoughtIdRoute: ThoughtThoughtIdRoute,
 }
 export const routeTree = rootRouteImport
