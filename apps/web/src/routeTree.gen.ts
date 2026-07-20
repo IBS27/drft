@@ -10,33 +10,53 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as RestingRouteImport } from './routes/resting'
+import { Route as ThoughtThoughtIdRouteImport } from './routes/thought.$thoughtId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RestingRoute = RestingRouteImport.update({
+  id: '/resting',
+  path: '/resting',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ThoughtThoughtIdRoute = ThoughtThoughtIdRouteImport.update({
+  id: '/thought/$thoughtId',
+  path: '/thought/$thoughtId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/resting': typeof RestingRoute
+  '/thought/$thoughtId': typeof ThoughtThoughtIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/resting': typeof RestingRoute
+  '/thought/$thoughtId': typeof ThoughtThoughtIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/resting': typeof RestingRoute
+  '/thought/$thoughtId': typeof ThoughtThoughtIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/resting' | '/thought/$thoughtId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/resting' | '/thought/$thoughtId'
+  id: '__root__' | '/' | '/resting' | '/thought/$thoughtId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  RestingRoute: typeof RestingRoute
+  ThoughtThoughtIdRoute: typeof ThoughtThoughtIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +68,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/resting': {
+      id: '/resting'
+      path: '/resting'
+      fullPath: '/resting'
+      preLoaderRoute: typeof RestingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/thought/$thoughtId': {
+      id: '/thought/$thoughtId'
+      path: '/thought/$thoughtId'
+      fullPath: '/thought/$thoughtId'
+      preLoaderRoute: typeof ThoughtThoughtIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  RestingRoute: RestingRoute,
+  ThoughtThoughtIdRoute: ThoughtThoughtIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
