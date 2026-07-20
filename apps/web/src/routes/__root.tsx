@@ -1,29 +1,23 @@
-import { SignInButton } from "@clerk/clerk-react";
-import { createRootRoute, Outlet } from "@tanstack/react-router";
+import { createRootRoute, Outlet, useRouterState } from "@tanstack/react-router";
 import { Authenticated, AuthLoading, Unauthenticated } from "convex/react";
+import { SignIn } from "../features/auth/SignIn";
 
 export const Route = createRootRoute({ component: Root });
 
 function Root() {
+  // The OAuth callback must render while still unauthenticated.
+  const onCallback = useRouterState({
+    select: (s) => s.location.pathname === "/sso-callback",
+  });
+  if (onCallback) return <Outlet />;
+
   return (
     <>
       <AuthLoading>
         <main className="min-h-dvh" />
       </AuthLoading>
       <Unauthenticated>
-        <main className="flex min-h-dvh flex-col items-center justify-center gap-12">
-          <h1 className="text-[13px] tracking-[0.5em] text-pt uppercase">
-            drft
-          </h1>
-          <SignInButton mode="modal">
-            <button
-              type="button"
-              className="text-[12px] tracking-[0.3em] text-pl uppercase transition-colors hover:text-ink"
-            >
-              sign in
-            </button>
-          </SignInButton>
-        </main>
+        <SignIn />
       </Unauthenticated>
       <Authenticated>
         <Outlet />
