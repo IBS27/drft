@@ -10,6 +10,17 @@ import { internalMutation } from "./_generated/server";
 // Undo:  bunx convex run seed:clear
 const DAY = 86_400_000;
 
+// The Convex runtime provides process.env; declared here so this file
+// also typechecks inside the web app's program (no node types there).
+declare const process: { env: Record<string, string | undefined> };
+
+// Hard stop against running this anywhere real. Only deployments that
+// explicitly set SEED_ALLOWED=1 (dev) may seed or clear — an accidental
+// `--prod` run is a no-op instead of data loss.
+const GUARD =
+  "seed is disabled on this deployment — set SEED_ALLOWED=1 (dev only) to enable";
+const seedAllowed = () => process.env.SEED_ALLOWED === "1";
+
 // [text, days ago] — fragments from docs/design.html mockups.
 const SAMPLES: [string, number][] = [
   ["what if onboarding is just the product, slowed down", 0],
@@ -23,6 +34,7 @@ const SAMPLES: [string, number][] = [
 export const run = internalMutation({
   args: { date: v.string() },
   handler: async (ctx, { date }) => {
+    if (!seedAllowed()) return GUARD;
     const latest = await ctx.db.query("thoughts").order("desc").first();
     if (!latest) return "nothing to seed against — capture a thought first";
     const userId = latest.userId;
@@ -98,6 +110,7 @@ export const run = internalMutation({
 export const clear = internalMutation({
   args: {},
   handler: async (ctx) => {
+    if (!seedAllowed()) return GUARD;
     for (const q of await ctx.db.query("questions").collect())
       await ctx.db.delete(q._id);
     for (const c of await ctx.db.query("connections").collect())

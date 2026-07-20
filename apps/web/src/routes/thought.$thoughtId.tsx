@@ -166,12 +166,23 @@ function Composer({ thoughtId }: { thoughtId: Id<"thoughts"> }) {
   const [text, setText] = useState("");
   const areaRef = useRef<HTMLTextAreaElement>(null);
 
+  // Height tracks content here (not in onChange) so it also follows
+  // programmatic changes: clearing on send, restoring on failure.
+  useEffect(() => {
+    const el = areaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  }, [text]);
+
   const send = () => {
     const trimmed = text.trim();
     if (!trimmed) return;
     setText("");
-    if (areaRef.current) areaRef.current.style.height = "auto";
-    void say({ thoughtId, text: trimmed }).catch(() => {});
+    void say({ thoughtId, text: trimmed }).catch(() => {
+      // The words are the product — never lose them to a failed send.
+      setText((current) => (current ? `${trimmed}\n${current}` : trimmed));
+    });
   };
 
   return (
@@ -190,11 +201,7 @@ function Composer({ thoughtId }: { thoughtId: Id<"thoughts"> }) {
           <textarea
             ref={areaRef}
             value={text}
-            onChange={(e) => {
-              setText(e.target.value);
-              e.target.style.height = "auto";
-              e.target.style.height = `${e.target.scrollHeight}px`;
-            }}
+            onChange={(e) => setText(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
