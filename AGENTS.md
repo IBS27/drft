@@ -14,6 +14,10 @@ A space for unfinished thoughts — instant capture on iOS, an AI thinking-partn
 From `apps/web`: `bun dev` · `bun run build` · `bun run lint` · `bun run typecheck`
 From `packages/backend`: `bun run dev` (convex dev) · `bun run typecheck`
 
+Dev-only design seed (fake questions/connections/resurfacing + sample thoughts until phase 3 exists), from `packages/backend`:
+`bunx convex run seed:run '{"date":"YYYY-MM-DD"}'` · undo with `bunx convex run seed:clear`
+Both no-op unless the deployment sets `SEED_ALLOWED=1` (dev only, already set) — guards against an accidental `--prod` run.
+
 Web env lives in `apps/web/.env.local` (see `.env.example`): `VITE_CONVEX_URL`, `VITE_CLERK_PUBLISHABLE_KEY`. The Convex deployment needs `CLERK_JWT_ISSUER_DOMAIN` set (Clerk JWT template named `convex`).
 
 ## Conventions

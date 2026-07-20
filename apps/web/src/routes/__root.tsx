@@ -12,13 +12,13 @@ function Root() {
       </AuthLoading>
       <Unauthenticated>
         <main className="flex min-h-dvh flex-col items-center justify-center gap-12">
-          <h1 className="text-xs tracking-[0.5em] text-pt uppercase">
+          <h1 className="text-[13px] tracking-[0.5em] text-pt uppercase">
             drft
           </h1>
           <SignInButton mode="modal">
             <button
               type="button"
-              className="text-[11px] tracking-[0.3em] text-pl uppercase transition-colors hover:text-ink"
+              className="text-[12px] tracking-[0.3em] text-pl uppercase transition-colors hover:text-ink"
             >
               sign in
             </button>
