@@ -1,11 +1,11 @@
 import { v } from "convex/values";
 import { internalMutation } from "./_generated/server";
+import { internal } from "./_generated/api";
 
-// Dev-only: fabricate what phase 3's enrichment and phase 5's scheduler
-// will write — questions, connections, one resurfacing — so the workspace
-// design can be judged against real UI before the AI exists. If the
-// collection is thin, plants the design doc's sample fragments first,
-// aged across today / this week / earlier.
+// Dev-only. Phase 3 made enrichment real, so seeding now plants the design
+// doc's sample fragments (aged across today / this week / earlier) and lets
+// real enrichment embed, link, and question them. Only the resurfacing is
+// still fabricated — the scheduler that writes it is phase 5.
 // Run:   bunx convex run seed:run '{"date":"2026-07-20"}'
 // Undo:  bunx convex run seed:clear
 const DAY = 86_400_000;
@@ -31,6 +31,17 @@ const SAMPLES: [string, number][] = [
   ["a commute you choose is a walk", 30],
 ];
 
+// Questions the pre-phase-3 seed fabricated (sometimes onto real thoughts,
+// since it targeted the newest open one) — clear hunts these down by text.
+const LEGACY_FAKE_QUESTIONS = new Set([
+  "What would have to be true for the opposite to hold?",
+  "Is this about the thing itself, or about your attention to it?",
+  "You kept this and moved on — what were you in the middle of?",
+]);
+// Same for its connections: real scores are cosine similarities and won't
+// land exactly on these hand-picked values.
+const LEGACY_FAKE_SCORES = new Set([0.82, 0.74]);
+
 export const run = internalMutation({
   args: { date: v.string() },
   handler: async (ctx, { date }) => {
@@ -50,12 +61,14 @@ export const run = internalMutation({
     );
     for (const [text, daysAgo] of SAMPLES) {
       if (existingTexts.has(text)) continue;
-      await ctx.db.insert("thoughts", {
+      const thoughtId = await ctx.db.insert("thoughts", {
         userId,
         text,
         createdAt: Date.now() - daysAgo * DAY - 3_600_000,
         status: "open",
       });
+      // Real enrichment, same as a capture (needs OPENAI_API_KEY set).
+      await ctx.scheduler.runAfter(0, internal.enrichment.enrich, { thoughtId });
       planted.push(text);
     }
 
@@ -66,68 +79,55 @@ export const run = internalMutation({
       )
       .order("desc")
       .collect();
-    if (open.length < 2) return "need at least two open thoughts";
-    const seeded = await ctx.db
-      .query("questions")
-      .withIndex("by_thought", (q) => q.eq("thoughtId", open[0]._id))
+    if (open.length === 0) return `planted ${planted.length}; no open thoughts`;
+    const existing = await ctx.db
+      .query("resurfacings")
+      .withIndex("by_date", (q) => q.eq("date", date))
       .first();
-    if (seeded) return "already seeded";
-
-    await ctx.db.insert("questions", {
-      thoughtId: open[0]._id,
-      text: "What would have to be true for the opposite to hold?",
-    });
-    await ctx.db.insert("questions", {
-      thoughtId: open[0]._id,
-      text: "Is this about the thing itself, or about your attention to it?",
-    });
-    await ctx.db.insert("connections", {
-      fromId: open[0]._id,
-      toId: open[1]._id,
-      score: 0.82,
-    });
-    if (open.length > 2) {
-      await ctx.db.insert("questions", {
-        thoughtId: open[2]._id,
-        text: "You kept this and moved on — what were you in the middle of?",
-      });
-      await ctx.db.insert("connections", {
-        fromId: open[0]._id,
-        toId: open[2]._id,
-        score: 0.74,
-      });
-    }
+    if (existing) return `planted ${planted.length}; ${date} already has a resurfacing`;
     const resurfaced = open[open.length - 1];
     await ctx.db.insert("resurfacings", { thoughtId: resurfaced._id, date });
-    return `planted ${planted.length} sample thoughts; seeded questions + connections; resurfaced "${resurfaced.text.slice(0, 40)}" for ${date}`;
+    return `planted ${planted.length} sample thoughts (enrichment scheduled); resurfaced "${resurfaced.text.slice(0, 40)}" for ${date}`;
   },
 });
 
-// Removes everything seeding created. Until phase 3 ships, every row in
-// questions / connections / resurfacings is seeded, so they all go; the
-// sample thoughts (and any messages on them) go too. Real captures and
-// the thinking on them are untouched.
+// Removes everything seeding created: the sample thoughts and all rows
+// hanging off them (messages, questions, connections, resurfacings), plus
+// any legacy fabricated questions/connections the old seed left on real
+// thoughts. Real captures and their real enrichment are untouched.
 export const clear = internalMutation({
   args: {},
   handler: async (ctx) => {
     if (!seedAllowed()) return GUARD;
-    for (const q of await ctx.db.query("questions").collect())
-      await ctx.db.delete(q._id);
-    for (const c of await ctx.db.query("connections").collect())
-      await ctx.db.delete(c._id);
-    for (const r of await ctx.db.query("resurfacings").collect())
-      await ctx.db.delete(r._id);
     const sampleTexts = new Set(SAMPLES.map(([text]) => text));
     const thoughts = await ctx.db.query("thoughts").collect();
+    const sampleIds = new Set(
+      thoughts.filter((t) => sampleTexts.has(t.text)).map((t) => t._id),
+    );
+
+    for (const q of await ctx.db.query("questions").collect()) {
+      if (sampleIds.has(q.thoughtId) || LEGACY_FAKE_QUESTIONS.has(q.text))
+        await ctx.db.delete(q._id);
+    }
+    for (const c of await ctx.db.query("connections").collect()) {
+      if (
+        sampleIds.has(c.fromId) ||
+        sampleIds.has(c.toId) ||
+        LEGACY_FAKE_SCORES.has(c.score)
+      )
+        await ctx.db.delete(c._id);
+    }
+    for (const r of await ctx.db.query("resurfacings").collect()) {
+      await ctx.db.delete(r._id);
+    }
     let removed = 0;
-    for (const t of thoughts) {
-      if (!sampleTexts.has(t.text)) continue;
+    for (const id of sampleIds) {
       const messages = await ctx.db
         .query("messages")
-        .withIndex("by_thought", (q) => q.eq("thoughtId", t._id))
+        .withIndex("by_thought", (q) => q.eq("thoughtId", id))
         .collect();
       for (const m of messages) await ctx.db.delete(m._id);
-      await ctx.db.delete(t._id);
+      await ctx.db.delete(id);
       removed++;
     }
     return `cleared seed data; removed ${removed} sample thoughts`;
