@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import type { QueryCtx } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
+import { internal } from "./_generated/api";
 
 // A thought is only ever yours. Every read/write below goes through this.
 async function ownedThought(ctx: QueryCtx, thoughtId: Id<"thoughts">) {
@@ -13,7 +14,8 @@ async function ownedThought(ctx: QueryCtx, thoughtId: Id<"thoughts">) {
 }
 
 // Capture stays dumb: insert text + timestamp, return. Everything
-// intelligent (embed, link, questions) is async enrichment — phase 3.
+// intelligent (embed, link, questions) happens async in enrichment.ts —
+// prepared, but waiting; capture never becomes a conversation.
 export const capture = mutation({
   args: { text: v.string() },
   handler: async (ctx, { text }) => {
@@ -21,12 +23,14 @@ export const capture = mutation({
     if (!identity) throw new Error("Not signed in");
     const trimmed = text.trim();
     if (!trimmed) throw new Error("Empty thought");
-    return await ctx.db.insert("thoughts", {
+    const thoughtId = await ctx.db.insert("thoughts", {
       userId: identity.subject,
       text: trimmed,
       createdAt: Date.now(),
       status: "open",
     });
+    await ctx.scheduler.runAfter(0, internal.enrichment.enrich, { thoughtId });
+    return thoughtId;
   },
 });
 
@@ -166,7 +170,7 @@ export const resting = query({
 });
 
 // Your side of the conversation. Kept verbatim, like a capture; the
-// partner's reply and the embedding arrive with phase 3.
+// partner streams a reply and your words get embedded, both async.
 export const say = mutation({
   args: { thoughtId: v.id("thoughts"), text: v.string() },
   handler: async (ctx, { thoughtId, text }) => {
@@ -174,11 +178,17 @@ export const say = mutation({
     if (!thought) throw new Error("Not found");
     const trimmed = text.trim();
     if (!trimmed) throw new Error("Empty message");
-    return await ctx.db.insert("messages", {
+    const messageId = await ctx.db.insert("messages", {
       thoughtId,
+      userId: thought.userId,
       role: "you",
       text: trimmed,
     });
+    await ctx.scheduler.runAfter(0, internal.partner.reply, {
+      thoughtId,
+      userMessageId: messageId,
+    });
+    return messageId;
   },
 });
 

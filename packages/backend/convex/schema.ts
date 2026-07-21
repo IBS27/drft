@@ -40,14 +40,22 @@ export default defineSchema({
     .index("by_to", ["toId"]),
 
   // Append-only conversation per thought; no session end-state, so no
-  // sessions table — the thought is the session. User messages get embedded
-  // and resonate like fragments do.
+  // sessions table — the thought is the session. Your messages carry your
+  // userId and an embedding so they resonate with future captures like
+  // fragments do; the partner's side is never embedded.
   messages: defineTable({
     thoughtId: v.id("thoughts"),
+    userId: v.optional(v.string()),
     role: v.union(v.literal("you"), v.literal("partner")),
     text: v.string(),
     embedding: v.optional(v.array(v.float64())),
-  }).index("by_thought", ["thoughtId"]),
+  })
+    .index("by_thought", ["thoughtId"])
+    .vectorIndex("by_embedding", {
+      vectorField: "embedding",
+      dimensions: 1536,
+      filterFields: ["userId"],
+    }),
 
   // One per day, never repeat too soon, never resting thoughts. The
   // scheduler that writes it is phase 5; date is YYYY-MM-DD.

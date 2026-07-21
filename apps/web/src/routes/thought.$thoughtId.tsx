@@ -89,7 +89,13 @@ function ThoughtView() {
           {view.messages.map((m) => (
             <Fragment key={m._id}>
               <Who>{m.role}</Who>
-              <Msg muted={m.role === "partner"}>{m.text}</Msg>
+              {/* A partner row streams in from empty; until the first words
+                  land, a single quiet mark holds the space. */}
+              {m.role === "partner" && m.text === "" ? (
+                <p className="animate-pulse text-[16px] leading-[1.7] text-pl">·</p>
+              ) : (
+                <Msg muted={m.role === "partner"}>{m.text}</Msg>
+              )}
             </Fragment>
           ))}
         </div>
