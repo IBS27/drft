@@ -130,6 +130,7 @@ final class CaptureQueue {
     }
 
     func flush() async {
+        promoteMemoryItems()
         guard authenticatedUserID != nil else { return }
         guard !isFlushing else {
             flushAgain = true
@@ -236,6 +237,10 @@ final class CaptureQueue {
         } catch {
             return false
         }
+    }
+
+    private func promoteMemoryItems() {
+        memoryItems.removeAll { persist($0) || appendToJournal($0) }
     }
 
     private func promoteJournalItems() {

@@ -27,15 +27,19 @@ no reading, no replies, no AI surface on the phone. Development happens on the w
 - URL scheme: `drft` (deep link `drft://capture` opens the capture screen)
 - Deployment target: iOS 18.0, iPhone only (`TARGETED_DEVICE_FAMILY = 1`),
   portrait only. Swift 6 language mode if dependencies allow, else Swift 5 mode.
-- No code signing decisions in the project file: leave `DEVELOPMENT_TEAM` unset;
-  builds must pass with `CODE_SIGNING_ALLOWED=NO` against the simulator.
+- Code signing: the personal development team (`3SN533K2V4`) is pinned on both
+  targets so device installs work; simulator builds must still pass with
+  `CODE_SIGNING_ALLOWED=NO`.
 
 ## Dependencies (Swift Package Manager)
 
 - `https://github.com/clerk/clerk-ios` — auth
 - `https://github.com/get-convex/convex-swift` — Convex client
-- `https://github.com/clerk/clerk-convex-swift` — bridges Clerk sessions into the
-  Convex client (use this instead of hand-rolling token plumbing)
+- `Vendor/clerk-convex-swift` — local fork of Clerk's `clerk-convex-swift`
+  bridge. Upstream requests session tokens without a JWT-template parameter, so
+  it can never mint the `convex`-template token the backend requires; the fork
+  requests the template on login and refresh. Unfork when upstream adds
+  template support.
 
 ## Backend surface used
 
@@ -141,10 +145,10 @@ Behavior:
 
 Same stillness: `page` background, wordmark large-ish center (`drft`, tracked,
 light), one line of muted copy beneath — `a space for unfinished thoughts` —
-and a single hairline-underlined text button `sign in` that starts the Clerk
-OAuth flow (use the Clerk iOS SDK's auth presentation for whichever OAuth
-providers the instance has enabled; do not build username/password UI).
-No feature list, no carousel, no branding beyond the wordmark.
+and one quiet text button per enabled OAuth provider (`google` / `apple` /
+`github`) — tracked caps with the provider mark, each starting Clerk's OAuth
+flow directly (do not build username/password UI). No feature list, no
+carousel, no branding beyond the wordmark.
 
 ### Settings (sheet over capture)
 

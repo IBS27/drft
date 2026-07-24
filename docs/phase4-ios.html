@@ -133,11 +133,11 @@
   <h2>Screens — <code>drft/Features/</code></h2>
   <table>
     <tr><td class="file"><code>Capture/CaptureView.swift</code></td>
-      <td class="what">The app. Wordmark (tap → settings sheet), chromeless centered 30pt-light input focused on appear, live <code>21:47 · UNFILED</code> timestamp (forced 24-hour), SPEAK / ● KEEP row. Keep plays fade → lone vermilion dot → reset with one soft haptic; speak shows a pulsing LISTENING state. Refocuses on warm deep-links from widgets.</td></tr>
+      <td class="what">The app. Wordmark (tap → settings sheet), chromeless centered 30pt-light input focused on appear, live <code>21:47 · UNFILED</code> timestamp (locale time format), SPEAK / ● KEEP row. Keep plays fade → lone vermilion dot → reset with one soft haptic; speak shows a pulsing LISTENING state. Refocuses on warm deep-links from widgets.</td></tr>
     <tr><td class="file"><code>Capture/CaptureModel.swift</code></td>
       <td class="what">Capture state machine. <code>keep()</code> trims, stops dictation, enqueues synchronously <em>before</em> any async work, then drives the confirmation phases. Dictation transcripts stream in verbatim; late callbacks can't corrupt a kept thought.</td></tr>
     <tr><td class="file"><code>SignIn/SignInView.swift</code></td>
-      <td class="what">Wordmark, "a space for unfinished thoughts", one hairline-underlined <em>sign in</em> button presenting Clerk's OAuth sheet. No password UI, no feature list.</td></tr>
+      <td class="what">Wordmark, "a space for unfinished thoughts", one quiet tracked-caps button per OAuth provider (google · apple · github) starting Clerk's OAuth flow. No password UI, no feature list.</td></tr>
     <tr><td class="file"><code>Settings/SettingsView.swift</code></td>
       <td class="what">Nearly-empty sheet: email, "daily thought" time picker stored in App-Group defaults (read by phase 5), confirmation-free sign out, version footer. Hairlines, no table chrome.</td></tr>
   </table>
