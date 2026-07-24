@@ -58,14 +58,22 @@ struct SettingsView: View {
 
                                 Spacer(minLength: 12)
 
-                                DatePicker(
-                                    "daily thought",
-                                    selection: $dailyThoughtTime,
-                                    displayedComponents: .hourAndMinute
-                                )
-                                .labelsHidden()
-                                .datePickerStyle(.compact)
-                                .tint(Stillness.ink)
+                                Text(dailyThoughtTimeText)
+                                    .font(StillnessType.action)
+                                    .tracking(1.2)
+                                    .foregroundStyle(Stillness.muted)
+                                    .accessibilityHidden(true)
+                                    .overlay {
+                                        DatePicker(
+                                            "daily thought",
+                                            selection: $dailyThoughtTime,
+                                            displayedComponents: .hourAndMinute
+                                        )
+                                        .labelsHidden()
+                                        .datePickerStyle(.compact)
+                                        .tint(Stillness.ink)
+                                        .colorMultiply(.clear)
+                                    }
                             }
 
                             Text("one thought returns each morning · arrives with phase 5")
@@ -111,6 +119,12 @@ struct SettingsView: View {
                     .padding(.bottom, 18)
             }
         }
+    }
+
+    private var dailyThoughtTimeText: String {
+        dailyThoughtTime
+            .formatted(date: .omitted, time: .shortened)
+            .lowercased()
     }
 
     private static var defaultDailyThoughtTime: Date {
