@@ -10,6 +10,6 @@
     }
   </style>
   <rect class="bg" x=".5" y=".5" width="63" height="63" rx="14" stroke-width="1"/>
-  <rect class="caret" x="22" y="18" width="4" height="26" rx="1.5"/>
-  <circle class="dot" cx="36" cy="38" r="6"/>
+  <circle class="dot" cx="28" cy="38" r="6"/>
+  <rect class="caret" x="38" y="18" width="4" height="26" rx="1.5"/>
 </svg>

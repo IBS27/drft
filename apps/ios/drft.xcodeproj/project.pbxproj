@@ -3,24 +3,100 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 77;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A10000000000000000000001 /* drftApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000001 /* drftApp.swift */; };
-		A10000000000000000000002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000002 /* ContentView.swift */; };
-		A10000000000000000000003 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000003 /* Assets.xcassets */; };
+		A10000000000000000000001 /* ClerkKit in Frameworks */ = {isa = PBXBuildFile; productRef = AB0000000000000000000001 /* ClerkKit */; };
+		A10000000000000000000002 /* ClerkKitUI in Frameworks */ = {isa = PBXBuildFile; productRef = AB0000000000000000000002 /* ClerkKitUI */; };
+		A10000000000000000000003 /* ConvexMobile in Frameworks */ = {isa = PBXBuildFile; productRef = AB0000000000000000000003 /* ConvexMobile */; };
+		A10000000000000000000004 /* ClerkConvex in Frameworks */ = {isa = PBXBuildFile; productRef = AB0000000000000000000004 /* ClerkConvex */; };
+		A10000000000000000000005 /* DrftWidget.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = A20000000000000000000002 /* DrftWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		A80000000000000000000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A50000000000000000000003 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A50000000000000000000002;
+			remoteInfo = DrftWidget;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		A30000000000000000000007 /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				A10000000000000000000005 /* DrftWidget.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
-		A20000000000000000000001 /* drftApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = drftApp.swift; sourceTree = "<group>"; };
-		A20000000000000000000002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		A20000000000000000000003 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		A20000000000000000000004 /* drft.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = drft.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A20000000000000000000001 /* drft.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = drft.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A20000000000000000000002 /* DrftWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = DrftWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		A90000000000000000000001 /* Exceptions for "drft" folder in "drft" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = A50000000000000000000001 /* drft */;
+		};
+		A90000000000000000000002 /* Exceptions for "DrftWidget" folder in "DrftWidget" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = A50000000000000000000002 /* DrftWidget */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		A40000000000000000000002 /* drft */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				A90000000000000000000001 /* Exceptions for "drft" folder in "drft" target */,
+			);
+			path = drft;
+			sourceTree = "<group>";
+		};
+		A40000000000000000000003 /* DrftWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				A90000000000000000000002 /* Exceptions for "DrftWidget" folder in "DrftWidget" target */,
+			);
+			path = DrftWidget;
+			sourceTree = "<group>";
+		};
+		A40000000000000000000005 /* drft/Shared/Stillness */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = drft/Shared/Stillness;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		A30000000000000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000000000000000000004 /* ClerkConvex in Frameworks */,
+				A10000000000000000000001 /* ClerkKit in Frameworks */,
+				A10000000000000000000002 /* ClerkKitUI in Frameworks */,
+				A10000000000000000000003 /* ConvexMobile in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A30000000000000000000004 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -34,24 +110,17 @@
 			isa = PBXGroup;
 			children = (
 				A40000000000000000000002 /* drft */,
-				A40000000000000000000003 /* Products */,
+				A40000000000000000000003 /* DrftWidget */,
+				A40000000000000000000005 /* drft/Shared/Stillness */,
+				A40000000000000000000004 /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		A40000000000000000000002 /* drft */ = {
+		A40000000000000000000004 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				A20000000000000000000001 /* drftApp.swift */,
-				A20000000000000000000002 /* ContentView.swift */,
-				A20000000000000000000003 /* Assets.xcassets */,
-			);
-			path = drft;
-			sourceTree = "<group>";
-		};
-		A40000000000000000000003 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				A20000000000000000000004 /* drft.app */,
+				A20000000000000000000001 /* drft.app */,
+				A20000000000000000000002 /* DrftWidget.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -66,20 +135,54 @@
 				A30000000000000000000002 /* Sources */,
 				A30000000000000000000001 /* Frameworks */,
 				A30000000000000000000003 /* Resources */,
+				A30000000000000000000007 /* Embed App Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A80000000000000000000002 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				A40000000000000000000002 /* drft */,
+			);
+			name = drft;
+			packageProductDependencies = (
+				AB0000000000000000000001 /* ClerkKit */,
+				AB0000000000000000000002 /* ClerkKitUI */,
+				AB0000000000000000000003 /* ConvexMobile */,
+				AB0000000000000000000004 /* ClerkConvex */,
+			);
+			productName = drft;
+			productReference = A20000000000000000000001 /* drft.app */;
+			productType = "com.apple.product-type.application";
+		};
+		A50000000000000000000002 /* DrftWidget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A60000000000000000000003 /* Build configuration list for PBXNativeTarget "DrftWidget" */;
+			buildPhases = (
+				A30000000000000000000005 /* Sources */,
+				A30000000000000000000004 /* Frameworks */,
+				A30000000000000000000006 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
-			name = drft;
-			productName = drft;
-			productReference = A20000000000000000000004 /* drft.app */;
-			productType = "com.apple.product-type.application";
+			fileSystemSynchronizedGroups = (
+				A40000000000000000000003 /* DrftWidget */,
+				A40000000000000000000005 /* drft/Shared/Stillness */,
+			);
+			name = DrftWidget;
+			packageProductDependencies = (
+			);
+			productName = DrftWidget;
+			productReference = A20000000000000000000002 /* DrftWidget.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		A50000000000000000000002 /* Project object */ = {
+		A50000000000000000000003 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
@@ -89,10 +192,12 @@
 					A50000000000000000000001 = {
 						CreatedOnToolsVersion = 26.6;
 					};
+					A50000000000000000000002 = {
+						CreatedOnToolsVersion = 26.6;
+					};
 				};
 			};
 			buildConfigurationList = A60000000000000000000001 /* Build configuration list for PBXProject "drft" */;
-			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -100,11 +205,19 @@
 				Base,
 			);
 			mainGroup = A40000000000000000000001;
-			productRefGroup = A40000000000000000000003 /* Products */;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				AA0000000000000000000001 /* XCRemoteSwiftPackageReference "clerk-ios" */,
+				AA0000000000000000000002 /* XCRemoteSwiftPackageReference "convex-swift" */,
+				AA0000000000000000000003 /* XCLocalSwiftPackageReference "Vendor/clerk-convex-swift" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = A40000000000000000000004 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				A50000000000000000000001 /* drft */,
+				A50000000000000000000002 /* DrftWidget */,
 			);
 		};
 /* End PBXProject section */
@@ -114,7 +227,13 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A10000000000000000000003 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A30000000000000000000006 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -125,12 +244,25 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A10000000000000000000001 /* drftApp.swift in Sources */,
-				A10000000000000000000002 /* ContentView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A30000000000000000000005 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		A80000000000000000000002 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A50000000000000000000002 /* DrftWidget */;
+			targetProxy = A80000000000000000000001 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		A70000000000000000000001 /* Debug */ = {
@@ -166,6 +298,7 @@
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -180,7 +313,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -224,6 +357,7 @@
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -232,7 +366,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
@@ -245,60 +379,118 @@
 		A70000000000000000000003 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_ENTITLEMENTS = drft/drft.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "";
+				DEVELOPMENT_TEAM = 3SN533K2V4;
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = drft;
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = drft/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.drft.app;
+				PRODUCT_BUNDLE_IDENTIFIER = com.srinivasib.drft;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_STRICT_CONCURRENCY = complete;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
 		A70000000000000000000004 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_ENTITLEMENTS = drft/drft.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "";
+				DEVELOPMENT_TEAM = 3SN533K2V4;
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = drft;
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = drft/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.drft.app;
+				PRODUCT_BUNDLE_IDENTIFIER = com.srinivasib.drft;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_STRICT_CONCURRENCY = complete;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		A70000000000000000000005 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = DrftWidget/DrftWidget.entitlements;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3SN533K2V4;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = DrftWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.srinivasib.drft.DrftWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		A70000000000000000000006 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = DrftWidget/DrftWidget.entitlements;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3SN533K2V4;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = DrftWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.srinivasib.drft.DrftWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
@@ -323,7 +515,65 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		A60000000000000000000003 /* Build configuration list for PBXNativeTarget "DrftWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A70000000000000000000005 /* Debug */,
+				A70000000000000000000006 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		AA0000000000000000000003 /* XCLocalSwiftPackageReference "Vendor/clerk-convex-swift" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = "Vendor/clerk-convex-swift";
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		AA0000000000000000000001 /* XCRemoteSwiftPackageReference "clerk-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/clerk/clerk-ios";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.3.2;
+			};
+		};
+		AA0000000000000000000002 /* XCRemoteSwiftPackageReference "convex-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/get-convex/convex-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.8.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		AB0000000000000000000001 /* ClerkKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AA0000000000000000000001 /* XCRemoteSwiftPackageReference "clerk-ios" */;
+			productName = ClerkKit;
+		};
+		AB0000000000000000000002 /* ClerkKitUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AA0000000000000000000001 /* XCRemoteSwiftPackageReference "clerk-ios" */;
+			productName = ClerkKitUI;
+		};
+		AB0000000000000000000003 /* ConvexMobile */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AA0000000000000000000002 /* XCRemoteSwiftPackageReference "convex-swift" */;
+			productName = ConvexMobile;
+		};
+		AB0000000000000000000004 /* ClerkConvex */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AA0000000000000000000003 /* XCLocalSwiftPackageReference "Vendor/clerk-convex-swift" */;
+			productName = ClerkConvex;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
-	rootObject = A50000000000000000000002 /* Project object */;
+	rootObject = A50000000000000000000003 /* Project object */;
 }
