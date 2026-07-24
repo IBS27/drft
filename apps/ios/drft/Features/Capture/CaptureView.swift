@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct CaptureView: View {
+    @Environment(\.accessibilityReduceMotion) private var accessibilityReduceMotion
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.scenePhase) private var scenePhase
     @ObservedObject private var authService: AuthService
     @StateObject private var model: CaptureModel
@@ -33,9 +35,13 @@ struct CaptureView: View {
                 } label: {
                     Text("drft")
                         .stillnessWordmark()
+                        .padding(.vertical, 13)
+                        .frame(minHeight: 44)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .padding(.top, 18)
+                .padding(.top, 5)
+                .accessibilityLabel("Open settings")
 
                 Spacer(minLength: 28)
 
@@ -44,7 +50,7 @@ struct CaptureView: View {
                         .textFieldStyle(.plain)
                         .stillnessThought()
                         .focused($inputIsFocused)
-                        .lineLimit(1...5)
+                        .lineLimit(1...(dynamicTypeSize.isAccessibilitySize ? 8 : 5))
                         .submitLabel(.return)
                         .accessibilityLabel("Thought")
 
@@ -57,31 +63,6 @@ struct CaptureView: View {
                 .padding(.horizontal, 24)
 
                 Spacer(minLength: 28)
-
-                HStack(spacing: StillnessSpacing.actionGap) {
-                    Button {
-                        model.toggleDictation()
-                    } label: {
-                        speakLabel
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel(model.isListening ? "Stop listening" : "Speak")
-
-                    Button {
-                        model.keep()
-                    } label: {
-                        HStack(spacing: StillnessSpacing.dotLabelGap) {
-                            NowDot()
-                            Text("KEEP")
-                                .stillnessLabel(.actionInk)
-                        }
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(!model.canKeep)
-                    .opacity(model.canKeep ? 1 : 0.35)
-                    .accessibilityLabel("Keep")
-                }
-                .padding(.bottom, 22)
             }
             .opacity(model.isCaptureVisible ? 1 : 0)
             .animation(
@@ -93,6 +74,17 @@ struct CaptureView: View {
             .allowsHitTesting(model.isCaptureVisible)
 
             NowDot()
+                .scaleEffect(
+                    accessibilityReduceMotion || model.phase != .fadingCapture
+                        ? 1
+                        : 0.6
+                )
+                .animation(
+                    accessibilityReduceMotion
+                        ? nil
+                        : .spring(response: 0.4, dampingFraction: 0.8),
+                    value: model.phase
+                )
                 .opacity(model.isConfirmationVisible ? 1 : 0)
                 .animation(
                     model.phase == .fadingConfirmation
@@ -102,7 +94,12 @@ struct CaptureView: View {
                 )
                 .accessibilityHidden(true)
         }
-        .contentShape(Rectangle())
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            actionRow
+        }
+        .sensoryFeedback(.impact(weight: .light), trigger: model.phase) { _, phase in
+            phase == .fadingCapture
+        }
         .task(id: focusRequest) {
             inputIsFocused = false
             if settingsArePresented {
@@ -116,16 +113,10 @@ struct CaptureView: View {
             inputIsFocused = true
         }
         .onChange(of: model.isListening, initial: true) { _, isListening in
-            if isListening {
-                listeningPulse = false
-                withAnimation(.easeInOut(duration: 1.1).repeatForever(autoreverses: true)) {
-                    listeningPulse = true
-                }
-            } else {
-                withAnimation(.easeOut(duration: 0.15)) {
-                    listeningPulse = false
-                }
-            }
+            updateListeningPulse(isListening: isListening)
+        }
+        .onChange(of: accessibilityReduceMotion) {
+            updateListeningPulse(isListening: model.isListening)
         }
         .onDisappear {
             model.stopDictation()
@@ -144,17 +135,63 @@ struct CaptureView: View {
             SettingsView(authService: authService)
                 .presentationBackground(Stillness.surface)
                 .presentationDragIndicator(.hidden)
-                .presentationDetents([.large])
+                .presentationDetents([.medium, .large])
         }
+    }
+
+    private var actionRow: some View {
+        HStack(spacing: StillnessSpacing.actionGap) {
+            Button {
+                model.toggleDictation()
+            } label: {
+                speakLabel
+                    .padding(.vertical, 13)
+                    .frame(minHeight: 44)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(model.isListening ? "Stop listening" : "Speak")
+
+            Button {
+                model.keep()
+            } label: {
+                HStack(spacing: StillnessSpacing.dotLabelGap) {
+                    NowDot()
+                    Text("KEEP")
+                        .stillnessLabel(.actionInk)
+                }
+                .padding(.vertical, 13)
+                .frame(minHeight: 44)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .disabled(!model.canKeep)
+            .opacity(model.canKeep ? 1 : 0.35)
+            .animation(.easeOut(duration: 0.15), value: model.canKeep)
+            .accessibilityLabel("Keep")
+        }
+        .padding(.bottom, 9)
+        .opacity(model.isCaptureVisible ? 1 : 0)
+        .animation(
+            model.isCaptureVisible
+                ? .easeIn(duration: 0.18)
+                : .easeOut(duration: 0.25),
+            value: model.isCaptureVisible
+        )
+        .allowsHitTesting(model.isCaptureVisible)
     }
 
     @ViewBuilder
     private var speakLabel: some View {
         if model.isListening {
             HStack(spacing: 9) {
-                NowDot(diameter: 8)
-                    .scaleEffect(listeningPulse ? 1 : 0.72)
-                    .opacity(listeningPulse ? 1 : 0.55)
+                if accessibilityReduceMotion {
+                    NowDot(diameter: 8)
+                } else {
+                    NowDot(diameter: 8)
+                        .scaleEffect(listeningPulse ? 1 : 0.72)
+                        .opacity(listeningPulse ? 1 : 0.55)
+                }
                 Text("LISTENING")
                     .stillnessLabel(.actionInk)
             }
@@ -164,10 +201,29 @@ struct CaptureView: View {
         }
     }
 
+    private func updateListeningPulse(isListening: Bool) {
+        guard isListening else {
+            withAnimation(.easeOut(duration: 0.15)) {
+                listeningPulse = false
+            }
+            return
+        }
+
+        guard !accessibilityReduceMotion else {
+            listeningPulse = true
+            return
+        }
+
+        listeningPulse = false
+        withAnimation(.easeInOut(duration: 1.1).repeatForever(autoreverses: true)) {
+            listeningPulse = true
+        }
+    }
+
     private func timestamp(for date: Date) -> String {
         let time = date.formatted(
             .dateTime
-                .hour(.twoDigits(amPM: .omitted))
+                .hour(.twoDigits(amPM: .abbreviated))
                 .minute(.twoDigits)
         )
         return "\(time) · unfiled"

@@ -1,17 +1,23 @@
 import Combine
 import Foundation
-import UIKit
+import SwiftUI
 
 @MainActor
 final class CaptureModel: ObservableObject {
-    enum Phase {
+    enum Phase: Equatable {
         case editing
         case fadingCapture
         case showingConfirmation
         case fadingConfirmation
     }
 
-    @Published var text = ""
+    @Published var text = "" {
+        didSet {
+            if isListening, !isApplyingTranscript, text != oldValue {
+                stopDictation()
+            }
+        }
+    }
     @Published private(set) var isListening = false
     @Published private(set) var phase: Phase = .editing
     @Published private(set) var focusRequest = 0
@@ -21,6 +27,7 @@ final class CaptureModel: ObservableObject {
     private let dictationService: DictationService
     private var confirmationTask: Task<Void, Never>?
     private var dictationTask: Task<Void, Never>?
+    private var isApplyingTranscript = false
 
     init(
         captureQueue: CaptureQueue,
@@ -61,7 +68,10 @@ final class CaptureModel: ObservableObject {
             guard let self else { return }
             let started = await dictationService.start(
                 onTranscript: { [weak self] transcript in
-                    self?.text = existingText + separator + transcript
+                    guard let self else { return }
+                    isApplyingTranscript = true
+                    text = existingText + separator + transcript
+                    isApplyingTranscript = false
                 },
                 onStop: { [weak self] in
                     self?.isListening = false
@@ -91,14 +101,14 @@ final class CaptureModel: ObservableObject {
 
         let capturedText = text.trimmingCharacters(in: .whitespacesAndNewlines)
         stopDictation()
-        guard captureQueue.enqueue(
+        captureQueue.enqueue(
             text: capturedText,
             ownerID: ownerIDProvider()
-        ) else { return }
-        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        )
 
         confirmationTask?.cancel()
         phase = .fadingCapture
+        AccessibilityNotification.Announcement("Thought kept").post()
         confirmationTask = Task { [weak self] in
             do {
                 try await Task.sleep(for: .milliseconds(250))

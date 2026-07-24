@@ -21,6 +21,7 @@ struct DrftTimelineProvider: TimelineProvider {
 
 struct DrftWidgetView: View {
     @Environment(\.widgetFamily) private var family
+    @Environment(\.widgetRenderingMode) private var renderingMode
 
     var body: some View {
         Group {
@@ -35,11 +36,12 @@ struct DrftWidgetView: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
             case .accessoryCircular:
-                NowDot()
+                captureDot
+                    .widgetAccentable()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             case .systemSmall:
                 VStack(spacing: 14) {
-                    NowDot()
+                    captureDot
                     Text("drft")
                         .stillnessWordmark()
                 }
@@ -50,6 +52,22 @@ struct DrftWidgetView: View {
         }
         .containerBackground(Stillness.page, for: .widget)
         .widgetURL(URL(string: "drft://capture"))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Capture a thought in drft")
+    }
+
+    @ViewBuilder
+    private var captureDot: some View {
+        switch renderingMode {
+        case .accented, .vibrant:
+            Circle()
+                .frame(
+                    width: StillnessSpacing.nowDot,
+                    height: StillnessSpacing.nowDot
+                )
+        default:
+            NowDot()
+        }
     }
 }
 

@@ -21,7 +21,7 @@ final class CaptureQueue {
             case sequence
         }
 
-        init(id: UUID, text: String, createdAt: Date, ownerID: String, sequence: UInt64) {
+        init(id: UUID, text: String, createdAt: Date, ownerID: String?, sequence: UInt64) {
             self.id = id
             self.text = text
             self.createdAt = createdAt
@@ -37,12 +37,23 @@ final class CaptureQueue {
             ownerID = try container.decodeIfPresent(String.self, forKey: .ownerID)
             sequence = try container.decodeIfPresent(UInt64.self, forKey: .sequence) ?? 0
         }
+
+        func owned(by ownerID: String) -> Item {
+            Item(
+                id: id,
+                text: text,
+                createdAt: createdAt,
+                ownerID: ownerID,
+                sequence: sequence
+            )
+        }
     }
 
     private struct Entry {
         let item: Item
         var fileURL: URL?
         var isInJournal: Bool
+        var isInMemory = false
     }
 
     private struct JournalRecord {
@@ -62,6 +73,7 @@ final class CaptureQueue {
     private let pathMonitorQueue = DispatchQueue(label: "com.srinivasib.drft.capture-queue.network")
 
     private var authenticatedUserID: String?
+    private var memoryItems: [Item] = []
     private var lastSequence: UInt64 = 0
     private var isFlushing = false
     private var flushAgain = false
@@ -85,10 +97,7 @@ final class CaptureQueue {
         startActiveMonitoring()
     }
 
-    @discardableResult
-    func enqueue(text: String, ownerID: String?) -> Bool {
-        guard let ownerID else { return false }
-
+    func enqueue(text: String, ownerID: String?) {
         lastSequence += 1
         let item = Item(
             id: UUID(),
@@ -98,12 +107,13 @@ final class CaptureQueue {
             sequence: lastSequence
         )
 
-        guard persist(item) || appendToJournal(item) else { return false }
+        if !persist(item), !appendToJournal(item) {
+            memoryItems.append(item)
+        }
 
         Task { [weak self] in
             await self?.flush()
         }
-        return true
     }
 
     func updateAuthenticatedUserID(_ userID: String?) {
@@ -135,6 +145,9 @@ final class CaptureQueue {
             promoteJournalItems()
 
             guard let ownerID = authenticatedUserID else { break }
+            if !adoptOrphanedItems(ownerID: ownerID) {
+                scheduleRetry()
+            }
             while authenticatedUserID == ownerID,
                   let entry = oldestEntry(for: ownerID) {
                 do {
@@ -241,6 +254,41 @@ final class CaptureQueue {
         )
     }
 
+    private func adoptOrphanedItems(ownerID: String) -> Bool {
+        var adoptedAll = true
+
+        for (item, _) in fileItems() where item.ownerID == nil {
+            if !persist(item.owned(by: ownerID)) {
+                adoptedAll = false
+            }
+        }
+
+        let records = journalRecords()
+        let adoptedJournalIDs = Set(records.compactMap { record -> UUID? in
+            guard let item = record.item, item.ownerID == nil else { return nil }
+            guard persist(item.owned(by: ownerID)) else {
+                adoptedAll = false
+                return nil
+            }
+            return item.id
+        })
+        if !adoptedJournalIDs.isEmpty,
+           !rewriteJournal(
+               records.filter { record in
+                   guard let id = record.item?.id else { return true }
+                   return !adoptedJournalIDs.contains(id)
+               }
+           ) {
+            adoptedAll = false
+        }
+
+        memoryItems = memoryItems.map { item in
+            item.ownerID == nil ? item.owned(by: ownerID) : item
+        }
+
+        return adoptedAll
+    }
+
     private func oldestEntry(for ownerID: String) -> Entry? {
         var entriesByID: [UUID: Entry] = [:]
 
@@ -261,6 +309,20 @@ final class CaptureQueue {
                     item: item,
                     fileURL: nil,
                     isInJournal: true
+                )
+            }
+        }
+
+        for item in memoryItems {
+            if var entry = entriesByID[item.id] {
+                entry.isInMemory = true
+                entriesByID[item.id] = entry
+            } else {
+                entriesByID[item.id] = Entry(
+                    item: item,
+                    fileURL: nil,
+                    isInJournal: false,
+                    isInMemory: true
                 )
             }
         }
@@ -286,6 +348,9 @@ final class CaptureQueue {
             } catch {
                 return false
             }
+        }
+        if entry.isInMemory {
+            memoryItems.removeAll { $0.id == entry.item.id }
         }
         return true
     }

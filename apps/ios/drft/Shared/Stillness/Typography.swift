@@ -1,10 +1,26 @@
 import SwiftUI
 
 enum StillnessType {
-    static let wordmark = Font.custom("Helvetica Neue", size: 15).weight(.regular)
-    static let thought = Font.custom("Helvetica Neue", size: 30).weight(.light)
-    static let timestamp = Font.custom("Helvetica Neue", size: 13).weight(.light)
-    static let action = Font.custom("Helvetica Neue", size: 15).weight(.regular)
+    static let wordmark = Font.custom(
+        "Helvetica Neue",
+        size: 15,
+        relativeTo: .subheadline
+    ).weight(.regular)
+    static let thought = Font.custom(
+        "Helvetica Neue",
+        size: 30,
+        relativeTo: .title
+    ).weight(.light)
+    static let timestamp = Font.custom(
+        "Helvetica Neue",
+        size: 13,
+        relativeTo: .footnote
+    ).weight(.light)
+    static let action = Font.custom(
+        "Helvetica Neue",
+        size: 15,
+        relativeTo: .subheadline
+    ).weight(.regular)
 
     static let wordmarkTracking: CGFloat = 7.5
     static let thoughtLineSpacing: CGFloat = 15
@@ -29,6 +45,30 @@ private struct ThoughtStyle: ViewModifier {
             .lineSpacing(StillnessType.thoughtLineSpacing)
             .multilineTextAlignment(.center)
             .foregroundStyle(Stillness.ink)
+    }
+}
+
+private struct MutedBodyStyle: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .font(.custom(
+                "Helvetica Neue",
+                size: 15,
+                relativeTo: .subheadline
+            ).weight(.light))
+            .foregroundStyle(Stillness.muted)
+    }
+}
+
+private struct FaintFootnoteStyle: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .font(.custom(
+                "Helvetica Neue",
+                size: 13,
+                relativeTo: .footnote
+            ).weight(.light))
+            .foregroundStyle(Stillness.faint)
     }
 }
 
@@ -86,6 +126,14 @@ extension View {
 
     func stillnessThought() -> some View {
         modifier(ThoughtStyle())
+    }
+
+    func stillnessMutedBody() -> some View {
+        modifier(MutedBodyStyle())
+    }
+
+    func stillnessFaintFootnote() -> some View {
+        modifier(FaintFootnoteStyle())
     }
 
     func stillnessLabel(_ kind: StillnessLabelKind) -> some View {

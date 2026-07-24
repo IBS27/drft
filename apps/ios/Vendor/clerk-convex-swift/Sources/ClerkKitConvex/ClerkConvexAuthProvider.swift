@@ -31,11 +31,15 @@ public final class ClerkConvexAuthProvider: AuthProvider {
         try await authenticate(onIdToken: onIdToken)
     }
 
+    // Clerk sign-out is owned by the app. Calling it here would fire a second
+    // sign-out request whenever the bridge reacts to a session change, and
+    // would escalate a mere session expiry into a full Clerk sign-out. It can
+    // also throw, which would abort ConvexClientWithAuth.logout() before it
+    // clears its auth bridge.
     public func logout() async throws {
         tokenRefreshListenerTask?.cancel()
         tokenRefreshListenerTask = nil
         onIdToken = nil
-        try await Clerk.shared.auth.signOut()
     }
 
     public nonisolated func extractIdToken(from authResult: String) -> String {
@@ -77,8 +81,13 @@ public final class ClerkConvexAuthProvider: AuthProvider {
 
                 do {
                     onIdToken?(try await fetchToken())
-                } catch {
+                } catch ClerkConvexAuthError.noActiveSession {
                     onIdToken?(nil)
+                } catch {
+                    // Transient failure (offline, Clerk hiccup): keep the
+                    // current token. Reporting nil tears down the Convex auth
+                    // bridge permanently — a later good token can no longer
+                    // reattach it; the client re-fetches on demand instead.
                 }
             }
         }
@@ -115,7 +124,9 @@ public final class ClerkConvexAuthProvider: AuthProvider {
             (oldSession?.status != .active || oldSession?.id != newSession?.id)
     }
 
+    // A session can expire or be revoked while Clerk still holds the object,
+    // so anything but `.active` counts as signed out — not just nil.
     private func shouldLogout(oldSession: Session?, newSession: Session?) -> Bool {
-        oldSession?.id != nil && newSession == nil
+        oldSession != nil && newSession?.status != .active
     }
 }
