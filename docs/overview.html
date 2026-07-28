@@ -211,7 +211,7 @@
 
   <p><strong>Success metric:</strong> "thoughts I captured actually came back to me and became clearer" — not "number of notes stored." The <strong>return loop</strong> is the hard design problem: the product must pull you back (resurfacing, questions waiting for you), not passively wait.</p>
 
-  <p><strong>Experience:</strong> the moment-by-moment product — capture rules, the daily return, partner contract, thought lifecycle — is specified in <a href="experience.html">the experience doc</a>. Headline decisions: iOS is capture-only; the partner prepares questions in the background but waits; the return loop is one thought a day; thoughts have no stages — just <code>open</code> and <code>resting</code>.</p>
+  <p><strong>Experience:</strong> the moment-by-moment product — capture rules, the daily return, partner contract, thought lifecycle — is specified in <a href="experience.html">the experience doc</a>. Headline decisions: iOS is capture-only; the partner prepares questions in the background but waits; the return loop is one thought a day, delivered by email rather than push; thoughts have no stages — just <code>open</code> and <code>resting</code>.</p>
 
   <p><strong>Design:</strong> both clients follow the <a href="design.html">Stillness design language</a> — one thought at a time, near-monochrome, the interface receding until the fragment is the only thing in the room. Light and dark mode specs, tokens included.</p>
 </section>
@@ -258,9 +258,9 @@
       <td>Top-tier model for interactive thinking-partner sessions; cheap model for background work (embeddings, tagging, linking). AI SDK keeps models swappable, streaming for free.</td>
     </tr>
     <tr>
-      <td>Push</td>
-      <td>APNs</td>
-      <td>The re-engagement loop is core product, not an add-on.</td>
+      <td>Delivery</td>
+      <td>Email — Resend, sent from a Convex action</td>
+      <td>The daily return is core product, not an add-on. Email lands at an exact time without a live browser or an installed app, and the subject line carries the whole interaction. Push was rejected: it puts a reading surface on a capture-only phone, and APNs needs a paid Apple Developer account. Delivery is an adapter over channel-agnostic selection, so APNs can join later.</td>
     </tr>
     <tr>
       <td>Hosting</td>
@@ -276,7 +276,7 @@
 
   <h3>Architecture in one line</h3>
   <div class="flow">
-    iOS widget <span class="arrow">→</span> <b>Convex mutation</b> <span class="cm">(capture is dumb &amp; instant)</span> <span class="arrow">→</span> <b>async action</b> <span class="cm">(embed · link · generate questions)</span> <span class="arrow">→</span> web workspace + <b>push</b> close the loop
+    iOS widget <span class="arrow">→</span> <b>Convex mutation</b> <span class="cm">(capture is dumb &amp; instant)</span> <span class="arrow">→</span> <b>async action</b> <span class="cm">(embed · link · generate questions)</span> <span class="arrow">→</span> web workspace + <b>daily email</b> close the loop
   </div>
 
 </section>
@@ -318,7 +318,8 @@
 │           ├── schema.ts           <span class="cm"># thoughts, connections, questions</span>
 │           ├── thoughts.ts         <span class="cm"># capture mutation, queries</span>
 │           ├── enrichment.ts       <span class="cm"># actions: embed, link, generate questions</span>
-│           ├── resurfacing.ts      <span class="cm"># scheduled functions + push triggers</span>
+│           ├── resurfacing.ts      <span class="cm"># cron + daily selection (channel-agnostic)</span>
+│           ├── delivery.ts         <span class="cm"># email adapter (Resend); APNs later</span>
 │           ├── ai/                 <span class="cm"># prompt templates, model routing</span>
 │           └── _generated/
 │
@@ -346,7 +347,7 @@
     <li><strong>2 · Web workspace</strong> — collection list (today / this week / earlier) and thought view, no AI yet. Validates schema + design in one pass.</li>
     <li><strong>3 · AI layer</strong> — streaming thinking-partner sessions (Convex action, AI SDK); background enrichment on capture: embeddings → vector search, auto-linking, generated questions.</li>
     <li><strong>4 · iOS</strong> — SwiftUI capture, WidgetKit + App Intents, dictation, Convex Swift client + Clerk.</li>
-    <li><strong>5 · Return loop</strong> — scheduled resurfacing + APNs. Last on purpose: tuning it needs weeks of real captured thoughts.</li>
+    <li><strong>5 · Return loop</strong> — scheduled resurfacing (the selection algorithm, where the risk is) + a daily email adapter over it; daily-time preference moves into Convex. Last on purpose: tuning it needs weeks of real captured thoughts.</li>
   </ul>
 </section>
 

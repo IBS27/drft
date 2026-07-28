@@ -59,6 +59,9 @@ export default defineSchema({
 
   // One per day, never repeat too soon, never resting thoughts. The
   // scheduler that writes it is phase 5; date is YYYY-MM-DD.
+  // Phase 5 must also add: userId (this table is single-user shaped today),
+  // plus channel + deliveredAt — selection stays channel-agnostic and the
+  // daily email is one adapter over it. See docs/experience.html §03.
   resurfacings: defineTable({
     thoughtId: v.id("thoughts"),
     date: v.string(),

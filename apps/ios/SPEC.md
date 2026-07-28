@@ -156,10 +156,12 @@ Nearly empty by design. A sheet on `surface` with:
 
 - `SETTINGS` label (tracked caps, faint) at top.
 - Signed-in identity (email, muted, plain text).
-- `daily thought` — a time picker (compact) for the future daily resurfacing push,
-  stored locally in `@AppStorage("dailyThoughtTime")` in the App Group defaults.
-  Phase 5 will read it. Default 8:00. One line of faint copy: `one thought returns
-  each morning · arrives with phase 5`.
+- `daily thought` — a time picker (compact) for the daily resurfacing email.
+  Currently stored locally in `@AppStorage("dailyThoughtTime")` in the App Group
+  defaults; **phase 5 makes Convex the source of truth** (the server sends the
+  email, so it must own the time) and this picker writes through to it. Default
+  8:00. One line of faint copy: `one thought returns each morning · arrives with
+  phase 5`.
 - `sign out` — muted text button. Confirmation-free.
 - App version, faint, bottom.
 
@@ -206,8 +208,12 @@ text entry.
 
 ## Out of scope for phase 4
 
-Push notifications / APNs, resurfacing, any reading surface, share extension,
-iPad, Live Activities, onboarding beyond sign-in.
+Resurfacing, any reading surface, share extension, iPad, Live Activities,
+onboarding beyond sign-in.
+
+Push notifications / APNs are not merely deferred — the daily return ships as
+email instead (see `docs/experience.html` §03). The phone captures; it is not a
+delivery channel. Nothing in this app needs a push entitlement.
 
 ## Verification
 

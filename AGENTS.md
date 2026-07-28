@@ -20,7 +20,7 @@ Both no-op unless the deployment sets `SEED_ALLOWED=1` (dev only, already set) �
 
 One-time embedding catch-up for thoughts/messages captured before phase 3: `bunx convex run enrichment:backfillEmbeddings`
 
-Web env lives in `apps/web/.env.local` (see `.env.example`): `VITE_CONVEX_URL`, `VITE_CLERK_PUBLISHABLE_KEY`. The Convex deployment needs `CLERK_JWT_ISSUER_DOMAIN` set (Clerk JWT template named `convex`) and `OPENAI_API_KEY` (phase 3: partner sessions, enrichment, embeddings — model routing in `convex/ai/models.ts`).
+Web env lives in `apps/web/.env.local` (see `.env.example`): `VITE_CONVEX_URL`, `VITE_CLERK_PUBLISHABLE_KEY`. The Convex deployment needs `CLERK_JWT_ISSUER_DOMAIN` set (Clerk JWT template named `convex`) and `OPENAI_API_KEY` (phase 3: partner sessions, enrichment, embeddings — model routing in `convex/ai/models.ts`). Phase 5 adds `RESEND_API_KEY` and `DRFT_FROM_EMAIL` for the daily return email.
 
 ## Conventions
 
