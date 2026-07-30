@@ -1,6 +1,6 @@
-import { SignOutButton } from "@clerk/clerk-react";
+import { useUser } from "@clerk/clerk-react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
 import { useEffect, useState } from "react";
 import { CaptureField } from "../features/thoughts/CaptureField";
@@ -35,6 +35,21 @@ function Collection() {
   const data = useQuery(api.thoughts.collection, { date: localDate(now) });
   const resting = useQuery(api.thoughts.resting);
 
+  // The daily email starts without a settings visit: first signed-in load
+  // creates the row (default 8:00, this browser's timezone), and later
+  // loads keep the timezone current. Idempotent, so StrictMode's double
+  // effect is harmless.
+  const ensure = useMutation(api.settings.ensure);
+  const { user } = useUser();
+  const email = user?.primaryEmailAddress?.emailAddress;
+  useEffect(() => {
+    if (!user) return;
+    void ensure({
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      email,
+    });
+  }, [ensure, user, email]);
+
   const loading = data === undefined;
   const thoughts = data?.thoughts ?? [];
   const resurfaced = thoughts.find((t) => t._id === data?.resurfacedId);
@@ -47,14 +62,12 @@ function Collection() {
   return (
     <main className="flex min-h-dvh flex-col">
       <header className="grid grid-cols-3 items-baseline px-8 pt-7">
-        <SignOutButton>
-          <button
-            type="button"
-            className="justify-self-start text-[11px] tracking-[0.26em] text-pl uppercase transition-colors hover:text-ink"
-          >
-            sign out
-          </button>
-        </SignOutButton>
+        <Link
+          to="/settings"
+          className="justify-self-start text-[11px] tracking-[0.26em] text-pl uppercase transition-colors hover:text-ink"
+        >
+          settings
+        </Link>
         <span className="justify-self-center text-[12px] tracking-[0.5em] text-pt uppercase">
           drft
         </span>

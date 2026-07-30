@@ -82,7 +82,9 @@ export const collection = query({
     );
     const todays = await ctx.db
       .query("resurfacings")
-      .withIndex("by_date", (q) => q.eq("date", date))
+      .withIndex("by_user_date", (q) =>
+        q.eq("userId", identity.subject).eq("date", date),
+      )
       .collect();
     const mine = todays.find((r) => open.some((t) => t._id === r.thoughtId));
     return { thoughts, resurfacedId: mine?.thoughtId ?? null };

@@ -8,6 +8,10 @@ import Foundation
 final class ConvexService: ObservableObject {
     @Published private(set) var authenticatedUserID: String?
 
+    private struct DailyThoughtSettings: Decodable {
+        let sendTime: String
+    }
+
     private struct TokenClaims: Decodable {
         let sub: String
     }
@@ -39,6 +43,42 @@ final class ConvexService: ObservableObject {
 
     func capture(text: String) async throws -> String {
         try await client.mutation("thoughts:capture", with: ["text": text])
+    }
+
+    func dailyThoughtSendTime() async throws -> String? {
+        let settings = client.subscribe(
+            to: "settings:get",
+            yielding: DailyThoughtSettings?.self
+        )
+        for try await value in settings.first().values {
+            return value?.sendTime
+        }
+        return nil
+    }
+
+    func saveDailyThoughtSettings(
+        sendTime: String,
+        timezone: String,
+        email: String?
+    ) async throws {
+        if let email {
+            try await client.mutation(
+                "settings:save",
+                with: [
+                    "sendTime": sendTime,
+                    "timezone": timezone,
+                    "email": email,
+                ]
+            )
+        } else {
+            try await client.mutation(
+                "settings:save",
+                with: [
+                    "sendTime": sendTime,
+                    "timezone": timezone,
+                ]
+            )
+        }
     }
 
     private static func userID(from token: String) -> String? {

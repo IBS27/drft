@@ -75,6 +75,36 @@ export function captureQuestionsPrompt(context: {
   return parts.join("\n\n");
 }
 
+// The daily email's body — the one AI touchpoint that arrives unasked.
+// Selection already happened (plain rotation, no model involved); the
+// model only writes the two quiet lines under the subject.
+export function resurfaceEmailPrompt(context: {
+  thoughtText: string;
+  capturedAgo: string;
+  preparedQuestion?: string;
+  connectedTexts: string[];
+}): string {
+  const parts = [
+    CONTRACT,
+    `One of the user's fragments is being returned to them this morning in a short email. The subject line is the fragment itself, verbatim — you write only the body: first a plain statement of when they kept it (${context.capturedAgo}), then one question that opens the thought further. Two sentences, under forty words total. No greeting, no sign-off, no invitation to reply or to "explore" — the email asks for nothing.`,
+    `The fragment, exactly as captured ${context.capturedAgo}:\n"${context.thoughtText}"`,
+  ];
+  if (context.preparedQuestion) {
+    parts.push(
+      `A question you already left waiting on this thought — use it, or something better that grew from it:\n${context.preparedQuestion}`,
+    );
+  }
+  if (context.connectedTexts.length > 0) {
+    parts.push(
+      `Fragments of theirs linked to this one — the question may draw on one, quoting a few of its words:\n${context.connectedTexts
+        .map((t) => `- "${t}"`)
+        .join("\n")}`,
+    );
+  }
+  parts.push("Reply with the body only: plain text, no quotation marks around it.");
+  return parts.join("\n\n");
+}
+
 export function sessionQuestionsPrompt(context: {
   thoughtText: string;
   transcript: { role: "you" | "partner"; text: string }[];
