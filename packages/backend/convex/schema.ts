@@ -22,7 +22,7 @@ export default defineSchema({
     }),
 
   // Partner-drafted questions; an unseen one lights the vermilion dot and
-  // feeds resurfacing readiness.
+  // can shape the question carried by a resurfacing.
   questions: defineTable({
     thoughtId: v.id("thoughts"),
     text: v.string(),
@@ -72,6 +72,17 @@ export default defineSchema({
     userId: v.optional(v.string()),
     channel: v.optional(v.literal("email")),
     deliveredAt: v.optional(v.number()),
+    // The exact request accepted by the email adapter. Persisting it before
+    // the external call makes every retry a true idempotent replay.
+    emailPayload: v.optional(
+      v.object({
+        from: v.string(),
+        to: v.string(),
+        subject: v.string(),
+        text: v.string(),
+        html: v.string(),
+      }),
+    ),
   })
     .index("by_user_date", ["userId", "date"])
     .index("by_thought", ["thoughtId"]),

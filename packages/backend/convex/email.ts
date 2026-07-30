@@ -62,58 +62,43 @@ export const deliver = internalAction({
     if (!delivery || delivery.delivered || delivery.thought.status !== "open")
       return;
 
-    const now = Date.now();
-    const ago = agoPhrase(delivery.thought.createdAt, now);
-    const context = await ctx.runQuery(internal.store.thoughtContext, {
-      thoughtId: delivery.thought._id,
-    });
-    const questions = context?.questions ?? [];
-    const preparedQuestion = (
-      questions.find((q) => !q.seen) ?? questions[questions.length - 1]
-    )?.text;
-
-    // The model writes the two lines under the subject; if it stumbles,
-    // a plain templated body goes out — the send never waits on it.
-    let body = `You kept this ${ago}.${preparedQuestion ? ` ${preparedQuestion}` : ""}`;
-    try {
-      const openai = openaiProvider();
-      const result = await generateText({
-        model: openai(QUESTION_MODEL),
-        prompt: resurfaceEmailPrompt({
-          thoughtText: delivery.thought.text,
-          capturedAgo: ago,
-          preparedQuestion,
-          connectedTexts: context?.connectedTexts ?? [],
-        }),
+    let payload = delivery.emailPayload;
+    if (!payload) {
+      const now = Date.now();
+      const ago = agoPhrase(delivery.thought.createdAt, now);
+      const context = await ctx.runQuery(internal.store.thoughtContext, {
+        thoughtId: delivery.thought._id,
       });
-      const composed = result.text.trim();
-      if (composed) body = composed;
-    } catch (error) {
-      console.error("[email] body composition failed, using template", error);
-    }
+      const questions = context?.questions ?? [];
+      const preparedQuestion = (
+        questions.find((q) => !q.seen) ?? questions[questions.length - 1]
+      )?.text;
 
-    // Last look before sending: composing took seconds, and "set down is
-    // never sent again" should hold even for a rest() made in that gap.
-    const fresh = await ctx.runQuery(internal.resurfacing.deliveryContext, {
-      resurfacingId,
-    });
-    if (!fresh || fresh.delivered || fresh.thought.status !== "open") return;
+      // The model writes the two lines under the subject; if it stumbles,
+      // a plain templated body goes out — the send never waits on it.
+      let body = `You kept this ${ago}.${preparedQuestion ? ` ${preparedQuestion}` : ""}`;
+      try {
+        const openai = openaiProvider();
+        const result = await generateText({
+          model: openai(QUESTION_MODEL),
+          prompt: resurfaceEmailPrompt({
+            thoughtText: delivery.thought.text,
+            capturedAgo: ago,
+            preparedQuestion,
+            connectedTexts: context?.connectedTexts ?? [],
+          }),
+        });
+        const composed = result.text.trim();
+        if (composed) body = composed;
+      } catch (error) {
+        console.error("[email] body composition failed, using template", error);
+      }
 
-    const appUrl = (process.env.DRFT_APP_URL ?? "http://localhost:5173").replace(
-      /\/$/,
-      "",
-    );
-    const link = `${appUrl}/thought/${delivery.thought._id}`;
-    const response = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-        // The tick retries until deliveredAt is stamped; if a success and
-        // its retry ever race, Resend collapses them to one email.
-        "Idempotency-Key": resurfacingId,
-      },
-      body: JSON.stringify({
+      const appUrl = (
+        process.env.DRFT_APP_URL ?? "http://localhost:5173"
+      ).replace(/\/$/, "");
+      const link = `${appUrl}/thought/${delivery.thought._id}`;
+      const candidate = {
         from: process.env.DRFT_FROM_EMAIL ?? "drft <onboarding@resend.dev>",
         to: delivery.email,
         subject: subjectLine(delivery.thought.text),
@@ -126,13 +111,30 @@ export const deliver = internalAction({
           `<p style="margin:28px 0 0;"><a href="${link}" style="color:#6b6b65;font-size:12px;letter-spacing:0.26em;text-transform:uppercase;text-decoration:none;">open in drft</a></p>`,
           `</div></div>`,
         ].join(""),
-      }),
+      };
+
+      // This is also the last transactional status check before the external
+      // send. A concurrent action returns the payload that won the race.
+      const preparedPayload = await ctx.runMutation(
+        internal.resurfacing.prepareEmailPayload,
+        { resurfacingId, payload: candidate },
+      );
+      if (!preparedPayload) return;
+      payload = preparedPayload;
+    }
+
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        // Every attempt replays the exact persisted request. Resend can
+        // therefore return the original success without sending twice.
+        "Idempotency-Key": resurfacingId,
+      },
+      body: JSON.stringify(payload),
     });
-    // 409 means Resend already accepted this Idempotency-Key — an earlier
-    // attempt (or a concurrent one) got through and only our bookkeeping
-    // failed. The email exists; treating it as anything else would retry
-    // with a recomposed body against the same key all day.
-    if (!response.ok && response.status !== 409) {
+    if (!response.ok) {
       console.error(
         `[email] Resend responded ${response.status}: ${await response.text()}`,
       );

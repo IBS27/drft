@@ -243,7 +243,7 @@
   <h3>How the day's thought is chosen</h3>
   <ul>
     <li><strong>Never the newest.</strong> Fresh thoughts don't need help returning; the loop exists for week-old and month-old ones.</li>
-    <li><strong>Prefer readiness over recency:</strong> a thought with an unseen question waiting, a new resonance with something recently captured, or a long-dormant fragment that keeps almost-connecting.</li>
+    <li><strong>A slow rotation, not a score.</strong> Never-resurfaced thoughts come first; after that, whichever eligible thought has waited longest returns. Questions and resonances shape what the partner asks, not whether a thought wins the day — every fragment eventually gets its turn.</li>
     <li><strong>One per day, maximum.</strong> Scarcity is what makes it a ritual instead of noise. If nothing has genuinely accumulated (early days, thin collection), drft stays silent — silence beats filler.</li>
     <li><strong>Resting thoughts are exempt.</strong> Once you set a thought down, it is never sent to you again.</li>
   </ul>
@@ -369,7 +369,7 @@
     </tr>
     <tr>
       <td>questions</td>
-      <td>partner-drafted per thought: <code>thoughtId</code>, <code>text</code>, <code>seenAt?</code> — "unseen question" is what lights the vermilion dot and feeds resurfacing readiness.</td>
+      <td>partner-drafted per thought: <code>thoughtId</code>, <code>text</code>, <code>seenAt?</code> — "unseen question" is what lights the vermilion dot and can shape the question carried by a resurfacing.</td>
     </tr>
     <tr>
       <td>connections</td>
@@ -381,7 +381,7 @@
     </tr>
     <tr>
       <td>resurfacings</td>
-      <td>log of <code>userId</code> + <code>thoughtId</code> + <code>date</code> — powers "one per day, never repeat too soon, never resting thoughts." Phase 5 adds <code>channel</code> + <code>deliveredAt?</code> so delivery stays an adapter over the same selection log. (Table lands in phase 1; the scheduler that writes it is phase 5.)</td>
+      <td>log of <code>userId</code> + <code>thoughtId</code> + <code>date</code> — powers "one per day, never repeat too soon, never resting thoughts." Phase 5 adds <code>channel</code> + <code>deliveredAt?</code>; the email adapter also freezes its exact <code>emailPayload?</code> before sending so retries are idempotent. Selection remains channel-agnostic. (Table lands in phase 1; the scheduler that writes it is phase 5.)</td>
     </tr>
   </table>
 

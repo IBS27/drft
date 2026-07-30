@@ -13,6 +13,13 @@ import { RESURFACE_COOLDOWN_DAYS, RESURFACE_MIN_AGE_DAYS } from "./ai/limits";
 
 const DAY = 86_400_000;
 const MIN_GAP_MS = 20 * 3_600_000;
+const emailPayloadValidator = v.object({
+  from: v.string(),
+  to: v.string(),
+  subject: v.string(),
+  text: v.string(),
+  html: v.string(),
+});
 
 // A user's wall clock, without a timezone library: Intl formats the
 // current instant into their zone.
@@ -146,6 +153,9 @@ export const deliveryContext = internalQuery({
     return {
       delivered: resurfacing.deliveredAt !== undefined,
       email: settings.email,
+      ...(resurfacing.emailPayload
+        ? { emailPayload: resurfacing.emailPayload }
+        : {}),
       thought: {
         _id: thought._id,
         text: thought.text,
@@ -153,6 +163,39 @@ export const deliveryContext = internalQuery({
         status: thought.status,
       },
     };
+  },
+});
+
+// Freezes the first complete Resend request before the external call. If
+// delivery actions ever race, Convex OCC makes them converge on this one
+// stored payload; retries then use the same body under the same idempotency
+// key instead of asking the model to compose again.
+export const prepareEmailPayload = internalMutation({
+  args: {
+    resurfacingId: v.id("resurfacings"),
+    payload: emailPayloadValidator,
+  },
+  returns: v.union(emailPayloadValidator, v.null()),
+  handler: async (ctx, { resurfacingId, payload }) => {
+    const resurfacing = await ctx.db.get(resurfacingId);
+    if (
+      !resurfacing ||
+      resurfacing.userId === undefined ||
+      resurfacing.deliveredAt !== undefined
+    )
+      return null;
+    if (resurfacing.emailPayload) return resurfacing.emailPayload;
+
+    const thought = await ctx.db.get(resurfacing.thoughtId);
+    if (
+      !thought ||
+      thought.userId !== resurfacing.userId ||
+      thought.status !== "open"
+    )
+      return null;
+
+    await ctx.db.patch(resurfacingId, { emailPayload: payload });
+    return payload;
   },
 });
 
