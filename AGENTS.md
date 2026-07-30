@@ -3,8 +3,8 @@
 A space for unfinished thoughts — instant capture on iOS, an AI thinking-partner workspace on the web.
 
 - `apps/web` — Vite + React + TypeScript SPA (bun)
-- `apps/ios` — native Swift/SwiftUI app (planned, outside the Bun workspace)
-- `packages/backend` — Convex backend (schema, capture mutation, Clerk auth config)
+- `apps/ios` — native Swift/SwiftUI capture app (outside the Bun workspace; see `apps/ios/SPEC.md`)
+- `packages/backend` — Convex backend (schema, capture mutation, enrichment/partner AI, return-loop scheduler + email, Clerk auth config)
 - `docs/overview.html` — product & tech overview
 - `docs/experience.html` — the experience: moment-by-moment product spec (capture rules, return loop, partner contract, lifecycle)
 - `docs/design.html` — the design: "Stillness" (light + dark)
@@ -14,13 +14,13 @@ A space for unfinished thoughts — instant capture on iOS, an AI thinking-partn
 From `apps/web`: `bun dev` · `bun run build` · `bun run lint` · `bun run typecheck`
 From `packages/backend`: `bun run dev` (convex dev) · `bun run typecheck`
 
-Dev-only design seed (plants sample thoughts + schedules real enrichment on them; fakes only the resurfacing until phase 5), from `packages/backend`:
+Dev-only design seed (plants sample thoughts + schedules real enrichment on them; fabricates one resurfacing for the given date — selection-log only, so no email is sent for it), from `packages/backend`:
 `bunx convex run seed:run '{"date":"YYYY-MM-DD"}'` · undo with `bunx convex run seed:clear`
 Both no-op unless the deployment sets `SEED_ALLOWED=1` (dev only, already set) — guards against an accidental `--prod` run.
 
 One-time embedding catch-up for thoughts/messages captured before phase 3: `bunx convex run enrichment:backfillEmbeddings`
 
-Web env lives in `apps/web/.env.local` (see `.env.example`): `VITE_CONVEX_URL`, `VITE_CLERK_PUBLISHABLE_KEY`. The Convex deployment needs `CLERK_JWT_ISSUER_DOMAIN` set (Clerk JWT template named `convex`) and `OPENAI_API_KEY` (phase 3: partner sessions, enrichment, embeddings — model routing in `convex/ai/models.ts`). Phase 5 adds `RESEND_API_KEY` and `DRFT_FROM_EMAIL` for the daily return email.
+Web env lives in `apps/web/.env.local` (see `.env.example`): `VITE_CONVEX_URL`, `VITE_CLERK_PUBLISHABLE_KEY`. The Convex deployment needs `CLERK_JWT_ISSUER_DOMAIN` set (Clerk JWT template named `convex`) and `OPENAI_API_KEY` (phase 3: partner sessions, enrichment, embeddings — model routing in `convex/ai/models.ts`). The daily return email (phase 5) needs `RESEND_API_KEY` (without it delivery is dormant — selection still runs and the web shows the day's thought); optional: `DRFT_FROM_EMAIL` (defaults to the Resend sandbox `drft <onboarding@resend.dev>`, which can only send to the Resend account owner's address) and `DRFT_APP_URL` (link target in the email, defaults to `http://localhost:5173`). The send time is per-user in the `settings` table, written from web or iOS settings.
 
 ## Conventions
 

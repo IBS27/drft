@@ -18,3 +18,9 @@ export const MAX_UNSEEN_QUESTIONS = 2;
 // How long a session stays quiet before the partner prepares questions
 // from what was said.
 export const SESSION_SETTLE_MS = 45 * 60 * 1000;
+
+// The return loop. "Never the newest": a thought must sit at least this
+// long before it can come back. And once resurfaced, it rests out of the
+// rotation this long — the loop is a slow wheel, not a feed.
+export const RESURFACE_MIN_AGE_DAYS = 3;
+export const RESURFACE_COOLDOWN_DAYS = 30;

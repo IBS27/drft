@@ -2,11 +2,16 @@ import SwiftUI
 
 struct SettingsView: View {
     @ObservedObject private var authService: AuthService
+    @ObservedObject private var convexService: ConvexService
     @Environment(\.dismiss) private var dismiss
     @AppStorage private var dailyThoughtTime: Date
+    @State private var hasEditedDailyThoughtTime = false
+    @State private var lastSyncedSendTime: String?
+    @State private var saveTask: Task<Void, Never>?
 
-    init(authService: AuthService) {
+    init(authService: AuthService, convexService: ConvexService) {
         self.authService = authService
+        self.convexService = convexService
         _dailyThoughtTime = AppStorage(
             wrappedValue: Self.defaultDailyThoughtTime,
             "dailyThoughtTime",
@@ -76,7 +81,7 @@ struct SettingsView: View {
                                     }
                             }
 
-                            Text("one thought returns each morning · arrives with phase 5")
+                            Text("one thought returns each morning")
                                 .stillnessFaintFootnote()
                                 .fixedSize(horizontal: false, vertical: true)
                         }
@@ -119,6 +124,42 @@ struct SettingsView: View {
                     .padding(.bottom, 18)
             }
         }
+        .task(id: convexService.authenticatedUserID) {
+            guard authService.isSignedIn,
+                  convexService.authenticatedUserID != nil,
+                  let sendTime = try? await convexService.dailyThoughtSendTime(),
+                  let date = Self.date(from: sendTime),
+                  !hasEditedDailyThoughtTime
+            else { return }
+
+            lastSyncedSendTime = sendTime
+            dailyThoughtTime = date
+        }
+        .onChange(of: dailyThoughtTime) { _, date in
+            let sendTime = Self.sendTime(from: date)
+            guard sendTime != lastSyncedSendTime else { return }
+
+            hasEditedDailyThoughtTime = true
+            saveTask?.cancel()
+
+            let timezone = TimeZone.current.identifier
+            let email = authService.email
+            saveTask = Task { @MainActor in
+                do {
+                    try await Task.sleep(for: .milliseconds(400))
+                    guard authService.isSignedIn else { return }
+                    try await convexService.saveDailyThoughtSettings(
+                        sendTime: sendTime,
+                        timezone: timezone,
+                        email: email
+                    )
+                    guard !Task.isCancelled else { return }
+                    lastSyncedSendTime = sendTime
+                } catch {
+                    // Settings are cached locally; syncing stays quiet offline.
+                }
+            }
+        }
     }
 
     private var dailyThoughtTimeText: String {
@@ -135,6 +176,35 @@ struct SettingsView: View {
             second: 0,
             of: .now
         ) ?? .now
+    }
+
+    private static func date(from sendTime: String) -> Date? {
+        let components = sendTime.split(separator: ":")
+        guard components.count == 2,
+              let hour = Int(components[0]),
+              let minute = Int(components[1]),
+              (0...23).contains(hour),
+              (0...59).contains(minute)
+        else { return nil }
+
+        return Calendar.current.date(
+            bySettingHour: hour,
+            minute: minute,
+            second: 0,
+            of: .now
+        )
+    }
+
+    private static func sendTime(from date: Date) -> String {
+        let components = Calendar.current.dateComponents(
+            [.hour, .minute],
+            from: date
+        )
+        return String(
+            format: "%02d:%02d",
+            components.hour ?? 8,
+            components.minute ?? 0
+        )
     }
 
     private var versionText: String {

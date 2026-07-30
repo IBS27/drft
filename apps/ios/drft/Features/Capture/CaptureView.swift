@@ -5,14 +5,21 @@ struct CaptureView: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.scenePhase) private var scenePhase
     @ObservedObject private var authService: AuthService
+    @ObservedObject private var convexService: ConvexService
     @StateObject private var model: CaptureModel
     @State private var settingsArePresented = false
     @State private var listeningPulse = false
     @FocusState private var inputIsFocused: Bool
     private let focusRequest: Int
 
-    init(captureQueue: CaptureQueue, authService: AuthService, focusRequest: Int) {
+    init(
+        captureQueue: CaptureQueue,
+        authService: AuthService,
+        convexService: ConvexService,
+        focusRequest: Int
+    ) {
         self.authService = authService
+        self.convexService = convexService
         self.focusRequest = focusRequest
         _model = StateObject(
             wrappedValue: CaptureModel(
@@ -132,7 +139,10 @@ struct CaptureView: View {
                 inputIsFocused = true
             }
         }) {
-            SettingsView(authService: authService)
+            SettingsView(
+                authService: authService,
+                convexService: convexService
+            )
                 .presentationBackground(Stillness.surface)
                 .presentationDragIndicator(.hidden)
                 .presentationDetents([.medium, .large])

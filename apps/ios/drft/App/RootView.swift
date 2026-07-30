@@ -17,6 +17,7 @@ struct RootView: View {
                 CaptureView(
                     captureQueue: captureQueue,
                     authService: authService,
+                    convexService: convexService,
                     focusRequest: captureFocusRequest
                 )
             } else {

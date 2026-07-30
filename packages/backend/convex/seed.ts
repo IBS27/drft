@@ -2,10 +2,12 @@ import { v } from "convex/values";
 import { internalMutation } from "./_generated/server";
 import { internal } from "./_generated/api";
 
-// Dev-only. Phase 3 made enrichment real, so seeding now plants the design
+// Dev-only. Phase 3 made enrichment real, so seeding plants the design
 // doc's sample fragments (aged across today / this week / earlier) and lets
-// real enrichment embed, link, and question them. Only the resurfacing is
-// still fabricated — the scheduler that writes it is phase 5.
+// real enrichment embed, link, and question them. Phase 5 made the return
+// loop real too; seeding still fabricates one resurfacing for the given
+// date so design work never waits on the scheduler. (Selection-log only —
+// no channel/deliveredAt — so no email is ever sent for it.)
 // Run:   bunx convex run seed:run '{"date":"2026-07-20"}'
 // Undo:  bunx convex run seed:clear
 const DAY = 86_400_000;
@@ -82,11 +84,19 @@ export const run = internalMutation({
     if (open.length === 0) return `planted ${planted.length}; no open thoughts`;
     const existing = await ctx.db
       .query("resurfacings")
-      .withIndex("by_date", (q) => q.eq("date", date))
+      .withIndex("by_user_date", (q) => q.eq("userId", userId).eq("date", date))
       .first();
     if (existing) return `planted ${planted.length}; ${date} already has a resurfacing`;
     const resurfaced = open[open.length - 1];
-    await ctx.db.insert("resurfacings", { thoughtId: resurfaced._id, date });
+    // deliveredAt is stamped (channel deliberately absent) so the email
+    // adapter never fires for a fabricated row — the tick only retries
+    // rows without it.
+    await ctx.db.insert("resurfacings", {
+      thoughtId: resurfaced._id,
+      date,
+      userId,
+      deliveredAt: Date.now(),
+    });
     return `planted ${planted.length} sample thoughts (enrichment scheduled); resurfaced "${resurfaced.text.slice(0, 40)}" for ${date}`;
   },
 });
@@ -117,8 +127,12 @@ export const clear = internalMutation({
       )
         await ctx.db.delete(c._id);
     }
+    // Only fabricated history: rows on sample thoughts, plus legacy
+    // pre-phase-5 fakes (no userId). Real delivery history survives —
+    // it feeds the cooldown and the one-per-day guards.
     for (const r of await ctx.db.query("resurfacings").collect()) {
-      await ctx.db.delete(r._id);
+      if (sampleIds.has(r.thoughtId) || r.userId === undefined)
+        await ctx.db.delete(r._id);
     }
     let removed = 0;
     for (const id of sampleIds) {

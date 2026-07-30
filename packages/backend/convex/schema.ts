@@ -57,15 +57,33 @@ export default defineSchema({
       filterFields: ["userId"],
     }),
 
-  // One per day, never repeat too soon, never resting thoughts. The
-  // scheduler that writes it is phase 5; date is YYYY-MM-DD.
-  // Phase 5 must also add: userId (this table is single-user shaped today),
-  // plus channel + deliveredAt — selection stays channel-agnostic and the
-  // daily email is one adapter over it. See docs/experience.html §03.
+  // The selection log: one per user per day, never repeat too soon, never
+  // resting thoughts; date is the user's local YYYY-MM-DD. Selection is
+  // channel-agnostic — channel + deliveredAt are stamped by the delivery
+  // adapter (email today); a row without deliveredAt was chosen but not
+  // yet sent and delivery retries it that day. (Seed stamps deliveredAt
+  // with no channel so the adapter never touches fabricated rows.)
+  // userId is optional only for rows written before phase 5; the
+  // scheduler always sets it.
+  // See docs/experience.html §03.
   resurfacings: defineTable({
     thoughtId: v.id("thoughts"),
     date: v.string(),
+    userId: v.optional(v.string()),
+    channel: v.optional(v.literal("email")),
+    deliveredAt: v.optional(v.number()),
   })
-    .index("by_date", ["date"])
+    .index("by_user_date", ["userId", "date"])
     .index("by_thought", ["thoughtId"]),
+
+  // The product's one real preference: when the daily email arrives.
+  // Server-owned (the server sends the email), so it lives here, not on a
+  // device. sendTime is "HH:MM" 24h in the user's IANA timezone; email is
+  // taken from the Clerk identity when available.
+  settings: defineTable({
+    userId: v.string(),
+    email: v.string(),
+    sendTime: v.string(),
+    timezone: v.string(),
+  }).index("by_user", ["userId"]),
 });

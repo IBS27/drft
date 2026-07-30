@@ -43,10 +43,14 @@ no reading, no replies, no AI surface on the phone. Development happens on the w
 
 ## Backend surface used
 
-Exactly one mutation: `thoughts:capture` with `{ text: string }` → returns the new
-thought id. Auth is a Clerk JWT (template name `convex`); the clerk-convex-swift
-bridge handles attaching it. Everything else (enrichment, questions, linking) is
-server-side and invisible to this app.
+- `thoughts:capture` mutation with `{ text: string }` → returns the new thought id.
+- `settings:get` query with no args → returns the daily email settings or `null`.
+- `settings:save` mutation with `{ sendTime, timezone, email? }` → writes the daily
+  email settings.
+
+Auth is a Clerk JWT (template name `convex`); the clerk-convex-swift bridge handles
+attaching it. Everything else (enrichment, questions, linking) is server-side and
+invisible to this app.
 
 ## Project structure
 
@@ -157,11 +161,12 @@ Nearly empty by design. A sheet on `surface` with:
 - `SETTINGS` label (tracked caps, faint) at top.
 - Signed-in identity (email, muted, plain text).
 - `daily thought` — a time picker (compact) for the daily resurfacing email.
-  Currently stored locally in `@AppStorage("dailyThoughtTime")` in the App Group
-  defaults; **phase 5 makes Convex the source of truth** (the server sends the
-  email, so it must own the time) and this picker writes through to it. Default
-  8:00. One line of faint copy: `one thought returns each morning · arrives with
-  phase 5`.
+  Convex is the source of truth because the server sends the email. On appear,
+  the picker adopts the signed-in user's server value when one exists. Changes
+  save to Convex with the current IANA timezone and Clerk email, while
+  `@AppStorage("dailyThoughtTime")` in the App Group defaults remains the offline
+  cache and initial value. Default 8:00 when neither source has a value. One line
+  of faint copy: `one thought returns each morning`.
 - `sign out` — muted text button. Confirmation-free.
 - App version, faint, bottom.
 
@@ -183,7 +188,8 @@ No other options. Rows separated by hairlines, no grouped-table chrome.
 
 - Clerk configured at launch with the publishable key; clerk-convex-swift keeps
   the Convex client authenticated. Expose simple `isSignedIn` state to routing.
-- ConvexService owns the client and `capture(text:)`; nothing else.
+- ConvexService owns the client, capture mutation, and daily-thought settings
+  query/mutation.
 
 ### DictationService
 
