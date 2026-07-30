@@ -1,0 +1,364 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+interface Fragment {
+  text: string;
+  /** absolute placement + responsive visibility */
+  pos: string;
+  /** base opacity in light mode; scaled up slightly in dark */
+  op: number;
+}
+
+const fragments: Fragment[] = [
+  {
+    text: "maybe it's time to get a dog",
+    pos: "top-[13%] left-6 lg:top-[11%] lg:left-[17%]",
+    op: 0.42,
+  },
+  {
+    text: "would i be happier in a smaller city",
+    pos: "top-[19%] right-6 text-right lg:top-[87%] lg:right-[15%]",
+    op: 0.38,
+  },
+  {
+    text: "a month without instagram, just to see",
+    pos: "hidden max-w-[11rem] sm:block sm:top-[89%] sm:right-6 sm:text-right lg:top-[68%] lg:right-[20%]",
+    op: 0.36,
+  },
+  {
+    text: "i think i'm becoming the flaky friend",
+    pos: "hidden max-w-[11rem] lg:block lg:top-[23%] lg:left-[4%]",
+    op: 0.44,
+  },
+  {
+    text: "scan dad's old photo slides into something",
+    pos: "hidden max-w-[12rem] text-right lg:block lg:top-[17%] lg:right-[5%]",
+    op: 0.34,
+  },
+  {
+    text: "a cookbook of only our family recipes",
+    pos: "hidden max-w-[11rem] lg:block lg:top-[45%] lg:left-[6%]",
+    op: 0.4,
+  },
+  {
+    text: "why do my best ideas show up in the shower",
+    pos: "hidden max-w-[12rem] text-right lg:block lg:top-[51%] lg:right-[6%]",
+    op: 0.37,
+  },
+  {
+    text: "could i handle a two-week solo trip",
+    pos: "hidden max-w-[13rem] text-right lg:block lg:top-[77%] lg:right-[7%]",
+    op: 0.35,
+  },
+];
+
+const todayFragment = "invite the new neighbors over for dinner before it gets weird";
+
+const label = "text-[10px] tracking-[0.28em] uppercase";
+const cta = "border border-ink px-6 py-3 text-sm transition-colors hover:bg-ink hover:text-pg";
+
+const fragStyle = (f: Fragment) => `--op:${f.op}`;
+---
+
+<Layout
+  title="drft — a space for unfinished thoughts"
+  description="Capture a thought the instant it occurs. drft brings it back — one a day — and helps it become something."
+>
+  <main>
+    <!-- 1 · HERO — the drift -->
+    <section class="relative min-h-dvh overflow-hidden">
+      <div class="absolute inset-x-0 top-0 z-20 flex items-baseline justify-between px-6 pt-10 sm:px-10">
+        <span class="text-[13px] tracking-[0.5em] text-pt uppercase">drft</span>
+        <a href="/?signin" class="text-sm text-mut transition-colors hover:text-ink">Sign in</a>
+      </div>
+
+      <!-- the drift field: fragments felt more than read -->
+      <div aria-hidden="true" class="pointer-events-none absolute inset-0 select-none">
+        {
+          fragments.map((f) => (
+            <p
+              class:list={["frag absolute text-[14px] leading-relaxed text-faint", f.pos]}
+              style={fragStyle(f)}
+            >
+              {f.text}
+            </p>
+          ))
+        }
+
+        <!-- today's returned thought — the one fragment carrying the dot -->
+        <div
+          class="frag absolute top-[80%] left-6 max-w-[16rem] lg:top-[76%] lg:left-[5%] lg:max-w-[17rem]"
+          style="--op:0.82"
+        >
+          <p class="flex items-start gap-2.5 text-[14px] leading-relaxed text-mut">
+            <span class="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-dot"></span>
+            <span>{todayFragment}</span>
+          </p>
+          <p class:list={["mt-2 pl-[1.125rem] text-faint", label]}>today · 7:00</p>
+        </div>
+      </div>
+
+      <div class="relative z-10 flex min-h-dvh flex-col items-center justify-center px-6">
+        <div class="mx-auto w-full max-w-[36rem] text-center">
+          <h1
+            class="text-[clamp(2.25rem,5.6vw,3.25rem)] leading-[1.1] font-extralight tracking-tight"
+          >
+            A space for unfinished thoughts<span class="text-dot">.</span>
+          </h1>
+          <p class="mx-auto mt-7 max-w-md text-base leading-relaxed text-mut">
+            The thoughts you almost lost — captured in seconds, returned one a day, developed when
+            you're ready.
+          </p>
+          <div class="mt-12 flex flex-col items-center gap-6">
+            <a href="/?signin" class={cta}>Open drft</a>
+            <span class="text-[13px] text-faint">iPhone capture — coming to the App Store</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2 · A DAY WITH DRFT -->
+    <section class="border-t border-line px-6 py-28 sm:px-10 sm:py-36">
+      <p class:list={["text-center text-pl", label]} data-reveal>A day with drft</p>
+
+      <div class="relative mx-auto mt-24 max-w-5xl">
+        <span
+          aria-hidden="true"
+          class="absolute top-2 bottom-2 left-[3px] w-px bg-line lg:left-1/2 lg:-translate-x-1/2"
+        ></span>
+
+        <div class="space-y-28 lg:space-y-40">
+          <!-- Station 1 · capture -->
+          <article
+            class="relative pl-10 lg:grid lg:grid-cols-2 lg:gap-x-24 lg:pl-0"
+            data-reveal
+          >
+            <span
+              aria-hidden="true"
+              class="absolute top-[0.4rem] left-0 h-1.5 w-1.5 rounded-full bg-dot lg:left-1/2 lg:-translate-x-1/2"
+            ></span>
+            <div class="lg:col-start-1 lg:pr-16 lg:text-right">
+              <p class:list={["text-pl", label]}>9:41 · tuesday</p>
+              <h2 class="mt-5 text-[1.375rem] leading-snug font-light">
+                A thought occurs at the worst possible time.
+              </h2>
+              <p class="mt-5 max-w-sm text-sm leading-relaxed text-mut lg:ml-auto">
+                From the lock screen, you type or speak. No filing, no tags, no deciding where it
+                goes. Ten seconds and it's out of your head.
+              </p>
+              <div class="mt-10 max-w-sm text-left lg:ml-auto">
+                <p class="text-[14px] leading-relaxed text-pt">
+                  {todayFragment}<span aria-hidden="true" class="caret"></span>
+                </p>
+                <p class:list={["mt-4 text-faint", label]}>kept · unfiled</p>
+              </div>
+            </div>
+          </article>
+
+          <!-- Station 2 · return -->
+          <article
+            class="relative pl-10 lg:grid lg:grid-cols-2 lg:gap-x-24 lg:pl-0"
+            data-reveal
+          >
+            <span
+              aria-hidden="true"
+              class="absolute top-[0.4rem] left-0 h-1.5 w-1.5 rounded-full bg-line lg:left-1/2 lg:-translate-x-1/2"
+            ></span>
+            <div class="lg:col-start-2 lg:pl-16">
+              <p class:list={["text-pl", label]}>7:00 · three weeks later</p>
+              <h2 class="mt-5 text-[1.375rem] leading-snug font-light">
+                One thought finds its way back.
+              </h2>
+              <p class="mt-5 max-w-sm text-sm leading-relaxed text-mut">
+                Every morning, drft chooses a single old thought and mails it to you. The subject
+                line is your own words. Reading it is the whole interaction — it asks nothing.
+              </p>
+              <div class="mt-10 max-w-sm border border-line bg-scr px-5 py-5">
+                <p class:list={["text-pl", label]}>from drft</p>
+                <p class="mt-4 text-[14px] leading-relaxed text-ink">{todayFragment}</p>
+                <p class="mt-2 text-[13px] leading-relaxed text-mut">
+                  Sit down with it when you like.
+                </p>
+              </div>
+            </div>
+          </article>
+
+          <!-- Station 3 · develop -->
+          <article
+            class="relative pl-10 lg:grid lg:grid-cols-2 lg:gap-x-24 lg:pl-0"
+            data-reveal
+          >
+            <span
+              aria-hidden="true"
+              class="absolute top-[0.4rem] left-0 h-1.5 w-1.5 rounded-full bg-line lg:left-1/2 lg:-translate-x-1/2"
+            ></span>
+            <div class="lg:col-start-1 lg:pr-16 lg:text-right">
+              <p class:list={["text-pl", label]}>sunday · when you're ready</p>
+              <h2 class="mt-5 text-[1.375rem] leading-snug font-light">You sit down with it.</h2>
+              <p class="mt-5 max-w-sm text-sm leading-relaxed text-mut lg:ml-auto">
+                On the web, a thinking partner has already read everything you've kept. It asks
+                useful questions, connects far-apart fragments, challenges assumptions — then waits.
+              </p>
+              <div class="mt-10 max-w-sm text-left lg:ml-auto">
+                <p class:list={["text-pl", label]}>partner</p>
+                <p class="mt-3 text-[14px] leading-relaxed text-mut">
+                  What's the smallest version of this — dinner, or knocking on their door with
+                  banana bread?
+                </p>
+                <p class:list={["mt-7 text-pl", label]}>you</p>
+                <p class="mt-3 text-[14px] leading-relaxed text-ink">
+                  bread, honestly. dinner needs a clean apartment and a date. bread just needs a
+                  tuesday.
+                </p>
+                <p class="mt-7 flex items-center gap-2.5">
+                  <span aria-hidden="true" class="h-1.5 w-1.5 shrink-0 rounded-full bg-dot"></span>
+                  <span class:list={["text-faint", label]}>think out loud</span>
+                </p>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3 · THE PROMISE -->
+    <section class="border-t border-line px-6 py-32 text-center sm:py-44">
+      <div class="mx-auto max-w-xl space-y-10">
+        <p class="text-[1.375rem] leading-snug font-extralight text-mut" data-reveal>
+          Never a feed.
+        </p>
+        <p
+          class="text-[1.375rem] leading-snug font-extralight text-mut"
+          data-reveal
+          style="--reveal-delay:0.12s"
+        >
+          Never a pile.
+        </p>
+        <p
+          class="text-[1.375rem] leading-snug font-extralight text-mut"
+          data-reveal
+          style="--reveal-delay:0.24s"
+        >
+          Never "you have 12 unprocessed thoughts."
+        </p>
+      </div>
+      <p
+        class="mx-auto mt-28 max-w-2xl text-[clamp(1.5rem,3.4vw,2rem)] leading-tight font-extralight text-ink"
+        data-reveal
+        style="--reveal-delay:0.36s"
+      >
+        A home for thoughts that aren't anything yet.
+      </p>
+    </section>
+
+    <!-- 4 · CLOSING -->
+    <section class="border-t border-line px-6 py-32 text-center sm:py-40">
+      <p class:list={["text-pl", label]} data-reveal>
+        one thought at a time <span class="text-dot">·</span> the interface recedes
+        <span class="text-dot">·</span> a single dot marks now
+      </p>
+      <div class="mt-14" data-reveal style="--reveal-delay:0.12s">
+        <a href="/?signin" class={cta}>Open drft</a>
+      </div>
+    </section>
+
+    <!-- 5 · FOOTER -->
+    <footer class="border-t border-line px-6 py-10 sm:px-10">
+      <p class="text-xs text-faint">© 2026 drft</p>
+    </footer>
+  </main>
+</Layout>
+
+<style>
+  /* Fragments: still, felt more than read. */
+  .frag {
+    opacity: var(--op);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    /* the faint token sits lower against a dark page — lift it a touch */
+    .frag {
+      opacity: min(1, calc(var(--op) * 1.35));
+    }
+  }
+
+  .caret {
+    display: inline-block;
+    width: 1.5px;
+    height: 1em;
+    margin-left: 0.25em;
+    vertical-align: -0.12em;
+    background: var(--ink);
+    animation: blink 1.1s steps(1) infinite;
+  }
+
+  @keyframes blink {
+    0%,
+    50% {
+      opacity: 1;
+    }
+    50.01%,
+    100% {
+      opacity: 0;
+    }
+  }
+
+  /* Scroll reveals */
+  [data-reveal] {
+    opacity: 0;
+    transform: translateY(8px);
+    transition:
+      opacity 0.7s ease,
+      transform 0.7s ease;
+    transition-delay: var(--reveal-delay, 0s);
+  }
+
+  [data-reveal][data-state="in"] {
+    opacity: 1;
+    transform: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .caret {
+      animation: none;
+    }
+
+    [data-reveal] {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
+</style>
+
+<noscript>
+  <style>
+    [data-reveal] {
+      opacity: 1 !important;
+      transform: none !important;
+    }
+  </style>
+</noscript>
+
+<script>
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const items = Array.from(document.querySelectorAll<HTMLElement>("[data-reveal]"));
+
+  if (reduced || !("IntersectionObserver" in window)) {
+    for (const el of items) el.dataset.state = "in";
+  } else {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          const target = entry.target as HTMLElement;
+          target.dataset.state = "in";
+          observer.unobserve(target);
+        }
+      },
+      { rootMargin: "0px 0px -8% 0px", threshold: 0.15 },
+    );
+
+    for (const el of items) observer.observe(el);
+  }
+</script>

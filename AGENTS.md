@@ -3,6 +3,7 @@
 A space for unfinished thoughts — instant capture on iOS, an AI thinking-partner workspace on the web.
 
 - `apps/web` — Vite + React + TypeScript SPA (bun)
+- `apps/landing` — Astro static landing page. Served at the apex domain: on Vercel, `apps/web/middleware.ts` (edge, production-only) rewrites signed-out `/` and landing assets to the landing deployment; `/?signin` bypasses it so the CTA reaches the app's sign-in screen.
 - `apps/ios` — native Swift/SwiftUI capture app (outside the Bun workspace; see `apps/ios/SPEC.md`)
 - `packages/backend` — Convex backend (schema, capture mutation, enrichment/partner AI, return-loop scheduler + email, Clerk auth config)
 - `docs/overview.html` — product & tech overview
@@ -12,6 +13,7 @@ A space for unfinished thoughts — instant capture on iOS, an AI thinking-partn
 ## Commands
 
 From `apps/web`: `bun dev` · `bun run build` · `bun run lint` · `bun run typecheck`
+From `apps/landing`: `bun dev` · `bun run build` · `bun run typecheck`
 From `packages/backend`: `bun run dev` (convex dev) · `bun run typecheck`
 
 Dev-only design seed (plants sample thoughts + schedules real enrichment on them; fabricates one resurfacing for the given date — selection-log only, so no email is sent for it), from `packages/backend`:

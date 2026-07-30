@@ -14,6 +14,7 @@
     "@clerk/clerk-react": "^5.25.0",
     "@drft/backend": "workspace:*",
     "@tanstack/react-router": "^1.114.0",
+    "@vercel/edge": "^1.2.0",
     "convex": "^1.28.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7"
