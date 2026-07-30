@@ -1,0 +1,51 @@
+@import "tailwindcss";
+
+/* Stillness tokens — docs/design.html. Same room, day and night. */
+:root {
+  --pg: #fafaf8;
+  --scr: #fcfcfb;
+  --ink: #2b2b28;
+  --mut: #75756f;
+  --faint: #9e9e98;
+  --line: #e8e8e4;
+  --dot: #c73e1d;
+  /* page-chrome text & labels — higher contrast than the mockup grays */
+  --pt: #45453f;
+  --pl: #6b6b65;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --pg: #131311;
+    --scr: #181816;
+    --ink: #eaeae5;
+    --mut: #a0a099;
+    --faint: #74746d;
+    --line: #2b2b28;
+    --dot: #d9502a;
+    --pt: #c9c9c2;
+    --pl: #97978f;
+  }
+}
+
+@theme inline {
+  --color-pg: var(--pg);
+  --color-scr: var(--scr);
+  --color-ink: var(--ink);
+  --color-mut: var(--mut);
+  --color-faint: var(--faint);
+  --color-line: var(--line);
+  --color-dot: var(--dot);
+  --color-pt: var(--pt);
+  --color-pl: var(--pl);
+  --font-sans: "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  @apply bg-pg font-sans font-light text-ink;
+}

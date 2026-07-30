@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <style>
+    .bg { fill: #FFFFFF; stroke: #E8E8E4; }
+    .caret { fill: #2B2B28; }
+    .dot { fill: #C73E1D; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #181816; stroke: #2B2B28; }
+      .caret { fill: #EAEAE5; }
+      .dot { fill: #D9502A; }
+    }
+  </style>
+  <rect class="bg" x=".5" y=".5" width="63" height="63" rx="14" stroke-width="1"/>
+  <circle class="dot" cx="28" cy="38" r="6"/>
+  <rect class="caret" x="38" y="18" width="4" height="26" rx="1.5"/>
+</svg>
