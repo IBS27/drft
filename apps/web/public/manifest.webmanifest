@@ -1,0 +1,17 @@
+{
+  "name": "drft",
+  "short_name": "drft",
+  "description": "a space for unfinished thoughts",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FAFAF8",
+  "theme_color": "#FAFAF8",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

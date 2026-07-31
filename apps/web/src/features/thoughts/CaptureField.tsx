@@ -1,11 +1,37 @@
 import { useMutation } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
 import { useRef, useState } from "react";
+import type { Id } from "@drft/backend/convex/_generated/dataModel";
+import { localDate } from "./format";
+
+// Desktop autofocus invites typing; on touch the same attribute pops the
+// keyboard over the collection on every visit.
+const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
 
 // The web capture input obeys the same rules as iOS: one field, keep,
 // no questions asked. Verbatim in; a single vermilion dot acknowledges.
 export function CaptureField({ now }: { now: Date }) {
-  const capture = useMutation(api.thoughts.capture);
+  const capture = useMutation(api.thoughts.capture).withOptimisticUpdate(
+    (localStore, args) => {
+      // The kept thought appears in the collection the instant the dot
+      // does, not a round-trip later. Convex swaps in the real row.
+      const date = localDate(now);
+      const current = localStore.getQuery(api.thoughts.collection, { date });
+      if (!current) return;
+      localStore.setQuery(api.thoughts.collection, { date }, {
+        ...current,
+        thoughts: [
+          {
+            _id: crypto.randomUUID() as Id<"thoughts">,
+            text: args.text,
+            createdAt: Date.now(),
+            waiting: false,
+          },
+          ...current.thoughts,
+        ],
+      });
+    },
+  );
   const [text, setText] = useState("");
   const [kept, setKept] = useState(false);
   const areaRef = useRef<HTMLTextAreaElement>(null);
@@ -42,7 +68,7 @@ export function CaptureField({ now }: { now: Date }) {
             keep();
           }
         }}
-        autoFocus
+        autoFocus={!coarsePointer}
         rows={1}
         className="w-full max-w-[36ch] resize-none overflow-hidden bg-transparent text-center text-[22px] leading-[1.65] font-light outline-none"
       />

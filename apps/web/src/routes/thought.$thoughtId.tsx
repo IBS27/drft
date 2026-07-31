@@ -2,7 +2,9 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
 import { Fragment, useEffect, useRef, useState } from "react";
-import { ageLabel, dateLine, firstLine } from "../features/thoughts/format";
+import { ageLabel, dateLine, firstLine, groupOf } from "../features/thoughts/format";
+import { Rail } from "../features/thoughts/Rail";
+import { Waiting } from "../features/ui/Waiting";
 import type { Id } from "@drft/backend/convex/_generated/dataModel";
 
 export const Route = createFileRoute("/thought/$thoughtId")({
@@ -14,6 +16,11 @@ function NotHere() {
   return (
     <main className="flex min-h-dvh flex-col">
       <BackHeader />
+      <div className="flex flex-1 items-center justify-center pb-24">
+        <span className="text-[10.5px] tracking-[0.34em] text-pl uppercase">
+          this thought isn't here
+        </span>
+      </div>
     </main>
   );
 }
@@ -36,13 +43,29 @@ function BackHeader({ label }: { label?: string }) {
 }
 
 // Your words sit large at the top, exactly as captured. Below, quietly,
-// what accumulated while you were away.
+// what accumulated while you were away. On wide screens the collection
+// stays in the periphery as an edge rail.
 function ThoughtView() {
   const { thoughtId } = Route.useParams();
   const id = thoughtId as Id<"thoughts">;
   const view = useQuery(api.thoughts.view, { thoughtId: id });
   const markSeen = useMutation(api.thoughts.markQuestionsSeen);
+  const dismissConn = useMutation(api.thoughts.dismissConnection);
+  const undismissConn = useMutation(api.thoughts.undismissConnection);
   const [now] = useState(() => new Date());
+
+  // What was waiting when you walked in keeps its dot for this visit —
+  // the margin's way of saying which questions are new. Keyed by thought:
+  // the router reuses this component when only the param changes.
+  const arrivedUnseen = useRef<{ id: Id<"thoughts">; ids: Set<string> } | null>(
+    null,
+  );
+  if (view && arrivedUnseen.current?.id !== id) {
+    arrivedUnseen.current = {
+      id,
+      ids: new Set(view.questions.filter((q) => !q.seen).map((q) => q._id)),
+    };
+  }
 
   // Arriving is what sees the questions; the dot in the collection goes out.
   const hasUnseen = view?.questions.some((q) => !q.seen) ?? false;
@@ -50,7 +73,48 @@ function ThoughtView() {
     if (hasUnseen) void markSeen({ thoughtId: id }).catch(() => {});
   }, [hasUnseen, markSeen, id]);
 
-  if (view === undefined) return <main className="min-h-dvh" />;
+  // While the partner's reply streams in, keep its words on screen — but
+  // only if the reader is already at the bottom; scrolling up to reread
+  // is never fought.
+  const messages = view?.messages;
+  const tail = messages?.[messages.length - 1];
+  const streamText = tail?.role === "partner" ? tail.text : null;
+  useEffect(() => {
+    if (streamText === null || streamText === undefined) return;
+    const nearBottom =
+      window.innerHeight + window.scrollY >=
+      document.documentElement.scrollHeight - 240;
+    if (nearBottom)
+      window.scrollTo({ top: document.documentElement.scrollHeight });
+  }, [streamText]);
+
+  // A dismissed link lingers for a moment as an undo — the one-click
+  // path back, same as everything else here.
+  const [aside, setAside] = useState<
+    { id: Id<"connections">; failed: boolean } | null
+  >(null);
+  const asideTimer = useRef<number | undefined>(undefined);
+  const dismiss = (connectionId: Id<"connections">) => {
+    window.clearTimeout(asideTimer.current);
+    void dismissConn({ connectionId })
+      .then(() => setAside({ id: connectionId, failed: false }))
+      .catch(() => setAside({ id: connectionId, failed: true }));
+    asideTimer.current = window.setTimeout(() => setAside(null), 8000);
+  };
+  const undo = () => {
+    if (!aside) return;
+    window.clearTimeout(asideTimer.current);
+    const connectionId = aside.id;
+    setAside(null);
+    void undismissConn({ connectionId }).catch(() => {});
+  };
+  useEffect(() => {
+    // Moving to another thought (the component is reused) drops the undo.
+    setAside(null);
+    window.clearTimeout(asideTimer.current);
+  }, [id]);
+
+  if (view === undefined) return <Waiting />;
   if (view === null) return <NotHere />;
 
   const hasMargin = view.questions.length > 0 || view.messages.length > 0;
@@ -58,82 +122,122 @@ function ThoughtView() {
   return (
     <main className="flex min-h-dvh flex-col">
       <BackHeader label={dateLine(view.createdAt, now)} />
+      <Rail activeId={id} now={now} />
 
-      <section className="mx-auto flex w-full max-w-[64ch] flex-1 flex-col items-center px-6 pt-16 pb-10">
-        <h1 className="max-w-[36ch] text-center text-[clamp(24px,2.6vw,28px)] leading-[1.6] font-light whitespace-pre-wrap">
-          {view.text}
-        </h1>
+      <div className="flex-1 lg:pl-72 xl:pl-80">
+        <section className="mx-auto flex w-full max-w-[64ch] flex-col items-center px-6 pt-16 pb-10">
+          <h1 className="max-w-[36ch] text-center text-[clamp(24px,2.6vw,28px)] leading-[1.6] font-light whitespace-pre-wrap">
+            {view.text}
+          </h1>
 
-        {view.status === "resting" && (
-          <div className="mt-7 flex flex-col items-center gap-2.5">
-            <span className="text-[10.5px] tracking-[0.34em] text-pl uppercase">
-              set down{view.restedAt ? ` · ${ageLabel(view.restedAt, now)}` : ""}
-            </span>
-            {view.restingNote && (
-              <p className="max-w-[44ch] text-center text-[15px] leading-[1.7] font-normal text-mut">
-                {view.restingNote}
-              </p>
-            )}
-          </div>
-        )}
-
-        {hasMargin && <div className="mt-10 mb-1 h-7 w-px bg-line" />}
-
-        <div className="w-full max-w-[52ch] text-center">
-          {view.questions.map((q) => (
-            <Fragment key={q._id}>
-              <Who>partner</Who>
-              <Msg muted>{q.text}</Msg>
-            </Fragment>
-          ))}
-          {view.messages.map((m) => (
-            <Fragment key={m._id}>
-              <Who>{m.role}</Who>
-              {/* A partner row streams in from empty; until the first words
-                  land, a single quiet mark holds the space. */}
-              {m.role === "partner" && m.text === "" ? (
-                <p className="animate-pulse text-[16px] leading-[1.7] text-pl">·</p>
-              ) : (
-                <Msg muted={m.role === "partner"}>{m.text}</Msg>
-              )}
-            </Fragment>
-          ))}
-        </div>
-
-        {view.connections.length > 0 && (
-          <div className="mt-11 flex max-w-[52ch] flex-wrap items-center justify-center gap-x-2.5 gap-y-2">
-            {view.connections.map((c, i) => (
-              <span key={c._id} className="group flex items-center gap-2">
-                {i > 0 && <span className="text-[11.5px] text-pl">·</span>}
-                <Link
-                  to="/thought/$thoughtId"
-                  params={{ thoughtId: c.otherId }}
-                  className="inline-block max-w-[26ch] truncate text-[11.5px] tracking-[0.22em] text-pl uppercase transition-colors hover:text-ink"
-                >
-                  {firstLine(c.otherText)}
-                </Link>
-                <DismissConnection connectionId={c._id} />
+          {view.status === "resting" && (
+            <div className="mt-7 flex flex-col items-center gap-2.5">
+              <span className="text-[10.5px] tracking-[0.34em] text-pl uppercase">
+                set down{view.restedAt ? ` · ${ageLabel(view.restedAt, now)}` : ""}
               </span>
+              {view.restingNote && (
+                <p className="max-w-[44ch] text-center text-[15px] leading-[1.7] font-normal text-mut">
+                  {view.restingNote}
+                </p>
+              )}
+            </div>
+          )}
+
+          {view.lastReturnedAt && (
+            <span className="mt-6 text-[10px] tracking-[0.3em] text-faint uppercase">
+              returned ·{" "}
+              {groupOf(view.lastReturnedAt, now) === "today"
+                ? "today"
+                : ageLabel(view.lastReturnedAt, now)}
+            </span>
+          )}
+
+          {hasMargin && <div className="mt-10 mb-1 h-7 w-px bg-line" />}
+
+          <div className="w-full max-w-[52ch] text-center">
+            {view.questions.map((q) => (
+              <Fragment key={q._id}>
+                <Who dot={arrivedUnseen.current?.ids.has(q._id)}>partner</Who>
+                <Msg muted>{q.text}</Msg>
+              </Fragment>
+            ))}
+            {view.messages.map((m) => (
+              <Fragment key={m._id}>
+                <Who>{m.role}</Who>
+                {/* A partner row streams in from empty; until the first words
+                    land, a single quiet mark holds the space. */}
+                {m.role === "partner" && m.text === "" ? (
+                  <p className="animate-pulse text-[16px] leading-[1.7] text-pl">·</p>
+                ) : (
+                  <Msg muted={m.role === "partner"}>{m.text}</Msg>
+                )}
+              </Fragment>
             ))}
           </div>
-        )}
 
-        {view.status === "open" ? (
-          <>
-            <Composer thoughtId={view._id} />
-            <RestControl thoughtId={view._id} />
-          </>
-        ) : (
-          <WakeControl thoughtId={view._id} />
-        )}
-      </section>
+          {view.connections.length > 0 && (
+            <div className="mt-11 flex max-w-[52ch] flex-wrap items-center justify-center gap-x-2.5 gap-y-2">
+              {view.connections.map((c, i) => (
+                <span key={c._id} className="group flex items-center gap-2">
+                  {i > 0 && <span className="text-[11.5px] text-pl">·</span>}
+                  <Link
+                    to="/thought/$thoughtId"
+                    params={{ thoughtId: c.otherId }}
+                    className="inline-block max-w-[26ch] truncate text-[11.5px] tracking-[0.22em] text-pl uppercase transition-colors hover:text-ink"
+                  >
+                    {c.otherStatus === "resting" && (
+                      <span className="text-faint">set down · </span>
+                    )}
+                    {firstLine(c.otherText)}
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => dismiss(c._id)}
+                    className="text-[13px] leading-none text-pl opacity-0 transition-opacity group-hover:opacity-100 hover:text-dot"
+                    aria-label="dismiss connection"
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+
+          {aside && (
+            <div className="mt-5 flex items-center gap-5 text-[10px] tracking-[0.3em] uppercase">
+              <span className="text-pl">
+                {aside.failed ? "couldn't set the link aside" : "link set aside"}
+              </span>
+              {!aside.failed && (
+                <button
+                  type="button"
+                  onClick={undo}
+                  className="text-pt transition-colors hover:text-ink"
+                >
+                  undo
+                </button>
+              )}
+            </div>
+          )}
+
+          {view.status === "open" ? (
+            <>
+              <Composer thoughtId={view._id} />
+              <RestControl thoughtId={view._id} />
+            </>
+          ) : (
+            <WakeControl thoughtId={view._id} />
+          )}
+        </section>
+      </div>
     </main>
   );
 }
 
-function Who({ children }: { children: string }) {
+function Who({ children, dot }: { children: string; dot?: boolean }) {
   return (
-    <div className="mt-8 mb-2.5 text-[10.5px] tracking-[0.34em] text-pl uppercase">
+    <div className="mt-8 mb-2.5 flex items-center justify-center gap-2 text-[10.5px] tracking-[0.34em] text-pl uppercase">
+      {dot && <span className="size-1.5 rounded-full bg-dot" />}
       {children}
     </div>
   );
@@ -151,22 +255,8 @@ function Msg({ muted, children }: { muted?: boolean; children: string }) {
   );
 }
 
-function DismissConnection({ connectionId }: { connectionId: Id<"connections"> }) {
-  const dismiss = useMutation(api.thoughts.dismissConnection);
-  return (
-    <button
-      type="button"
-      onClick={() => void dismiss({ connectionId }).catch(() => {})}
-      className="text-[13px] leading-none text-pl opacity-0 transition-opacity group-hover:opacity-100 hover:text-dot"
-      aria-label="dismiss connection"
-    >
-      ×
-    </button>
-  );
-}
-
-// A single input: think out loud. Enter keeps it, like capture; the
-// partner stays silent until phase 3.
+// A single input: think out loud. Enter sends it, like capture; the
+// partner's reply streams back through the same reactive view query.
 function Composer({ thoughtId }: { thoughtId: Id<"thoughts"> }) {
   const say = useMutation(api.thoughts.say);
   const [text, setText] = useState("");
@@ -229,11 +319,13 @@ function RestControl({ thoughtId }: { thoughtId: Id<"thoughts"> }) {
   const navigate = useNavigate();
   const [asking, setAsking] = useState(false);
   const [note, setNote] = useState("");
+  const [failed, setFailed] = useState(false);
 
   const setDown = () => {
+    setFailed(false);
     void rest({ thoughtId, note: note.trim() || undefined })
       .then(() => navigate({ to: "/" }))
-      .catch(() => {});
+      .catch(() => setFailed(true));
   };
 
   return (
@@ -277,6 +369,11 @@ function RestControl({ thoughtId }: { thoughtId: Id<"thoughts"> }) {
           let it rest
         </button>
       )}
+      {failed && (
+        <span className="text-[10px] tracking-[0.3em] text-pl uppercase">
+          couldn't set it down — try again
+        </span>
+      )}
     </footer>
   );
 }
@@ -284,15 +381,24 @@ function RestControl({ thoughtId }: { thoughtId: Id<"thoughts"> }) {
 // Rest is reversible with one click; some thoughts wake up.
 function WakeControl({ thoughtId }: { thoughtId: Id<"thoughts"> }) {
   const wake = useMutation(api.thoughts.wake);
+  const [failed, setFailed] = useState(false);
   return (
-    <footer className="mt-16 flex justify-center">
+    <footer className="mt-16 flex flex-col items-center gap-4">
       <button
         type="button"
-        onClick={() => void wake({ thoughtId }).catch(() => {})}
+        onClick={() => {
+          setFailed(false);
+          void wake({ thoughtId }).catch(() => setFailed(true));
+        }}
         className="text-[11px] tracking-[0.3em] text-pl uppercase transition-colors hover:text-ink"
       >
         wake
       </button>
+      {failed && (
+        <span className="text-[10px] tracking-[0.3em] text-pl uppercase">
+          couldn't wake it — try again
+        </span>
+      )}
     </footer>
   );
 }

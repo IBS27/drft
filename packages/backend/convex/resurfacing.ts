@@ -2,16 +2,16 @@ import { v } from "convex/values";
 import { internalMutation, internalQuery } from "./_generated/server";
 import type { MutationCtx } from "./_generated/server";
 import { internal } from "./_generated/api";
-import { RESURFACE_COOLDOWN_DAYS, RESURFACE_MIN_AGE_DAYS } from "./ai/limits";
+import { localParts, selectThoughtId, sendMinutes } from "./selection";
 
 // The return loop's selection half — deliberately dumb. No readiness
 // scoring, no model choosing: a slow rotation over what the user put in.
 // Skip resting, skip the fresh, skip the recently returned, then take
 // whichever open thought has waited longest. If nothing qualifies, the
-// day is silent. Delivery (email.ts) is an adapter over the rows this
-// writes. See docs/experience.html §03.
+// day is silent. The arithmetic lives in selection.ts (pure, tested);
+// delivery (email.ts) is an adapter over the rows this writes. See
+// docs/experience.html §03.
 
-const DAY = 86_400_000;
 const MIN_GAP_MS = 20 * 3_600_000;
 const emailPayloadValidator = v.object({
   from: v.string(),
@@ -20,30 +20,6 @@ const emailPayloadValidator = v.object({
   text: v.string(),
   html: v.string(),
 });
-
-// A user's wall clock, without a timezone library: Intl formats the
-// current instant into their zone.
-function localParts(timezone: string, now: number) {
-  const date = new Intl.DateTimeFormat("en-CA", {
-    timeZone: timezone,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(now);
-  const clock = new Intl.DateTimeFormat("en-GB", {
-    timeZone: timezone,
-    hour: "2-digit",
-    minute: "2-digit",
-    hourCycle: "h23",
-  }).format(now);
-  const [hour, minute] = clock.split(":").map(Number);
-  return { date, minutesOfDay: hour * 60 + minute };
-}
-
-function sendMinutes(sendTime: string): number {
-  const [hour, minute] = sendTime.split(":").map(Number);
-  return hour * 60 + minute;
-}
 
 // Runs every 15 minutes (crons.ts). Once a user's local clock passes
 // their chosen time: pick today's thought if not yet picked, then hand
@@ -99,16 +75,13 @@ async function select(ctx: MutationCtx, userId: string, now: number) {
     .query("thoughts")
     .withIndex("by_user_status", (q) => q.eq("userId", userId).eq("status", "open"))
     .collect();
-  const aged = open.filter(
-    (t) => now - t.createdAt >= RESURFACE_MIN_AGE_DAYS * DAY,
-  );
 
   // When each thought last came back. A row is created the moment the
   // thought is shown, so _creationTime is the instant the user saw it —
   // truer than parsing the local-date string (UTC-midnight skew). Rows
   // without userId (pre-phase-5) still count: a thought is one user's.
   const lastReturned = new Map<string, number>();
-  for (const t of aged) {
+  for (const t of open) {
     const rows = await ctx.db
       .query("resurfacings")
       .withIndex("by_thought", (q) => q.eq("thoughtId", t._id))
@@ -121,19 +94,7 @@ async function select(ctx: MutationCtx, userId: string, now: number) {
     }
   }
 
-  const eligible = aged.filter(
-    (t) => now - (lastReturned.get(t._id) ?? -Infinity) >= RESURFACE_COOLDOWN_DAYS * DAY,
-  );
-  if (eligible.length === 0) return null;
-
-  // Longest-waiting first: never-resurfaced before ever-resurfaced,
-  // oldest return before recent, oldest capture as the tiebreak.
-  eligible.sort((a, b) => {
-    const lastA = lastReturned.get(a._id) ?? 0;
-    const lastB = lastReturned.get(b._id) ?? 0;
-    return lastA - lastB || a.createdAt - b.createdAt;
-  });
-  return eligible[0]._id;
+  return selectThoughtId(open, lastReturned, now);
 }
 
 // Everything delivery needs in one read; thoughtContext (store.ts) adds

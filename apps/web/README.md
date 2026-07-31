@@ -1,32 +1,31 @@
-# React + TypeScript + Vite
+# drft web
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+The thinking-partner workspace: the collection, the thought view with
+the partner session, search, and settings. Vite + React + TypeScript +
+TanStack Router + Convex + Clerk; styled with Tailwind against the
+Stillness tokens in `docs/design.html`.
 
-Currently, two official plugins are available:
+## Commands
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```sh
+bun dev            # assume it's already running
+bun run typecheck
+bun run lint
+bun run build
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+## Env
+
+`.env.local` (see `.env.example`): `VITE_CONVEX_URL`,
+`VITE_CLERK_PUBLISHABLE_KEY`.
+
+## Notes
+
+- Routes are file-based in `src/routes/` (codegen in `src/routeTree.gen.ts`).
+- Streaming partner replies arrive through the reactive
+  `api.thoughts.view` query — the backend patches the message row as
+  tokens land; there is no client-side streaming transport.
+- Keyboard: `⌘K` or `/` opens search; on a thought, `j`/`k` move through
+  the collection and `Esc` returns to it.
+- `middleware.ts` is a Vercel edge middleware (production only) that
+  rewrites signed-out `/` to the landing deployment; `/?signin` bypasses.

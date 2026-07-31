@@ -14,6 +14,7 @@ function Settings() {
   const settings = useQuery(api.settings.get);
   const save = useMutation(api.settings.save);
   const [time, setTime] = useState<string | null>(null);
+  const [failed, setFailed] = useState(false);
   const timer = useRef<number | undefined>(undefined);
 
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -30,7 +31,9 @@ function Settings() {
         sendTime: value,
         timezone,
         email: user?.primaryEmailAddress?.emailAddress,
-      });
+      })
+        .then(() => setFailed(false))
+        .catch(() => setFailed(true));
     }, 400);
   };
 
@@ -67,6 +70,11 @@ function Settings() {
           <div className="mt-1 text-[12px] text-faint">
             one thought returns each morning · {timezone}
           </div>
+          {failed && (
+            <div className="mt-1 text-[12px] text-mut">
+              couldn't save — change it again to retry
+            </div>
+          )}
         </div>
 
         <div className="border-b border-line py-4">

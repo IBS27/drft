@@ -49,3 +49,29 @@ html {
 body {
   @apply bg-pg font-sans font-light text-ink;
 }
+
+/* The room's one loading signal: a blinking caret, never a spinner. */
+@keyframes caret-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+.caret {
+  animation: caret-blink 1.1s steps(1) infinite;
+}
+
+/* Keyboard focus is "now", so it wears the dot's color. Text fields
+   already show focus with their caret. */
+:focus-visible {
+  outline: 1px solid var(--dot);
+  outline-offset: 4px;
+}
+input:focus-visible,
+textarea:focus-visible {
+  outline: none;
+}
