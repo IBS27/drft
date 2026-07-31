@@ -167,20 +167,22 @@ const heroHtml = heroChars
               aria-hidden="true"
               class="absolute top-[0.4rem] left-0 h-1.5 w-1.5 rounded-full bg-dot lg:left-1/2 lg:-translate-x-1/2"
             ></span>
-            <div class="lg:col-start-1 lg:pr-16 lg:text-right">
-              <p class:list={["text-pl", label]}>9:41 · tuesday</p>
-              <h2 class="mt-5 text-[1.375rem] leading-snug font-light">
-                A thought occurs at the worst possible time.
-              </h2>
-              <p class="mt-5 max-w-sm text-sm leading-relaxed text-mut lg:ml-auto">
-                From the lock screen, you type or speak. No filing, no tags, no deciding where it
-                goes. Ten seconds and it's out of your head.
-              </p>
-              <div class="mt-10 max-w-sm text-left lg:ml-auto">
-                <p class="text-[14px] leading-relaxed text-pt">
-                  {todayFragment}<span aria-hidden="true" class="caret"></span>
+            <div class="lg:col-start-1 lg:flex lg:justify-end lg:pr-16">
+              <div class="lg:max-w-sm">
+                <p class:list={["text-pl", label]}>9:41 · tuesday</p>
+                <h2 class="mt-5 text-[1.375rem] leading-snug font-light">
+                  A thought occurs at the worst possible time.
+                </h2>
+                <p class="mt-5 max-w-sm text-sm leading-relaxed text-mut">
+                  From the lock screen, you type or speak. No filing, no tags, no deciding where it
+                  goes. Ten seconds and it's out of your head.
                 </p>
-                <p class:list={["mt-4 text-faint", label]}>kept · unfiled</p>
+                <div class="mt-10 max-w-sm">
+                  <p class="text-[14px] leading-relaxed text-pt">
+                    {todayFragment}<span aria-hidden="true" class="caret"></span>
+                  </p>
+                  <p class:list={["mt-4 text-faint", label]}>kept · unfiled</p>
+                </div>
               </div>
             </div>
           </article>
@@ -195,20 +197,18 @@ const heroHtml = heroChars
               class="absolute top-[0.4rem] left-0 h-1.5 w-1.5 rounded-full bg-line lg:left-1/2 lg:-translate-x-1/2"
             ></span>
             <div class="lg:col-start-2 lg:pl-16">
-              <p class:list={["text-pl", label]}>7:00 · three weeks later</p>
+              <p class:list={["text-pl", label]}>7:00 · five days later</p>
               <h2 class="mt-5 text-[1.375rem] leading-snug font-light">
-                One thought finds its way back.
+                One of them comes back.
               </h2>
               <p class="mt-5 max-w-sm text-sm leading-relaxed text-mut">
-                Every morning, drft chooses a single old thought and mails it to you. The subject
-                line is your own words. Reading it is the whole interaction — it asks nothing.
+                Every morning, one email: a single thought you kept, in your own words. You read it
+                — that's it. Nothing to answer, nothing to file.
               </p>
               <div class="mt-10 max-w-sm border border-line bg-scr px-5 py-5">
                 <p class:list={["text-pl", label]}>from drft</p>
                 <p class="mt-4 text-[14px] leading-relaxed text-ink">{todayFragment}</p>
-                <p class="mt-2 text-[13px] leading-relaxed text-mut">
-                  Sit down with it when you like.
-                </p>
+                <p class:list={["mt-4 text-faint", label]}>kept · tuesday, 9:41</p>
               </div>
             </div>
           </article>
@@ -222,28 +222,34 @@ const heroHtml = heroChars
               aria-hidden="true"
               class="absolute top-[0.4rem] left-0 h-1.5 w-1.5 rounded-full bg-line lg:left-1/2 lg:-translate-x-1/2"
             ></span>
-            <div class="lg:col-start-1 lg:pr-16 lg:text-right">
-              <p class:list={["text-pl", label]}>sunday · when you're ready</p>
-              <h2 class="mt-5 text-[1.375rem] leading-snug font-light">You sit down with it.</h2>
-              <p class="mt-5 max-w-sm text-sm leading-relaxed text-mut lg:ml-auto">
-                On the web, a thinking partner has already read everything you've kept. It asks
-                useful questions, connects far-apart fragments, challenges assumptions — then waits.
-              </p>
-              <div class="mt-10 max-w-sm text-left lg:ml-auto">
-                <p class:list={["text-pl", label]}>partner</p>
-                <p class="mt-3 text-[14px] leading-relaxed text-mut">
-                  What's the smallest version of this — dinner, or knocking on their door with
-                  banana bread?
+            <div class="lg:col-start-1 lg:flex lg:justify-end lg:pr-16">
+              <div class="lg:max-w-sm">
+                <p class:list={["text-pl", label]}>sunday · when you're ready</p>
+                <h2 class="mt-5 text-[1.375rem] leading-snug font-light">You sit down with it.</h2>
+                <p class="mt-5 max-w-sm text-sm leading-relaxed text-mut">
+                  On the web, a thinking partner has already read everything you've kept. It asks
+                  useful questions, connects far-apart fragments, challenges assumptions — then
+                  waits.
                 </p>
-                <p class:list={["mt-7 text-pl", label]}>you</p>
-                <p class="mt-3 text-[14px] leading-relaxed text-ink">
-                  bread, honestly. dinner needs a clean apartment and a date. bread just needs a
-                  tuesday.
-                </p>
-                <p class="mt-7 flex items-center gap-2.5">
-                  <span aria-hidden="true" class="h-1.5 w-1.5 shrink-0 rounded-full bg-dot"></span>
-                  <span class:list={["text-faint", label]}>think out loud</span>
-                </p>
+                <div class="mt-10 max-w-sm">
+                  <p class:list={["text-pl", label]}>partner</p>
+                  <p class="mt-3 text-[14px] leading-relaxed text-mut">
+                    What's the smallest version of this — dinner, or knocking on their door with
+                    banana bread?
+                  </p>
+                  <p class:list={["mt-7 text-pl", label]}>you</p>
+                  <p class="mt-3 text-[14px] leading-relaxed text-ink">
+                    bread, honestly. dinner needs a clean apartment and a date. bread just needs a
+                    tuesday.
+                  </p>
+                  <p class="mt-7 flex items-center gap-2.5">
+                    <span
+                      aria-hidden="true"
+                      class="h-1.5 w-1.5 shrink-0 rounded-full bg-dot"
+                    ></span>
+                    <span class:list={["text-faint", label]}>think out loud</span>
+                  </p>
+                </div>
               </div>
             </div>
           </article>
@@ -279,16 +285,8 @@ const heroHtml = heroChars
       >
         A home for thoughts that aren't anything yet.
       </p>
-    </section>
-
-    <!-- 4 · CLOSING -->
-    <section class="border-t border-line px-6 py-32 text-center sm:py-40">
-      <p class:list={["text-pl", label]} data-reveal>
-        one thought at a time <span class="text-dot">·</span> the interface recedes
-        <span class="text-dot">·</span> a single dot marks now
-      </p>
-      <div class="mt-14" data-reveal style="--reveal-delay:0.12s">
-        <a href="/?signin" class={cta}>Open drft</a>
+      <div class="mt-16" data-reveal style="--reveal-delay:0.48s">
+        <a href="/?signin" class={cta}>Get started</a>
       </div>
     </section>
 
