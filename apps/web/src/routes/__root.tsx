@@ -1,6 +1,9 @@
 import { createRootRoute, Outlet, useRouterState } from "@tanstack/react-router";
 import { Authenticated, AuthLoading, Unauthenticated } from "convex/react";
 import { SignIn } from "../features/auth/SignIn";
+import { SearchOverlay } from "../features/search/SearchOverlay";
+import { OfflineNote } from "../features/ui/OfflineNote";
+import { Waiting } from "../features/ui/Waiting";
 
 export const Route = createRootRoute({ component: Root });
 
@@ -14,13 +17,15 @@ function Root() {
   return (
     <>
       <AuthLoading>
-        <main className="min-h-dvh" />
+        <Waiting />
       </AuthLoading>
       <Unauthenticated>
         <SignIn />
       </Unauthenticated>
       <Authenticated>
         <Outlet />
+        <SearchOverlay />
+        <OfflineNote />
       </Authenticated>
     </>
   );

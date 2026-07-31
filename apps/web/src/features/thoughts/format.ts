@@ -43,3 +43,19 @@ export function dateLine(at: number, now: Date): string {
 }
 
 export const firstLine = (text: string) => text.split("\n")[0];
+
+// One ordering everywhere the collection renders (the page, the rail):
+// today's returned thought pinned first, held apart, then the groups.
+export function orderRows<T extends { _id: string; createdAt: number }>(
+  rows: T[],
+  resurfacedId: string | null,
+  now: Date,
+): { pinned: T | null; groups: { group: Group; rows: T[] }[] } {
+  const pinned = rows.find((t) => t._id === resurfacedId) ?? null;
+  const rest = rows.filter((t) => t._id !== resurfacedId);
+  const groups = GROUPS.map((group) => ({
+    group,
+    rows: rest.filter((t) => groupOf(t.createdAt, now) === group),
+  })).filter(({ rows }) => rows.length > 0);
+  return { pinned, groups };
+}

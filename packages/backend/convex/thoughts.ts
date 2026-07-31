@@ -34,22 +34,6 @@ export const capture = mutation({
   },
 });
 
-// The collection count — a fact, never a scoreboard.
-export const count = query({
-  args: {},
-  handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) return 0;
-    const open = await ctx.db
-      .query("thoughts")
-      .withIndex("by_user_status", (q) =>
-        q.eq("userId", identity.subject).eq("status", "open"),
-      )
-      .collect();
-    return open.length;
-  },
-});
-
 // The collection: open thoughts, newest first. `waiting` (an unseen
 // question) is what lights the vermilion dot. `date` is the client's
 // local YYYY-MM-DD — the server has no timezone, so "today" is the
@@ -68,15 +52,18 @@ export const collection = query({
       .collect();
     const thoughts = await Promise.all(
       open.map(async (t) => {
-        const questions = await ctx.db
+        // One indexed row, not the whole question history — the dot only
+        // needs to know whether anything unseen exists.
+        const unseen = await ctx.db
           .query("questions")
           .withIndex("by_thought", (q) => q.eq("thoughtId", t._id))
-          .collect();
+          .filter((q) => q.eq(q.field("seenAt"), undefined))
+          .first();
         return {
           _id: t._id,
           text: t.text,
           createdAt: t.createdAt,
-          waiting: questions.some((q) => q.seenAt === undefined),
+          waiting: unseen !== null,
         };
       }),
     );
@@ -129,11 +116,24 @@ export const view = query({
           const otherId = c.fromId === thoughtId ? c.toId : c.fromId;
           const other = await ctx.db.get(otherId);
           return other && other.userId === thought.userId
-            ? { _id: c._id, otherId, otherText: other.text }
+            ? {
+                _id: c._id,
+                otherId,
+                otherText: other.text,
+                otherStatus: other.status,
+              }
             : null;
         }),
       )
     ).filter((c) => c !== null);
+    // When the loop last brought this thought back — a fact in the margin,
+    // never a count. Selection time is when the user saw it.
+    const returns = await ctx.db
+      .query("resurfacings")
+      .withIndex("by_thought", (q) => q.eq("thoughtId", thoughtId))
+      .collect();
+    const lastReturnedAt =
+      returns.reduce((max, r) => Math.max(max, r._creationTime), 0) || null;
     return {
       _id: thought._id,
       text: thought.text,
@@ -141,6 +141,7 @@ export const view = query({
       status: thought.status,
       restingNote: thought.restingNote,
       restedAt: thought.restedAt,
+      lastReturnedAt,
       questions,
       messages,
       connections,
@@ -252,5 +253,19 @@ export const dismissConnection = mutation({
     const from = await ownedThought(ctx, connection.fromId);
     if (!from) throw new Error("Not found");
     await ctx.db.patch(connectionId, { dismissedAt: Date.now() });
+  },
+});
+
+// And one click back — a dismissal shouldn't be the one irreversible act
+// in a product where even resting is reversible. The linker still won't
+// re-offer the pair on its own; only the user brings it back.
+export const undismissConnection = mutation({
+  args: { connectionId: v.id("connections") },
+  handler: async (ctx, { connectionId }) => {
+    const connection = await ctx.db.get(connectionId);
+    if (!connection) return;
+    const from = await ownedThought(ctx, connection.fromId);
+    if (!from) throw new Error("Not found");
+    await ctx.db.patch(connectionId, { dismissedAt: undefined });
   },
 });

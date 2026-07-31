@@ -4,7 +4,8 @@
   "version": "0.0.0",
   "scripts": {
     "dev": "convex dev",
-    "typecheck": "tsc -p convex"
+    "typecheck": "tsc -p convex",
+    "test": "vitest run"
   },
   "dependencies": {
     "@ai-sdk/openai": "^4.0.16",
@@ -14,6 +15,7 @@
   },
   "devDependencies": {
     "@types/node": "^26.1.1",
-    "typescript": "~6.0.2"
+    "typescript": "~6.0.2",
+    "vitest": "^3.2.4"
   }
 }

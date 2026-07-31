@@ -4,13 +4,7 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
 import { useEffect, useState } from "react";
 import { CaptureField } from "../features/thoughts/CaptureField";
-import {
-  GROUPS,
-  ageLabel,
-  firstLine,
-  groupOf,
-  localDate,
-} from "../features/thoughts/format";
+import { ageLabel, firstLine, localDate, orderRows } from "../features/thoughts/format";
 import type { Id } from "@drft/backend/convex/_generated/dataModel";
 
 export const Route = createFileRoute("/")({ component: Collection });
@@ -31,7 +25,6 @@ function Collection() {
     return () => window.clearInterval(id);
   }, []);
 
-  const count = useQuery(api.thoughts.count);
   const data = useQuery(api.thoughts.collection, { date: localDate(now) });
   const resting = useQuery(api.thoughts.resting);
 
@@ -52,12 +45,7 @@ function Collection() {
 
   const loading = data === undefined;
   const thoughts = data?.thoughts ?? [];
-  const resurfaced = thoughts.find((t) => t._id === data?.resurfacedId);
-  const rest = thoughts.filter((t) => t._id !== data?.resurfacedId);
-  const groups = GROUPS.map((group) => ({
-    group,
-    rows: rest.filter((t) => groupOf(t.createdAt, now) === group),
-  })).filter(({ rows }) => rows.length > 0);
+  const { pinned, groups } = orderRows(thoughts, data?.resurfacedId ?? null, now);
 
   return (
     <main className="flex min-h-dvh flex-col">
@@ -72,11 +60,15 @@ function Collection() {
           drft
         </span>
         <span className="justify-self-end text-[12px] tracking-[0.1em] text-pl tabular-nums">
-          {count || ""}
+          {thoughts.length || ""}
         </span>
       </header>
 
-      {loading ? null : thoughts.length === 0 ? (
+      {loading ? (
+        <section className="flex flex-1 items-center justify-center pb-24">
+          <span className="caret h-5 w-px bg-faint" />
+        </section>
+      ) : thoughts.length === 0 ? (
         <section className="flex flex-1 flex-col items-center justify-center px-6 pb-24">
           <CaptureField now={now} />
         </section>
@@ -87,9 +79,9 @@ function Collection() {
           </section>
 
           <section className="mx-auto w-full max-w-2xl flex-1 px-6 pt-12 pb-10">
-            {resurfaced && (
+            {pinned && (
               <div className="mb-12">
-                <ThoughtRow t={resurfaced} now={now} />
+                <ThoughtRow t={pinned} now={now} />
               </div>
             )}
             {groups.map(({ group, rows }, i) => (
