@@ -18,6 +18,10 @@ export default defineSchema({
   })
     .index("by_user", ["userId", "createdAt"])
     .index("by_user_status", ["userId", "status", "createdAt"])
+    // The resting list reads newest-set-down first, which is a different
+    // order from newest-captured — it needs its own index to be able to
+    // stop reading early.
+    .index("by_user_status_restedAt", ["userId", "status", "restedAt"])
     .index("by_user_and_unseenQuestionCount", [
       "userId",
       "unseenQuestionCount",

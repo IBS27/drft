@@ -4,6 +4,10 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="manifest" href="/manifest.webmanifest" />
+    <!-- The first thought waits on Convex's socket. Open the connection
+         while the HTML is still parsing, not after the bundle boots.
+         (Clerk's origin is encoded in its key — preconnected in main.tsx.) -->
+    <link rel="preconnect" href="%VITE_CONVEX_URL%" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" media="(prefers-color-scheme: light)" content="#FAFAF8" />
     <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131311" />

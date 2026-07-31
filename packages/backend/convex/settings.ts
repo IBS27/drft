@@ -1,4 +1,5 @@
 import { v } from "convex/values";
+import { internal } from "./_generated/api";
 import { mutation, query } from "./_generated/server";
 import type { MutationCtx } from "./_generated/server";
 
@@ -53,6 +54,7 @@ async function upsert(
       timezone: args.timezone,
     });
   }
+  return identity.subject;
 }
 
 export const get = query({
@@ -75,7 +77,22 @@ export const get = query({
 // and keeps the timezone current when the user travels.
 export const ensure = mutation({
   args: { timezone: v.string(), email: v.optional(v.string()) },
-  handler: (ctx, args) => upsert(ctx, args),
+  handler: async (ctx, args) => {
+    const userId = await upsert(ctx, args);
+    const legacy = await ctx.db
+      .query("thoughts")
+      .withIndex("by_user_and_unseenQuestionCount", (q) =>
+        q.eq("userId", userId).eq("unseenQuestionCount", undefined),
+      )
+      .first();
+    if (legacy) {
+      await ctx.scheduler.runAfter(
+        0,
+        internal.thoughts.backfillQuestionCounts,
+        { userId },
+      );
+    }
+  },
 });
 
 export const save = mutation({
@@ -84,5 +101,7 @@ export const save = mutation({
     timezone: v.string(),
     email: v.optional(v.string()),
   },
-  handler: (ctx, args) => upsert(ctx, args),
+  handler: async (ctx, args) => {
+    await upsert(ctx, args);
+  },
 });

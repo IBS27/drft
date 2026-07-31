@@ -1,18 +1,20 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "convex/react";
+import { useConvexAuth, useQuery } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
 import { useState } from "react";
-import { ageLabel, firstLine } from "../features/thoughts/format";
+import { ageLabel } from "../features/thoughts/format";
 import { useThoughtPrewarm } from "../features/thoughts/useThoughtPrewarm";
 import { BackLink } from "../features/ui/BackLink";
+import { SkeletonRows } from "../features/ui/Skeleton";
 
 export const Route = createFileRoute("/resting")({ component: Resting });
 
 // Thoughts that were set down. Out of the collection and the rotation;
 // still part of your thinking's history, still one click from waking.
 function Resting() {
-  const rows = useQuery(api.thoughts.resting);
-  const [now] = useState(() => new Date());
+  const { isAuthenticated } = useConvexAuth();
+  const rows = useQuery(api.thoughts.resting, isAuthenticated ? {} : "skip");
+  const [now] = useState(() => Date.now());
   const prewarm = useThoughtPrewarm();
 
   return (
@@ -26,31 +28,35 @@ function Resting() {
       </header>
 
       <section className="mx-auto w-full max-w-2xl flex-1 px-6 pt-16 pb-16">
-        {rows?.map((t) => (
-          <Link
-            key={t._id}
-            to="/thought/$thoughtId"
-            params={{ thoughtId: t._id }}
-            onPointerEnter={() => prewarm(t._id)}
-            onPointerDown={() => prewarm(t._id)}
-            onFocus={() => prewarm(t._id)}
-            className="group block border-b border-line py-4"
-          >
-            <div className="flex items-center gap-3.5">
-              <span className="flex-1 truncate text-[16px] font-normal text-pt transition-colors group-hover:text-ink">
-                {firstLine(t.text)}
-              </span>
-              <span className="flex-none text-[12px] tracking-[0.08em] text-pl tabular-nums">
-                {t.restedAt ? ageLabel(t.restedAt, now) : ""}
-              </span>
-            </div>
-            {t.restingNote && (
-              <div className="mt-1 truncate text-[13.5px] font-normal text-mut">
-                {t.restingNote}
+        {rows === undefined ? (
+          <SkeletonRows count={4} />
+        ) : (
+          rows.map((t) => (
+            <Link
+              key={t._id}
+              to="/thought/$thoughtId"
+              params={{ thoughtId: t._id }}
+              onPointerEnter={() => prewarm(t._id)}
+              onPointerDown={() => prewarm(t._id)}
+              onFocus={() => prewarm(t._id)}
+              className="group block border-b border-line py-4"
+            >
+              <div className="flex items-center gap-3.5">
+                <span className="flex-1 truncate text-[16px] font-normal text-pt transition-colors group-hover:text-ink">
+                  {t.preview}
+                </span>
+                <span className="flex-none text-[12px] tracking-[0.08em] text-pl tabular-nums">
+                  {t.restedAt ? ageLabel(t.restedAt, now) : ""}
+                </span>
               </div>
-            )}
-          </Link>
-        ))}
+              {t.restingNote && (
+                <div className="mt-1 truncate text-[13.5px] font-normal text-mut">
+                  {t.restingNote}
+                </div>
+              )}
+            </Link>
+          ))
+        )}
       </section>
     </main>
   );

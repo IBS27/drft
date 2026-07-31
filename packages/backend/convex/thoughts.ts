@@ -3,19 +3,21 @@ import {
   paginationOptsValidator,
   paginationResultValidator,
 } from "convex/server";
-import { mutation, query } from "./_generated/server";
-import type { QueryCtx } from "./_generated/server";
-import type { Id } from "./_generated/dataModel";
+import { internalMutation, mutation, query } from "./_generated/server";
+import type { MutationCtx, QueryCtx } from "./_generated/server";
+import type { Doc, Id } from "./_generated/dataModel";
 import { internal } from "./_generated/api";
 import { MAX_UNSEEN_QUESTIONS } from "./ai/limits";
 
 const QUESTION_HISTORY_LIMIT = 100;
 const CONNECTIONS_PER_DIRECTION_LIMIT = 50;
 const QUESTION_COUNT_BACKFILL_BATCH = 64;
+const COLLECTION_LIMIT = 500;
+const PREVIEW_LIMIT = 160;
 
 const collectionRowValidator = v.object({
   _id: v.id("thoughts"),
-  text: v.string(),
+  preview: v.string(),
   createdAt: v.number(),
   waiting: v.boolean(),
 });
@@ -38,6 +40,20 @@ const messageViewValidator = v.object({
   role: v.union(v.literal("you"), v.literal("partner")),
   text: v.string(),
 });
+
+function preview(text: string): string {
+  const line = text.split(/\r?\n/).find((part) => part.trim().length > 0);
+  return (line?.trim() ?? "").slice(0, PREVIEW_LIMIT);
+}
+
+function collectionRow(thought: Doc<"thoughts">) {
+  return {
+    _id: thought._id,
+    preview: preview(thought.text),
+    createdAt: thought.createdAt,
+    waiting: (thought.unseenQuestionCount ?? 0) > 0,
+  };
+}
 
 // A thought is only ever yours. Every read/write below goes through this.
 async function ownedThought(ctx: QueryCtx, thoughtId: Id<"thoughts">) {
@@ -90,39 +106,29 @@ export const collection = query({
         q.eq("userId", identity.subject).eq("status", "open"),
       )
       .order("desc")
-      .collect();
-    const thoughts = await Promise.all(
-      open.map(async (t) => {
-        // Legacy thoughts fall back to one indexed point read until the
-        // compatibility backfill stamps their denormalized count.
-        const waiting =
-          t.unseenQuestionCount === undefined
-            ? (await ctx.db
-                .query("questions")
-                .withIndex("by_thought_and_seenAt", (q) =>
-                  q.eq("thoughtId", t._id).eq("seenAt", undefined),
-                )
-                .first()) !== null
-            : t.unseenQuestionCount > 0;
-        return {
-          _id: t._id,
-          text: t.text,
-          createdAt: t.createdAt,
-          waiting,
-        };
-      }),
-    );
+      .take(COLLECTION_LIMIT);
+    const thoughts = open.map(collectionRow);
     const today = await ctx.db
       .query("resurfacings")
       .withIndex("by_user_date", (q) =>
         q.eq("userId", identity.subject).eq("date", date),
       )
       .first();
-    const openIds = new Set(open.map((t) => t._id));
-    return {
-      thoughts,
-      resurfacedId: today && openIds.has(today.thoughtId) ? today.thoughtId : null,
-    };
+    // The rotation reaches for what has waited longest, so today's thought
+    // is often older than this page's oldest row. It is the one thing on
+    // this screen that must never be missing: fetch it by hand and carry
+    // it in. (Ordering is the client's; it pins by id.)
+    let resurfacedId: Id<"thoughts"> | null = null;
+    if (today && open.some((t) => t._id === today.thoughtId)) {
+      resurfacedId = today.thoughtId;
+    } else if (today) {
+      const pinned = await ctx.db.get(today.thoughtId);
+      if (pinned?.userId === identity.subject && pinned.status === "open") {
+        resurfacedId = pinned._id;
+        thoughts.push(collectionRow(pinned));
+      }
+    }
+    return { thoughts, resurfacedId };
   },
 });
 
@@ -234,34 +240,55 @@ export const conversation = query({
   },
 });
 
-// Compatibility migration for thoughts captured before unseen counts were
-// denormalized. Indexed batches make repeated calls cheap and resumable.
+async function backfillQuestionCountBatch(
+  ctx: MutationCtx,
+  userId: string,
+): Promise<boolean> {
+  const legacy = await ctx.db
+    .query("thoughts")
+    .withIndex("by_user_and_unseenQuestionCount", (q) =>
+      q.eq("userId", userId).eq("unseenQuestionCount", undefined),
+    )
+    .take(QUESTION_COUNT_BACKFILL_BATCH);
+  for (const thought of legacy) {
+    const unseen = await ctx.db
+      .query("questions")
+      .withIndex("by_thought_and_seenAt", (q) =>
+        q.eq("thoughtId", thought._id).eq("seenAt", undefined),
+      )
+      .take(MAX_UNSEEN_QUESTIONS);
+    await ctx.db.patch(thought._id, {
+      unseenQuestionCount: unseen.length,
+    });
+  }
+  return legacy.length === QUESTION_COUNT_BACKFILL_BATCH;
+}
+
+// Compatibility entry point retained for callers from before the migration
+// became server-owned. Indexed batches keep it cheap and resumable.
 export const ensureQuestionCounts = mutation({
   args: {},
   returns: v.boolean(),
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) return false;
-    const legacy = await ctx.db
-      .query("thoughts")
-      .withIndex("by_user_and_unseenQuestionCount", (q) =>
-        q
-          .eq("userId", identity.subject)
-          .eq("unseenQuestionCount", undefined),
-      )
-      .take(QUESTION_COUNT_BACKFILL_BATCH);
-    for (const thought of legacy) {
-      const unseen = await ctx.db
-        .query("questions")
-        .withIndex("by_thought_and_seenAt", (q) =>
-          q.eq("thoughtId", thought._id).eq("seenAt", undefined),
-        )
-        .take(MAX_UNSEEN_QUESTIONS);
-      await ctx.db.patch(thought._id, {
-        unseenQuestionCount: unseen.length,
-      });
+    return backfillQuestionCountBatch(ctx, identity.subject);
+  },
+});
+
+export const backfillQuestionCounts = internalMutation({
+  args: { userId: v.string() },
+  returns: v.null(),
+  handler: async (ctx, { userId }): Promise<null> => {
+    const hasMore = await backfillQuestionCountBatch(ctx, userId);
+    if (hasMore) {
+      await ctx.scheduler.runAfter(
+        0,
+        internal.thoughts.backfillQuestionCounts,
+        { userId },
+      );
     }
-    return legacy.length === QUESTION_COUNT_BACKFILL_BATCH;
+    return null;
   },
 });
 
@@ -271,20 +298,22 @@ export const resting = query({
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) return [];
+    // Ordered by the index, not in memory: sorting a truncated page would
+    // cut the oldest-*captured* thoughts and then claim to be the most
+    // recently set down.
     const rows = await ctx.db
       .query("thoughts")
-      .withIndex("by_user_status", (q) =>
+      .withIndex("by_user_status_restedAt", (q) =>
         q.eq("userId", identity.subject).eq("status", "resting"),
       )
-      .collect();
-    return rows
-      .sort((a, b) => (b.restedAt ?? 0) - (a.restedAt ?? 0))
-      .map((t) => ({
-        _id: t._id,
-        text: t.text,
-        restedAt: t.restedAt,
-        restingNote: t.restingNote,
-      }));
+      .order("desc")
+      .take(COLLECTION_LIMIT);
+    return rows.map((t) => ({
+      _id: t._id,
+      preview: preview(t.text),
+      restedAt: t.restedAt,
+      restingNote: t.restingNote,
+    }));
   },
 });
 

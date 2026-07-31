@@ -1,6 +1,6 @@
 import { SignOutButton, useUser } from "@clerk/clerk-react";
 import { createFileRoute } from "@tanstack/react-router";
-import { useMutation, useQuery } from "convex/react";
+import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
 import { useRef, useState } from "react";
 import { BackLink } from "../features/ui/BackLink";
@@ -12,14 +12,20 @@ export const Route = createFileRoute("/settings")({ component: Settings });
 // lives in Convex (docs/experience.html §08) — this page writes through.
 function Settings() {
   const { user } = useUser();
-  const settings = useQuery(api.settings.get);
+  const { isAuthenticated } = useConvexAuth();
+  // The page can render before auth lands; ask only once it has.
+  const settings = useQuery(api.settings.get, isAuthenticated ? {} : "skip");
   const save = useMutation(api.settings.save);
   const [time, setTime] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
   const timer = useRef<number | undefined>(undefined);
 
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  const shown = time ?? settings?.sendTime ?? "08:00";
+  // `undefined` is "not answered yet"; `null` is "no row — use the
+  // default". Until the answer lands the page keeps its shape and simply
+  // says nothing, rather than showing a time that may not be yours.
+  const loaded = settings !== undefined;
+  const shown = time ?? settings?.sendTime ?? (loaded ? "08:00" : "");
   const email =
     settings?.email ?? user?.primaryEmailAddress?.emailAddress ?? "";
 
@@ -50,7 +56,9 @@ function Settings() {
 
       <section className="mx-auto w-full max-w-2xl flex-1 px-6 pt-16 pb-16">
         <div className="border-b border-line py-4 text-[14px] text-mut">
-          {email}
+          {email || (
+            <span className="inline-block h-px w-[20ch] max-w-full bg-line align-middle" />
+          )}
         </div>
 
         <div className="border-b border-line py-4">

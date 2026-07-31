@@ -49,7 +49,7 @@ function Panel({ close }: { close: () => void }) {
   const [hits, setHits] = useState<Hit[] | null>(null);
   const [failed, setFailed] = useState(false);
   const [active, setActive] = useState(0);
-  const [now] = useState(() => new Date());
+  const [now] = useState(() => Date.now());
   const seq = useRef(0);
 
   useEffect(() => {

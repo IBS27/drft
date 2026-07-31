@@ -1,14 +1,14 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { useQuery } from "convex/react";
+import { useConvexAuth, useQuery } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
 import { memo, useCallback, useEffect, useMemo } from "react";
 import type { Id } from "@drft/backend/convex/_generated/dataModel";
-import { firstLine, localDate, orderRows } from "./format";
+import { localDate, orderRows } from "./format";
 import { useThoughtPrewarm } from "./useThoughtPrewarm";
 
 type RailThought = {
   _id: Id<"thoughts">;
-  text: string;
+  preview: string;
   createdAt: number;
   waiting: boolean;
 };
@@ -23,9 +23,14 @@ export const Rail = memo(function Rail({
   now,
 }: {
   activeId: Id<"thoughts"> | null;
-  now: Date;
+  now: number;
 }) {
-  const data = useQuery(api.thoughts.collection, { date: localDate(now) });
+  const { isAuthenticated } = useConvexAuth();
+  const date = useMemo(() => localDate(now), [now]);
+  const data = useQuery(
+    api.thoughts.collection,
+    isAuthenticated ? { date } : "skip",
+  );
   const navigate = useNavigate();
   const prewarm = useThoughtPrewarm();
   const prepareNavigation = useCallback(
@@ -113,7 +118,9 @@ export const Rail = memo(function Rail({
   );
 });
 
-function RailRow({
+// Nothing here is relative to the clock, so the 30s tick must not reach
+// it: memo holds every row still while only the page's ages redraw.
+const RailRow = memo(function RailRow({
   t,
   active,
   prewarm,
@@ -142,8 +149,8 @@ function RailRow({
           active ? "text-ink" : t.waiting ? "text-pt" : "text-pl"
         }`}
       >
-        {firstLine(t.text)}
+        {t.preview}
       </span>
     </Link>
   );
-}
+});
