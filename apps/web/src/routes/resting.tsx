@@ -3,6 +3,7 @@ import { useQuery } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
 import { useState } from "react";
 import { ageLabel, firstLine } from "../features/thoughts/format";
+import { useThoughtPrewarm } from "../features/thoughts/useThoughtPrewarm";
 
 export const Route = createFileRoute("/resting")({ component: Resting });
 
@@ -11,6 +12,7 @@ export const Route = createFileRoute("/resting")({ component: Resting });
 function Resting() {
   const rows = useQuery(api.thoughts.resting);
   const [now] = useState(() => new Date());
+  const prewarm = useThoughtPrewarm();
 
   return (
     <main className="flex min-h-dvh flex-col">
@@ -33,6 +35,9 @@ function Resting() {
             key={t._id}
             to="/thought/$thoughtId"
             params={{ thoughtId: t._id }}
+            onPointerEnter={() => prewarm(t._id)}
+            onPointerDown={() => prewarm(t._id)}
+            onFocus={() => prewarm(t._id)}
             className="group block border-b border-line py-4"
           >
             <div className="flex items-center gap-3.5">

@@ -8,7 +8,10 @@ import { routeTree } from "./routeTree.gen";
 import "./index.css";
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL);
-const router = createRouter({ routeTree });
+// Scroll to the top on navigation (and restore on back/forward) — without
+// this, moving between thoughts keeps the old scroll offset, so the new
+// thought's words land mid-viewport.
+const router = createRouter({ routeTree, scrollRestoration: true });
 
 declare module "@tanstack/react-router" {
   interface Register {

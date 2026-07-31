@@ -1,8 +1,43 @@
 import { v } from "convex/values";
+import {
+  paginationOptsValidator,
+  paginationResultValidator,
+} from "convex/server";
 import { mutation, query } from "./_generated/server";
 import type { QueryCtx } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
 import { internal } from "./_generated/api";
+import { MAX_UNSEEN_QUESTIONS } from "./ai/limits";
+
+const QUESTION_HISTORY_LIMIT = 100;
+const CONNECTIONS_PER_DIRECTION_LIMIT = 50;
+const QUESTION_COUNT_BACKFILL_BATCH = 64;
+
+const collectionRowValidator = v.object({
+  _id: v.id("thoughts"),
+  text: v.string(),
+  createdAt: v.number(),
+  waiting: v.boolean(),
+});
+
+const questionViewValidator = v.object({
+  _id: v.id("questions"),
+  text: v.string(),
+  seen: v.boolean(),
+});
+
+const connectionViewValidator = v.object({
+  _id: v.id("connections"),
+  otherId: v.id("thoughts"),
+  otherText: v.string(),
+  otherStatus: v.union(v.literal("open"), v.literal("resting")),
+});
+
+const messageViewValidator = v.object({
+  _id: v.id("messages"),
+  role: v.union(v.literal("you"), v.literal("partner")),
+  text: v.string(),
+});
 
 // A thought is only ever yours. Every read/write below goes through this.
 async function ownedThought(ctx: QueryCtx, thoughtId: Id<"thoughts">) {
@@ -18,6 +53,7 @@ async function ownedThought(ctx: QueryCtx, thoughtId: Id<"thoughts">) {
 // prepared, but waiting; capture never becomes a conversation.
 export const capture = mutation({
   args: { text: v.string() },
+  returns: v.id("thoughts"),
   handler: async (ctx, { text }) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error("Not signed in");
@@ -28,6 +64,7 @@ export const capture = mutation({
       text: trimmed,
       createdAt: Date.now(),
       status: "open",
+      unseenQuestionCount: 0,
     });
     await ctx.scheduler.runAfter(0, internal.enrichment.enrich, { thoughtId });
     return thoughtId;
@@ -40,6 +77,10 @@ export const capture = mutation({
 // client's to define; it selects today's resurfaced thought, if any.
 export const collection = query({
   args: { date: v.string() },
+  returns: v.object({
+    thoughts: v.array(collectionRowValidator),
+    resurfacedId: v.union(v.id("thoughts"), v.null()),
+  }),
   handler: async (ctx, { date }) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) return { thoughts: [], resurfacedId: null };
@@ -52,64 +93,88 @@ export const collection = query({
       .collect();
     const thoughts = await Promise.all(
       open.map(async (t) => {
-        // One indexed row, not the whole question history — the dot only
-        // needs to know whether anything unseen exists.
-        const unseen = await ctx.db
-          .query("questions")
-          .withIndex("by_thought", (q) => q.eq("thoughtId", t._id))
-          .filter((q) => q.eq(q.field("seenAt"), undefined))
-          .first();
+        // Legacy thoughts fall back to one indexed point read until the
+        // compatibility backfill stamps their denormalized count.
+        const waiting =
+          t.unseenQuestionCount === undefined
+            ? (await ctx.db
+                .query("questions")
+                .withIndex("by_thought_and_seenAt", (q) =>
+                  q.eq("thoughtId", t._id).eq("seenAt", undefined),
+                )
+                .first()) !== null
+            : t.unseenQuestionCount > 0;
         return {
           _id: t._id,
           text: t.text,
           createdAt: t.createdAt,
-          waiting: unseen !== null,
+          waiting,
         };
       }),
     );
-    const todays = await ctx.db
+    const today = await ctx.db
       .query("resurfacings")
       .withIndex("by_user_date", (q) =>
         q.eq("userId", identity.subject).eq("date", date),
       )
-      .collect();
-    const mine = todays.find((r) => open.some((t) => t._id === r.thoughtId));
-    return { thoughts, resurfacedId: mine?.thoughtId ?? null };
+      .first();
+    const openIds = new Set(open.map((t) => t._id));
+    return {
+      thoughts,
+      resurfacedId: today && openIds.has(today.thoughtId) ? today.thoughtId : null,
+    };
   },
 });
 
-// Everything the thought view needs, in one reactive read: the fragment,
-// the partner's prepared questions, the session so far, and undismissed
-// connections resolved to the other thought's words.
+// Mostly-static thought material. The hot message stream has its own
+// paginated query below, so a token patch does not reread this whole margin.
 export const view = query({
   args: { thoughtId: v.id("thoughts") },
+  returns: v.union(
+    v.null(),
+    v.object({
+      _id: v.id("thoughts"),
+      text: v.string(),
+      createdAt: v.number(),
+      status: v.union(v.literal("open"), v.literal("resting")),
+      restingNote: v.optional(v.string()),
+      restedAt: v.optional(v.number()),
+      lastReturnedAt: v.union(v.number(), v.null()),
+      questions: v.array(questionViewValidator),
+      connections: v.array(connectionViewValidator),
+    }),
+  ),
   handler: async (ctx, { thoughtId }) => {
     const thought = await ownedThought(ctx, thoughtId);
     if (!thought) return null;
-    const questions = (
-      await ctx.db
+    const [questionRows, fromLinks, toLinks, lastReturn] = await Promise.all([
+      ctx.db
         .query("questions")
         .withIndex("by_thought", (q) => q.eq("thoughtId", thoughtId))
-        .collect()
-    ).map((q) => ({ _id: q._id, text: q.text, seen: q.seenAt !== undefined }));
-    const messages = (
-      await ctx.db
-        .query("messages")
+        .order("desc")
+        .take(QUESTION_HISTORY_LIMIT),
+      ctx.db
+        .query("connections")
+        .withIndex("by_from_and_dismissedAt", (q) =>
+          q.eq("fromId", thoughtId).eq("dismissedAt", undefined),
+        )
+        .take(CONNECTIONS_PER_DIRECTION_LIMIT),
+      ctx.db
+        .query("connections")
+        .withIndex("by_to_and_dismissedAt", (q) =>
+          q.eq("toId", thoughtId).eq("dismissedAt", undefined),
+        )
+        .take(CONNECTIONS_PER_DIRECTION_LIMIT),
+      ctx.db
+        .query("resurfacings")
         .withIndex("by_thought", (q) => q.eq("thoughtId", thoughtId))
-        .collect()
-    ).map((m) => ({ _id: m._id, role: m.role, text: m.text }));
-    const links = [
-      ...(await ctx.db
-        .query("connections")
-        .withIndex("by_from", (q) => q.eq("fromId", thoughtId))
-        .collect()),
-      ...(await ctx.db
-        .query("connections")
-        .withIndex("by_to", (q) => q.eq("toId", thoughtId))
-        .collect()),
-    ]
-      .filter((c) => c.dismissedAt === undefined)
-      .sort((a, b) => b.score - a.score);
+        .order("desc")
+        .first(),
+    ]);
+    const questions = [...questionRows]
+      .reverse()
+      .map((q) => ({ _id: q._id, text: q.text, seen: q.seenAt !== undefined }));
+    const links = [...fromLinks, ...toLinks].sort((a, b) => b.score - a.score);
     const connections = (
       await Promise.all(
         links.map(async (c) => {
@@ -126,14 +191,6 @@ export const view = query({
         }),
       )
     ).filter((c) => c !== null);
-    // When the loop last brought this thought back — a fact in the margin,
-    // never a count. Selection time is when the user saw it.
-    const returns = await ctx.db
-      .query("resurfacings")
-      .withIndex("by_thought", (q) => q.eq("thoughtId", thoughtId))
-      .collect();
-    const lastReturnedAt =
-      returns.reduce((max, r) => Math.max(max, r._creationTime), 0) || null;
     return {
       _id: thought._id,
       text: thought.text,
@@ -141,11 +198,70 @@ export const view = query({
       status: thought.status,
       restingNote: thought.restingNote,
       restedAt: thought.restedAt,
-      lastReturnedAt,
+      lastReturnedAt: lastReturn?._creationTime ?? null,
       questions,
-      messages,
       connections,
     };
+  },
+});
+
+// The append-only, frequently changing part of a thought. Newest-first
+// pagination keeps streaming updates inside the first small reactive page.
+export const conversation = query({
+  args: {
+    thoughtId: v.id("thoughts"),
+    paginationOpts: paginationOptsValidator,
+  },
+  returns: paginationResultValidator(messageViewValidator),
+  handler: async (ctx, { thoughtId, paginationOpts }) => {
+    const thought = await ownedThought(ctx, thoughtId);
+    if (!thought) {
+      return { page: [], continueCursor: "", isDone: true };
+    }
+    const page = await ctx.db
+      .query("messages")
+      .withIndex("by_thought", (q) => q.eq("thoughtId", thoughtId))
+      .order("desc")
+      .paginate(paginationOpts);
+    return {
+      ...page,
+      page: page.page.map((m) => ({
+        _id: m._id,
+        role: m.role,
+        text: m.text,
+      })),
+    };
+  },
+});
+
+// Compatibility migration for thoughts captured before unseen counts were
+// denormalized. Indexed batches make repeated calls cheap and resumable.
+export const ensureQuestionCounts = mutation({
+  args: {},
+  returns: v.boolean(),
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return false;
+    const legacy = await ctx.db
+      .query("thoughts")
+      .withIndex("by_user_and_unseenQuestionCount", (q) =>
+        q
+          .eq("userId", identity.subject)
+          .eq("unseenQuestionCount", undefined),
+      )
+      .take(QUESTION_COUNT_BACKFILL_BATCH);
+    for (const thought of legacy) {
+      const unseen = await ctx.db
+        .query("questions")
+        .withIndex("by_thought_and_seenAt", (q) =>
+          q.eq("thoughtId", thought._id).eq("seenAt", undefined),
+        )
+        .take(MAX_UNSEEN_QUESTIONS);
+      await ctx.db.patch(thought._id, {
+        unseenQuestionCount: unseen.length,
+      });
+    }
+    return legacy.length === QUESTION_COUNT_BACKFILL_BATCH;
   },
 });
 
@@ -199,17 +315,24 @@ export const say = mutation({
 // now, and now is over once you're in the room.
 export const markQuestionsSeen = mutation({
   args: { thoughtId: v.id("thoughts") },
+  returns: v.null(),
   handler: async (ctx, { thoughtId }) => {
     const thought = await ownedThought(ctx, thoughtId);
-    if (!thought) return;
+    if (!thought) return null;
     const questions = await ctx.db
       .query("questions")
-      .withIndex("by_thought", (q) => q.eq("thoughtId", thoughtId))
-      .collect();
+      .withIndex("by_thought_and_seenAt", (q) =>
+        q.eq("thoughtId", thoughtId).eq("seenAt", undefined),
+      )
+      .take(MAX_UNSEEN_QUESTIONS);
     const now = Date.now();
     for (const q of questions) {
-      if (q.seenAt === undefined) await ctx.db.patch(q._id, { seenAt: now });
+      await ctx.db.patch(q._id, { seenAt: now });
     }
+    if (thought.unseenQuestionCount !== 0) {
+      await ctx.db.patch(thoughtId, { unseenQuestionCount: 0 });
+    }
+    return null;
   },
 });
 

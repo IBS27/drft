@@ -1,10 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useMutation, useQuery } from "convex/react";
+import { useMutation, usePaginatedQuery, useQuery } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { ageLabel, dateLine, firstLine, groupOf } from "../features/thoughts/format";
 import { Rail } from "../features/thoughts/Rail";
-import { Waiting } from "../features/ui/Waiting";
+import { useThoughtPrewarm } from "../features/thoughts/useThoughtPrewarm";
 import type { Id } from "@drft/backend/convex/_generated/dataModel";
 
 export const Route = createFileRoute("/thought/$thoughtId")({
@@ -25,19 +25,28 @@ function NotHere() {
   );
 }
 
-function BackHeader({ label }: { label?: string }) {
+function BackHeader({
+  label,
+  withRail = false,
+}: {
+  label?: string;
+  withRail?: boolean;
+}) {
   return (
-    <header className="grid grid-cols-3 items-baseline px-8 pt-7">
+    <header className="relative z-10 flex items-baseline px-8 pt-7">
       <Link
         to="/"
         className="justify-self-start text-[18px] leading-none text-pl transition-colors hover:text-ink"
       >
         ‹
       </Link>
-      <span className="justify-self-center text-[11.5px] tracking-[0.4em] text-pl uppercase">
+      <span
+        className={`pointer-events-none absolute right-0 text-center text-[11.5px] tracking-[0.4em] text-pl uppercase ${
+          withRail ? "left-0 lg:left-72 xl:left-80" : "left-0"
+        }`}
+      >
         {label ?? ""}
       </span>
-      <span />
     </header>
   );
 }
@@ -49,10 +58,20 @@ function ThoughtView() {
   const { thoughtId } = Route.useParams();
   const id = thoughtId as Id<"thoughts">;
   const view = useQuery(api.thoughts.view, { thoughtId: id });
+  const conversation = usePaginatedQuery(
+    api.thoughts.conversation,
+    { thoughtId: id },
+    { initialNumItems: 40 },
+  );
   const markSeen = useMutation(api.thoughts.markQuestionsSeen);
   const dismissConn = useMutation(api.thoughts.dismissConnection);
   const undismissConn = useMutation(api.thoughts.undismissConnection);
-  const [now] = useState(() => new Date());
+  const prewarm = useThoughtPrewarm();
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(new Date()), 30_000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   // What was waiting when you walked in keeps its dot for this visit —
   // the margin's way of saying which questions are new. Keyed by thought:
@@ -76,17 +95,28 @@ function ThoughtView() {
   // While the partner's reply streams in, keep its words on screen — but
   // only if the reader is already at the bottom; scrolling up to reread
   // is never fought.
-  const messages = view?.messages;
-  const tail = messages?.[messages.length - 1];
+  const messages = useMemo(
+    () => conversation.results.toReversed(),
+    [conversation.results],
+  );
+  const tail = messages[messages.length - 1];
   const streamText = tail?.role === "partner" ? tail.text : null;
+  // Only words arriving *during this visit* pull the page down — walking
+  // into a thought whose last word is the partner's must not jump. The
+  // ref remembers the last tail per thought; the first sight of a thought
+  // (or of a finished reply) records without scrolling.
+  const lastStream = useRef<{ id: Id<"thoughts">; text: string } | null>(null);
   useEffect(() => {
     if (streamText === null || streamText === undefined) return;
+    const prev = lastStream.current;
+    lastStream.current = { id, text: streamText };
+    if (!prev || prev.id !== id || prev.text === streamText) return;
     const nearBottom =
       window.innerHeight + window.scrollY >=
       document.documentElement.scrollHeight - 240;
     if (nearBottom)
       window.scrollTo({ top: document.documentElement.scrollHeight });
-  }, [streamText]);
+  }, [streamText, id]);
 
   // A dismissed link lingers for a moment as an undo — the one-click
   // path back, same as everything else here.
@@ -114,21 +144,42 @@ function ThoughtView() {
     window.clearTimeout(asideTimer.current);
   }, [id]);
 
-  if (view === undefined) return <Waiting />;
-  if (view === null) return <NotHere />;
-
-  const hasMargin = view.questions.length > 0 || view.messages.length > 0;
+  const hasMargin =
+    view !== undefined &&
+    view !== null &&
+    (view.questions.length > 0 || messages.length > 0);
 
   return (
     <main className="flex min-h-dvh flex-col">
-      <BackHeader label={dateLine(view.createdAt, now)} />
+      <BackHeader
+        label={view ? dateLine(view.createdAt, now) : undefined}
+        withRail
+      />
       <Rail activeId={id} now={now} />
 
       <div className="flex-1 lg:pl-72 xl:pl-80">
-        <section className="mx-auto flex w-full max-w-[64ch] flex-col items-center px-6 pt-16 pb-10">
-          <h1 className="max-w-[36ch] text-center text-[clamp(24px,2.6vw,28px)] leading-[1.6] font-light whitespace-pre-wrap">
-            {view.text}
-          </h1>
+        {view === undefined ? (
+          <section
+            aria-busy="true"
+            aria-label="loading thought"
+            className="flex min-h-[70dvh] items-center justify-center"
+          >
+            <span className="caret h-5 w-px bg-faint" />
+          </section>
+        ) : view === null ? (
+          <section className="flex min-h-[70dvh] items-center justify-center pb-24">
+            <span className="text-[10.5px] tracking-[0.34em] text-pl uppercase">
+              this thought isn't here
+            </span>
+          </section>
+        ) : (
+          <section
+            key={view._id}
+            className="mx-auto flex w-full max-w-[64ch] flex-col items-center px-6 pt-16 pb-10"
+          >
+            <h1 className="max-w-[36ch] text-center text-[clamp(24px,2.6vw,28px)] leading-[1.6] font-light whitespace-pre-wrap">
+              {view.text}
+            </h1>
 
           {view.status === "resting" && (
             <div className="mt-7 flex flex-col items-center gap-2.5">
@@ -161,7 +212,18 @@ function ThoughtView() {
                 <Msg muted>{q.text}</Msg>
               </Fragment>
             ))}
-            {view.messages.map((m) => (
+            {messages.length > 0 &&
+              conversation.status !== "Exhausted" && (
+                <button
+                  type="button"
+                  disabled={conversation.status === "LoadingMore"}
+                  onClick={() => conversation.loadMore(40)}
+                  className="mt-8 text-[10px] tracking-[0.3em] text-pl uppercase transition-colors hover:text-ink disabled:opacity-50"
+                >
+                  {conversation.status === "LoadingMore" ? "loading" : "earlier"}
+                </button>
+              )}
+            {messages.map((m) => (
               <Fragment key={m._id}>
                 <Who>{m.role}</Who>
                 {/* A partner row streams in from empty; until the first words
@@ -183,6 +245,18 @@ function ThoughtView() {
                   <Link
                     to="/thought/$thoughtId"
                     params={{ thoughtId: c.otherId }}
+                    onPointerEnter={() => {
+                      prewarm(id);
+                      prewarm(c.otherId);
+                    }}
+                    onPointerDown={() => {
+                      prewarm(id);
+                      prewarm(c.otherId);
+                    }}
+                    onFocus={() => {
+                      prewarm(id);
+                      prewarm(c.otherId);
+                    }}
                     className="inline-block max-w-[26ch] truncate text-[11.5px] tracking-[0.22em] text-pl uppercase transition-colors hover:text-ink"
                   >
                     {c.otherStatus === "resting" && (
@@ -228,7 +302,8 @@ function ThoughtView() {
           ) : (
             <WakeControl thoughtId={view._id} />
           )}
-        </section>
+          </section>
+        )}
       </div>
     </main>
   );

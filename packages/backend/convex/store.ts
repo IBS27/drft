@@ -198,24 +198,38 @@ export const insertQuestions = internalMutation({
     texts: v.array(v.string()),
     ifQuietSince: v.optional(v.number()),
   },
+  returns: v.null(),
   handler: async (ctx, { thoughtId, texts, ifQuietSince }) => {
     const thought = await ctx.db.get(thoughtId);
-    if (!thought || thought.status !== "open") return;
+    if (!thought || thought.status !== "open") return null;
     if (ifQuietSince !== undefined) {
-      const messages = await ctx.db
+      const latestMessage = await ctx.db
         .query("messages")
         .withIndex("by_thought", (q) => q.eq("thoughtId", thoughtId))
-        .collect();
-      if (messages.some((m) => m._creationTime > ifQuietSince)) return;
+        .order("desc")
+        .first();
+      if (latestMessage && latestMessage._creationTime > ifQuietSince) {
+        return null;
+      }
     }
-    const existing = await ctx.db
+    const unseen = await ctx.db
       .query("questions")
-      .withIndex("by_thought", (q) => q.eq("thoughtId", thoughtId))
-      .collect();
-    const unseen = existing.filter((q) => q.seenAt === undefined).length;
-    for (const text of texts.slice(0, Math.max(0, MAX_UNSEEN_QUESTIONS - unseen))) {
+      .withIndex("by_thought_and_seenAt", (q) =>
+        q.eq("thoughtId", thoughtId).eq("seenAt", undefined),
+      )
+      .take(MAX_UNSEEN_QUESTIONS);
+    const additions = texts.slice(
+      0,
+      Math.max(0, MAX_UNSEEN_QUESTIONS - unseen.length),
+    );
+    for (const text of additions) {
       await ctx.db.insert("questions", { thoughtId, text });
     }
+    const unseenQuestionCount = unseen.length + additions.length;
+    if (thought.unseenQuestionCount !== unseenQuestionCount) {
+      await ctx.db.patch(thoughtId, { unseenQuestionCount });
+    }
+    return null;
   },
 });
 
