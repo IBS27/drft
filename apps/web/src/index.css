@@ -44,6 +44,9 @@
 html {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  /* Keep the centered column still when the page scrollbar comes and
+     goes between long and short thoughts. */
+  scrollbar-gutter: stable;
 }
 
 body {

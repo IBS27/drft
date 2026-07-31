@@ -11,10 +11,21 @@ export default defineSchema({
     status: v.union(v.literal("open"), v.literal("resting")),
     restingNote: v.optional(v.string()),
     restedAt: v.optional(v.number()),
+    // Denormalized so the collection can render its waiting dot without
+    // joining every thought to its question history.
+    unseenQuestionCount: v.optional(v.number()),
     embedding: v.optional(v.array(v.float64())),
   })
     .index("by_user", ["userId", "createdAt"])
     .index("by_user_status", ["userId", "status", "createdAt"])
+    // The resting list reads newest-set-down first, which is a different
+    // order from newest-captured — it needs its own index to be able to
+    // stop reading early.
+    .index("by_user_status_restedAt", ["userId", "status", "restedAt"])
+    .index("by_user_and_unseenQuestionCount", [
+      "userId",
+      "unseenQuestionCount",
+    ])
     .vectorIndex("by_embedding", {
       vectorField: "embedding",
       dimensions: 1536,
@@ -27,7 +38,9 @@ export default defineSchema({
     thoughtId: v.id("thoughts"),
     text: v.string(),
     seenAt: v.optional(v.number()),
-  }).index("by_thought", ["thoughtId"]),
+  })
+    .index("by_thought", ["thoughtId"])
+    .index("by_thought_and_seenAt", ["thoughtId", "seenAt"]),
 
   // Auto-linked by resonance, user-dismissable, never user-curated.
   connections: defineTable({
@@ -37,7 +50,9 @@ export default defineSchema({
     dismissedAt: v.optional(v.number()),
   })
     .index("by_from", ["fromId"])
-    .index("by_to", ["toId"]),
+    .index("by_to", ["toId"])
+    .index("by_from_and_dismissedAt", ["fromId", "dismissedAt"])
+    .index("by_to_and_dismissedAt", ["toId", "dismissedAt"]),
 
   // Append-only conversation per thought; no session end-state, so no
   // sessions table — the thought is the session. Your messages carry your

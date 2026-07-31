@@ -68,6 +68,7 @@ export const run = internalMutation({
         text,
         createdAt: Date.now() - daysAgo * DAY - 3_600_000,
         status: "open",
+        unseenQuestionCount: 0,
       });
       // Real enrichment, same as a capture (needs OPENAI_API_KEY set).
       await ctx.scheduler.runAfter(0, internal.enrichment.enrich, { thoughtId });

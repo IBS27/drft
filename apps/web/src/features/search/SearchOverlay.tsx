@@ -4,6 +4,8 @@ import { api } from "@drft/backend/convex/_generated/api";
 import { useEffect, useRef, useState } from "react";
 import type { Id } from "@drft/backend/convex/_generated/dataModel";
 import { ageLabel, firstLine } from "../thoughts/format";
+import { useThoughtPrewarm } from "../thoughts/useThoughtPrewarm";
+import { OPEN_SEARCH_EVENT } from "./openSearch";
 
 type Hit = {
   _id: Id<"thoughts">;
@@ -19,6 +21,7 @@ export function SearchOverlay() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
+    const onOpen = () => setOpen(true);
     const onKey = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null;
       const typing =
@@ -32,8 +35,12 @@ export function SearchOverlay() {
         setOpen(true);
       }
     };
+    window.addEventListener(OPEN_SEARCH_EVENT, onOpen);
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener(OPEN_SEARCH_EVENT, onOpen);
+      window.removeEventListener("keydown", onKey);
+    };
   }, []);
 
   if (!open) return null;
@@ -43,11 +50,12 @@ export function SearchOverlay() {
 function Panel({ close }: { close: () => void }) {
   const search = useAction(api.search.thoughts);
   const navigate = useNavigate();
+  const prewarm = useThoughtPrewarm();
   const [text, setText] = useState("");
   const [hits, setHits] = useState<Hit[] | null>(null);
   const [failed, setFailed] = useState(false);
   const [active, setActive] = useState(0);
-  const [now] = useState(() => new Date());
+  const [now] = useState(() => Date.now());
   const seq = useRef(0);
 
   useEffect(() => {
@@ -73,6 +81,7 @@ function Panel({ close }: { close: () => void }) {
   }, [text, search]);
 
   const go = (hit: Hit) => {
+    prewarm(hit._id);
     close();
     void navigate({ to: "/thought/$thoughtId", params: { thoughtId: hit._id } });
   };
@@ -131,6 +140,8 @@ function Panel({ close }: { close: () => void }) {
                 key={h._id}
                 type="button"
                 onClick={() => go(h)}
+                onPointerEnter={() => prewarm(h._id)}
+                onFocus={() => prewarm(h._id)}
                 onMouseMove={() => setActive(i)}
                 className="flex w-full items-center gap-3.5 border-b border-line py-4 text-left"
               >
