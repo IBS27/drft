@@ -1,6 +1,8 @@
+import { useAuth } from "@clerk/clerk-react";
 import { createRootRoute, Outlet, useRouterState } from "@tanstack/react-router";
 import { useConvexAuth } from "convex/react";
 import { useEffect, useState } from "react";
+import { readSeenUser, writeSeenUser } from "../features/auth/seenUser";
 import { SignIn } from "../features/auth/SignIn";
 import { SearchOverlay } from "../features/search/SearchOverlay";
 import { useEnsureSettings } from "../features/settings/useEnsureSettings";
@@ -9,29 +11,12 @@ import { Waiting } from "../features/ui/Waiting";
 
 // A returning visitor has already proven who they are; proving it again
 // costs a Clerk round trip the room shouldn't be held hostage to. We
-// remember that this browser has been signed in, and on the next visit
-// open the room immediately while the handshake finishes behind it.
-// Nothing private leaks: every query waits for real auth (each view
-// renders its own quiet skeleton until then), and the moment the
-// handshake comes back unauthenticated the sign-in screen takes over.
-const SEEN_KEY = "drft:auth-seen";
-
-function readSeen(): boolean {
-  try {
-    return window.localStorage.getItem(SEEN_KEY) === "1";
-  } catch {
-    return false;
-  }
-}
-
-function writeSeen(seen: boolean): void {
-  try {
-    if (seen) window.localStorage.setItem(SEEN_KEY, "1");
-    else window.localStorage.removeItem(SEEN_KEY);
-  } catch {
-    // Storage can be denied (private mode); it only costs the fast open.
-  }
-}
+// remember who this browser was signed in as (features/auth/seenUser),
+// and on the next visit open the room immediately while the handshake
+// finishes behind it. Nothing private leaks: every query waits for real
+// auth (each view renders its own quiet skeleton until then), and the
+// moment the handshake comes back unauthenticated the sign-in screen
+// takes over.
 
 export const Route = createRootRoute({ component: Root });
 
@@ -41,15 +26,16 @@ function Root() {
     select: (s) => s.location.pathname === "/sso-callback",
   });
   const { isLoading, isAuthenticated } = useConvexAuth();
+  const { userId } = useAuth();
   // Read once per load: the flag is written as auth resolves, and the
   // shell must not change its mind mid-handshake.
-  const [seen] = useState(readSeen);
+  const [seen] = useState(() => readSeenUser() !== null);
   useEnsureSettings();
 
   useEffect(() => {
     if (isLoading) return;
-    writeSeen(isAuthenticated);
-  }, [isLoading, isAuthenticated]);
+    writeSeenUser(isAuthenticated ? (userId ?? null) : null);
+  }, [isLoading, isAuthenticated, userId]);
 
   if (onCallback) return <Outlet />;
 

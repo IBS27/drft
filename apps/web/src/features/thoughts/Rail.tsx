@@ -54,8 +54,13 @@ export const Rail = memo(function Rail({
     () => [
       ...(ordered.pinned ? [ordered.pinned._id] : []),
       ...ordered.groups.flatMap(({ rows }) => rows.map((t) => t._id)),
+      // Resting thoughts sit in the rail too, so the keyboard reaches
+      // them: j walks off the collection's end into the resting list, and
+      // k from a resting thought climbs back out. (Landing on one opens
+      // the collapsed section — see activeResting below.)
+      ...(resting?.map((t) => t._id) ?? []),
     ],
-    [ordered],
+    [ordered, resting],
   );
 
   useEffect(() => {

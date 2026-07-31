@@ -1,7 +1,9 @@
+import { useAuth } from "@clerk/clerk-react";
 import { useConvexAuth, useMutation } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { Id } from "@drft/backend/convex/_generated/dataModel";
+import { readSeenUser } from "../auth/seenUser";
 import { localDate, previewOf } from "./format";
 
 // Desktop autofocus invites typing; on touch the same attribute pops the
@@ -13,22 +15,34 @@ const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
 // already the user's, so the queue outlives this screen: leaving for
 // /settings, a reload, or the handshake coming back signed-out all used
 // to drop it. It is flushed on the next load that has a session.
+// Each entry names its owner (the user this browser was signed in as when
+// it was kept), and draining takes only the signed-in user's entries — on
+// a shared browser one account's words never flush into another's.
 const PENDING_KEY = "drft:pending-captures";
 
-function readPending(): string[] {
+type PendingCapture = { text: string; owner: string | null };
+
+function readPending(): PendingCapture[] {
   try {
     const raw: unknown = JSON.parse(
       window.localStorage.getItem(PENDING_KEY) ?? "[]",
     );
     if (!Array.isArray(raw)) return [];
     const items: unknown[] = raw;
-    return items.filter((t): t is string => typeof t === "string");
+    return items.filter((p): p is PendingCapture => {
+      if (typeof p !== "object" || p === null) return false;
+      const entry = p as Record<string, unknown>;
+      return (
+        typeof entry.text === "string" &&
+        (typeof entry.owner === "string" || entry.owner === null)
+      );
+    });
   } catch {
     return [];
   }
 }
 
-function writePending(pending: string[]): void {
+function writePending(pending: PendingCapture[]): void {
   try {
     if (pending.length === 0) window.localStorage.removeItem(PENDING_KEY);
     else window.localStorage.setItem(PENDING_KEY, JSON.stringify(pending));
@@ -37,20 +51,34 @@ function writePending(pending: string[]): void {
   }
 }
 
-function queue(trimmed: string): void {
-  writePending([...readPending(), trimmed]);
+function queue(trimmed: string, owner: string | null): void {
+  writePending([...readPending(), { text: trimmed, owner }]);
 }
 
-function drain(): string[] {
+// Ownerless entries are a should-not-happen (the queue is only reachable
+// once this browser has a remembered user); flushing them to whoever is
+// here keeps capture's promise that nothing kept is ever dropped.
+function drain(userId: string): string[] {
   const pending = readPending();
-  if (pending.length > 0) writePending([]);
-  return pending;
+  const mine = pending.filter((p) => p.owner === userId || p.owner === null);
+  if (mine.length > 0)
+    writePending(pending.filter((p) => !mine.includes(p)));
+  return mine.map((p) => p.text);
 }
 
 // The web capture input obeys the same rules as iOS: one field, keep,
 // no questions asked. Verbatim in; a single vermilion dot acknowledges.
 export function CaptureField({ now }: { now: number }) {
   const { isAuthenticated } = useConvexAuth();
+  const { userId } = useAuth();
+  // Who a queued thought belongs to: the signed-in user once Clerk has
+  // one, else whoever this browser last belonged to — the only person the
+  // fast-open shell (and so this field) opens for. A ref, so callbacks
+  // that outlive their render read the current answer.
+  const ownerRef = useRef<string | null>(userId ?? readSeenUser());
+  useEffect(() => {
+    if (userId) ownerRef.current = userId;
+  }, [userId]);
   const capture = useMutation(api.thoughts.capture).withOptimisticUpdate(
     (localStore, args) => {
       // The kept thought appears in the collection the instant the dot
@@ -94,7 +122,7 @@ export function CaptureField({ now }: { now: number }) {
   // it); otherwise back onto the queue, which outlives this screen.
   const recover = useCallback((trimmed: string) => {
     if (textRef.current !== "") {
-      queue(trimmed);
+      queue(trimmed, ownerRef.current);
       return;
     }
     textRef.current = trimmed;
@@ -111,11 +139,12 @@ export function CaptureField({ now }: { now: number }) {
   );
 
   // The session has landed (or was already here, and something is waiting
-  // from a previous visit): everything kept in the meantime goes now.
+  // from a previous visit): everything this user kept in the meantime
+  // goes now.
   useEffect(() => {
-    if (!isAuthenticated) return;
-    for (const trimmed of drain()) send(trimmed);
-  }, [isAuthenticated, send]);
+    if (!isAuthenticated || !userId) return;
+    for (const trimmed of drain(userId)) send(trimmed);
+  }, [isAuthenticated, userId, send]);
 
   // The field grows with the thought, and shrinks back when it leaves.
   useLayoutEffect(() => {
@@ -133,7 +162,7 @@ export function CaptureField({ now }: { now: number }) {
     setKept(true);
     window.setTimeout(() => setKept(false), 1100);
     if (isAuthenticated) send(trimmed);
-    else queue(trimmed);
+    else queue(trimmed, ownerRef.current);
   };
 
   const clock = new Date(now)
