@@ -1,8 +1,9 @@
 import { SignOutButton, useUser } from "@clerk/clerk-react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
 import { useRef, useState } from "react";
+import { BackLink } from "../features/ui/BackLink";
 
 export const Route = createFileRoute("/settings")({ component: Settings });
 
@@ -39,13 +40,8 @@ function Settings() {
 
   return (
     <main className="flex min-h-dvh flex-col">
-      <header className="grid grid-cols-3 items-baseline px-8 pt-7">
-        <Link
-          to="/"
-          className="justify-self-start text-[18px] leading-none text-pl transition-colors hover:text-ink"
-        >
-          ‹
-        </Link>
+      <header className="grid grid-cols-3 items-center px-5 pt-4 md:px-8">
+        <BackLink />
         <span className="justify-self-center text-[11.5px] tracking-[0.4em] text-pl uppercase">
           settings
         </span>

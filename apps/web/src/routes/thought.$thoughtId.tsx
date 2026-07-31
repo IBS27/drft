@@ -5,6 +5,7 @@ import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { ageLabel, dateLine, firstLine, groupOf } from "../features/thoughts/format";
 import { Rail } from "../features/thoughts/Rail";
 import { useThoughtPrewarm } from "../features/thoughts/useThoughtPrewarm";
+import { BackLink } from "../features/ui/BackLink";
 import type { Id } from "@drft/backend/convex/_generated/dataModel";
 
 export const Route = createFileRoute("/thought/$thoughtId")({
@@ -33,13 +34,8 @@ function BackHeader({
   withRail?: boolean;
 }) {
   return (
-    <header className="relative z-10 flex items-baseline px-8 pt-7">
-      <Link
-        to="/"
-        className="justify-self-start text-[18px] leading-none text-pl transition-colors hover:text-ink"
-      >
-        ‹
-      </Link>
+    <header className="relative z-10 flex items-center px-5 pt-4 md:px-8">
+      <BackLink />
       <span
         className={`pointer-events-none absolute right-0 text-center text-[11.5px] tracking-[0.4em] text-pl uppercase ${
           withRail ? "left-0 lg:left-72 xl:left-80" : "left-0"

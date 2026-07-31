@@ -4,6 +4,7 @@ import { api } from "@drft/backend/convex/_generated/api";
 import { useState } from "react";
 import { ageLabel, firstLine } from "../features/thoughts/format";
 import { useThoughtPrewarm } from "../features/thoughts/useThoughtPrewarm";
+import { BackLink } from "../features/ui/BackLink";
 
 export const Route = createFileRoute("/resting")({ component: Resting });
 
@@ -16,13 +17,8 @@ function Resting() {
 
   return (
     <main className="flex min-h-dvh flex-col">
-      <header className="grid grid-cols-3 items-baseline px-8 pt-7">
-        <Link
-          to="/"
-          className="justify-self-start text-[18px] leading-none text-pl transition-colors hover:text-ink"
-        >
-          ‹
-        </Link>
+      <header className="grid grid-cols-3 items-center px-5 pt-4 md:px-8">
+        <BackLink />
         <span className="justify-self-center text-[11.5px] tracking-[0.4em] text-pl uppercase">
           resting
         </span>
