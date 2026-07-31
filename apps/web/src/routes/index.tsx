@@ -61,10 +61,11 @@ function Collection() {
       <header className="relative z-10 flex items-baseline justify-between px-8 pt-7">
         <Link
           to="/settings"
-          className="text-[11px] tracking-[0.26em] text-pl uppercase transition-colors hover:text-ink"
+          className="text-[11px] tracking-[0.26em] text-pl uppercase transition-colors hover:text-ink lg:hidden"
         >
           settings
         </Link>
+        <span className="hidden lg:block" aria-hidden="true" />
         <span className="pointer-events-none absolute right-0 left-0 text-center text-[12px] tracking-[0.5em] text-pt uppercase lg:left-72 xl:left-80">
           drft
         </span>
@@ -117,7 +118,7 @@ function Collection() {
         )}
 
         {resting && resting.length > 0 && (
-          <footer className="flex items-center justify-center pb-10">
+          <footer className="flex items-center justify-center pb-10 lg:hidden">
             <Link
               to="/resting"
               className="text-[10.5px] tracking-[0.34em] text-pl uppercase transition-colors hover:text-ink"

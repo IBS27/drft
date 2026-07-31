@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import type { Id } from "@drft/backend/convex/_generated/dataModel";
 import { ageLabel, firstLine } from "../thoughts/format";
 import { useThoughtPrewarm } from "../thoughts/useThoughtPrewarm";
+import { OPEN_SEARCH_EVENT } from "./openSearch";
 
 type Hit = {
   _id: Id<"thoughts">;
@@ -20,6 +21,7 @@ export function SearchOverlay() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
+    const onOpen = () => setOpen(true);
     const onKey = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null;
       const typing =
@@ -33,8 +35,12 @@ export function SearchOverlay() {
         setOpen(true);
       }
     };
+    window.addEventListener(OPEN_SEARCH_EVENT, onOpen);
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener(OPEN_SEARCH_EVENT, onOpen);
+      window.removeEventListener("keydown", onKey);
+    };
   }, []);
 
   if (!open) return null;
