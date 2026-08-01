@@ -1,5 +1,6 @@
 import { ClerkProvider, useAuth } from "@clerk/clerk-react";
 import { createRouter, RouterProvider } from "@tanstack/react-router";
+import { Analytics } from "@vercel/analytics/react";
 import { ConvexReactClient } from "convex/react";
 import { ConvexProviderWithClerk } from "convex/react-clerk";
 import { StrictMode } from "react";
@@ -58,6 +59,7 @@ createRoot(document.getElementById("root")!).render(
       <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
         <RouterProvider router={router} />
       </ConvexProviderWithClerk>
+      <Analytics />
     </ClerkProvider>
   </StrictMode>,
 );
