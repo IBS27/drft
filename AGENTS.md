@@ -14,6 +14,7 @@ A space for unfinished thoughts — instant capture on iOS, an AI thinking-partn
 
 From `apps/web`: `bun dev` · `bun run build` · `bun run lint` · `bun run typecheck`
 From `apps/landing`: `bun dev` · `bun run build` · `bun run typecheck`
+The web dev server mirrors production routing (see `landingSite` in `apps/web/vite.config.ts`): signed-out `/` serves the landing site, `/?signin` bypasses it. It builds `apps/landing` on start and rebuilds + reloads on landing source changes — no second dev server needed; use `bun dev` in `apps/landing` only for focused landing work with HMR.
 From `packages/backend`: `bun run dev` (convex dev) · `bun run typecheck`
 
 Dev-only design seed (plants sample thoughts + schedules real enrichment on them; fabricates one resurfacing for the given date — selection-log only, so no email is sent for it), from `packages/backend`:
