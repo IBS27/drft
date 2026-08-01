@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:deploy": "bun run --cwd ../landing build && tsc -b && vite build && cp -R ../landing/dist/_astro dist/_astro && cp ../landing/dist/robots.txt dist/robots.txt && cp ../landing/dist/index.html dist/landing.html",
     "lint": "oxlint",
     "typecheck": "tsc -b",
     "preview": "vite preview"

@@ -1,0 +1,4 @@
+{
+  "buildCommand": "bun run build:deploy",
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+}
