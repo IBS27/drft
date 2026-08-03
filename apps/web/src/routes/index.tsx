@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useConvexAuth, useQuery } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
 import { memo, useEffect, useMemo, useState } from "react";
+import { openSearch } from "../features/search/openSearch";
 import { CaptureField } from "../features/thoughts/CaptureField";
 import { Rail } from "../features/thoughts/Rail";
 import { ageLabel, localDate, orderRows } from "../features/thoughts/format";
@@ -69,8 +70,17 @@ function Collection() {
         <span className="pointer-events-none absolute right-0 left-0 text-center text-[12px] tracking-[0.5em] text-pt uppercase lg:left-72 xl:left-80">
           drft
         </span>
-        <span className="text-[12px] tracking-[0.1em] text-pl tabular-nums">
-          {thoughts.length || ""}
+        <span className="flex items-baseline gap-6">
+          <button
+            type="button"
+            onClick={openSearch}
+            className="text-[11px] tracking-[0.26em] text-pl uppercase transition-colors hover:text-ink lg:hidden"
+          >
+            find
+          </button>
+          <span className="text-[12px] tracking-[0.1em] text-pl tabular-nums">
+            {thoughts.length || ""}
+          </span>
         </span>
       </header>
 
