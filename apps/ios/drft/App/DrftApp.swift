@@ -22,7 +22,7 @@ struct DrftApp: App {
 
         let authService = AuthService()
         let convexService = ConvexService()
-        let captureQueue = CaptureQueue { text in
+        let captureQueue = CaptureQueue(deploymentUrl: ConvexService.deploymentUrl) { text in
             try await convexService.capture(text: text)
         }
         authService.load()

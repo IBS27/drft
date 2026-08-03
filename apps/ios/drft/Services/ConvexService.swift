@@ -22,9 +22,9 @@ final class ConvexService: ObservableObject {
 
     // Debug builds (Xcode runs) use the dev deployment; Release builds on device use prod.
     #if DEBUG
-    private static let deploymentUrl = "https://hidden-penguin-861.convex.cloud"
+    static let deploymentUrl = "https://hidden-penguin-861.convex.cloud"
     #else
-    private static let deploymentUrl = "https://optimistic-stork-701.convex.cloud"
+    static let deploymentUrl = "https://optimistic-stork-701.convex.cloud"
     #endif
 
     init() {

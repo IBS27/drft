@@ -82,11 +82,15 @@ final class CaptureQueue {
     private var activeTask: Task<Void, Never>?
 
     init(
+        deploymentUrl: String,
         fileManager: FileManager = .default,
         send: @escaping Sender
     ) {
         self.fileManager = fileManager
-        let directoryURL = Self.makeDirectoryURL(fileManager: fileManager)
+        let directoryURL = Self.makeDirectoryURL(
+            deploymentUrl: deploymentUrl,
+            fileManager: fileManager
+        )
         self.directoryURL = directoryURL
         journalURL = directoryURL.appendingPathComponent(Self.journalName)
         self.send = send
@@ -177,25 +181,29 @@ final class CaptureQueue {
         retryDelay = 1
     }
 
-    private static func makeDirectoryURL(fileManager: FileManager) -> URL {
+    private static func makeDirectoryURL(deploymentUrl: String, fileManager: FileManager) -> URL {
+        // Storage is scoped per Convex deployment so items queued against one
+        // deployment never flush to another (e.g. Debug installed over Release).
+        let deploymentID = URL(string: deploymentUrl)?.host ?? "default"
+
+        let baseURL: URL
         if let groupURL = fileManager.containerURL(
             forSecurityApplicationGroupIdentifier: appGroup
         ) {
-            return groupURL.appendingPathComponent(directoryName, isDirectory: true)
-        }
-
-        if let applicationSupport = fileManager.urls(
+            baseURL = groupURL
+        } else if let applicationSupport = fileManager.urls(
             for: .applicationSupportDirectory,
             in: .userDomainMask
         ).first {
-            return applicationSupport
+            baseURL = applicationSupport.appendingPathComponent("drft", isDirectory: true)
+        } else {
+            baseURL = fileManager.temporaryDirectory
                 .appendingPathComponent("drft", isDirectory: true)
-                .appendingPathComponent(directoryName, isDirectory: true)
         }
 
-        return fileManager.temporaryDirectory
-            .appendingPathComponent("drft", isDirectory: true)
+        return baseURL
             .appendingPathComponent(directoryName, isDirectory: true)
+            .appendingPathComponent(deploymentID, isDirectory: true)
     }
 
     private func prepareDirectory() {
