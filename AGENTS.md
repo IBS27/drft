@@ -29,7 +29,7 @@ Web env lives in `apps/web/.env.local` (see `.env.example`): `VITE_CONVEX_URL`, 
 
 - Convex production is `optimistic-stork-701` (`https://optimistic-stork-701.convex.cloud`). Set its required env with `bunx convex env set --prod ...`, then deploy from `packages/backend` with `bunx convex deploy`; never set `SEED_ALLOWED` in production. Production data is separate from development and must not be migrated implicitly.
 - Vercel project `drft` uses root directory `apps/web` and serves `trydrft.app` (`www` redirects to the apex). Its Production env must pair `VITE_CONVEX_URL` with the matching Clerk publishable key/Convex issuer. Vite env is build-time, so redeploy after changes from the repo root with `bunx vercel --prod --yes --archive=tgz`.
-- Production currently uses Clerk test keys. Email remains sandbox-only until a verified sender is set in `DRFT_FROM_EMAIL`; the iOS client still targets the development Convex deployment.
+- Production currently uses Clerk test keys. Email remains sandbox-only until a verified sender is set in `DRFT_FROM_EMAIL`; the iOS client targets the development Convex deployment in Debug builds and production in Release builds (`ConvexService.deploymentUrl`).
 
 ## Conventions
 
