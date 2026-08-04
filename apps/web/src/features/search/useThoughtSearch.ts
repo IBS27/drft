@@ -54,14 +54,23 @@ export function useThoughtSearch(query: string) {
 
   // Both surfaces steer the hits identically, so the input's list keys
   // live here too: arrows clamp inside the list (staying at 0 while it
-  // is empty) and Enter hands the active hit to the caller.
+  // is empty) and Enter hands the active hit to the caller. After a
+  // failure the retained hits are off screen behind the failure note,
+  // so no key may reach them; an Enter that commits IME composition
+  // isn't a choice either.
   const onResultsKey = (e: KeyboardEvent, go: (hit: Hit) => void) => {
+    if (failed) return;
     if (e.key === "ArrowDown" || e.key === "ArrowUp") {
       e.preventDefault();
       const last = (hits?.length ?? 0) - 1;
       const step = e.key === "ArrowDown" ? 1 : -1;
       setActive((i) => Math.max(0, Math.min(i + step, last)));
-    } else if (e.key === "Enter" && hits && hits[active]) {
+    } else if (
+      e.key === "Enter" &&
+      !e.nativeEvent.isComposing &&
+      hits &&
+      hits[active]
+    ) {
       go(hits[active]);
     }
   };
