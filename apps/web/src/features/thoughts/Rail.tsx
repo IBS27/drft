@@ -141,6 +141,9 @@ export const Rail = memo(function Rail({
         return;
       }
       if (e.key !== "j" && e.key !== "k") return;
+      // While find stands open the collection is hidden behind the
+      // hits, so j/k must not walk it — even with focus off the input.
+      if (findOpen) return;
       // At home nothing is active: j steps into the top of the collection.
       const i = activeId ? flat.indexOf(activeId) : -1;
       if (activeId && i === -1) return;
