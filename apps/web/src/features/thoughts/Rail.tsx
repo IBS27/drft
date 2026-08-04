@@ -1,10 +1,14 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useConvexAuth, useQuery } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useId, useMemo, useState } from "react";
 import type { Id } from "@drft/backend/convex/_generated/dataModel";
 import { FindResults } from "../search/FindResults";
-import { useThoughtSearch, type Hit } from "../search/useThoughtSearch";
+import {
+  hitOptionId,
+  useThoughtSearch,
+  type Hit,
+} from "../search/useThoughtSearch";
 import { Skeleton } from "../ui/Skeleton";
 import { localDate, orderRows } from "./format";
 import { useThoughtPrewarm } from "./useThoughtPrewarm";
@@ -44,7 +48,9 @@ export const Rail = memo(function Rail({
   // instead of its groups. Esc (or ⌘K again) puts everything back.
   const [findOpen, setFindOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const { hits, failed, active, setActive } = useThoughtSearch(query);
+  const { hits, failed, active, setActive, onResultsKey } =
+    useThoughtSearch(query);
+  const listboxId = useId();
   const closeFind = useCallback(() => {
     setFindOpen(false);
     setQuery("");
@@ -119,14 +125,14 @@ export const Rail = memo(function Rail({
       const target = e.target as HTMLElement | null;
       if (
         target !== null &&
-        (target.tagName === "INPUT" ||
-          target.tagName === "TEXTAREA" ||
-          target.closest("[data-overlay]") !== null)
+        (target.tagName === "INPUT" || target.tagName === "TEXTAREA")
       )
         return;
+      // A sheet left open across a resize owns every key until it
+      // closes, wherever focus sits.
+      if (document.querySelector("[data-overlay]") !== null) return;
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       if (e.key === "Escape") {
-        if (document.querySelector("[data-overlay]") !== null) return;
         if (findOpen) {
           closeFind();
           return;
@@ -177,18 +183,18 @@ export const Rail = memo(function Rail({
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Escape") closeFind();
-                if (e.key === "ArrowDown") {
-                  e.preventDefault();
-                  setActive(Math.min(active + 1, (hits?.length ?? 1) - 1));
-                }
-                if (e.key === "ArrowUp") {
-                  e.preventDefault();
-                  setActive(Math.max(active - 1, 0));
-                }
-                if (e.key === "Enter" && hits && hits[active]) goHit(hits[active]);
+                else onResultsKey(e, goHit);
               }}
               autoFocus
               aria-label="find a thought"
+              role="combobox"
+              aria-expanded={finding}
+              aria-controls={listboxId}
+              aria-activedescendant={
+                finding && hits && hits[active]
+                  ? hitOptionId(listboxId, active)
+                  : undefined
+              }
               className="w-full bg-transparent text-[15px] font-normal text-ink outline-none"
             />
           </div>
@@ -227,6 +233,7 @@ export const Rail = memo(function Rail({
             now={now}
             go={goHit}
             prewarm={prepareNavigation}
+            listboxId={listboxId}
           />
         ) : loading ? (
           <RailSkeleton />

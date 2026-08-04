@@ -1,9 +1,15 @@
 import { useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import {
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type KeyboardEvent as ReactKeyboardEvent,
+} from "react";
 import { useThoughtPrewarm } from "../thoughts/useThoughtPrewarm";
 import { FindResults } from "./FindResults";
 import { OPEN_SEARCH_EVENT } from "./openSearch";
-import { useThoughtSearch, type Hit } from "./useThoughtSearch";
+import { hitOptionId, useThoughtSearch, type Hit } from "./useThoughtSearch";
 
 // Where the rail is off screen — narrow windows, and pages without one —
 // find drops in as a slim bar under the top edge instead of taking the
@@ -61,8 +67,11 @@ function Sheet({ close }: { close: () => void }) {
   const navigate = useNavigate();
   const prewarm = useThoughtPrewarm();
   const [query, setQuery] = useState("");
-  const { hits, failed, active, setActive } = useThoughtSearch(query);
+  const { hits, failed, active, setActive, onResultsKey } =
+    useThoughtSearch(query);
+  const listboxId = useId();
   const [now] = useState(() => Date.now());
+  const sheetRef = useRef<HTMLDivElement>(null);
 
   const go = (hit: Hit) => {
     prewarm(hit._id);
@@ -70,10 +79,29 @@ function Sheet({ close }: { close: () => void }) {
     void navigate({ to: "/thought/$thoughtId", params: { thoughtId: hit._id } });
   };
 
+  // aria-modal promises focus stays inside, so Tab wraps at the
+  // sheet's edges instead of wandering to the page beneath.
+  const trapTab = (e: ReactKeyboardEvent) => {
+    if (e.key !== "Tab") return;
+    const nodes = sheetRef.current?.querySelectorAll<HTMLElement>(
+      "input, button",
+    );
+    if (!nodes || nodes.length === 0) return;
+    const edge = e.shiftKey ? nodes[0] : nodes[nodes.length - 1];
+    if (document.activeElement !== edge) return;
+    e.preventDefault();
+    (e.shiftKey ? nodes[nodes.length - 1] : nodes[0]).focus();
+  };
+
   return (
     <div
+      ref={sheetRef}
       data-overlay
+      role="dialog"
+      aria-modal="true"
+      aria-label="find a thought"
       className="fixed inset-0 z-50"
+      onKeyDown={trapTab}
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) close();
       }}
@@ -89,19 +117,17 @@ function Sheet({ close }: { close: () => void }) {
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "ArrowDown") {
-                  e.preventDefault();
-                  setActive(Math.min(active + 1, (hits?.length ?? 1) - 1));
-                }
-                if (e.key === "ArrowUp") {
-                  e.preventDefault();
-                  setActive(Math.max(active - 1, 0));
-                }
-                if (e.key === "Enter" && hits && hits[active]) go(hits[active]);
-              }}
+              onKeyDown={(e) => onResultsKey(e, go)}
               autoFocus
               aria-label="find a thought"
+              role="combobox"
+              aria-expanded={query.trim() !== ""}
+              aria-controls={listboxId}
+              aria-activedescendant={
+                hits && hits[active]
+                  ? hitOptionId(listboxId, active)
+                  : undefined
+              }
               className="min-w-0 flex-1 bg-transparent text-[16px] font-normal outline-none"
             />
             <button
@@ -122,6 +148,7 @@ function Sheet({ close }: { close: () => void }) {
                 now={now}
                 go={go}
                 prewarm={prewarm}
+                listboxId={listboxId}
               />
             </div>
           )}

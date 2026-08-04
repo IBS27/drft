@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import type { Id } from "@drft/backend/convex/_generated/dataModel";
 import { ageLabel, firstLine } from "../thoughts/format";
-import type { Hit } from "./useThoughtSearch";
+import { hitOptionId, type Hit } from "./useThoughtSearch";
 
 // Hits wear the collection's own row clothes — dot, first line, age —
 // so finding never looks like a different place, only the collection
@@ -14,6 +14,7 @@ export function FindResults({
   now,
   go,
   prewarm,
+  listboxId,
 }: {
   hits: Hit[] | null;
   failed: boolean;
@@ -22,15 +23,20 @@ export function FindResults({
   now: number;
   go: (hit: Hit) => void;
   prewarm: (thoughtId: Id<"thoughts">) => void;
+  // The input steering these rows stays focused, so it announces the
+  // active one by id: this names the listbox, and `${listboxId}-${i}`
+  // names each option (see hitOptionId).
+  listboxId: string;
 }) {
   if (failed) return <Note text="couldn't search — try again" />;
   if (hits && hits.length === 0) return <Note text="nothing found" />;
   if (!hits) return null;
   return (
-    <>
+    <div role="listbox" id={listboxId} aria-label="search results">
       {hits.map((h, i) => (
         <HitRow
           key={h._id}
+          id={hitOptionId(listboxId, i)}
           hit={h}
           active={i === active}
           now={now}
@@ -39,7 +45,7 @@ export function FindResults({
           activate={() => setActive(i)}
         />
       ))}
-    </>
+    </div>
   );
 }
 
@@ -52,6 +58,7 @@ function Note({ text }: { text: string }) {
 }
 
 function HitRow({
+  id,
   hit,
   active,
   now,
@@ -59,6 +66,7 @@ function HitRow({
   prewarm,
   activate,
 }: {
+  id: string;
   hit: Hit;
   active: boolean;
   now: number;
@@ -73,6 +81,9 @@ function HitRow({
   return (
     <button
       ref={ref}
+      id={id}
+      role="option"
+      aria-selected={active}
       type="button"
       onClick={() => go(hit)}
       onPointerEnter={() => prewarm(hit._id)}
