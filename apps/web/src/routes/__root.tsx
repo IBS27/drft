@@ -4,7 +4,7 @@ import { useConvexAuth } from "convex/react";
 import { useEffect, useState } from "react";
 import { readSeenUser, writeSeenUser } from "../features/auth/seenUser";
 import { SignIn } from "../features/auth/SignIn";
-import { SearchOverlay } from "../features/search/SearchOverlay";
+import { FindSheet } from "../features/search/FindSheet";
 import { useEnsureSettings } from "../features/settings/useEnsureSettings";
 import { OfflineNote } from "../features/ui/OfflineNote";
 import { Waiting } from "../features/ui/Waiting";
@@ -47,7 +47,7 @@ function Root() {
   return (
     <>
       <Outlet />
-      <SearchOverlay />
+      <FindSheet />
       <OfflineNote />
     </>
   );

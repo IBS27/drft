@@ -1,9 +1,14 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useConvexAuth, useQuery } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useId, useMemo, useState } from "react";
 import type { Id } from "@drft/backend/convex/_generated/dataModel";
-import { openSearch } from "../search/openSearch";
+import { FindResults } from "../search/FindResults";
+import {
+  hitOptionId,
+  useThoughtSearch,
+  type Hit,
+} from "../search/useThoughtSearch";
 import { Skeleton } from "../ui/Skeleton";
 import { localDate, orderRows } from "./format";
 import { useThoughtPrewarm } from "./useThoughtPrewarm";
@@ -37,6 +42,19 @@ export const Rail = memo(function Rail({
   const [restingOpen, setRestingOpen] = useState(false);
   const navigate = useNavigate();
   const prewarm = useThoughtPrewarm();
+
+  // Find never leaves the rail: the button becomes the input in place,
+  // and while a query stands the collection below answers with hits
+  // instead of its groups. Esc (or ⌘K again) puts everything back.
+  const [findOpen, setFindOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const { hits, failed, active, setActive, onResultsKey } =
+    useThoughtSearch(query);
+  const listboxId = useId();
+  const closeFind = useCallback(() => {
+    setFindOpen(false);
+    setQuery("");
+  }, []);
   const prepareNavigation = useCallback(
     (thoughtId: Id<"thoughts">) => {
       if (activeId) prewarm(activeId);
@@ -44,6 +62,45 @@ export const Rail = memo(function Rail({
     },
     [activeId, prewarm],
   );
+  const goHit = useCallback(
+    (hit: Hit) => {
+      prepareNavigation(hit._id);
+      closeFind();
+      void navigate({ to: "/thought/$thoughtId", params: { thoughtId: hit._id } });
+    },
+    [prepareNavigation, closeFind, navigate],
+  );
+
+  // ⌘K toggles find, "/" opens it from anywhere outside a field — only
+  // while the rail is on screen; narrower, the sheet takes these keys
+  // (features/search/FindSheet).
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!window.matchMedia("(min-width: 64rem)").matches) return;
+      // A sheet left open across a resize owns the keys until it closes.
+      if (document.querySelector("[data-overlay]") !== null) return;
+      const target = e.target as HTMLElement | null;
+      const typing =
+        target !== null &&
+        (target.tagName === "INPUT" || target.tagName === "TEXTAREA");
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setQuery("");
+        setFindOpen((o) => !o);
+      } else if (
+        e.key === "/" &&
+        !typing &&
+        !e.metaKey &&
+        !e.ctrlKey &&
+        !e.altKey
+      ) {
+        e.preventDefault();
+        setFindOpen(true);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   const ordered = useMemo(() => {
     if (!data) return { pinned: null, groups: [] };
@@ -68,17 +125,25 @@ export const Rail = memo(function Rail({
       const target = e.target as HTMLElement | null;
       if (
         target !== null &&
-        (target.tagName === "INPUT" ||
-          target.tagName === "TEXTAREA" ||
-          target.closest("[data-overlay]") !== null)
+        (target.tagName === "INPUT" || target.tagName === "TEXTAREA")
       )
         return;
+      // A sheet left open across a resize owns every key until it
+      // closes, wherever focus sits.
+      if (document.querySelector("[data-overlay]") !== null) return;
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       if (e.key === "Escape") {
+        if (findOpen) {
+          closeFind();
+          return;
+        }
         if (activeId) void navigate({ to: "/" });
         return;
       }
       if (e.key !== "j" && e.key !== "k") return;
+      // While find stands open the collection is hidden behind the
+      // hits, so j/k must not walk it — even with focus off the input.
+      if (findOpen) return;
       // At home nothing is active: j steps into the top of the collection.
       const i = activeId ? flat.indexOf(activeId) : -1;
       if (activeId && i === -1) return;
@@ -90,7 +155,7 @@ export const Rail = memo(function Rail({
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [flat, activeId, navigate, prepareNavigation]);
+  }, [flat, activeId, navigate, prepareNavigation, findOpen, closeFind]);
 
   const activeResting =
     resting?.some((thought) => thought._id === activeId) ?? false;
@@ -99,19 +164,62 @@ export const Rail = memo(function Rail({
   }, [activeResting]);
 
   const loading = data === undefined;
+  const finding = findOpen && query.trim() !== "";
   return (
     <nav
       aria-label="workspace"
       className="fixed inset-y-0 left-0 hidden w-72 flex-col border-r border-line bg-scr pt-24 lg:flex xl:w-80"
     >
-      <button
-        type="button"
-        onClick={openSearch}
-        className="mx-5 flex flex-none items-center justify-between rounded-sm px-3 py-2.5 text-left text-[10.5px] tracking-[0.3em] text-pl uppercase transition-colors hover:bg-pg hover:text-ink"
-      >
-        <span>find</span>
-        <span className="text-[9.5px] tracking-[0.16em]">⌘K</span>
-      </button>
+      {findOpen ? (
+        <div
+          data-rail-find
+          className="mx-5 flex flex-none items-center gap-3 rounded-sm bg-pg px-3 py-2.5"
+        >
+          <div className="relative min-w-0 flex-1">
+            {!query && (
+              <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center text-[10.5px] tracking-[0.3em] text-pl uppercase">
+                find a thought
+              </span>
+            )}
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Escape") closeFind();
+                else onResultsKey(e, goHit);
+              }}
+              autoFocus
+              aria-label="find a thought"
+              role="combobox"
+              aria-expanded={finding}
+              aria-controls={listboxId}
+              aria-activedescendant={
+                finding && hits && hits[active]
+                  ? hitOptionId(listboxId, active)
+                  : undefined
+              }
+              className="w-full bg-transparent text-[15px] font-normal text-ink outline-none"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={closeFind}
+            className="flex-none text-[9.5px] tracking-[0.16em] text-pl uppercase transition-colors hover:text-ink"
+          >
+            esc
+          </button>
+        </div>
+      ) : (
+        <button
+          data-rail-find
+          type="button"
+          onClick={() => setFindOpen(true)}
+          className="mx-5 flex flex-none items-center justify-between rounded-sm px-3 py-2.5 text-left text-[10.5px] tracking-[0.3em] text-pl uppercase transition-colors hover:bg-pg hover:text-ink"
+        >
+          <span>find</span>
+          <span className="text-[9.5px] tracking-[0.16em]">⌘K</span>
+        </button>
+      )}
 
       <div
         role="region"
@@ -119,7 +227,18 @@ export const Rail = memo(function Rail({
         aria-busy={loading}
         className="min-h-0 flex-1 overflow-y-auto pt-4 pr-5 pl-8 [scrollbar-gutter:stable]"
       >
-        {loading ? (
+        {finding ? (
+          <FindResults
+            hits={hits}
+            failed={failed}
+            active={active}
+            setActive={setActive}
+            now={now}
+            go={goHit}
+            prewarm={prepareNavigation}
+            listboxId={listboxId}
+          />
+        ) : loading ? (
           <RailSkeleton />
         ) : (
           <>
