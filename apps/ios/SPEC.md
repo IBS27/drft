@@ -20,8 +20,11 @@ no reading, no replies, no AI surface on the phone. Development happens on the w
 
 ## Configuration
 
-- Convex deployment: `https://hidden-penguin-861.convex.cloud`
-- Clerk publishable key: `pk_test_ZW5hYmxpbmctd29sZi0yMi5jbGVyay5hY2NvdW50cy5kZXYk`
+- Convex deployment: Debug uses `https://hidden-penguin-861.convex.cloud`;
+  Release uses `https://optimistic-stork-701.convex.cloud`.
+- Clerk publishable key: configured per build. Debug and Release currently use
+  the same Clerk test instance; Release can move independently to a `pk_live_…`
+  key when production Clerk is enabled.
 - Bundle IDs: app `com.srinivasib.drft`, widget extension `com.srinivasib.drft.DrftWidget`
 - App Group: `group.com.srinivasib.drft`
 - URL scheme: `drft` (deep link `drft://capture` opens the capture screen)
@@ -149,8 +152,8 @@ Behavior:
 
 Same stillness: `page` background, wordmark large-ish center (`drft`, tracked,
 light), one line of muted copy beneath — `a space for unfinished thoughts` —
-and one quiet text button per enabled OAuth provider (`google` / `apple` /
-`github`) — tracked caps with the provider mark, each starting Clerk's OAuth
+and one quiet text button per enabled OAuth provider (`google` / `github`) —
+tracked caps with the provider mark, each starting Clerk's OAuth
 flow directly (do not build username/password UI). No feature list, no
 carousel, no branding beyond the wordmark.
 

@@ -1,4 +1,5 @@
 import ClerkKit
+import Foundation
 import SwiftUI
 
 @MainActor
@@ -9,9 +10,23 @@ struct DrftApp: App {
     @State private var captureFocusRequest = 0
     private let captureQueue: CaptureQueue
 
+    private static var clerkPublishableKey: String {
+        guard
+            let key = Bundle.main.object(
+                forInfoDictionaryKey: "ClerkPublishableKey"
+            ) as? String,
+            key.hasPrefix("pk_test_") || key.hasPrefix("pk_live_")
+        else {
+            preconditionFailure(
+                "Set CLERK_PUBLISHABLE_KEY for this iOS build configuration."
+            )
+        }
+        return key
+    }
+
     init() {
         Clerk.configure(
-            publishableKey: "pk_test_ZW5hYmxpbmctd29sZi0yMi5jbGVyay5hY2NvdW50cy5kZXYk",
+            publishableKey: Self.clerkPublishableKey,
             options: .init(
                 redirectConfig: .init(
                     redirectUrl: "drft://callback",

@@ -2,11 +2,11 @@ import { useAuth } from "@clerk/clerk-react";
 import { createRootRoute, Outlet, useRouterState } from "@tanstack/react-router";
 import { useConvexAuth } from "convex/react";
 import { useEffect, useState } from "react";
+import { clearRememberedSession } from "../features/auth/rememberedSession";
 import { readSeenUser, writeSeenUser } from "../features/auth/seenUser";
 import { SignIn } from "../features/auth/SignIn";
 import { FindSheet } from "../features/search/FindSheet";
 import { useEnsureSettings } from "../features/settings/useEnsureSettings";
-import { clearCachedQueries } from "../features/thoughts/useCachedQuery";
 import { OfflineNote } from "../features/ui/OfflineNote";
 import { Waiting } from "../features/ui/Waiting";
 
@@ -35,8 +35,8 @@ function Root() {
 
   useEffect(() => {
     if (isLoading) return;
-    writeSeenUser(isAuthenticated ? (userId ?? null) : null);
-    if (!isAuthenticated) clearCachedQueries();
+    if (isAuthenticated) writeSeenUser(userId ?? null);
+    else clearRememberedSession();
   }, [isLoading, isAuthenticated, userId]);
 
   if (onCallback) return <Outlet />;
