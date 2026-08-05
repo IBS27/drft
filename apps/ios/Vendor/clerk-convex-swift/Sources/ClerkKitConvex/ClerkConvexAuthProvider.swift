@@ -5,8 +5,6 @@ import ClerkKit
 public final class ClerkConvexAuthProvider: AuthProvider {
     public typealias T = String
 
-    private static let jwtTemplate = "convex"
-
     private var onIdToken: (@Sendable (String?) -> Void)?
     private var tokenRefreshListenerTask: Task<Void, Never>?
     private var sessionSyncTask: Task<Void, Never>?
@@ -62,9 +60,7 @@ public final class ClerkConvexAuthProvider: AuthProvider {
         guard let session = Clerk.shared.session, session.status == .active else {
             throw ClerkConvexAuthError.noActiveSession
         }
-        guard let token = try await session.getToken(
-            .init(template: Self.jwtTemplate)
-        ) else {
+        guard let token = try await session.getToken() else {
             throw ClerkConvexAuthError.tokenRetrievalFailed("Token returned nil")
         }
         return token
