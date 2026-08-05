@@ -26,7 +26,6 @@ struct SignInView: View {
 
                 VStack(alignment: .leading, spacing: 12) {
                     providerButton(.google, label: "google")
-                    providerButton(.apple, label: "apple")
                     providerButton(.github, label: "github")
                 }
                 .padding(.top, 56)
@@ -82,10 +81,6 @@ struct SignInView: View {
         case .google:
             GoogleIcon()
                 .frame(width: 13, height: 13)
-        case .apple:
-            Image(systemName: "apple.logo")
-                .font(.system(size: 15, weight: .regular))
-                .offset(y: -1)
         case .github:
             GitHubIcon()
                 .frame(width: 14, height: 14)

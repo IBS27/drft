@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
 import { useRef, useState } from "react";
+import { clearRememberedSession } from "../features/auth/rememberedSession";
 import { BackLink } from "../features/ui/BackLink";
 
 export const Route = createFileRoute("/settings")({ component: Settings });
@@ -85,6 +86,7 @@ function Settings() {
           <SignOutButton>
             <button
               type="button"
+              onClick={clearRememberedSession}
               className="text-[14px] text-mut transition-colors hover:text-ink"
             >
               sign out
