@@ -39,10 +39,9 @@ no reading, no replies, no AI surface on the phone. Development happens on the w
 - `https://github.com/clerk/clerk-ios` — auth
 - `https://github.com/get-convex/convex-swift` — Convex client
 - `Vendor/clerk-convex-swift` — local fork of Clerk's `clerk-convex-swift`
-  bridge. Upstream requests session tokens without a JWT-template parameter, so
-  it can never mint the `convex`-template token the backend requires; the fork
-  requests the template on login and refresh. Unfork when upstream adds
-  template support.
+  bridge. It requests Clerk's default session token, which both Clerk instances
+  issue with the `convex` audience. The legacy `convex` JWT template remains
+  configured in Clerk as a rollout fallback but is not requested by iOS.
 
 ## Backend surface used
 
