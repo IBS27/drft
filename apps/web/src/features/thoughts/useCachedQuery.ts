@@ -1,10 +1,11 @@
+import { useAuth } from "@clerk/clerk-react";
 import { useQuery, type OptionalRestArgsOrSkip } from "convex/react";
 import type {
   FunctionArgs,
   FunctionReference,
   FunctionReturnType,
 } from "convex/server";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { readSeenUser } from "../auth/seenUser";
 
 // The collection, remembered: the same trust that opens the shell for a
@@ -15,16 +16,13 @@ import { readSeenUser } from "../auth/seenUser";
 // its memory cleared along with the seen-user flag.
 const PREFIX = "drft:query:v1:";
 
-function storageKey(name: string): string | null {
-  const userId = readSeenUser();
-  return userId ? `${PREFIX}${userId}:${name}` : null;
+function storageKey(userId: string, name: string): string {
+  return `${PREFIX}${userId}:${name}`;
 }
 
-function read<T>(name: string): T | undefined {
-  const key = storageKey(name);
-  if (!key) return undefined;
+function read<T>(userId: string, name: string): T | undefined {
   try {
-    const raw = window.localStorage.getItem(key);
+    const raw = window.localStorage.getItem(storageKey(userId, name));
     // Our own versioned write, so the shape is the query's return type.
     return raw === null ? undefined : (JSON.parse(raw) as T);
   } catch {
@@ -32,11 +30,9 @@ function read<T>(name: string): T | undefined {
   }
 }
 
-function write(name: string, value: unknown): void {
-  const key = storageKey(name);
-  if (!key) return;
+function write(userId: string, name: string, value: unknown): void {
   try {
-    window.localStorage.setItem(key, JSON.stringify(value));
+    window.localStorage.setItem(storageKey(userId, name), JSON.stringify(value));
   } catch {
     // Storage can be denied (private mode); it only costs the fast paint.
   }
@@ -55,21 +51,32 @@ export function clearCachedQueries(): void {
   }
 }
 
-// useQuery, with yesterday's answer while today's is on its way. `name`
-// keys the stored copy and must be unique per query. Read once per
-// mount — remembered rows must not change under the reader mid-handshake.
+// useQuery, with its last answer while the live one is on its way. `name`
+// keys the stored copy and must uniquely identify the query arguments.
 export function useCachedQuery<Query extends FunctionReference<"query">>(
   query: Query,
   args: FunctionArgs<Query> | "skip",
   name: string,
 ): FunctionReturnType<Query> | undefined {
+  const { isLoaded, userId } = useAuth();
+  // The remembered owner enables the first paint only while Clerk is loading.
+  // Once Clerk resolves, its identity is authoritative; switching accounts
+  // can never leave the previous owner's cached rows on screen.
+  const [rememberedUserId] = useState(() => readSeenUser());
+  const cacheUserId = isLoaded ? userId : rememberedUserId;
   // The tuple satisfies useQuery's conditional rest type, which a plain
   // union argument cannot narrow to.
   const live = useQuery(query, ...([args] as OptionalRestArgsOrSkip<Query>));
-  const [cached] = useState(() => read<FunctionReturnType<Query>>(name));
+  const cached = useMemo(
+    () =>
+      cacheUserId
+        ? read<FunctionReturnType<Query>>(cacheUserId, name)
+        : undefined,
+    [cacheUserId, name],
+  );
   useEffect(() => {
-    if (live !== undefined) write(name, live);
-  }, [live, name]);
+    if (live !== undefined && userId) write(userId, name, live);
+  }, [live, name, userId]);
   // `??` would hide a legitimate null answer behind a stale copy.
   return live !== undefined ? live : cached;
 }

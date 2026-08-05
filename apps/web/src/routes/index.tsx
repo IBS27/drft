@@ -40,7 +40,7 @@ function Collection() {
   const data = useCachedQuery(
     api.thoughts.collection,
     isAuthenticated ? { date } : "skip",
-    "collection",
+    `collection:${date}`,
   );
   const resting = useCachedQuery(
     api.thoughts.resting,
