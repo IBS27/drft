@@ -6,6 +6,7 @@ import { readSeenUser, writeSeenUser } from "../features/auth/seenUser";
 import { SignIn } from "../features/auth/SignIn";
 import { FindSheet } from "../features/search/FindSheet";
 import { useEnsureSettings } from "../features/settings/useEnsureSettings";
+import { clearCachedQueries } from "../features/thoughts/useCachedQuery";
 import { OfflineNote } from "../features/ui/OfflineNote";
 import { Waiting } from "../features/ui/Waiting";
 
@@ -13,10 +14,10 @@ import { Waiting } from "../features/ui/Waiting";
 // costs a Clerk round trip the room shouldn't be held hostage to. We
 // remember who this browser was signed in as (features/auth/seenUser),
 // and on the next visit open the room immediately while the handshake
-// finishes behind it. Nothing private leaks: every query waits for real
-// auth (each view renders its own quiet skeleton until then), and the
-// moment the handshake comes back unauthenticated the sign-in screen
-// takes over.
+// finishes behind it. Each view paints that user's remembered rows
+// (features/thoughts/useCachedQuery) until real auth answers; the moment
+// the handshake comes back unauthenticated the sign-in screen takes over
+// and the remembered rows are cleared with the flag.
 
 export const Route = createRootRoute({ component: Root });
 
@@ -35,6 +36,7 @@ function Root() {
   useEffect(() => {
     if (isLoading) return;
     writeSeenUser(isAuthenticated ? (userId ?? null) : null);
+    if (!isAuthenticated) clearCachedQueries();
   }, [isLoading, isAuthenticated, userId]);
 
   if (onCallback) return <Outlet />;

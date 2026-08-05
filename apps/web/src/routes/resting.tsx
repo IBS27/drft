@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useConvexAuth, useQuery } from "convex/react";
+import { useConvexAuth } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
 import { useState } from "react";
 import { ageLabel } from "../features/thoughts/format";
+import { useCachedQuery } from "../features/thoughts/useCachedQuery";
 import { useThoughtPrewarm } from "../features/thoughts/useThoughtPrewarm";
 import { BackLink } from "../features/ui/BackLink";
 import { SkeletonRows } from "../features/ui/Skeleton";
@@ -13,7 +14,11 @@ export const Route = createFileRoute("/resting")({ component: Resting });
 // still part of your thinking's history, still one click from waking.
 function Resting() {
   const { isAuthenticated } = useConvexAuth();
-  const rows = useQuery(api.thoughts.resting, isAuthenticated ? {} : "skip");
+  const rows = useCachedQuery(
+    api.thoughts.resting,
+    isAuthenticated ? {} : "skip",
+    "resting",
+  );
   const [now] = useState(() => Date.now());
   const prewarm = useThoughtPrewarm();
 

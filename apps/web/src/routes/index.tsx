@@ -1,11 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useConvexAuth, useQuery } from "convex/react";
+import { useConvexAuth } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
 import { memo, useEffect, useMemo, useState } from "react";
 import { openSearch } from "../features/search/openSearch";
 import { CaptureField } from "../features/thoughts/CaptureField";
 import { Rail } from "../features/thoughts/Rail";
 import { ageLabel, localDate, orderRows } from "../features/thoughts/format";
+import { useCachedQuery } from "../features/thoughts/useCachedQuery";
 import { useThoughtPrewarm } from "../features/thoughts/useThoughtPrewarm";
 import { SkeletonRows } from "../features/ui/Skeleton";
 import type { Id } from "@drft/backend/convex/_generated/dataModel";
@@ -36,11 +37,16 @@ function Collection() {
 
   const { isAuthenticated } = useConvexAuth();
   const date = useMemo(() => localDate(now), [now]);
-  const data = useQuery(
+  const data = useCachedQuery(
     api.thoughts.collection,
     isAuthenticated ? { date } : "skip",
+    `collection:${date}`,
   );
-  const resting = useQuery(api.thoughts.resting, isAuthenticated ? {} : "skip");
+  const resting = useCachedQuery(
+    api.thoughts.resting,
+    isAuthenticated ? {} : "skip",
+    "resting",
+  );
 
   // One prewarm cache for the whole list, not one per row.
   const prewarm = useThoughtPrewarm();
