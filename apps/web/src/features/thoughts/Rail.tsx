@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { useConvexAuth, useQuery } from "convex/react";
+import { useConvexAuth } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
 import { memo, useCallback, useEffect, useId, useMemo, useState } from "react";
 import type { Id } from "@drft/backend/convex/_generated/dataModel";
@@ -11,6 +11,7 @@ import {
 } from "../search/useThoughtSearch";
 import { Skeleton } from "../ui/Skeleton";
 import { localDate, orderRows } from "./format";
+import { useCachedQuery } from "./useCachedQuery";
 import { useThoughtPrewarm } from "./useThoughtPrewarm";
 
 type RailThought = {
@@ -34,11 +35,16 @@ export const Rail = memo(function Rail({
 }) {
   const { isAuthenticated } = useConvexAuth();
   const date = useMemo(() => localDate(now), [now]);
-  const data = useQuery(
+  const data = useCachedQuery(
     api.thoughts.collection,
     isAuthenticated ? { date } : "skip",
+    "collection",
   );
-  const resting = useQuery(api.thoughts.resting, isAuthenticated ? {} : "skip");
+  const resting = useCachedQuery(
+    api.thoughts.resting,
+    isAuthenticated ? {} : "skip",
+    "resting",
+  );
   const [restingOpen, setRestingOpen] = useState(false);
   const navigate = useNavigate();
   const prewarm = useThoughtPrewarm();
