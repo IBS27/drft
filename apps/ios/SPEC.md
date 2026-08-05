@@ -22,8 +22,9 @@ no reading, no replies, no AI surface on the phone. Development happens on the w
 
 - Convex deployment: Debug uses `https://hidden-penguin-861.convex.cloud`;
   Release uses `https://optimistic-stork-701.convex.cloud`.
-- Clerk publishable key: configured per build — Debug uses the development
-  `pk_test_…` key; Release uses the production `pk_live_…` key.
+- Clerk publishable key: configured per build. Debug and Release currently use
+  the same Clerk test instance; Release can move independently to a `pk_live_…`
+  key when production Clerk is enabled.
 - Bundle IDs: app `com.srinivasib.drft`, widget extension `com.srinivasib.drft.DrftWidget`
 - App Group: `group.com.srinivasib.drft`
 - URL scheme: `drft` (deep link `drft://capture` opens the capture screen)
