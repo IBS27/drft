@@ -54,8 +54,7 @@ export const Rail = memo(function Rail({
   // instead of its groups. Esc (or ⌘K again) puts everything back.
   const [findOpen, setFindOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const { hits, failed, active, setActive, onResultsKey } =
-    useThoughtSearch(query);
+  const { hits, active, setActive, onResultsKey } = useThoughtSearch(query);
   const listboxId = useId();
   const closeFind = useCallback(() => {
     setFindOpen(false);
@@ -236,7 +235,6 @@ export const Rail = memo(function Rail({
         {finding ? (
           <FindResults
             hits={hits}
-            failed={failed}
             active={active}
             setActive={setActive}
             now={now}

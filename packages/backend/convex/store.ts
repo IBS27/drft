@@ -104,43 +104,6 @@ export const thoughtTexts = internalQuery({
   },
 });
 
-// Search's first half (search.ts): the words you remember, verbatim.
-// The collection is small enough to scan; by_user keeps it one user's.
-export const literalMatches = internalQuery({
-  args: { userId: v.string(), needle: v.string() },
-  handler: async (ctx, { userId, needle }) => {
-    const lower = needle.toLowerCase();
-    const rows = await ctx.db
-      .query("thoughts")
-      .withIndex("by_user", (q) => q.eq("userId", userId))
-      .order("desc")
-      .collect();
-    return rows
-      .filter((t) => t.text.toLowerCase().includes(lower))
-      .slice(0, 8)
-      .map((t) => ({
-        _id: t._id,
-        text: t.text,
-        status: t.status,
-        createdAt: t.createdAt,
-      }));
-  },
-});
-
-// Search's second half: vector hits resolved to rows, ownership
-// re-checked because the ids crossed an action boundary.
-export const searchRows = internalQuery({
-  args: { userId: v.string(), ids: v.array(v.id("thoughts")) },
-  handler: async (ctx, { userId, ids }) => {
-    const rows = await Promise.all(ids.map((id) => ctx.db.get(id)));
-    return rows.flatMap((t) =>
-      t && t.userId === userId
-        ? [{ _id: t._id, text: t.text, status: t.status, createdAt: t.createdAt }]
-        : [],
-    );
-  },
-});
-
 export const messageThoughtIds = internalQuery({
   args: { ids: v.array(v.id("messages")) },
   handler: async (ctx, { ids }) => {

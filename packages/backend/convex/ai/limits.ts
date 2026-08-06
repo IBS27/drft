@@ -19,11 +19,6 @@ export const MAX_UNSEEN_QUESTIONS = 2;
 // from what was said.
 export const SESSION_SETTLE_MS = 45 * 60 * 1000;
 
-// Search is the user asking, so the bar sits well below the link
-// threshold — but high enough that an empty collection answer stays
-// honestly empty instead of filling with noise.
-export const SEARCH_FLOOR = 0.25;
-
 // The return loop. "Never the newest": a thought must sit at least this
 // long before it can come back. And once resurfaced, it rests out of the
 // rotation this long — the loop is a slow wheel, not a feed.
