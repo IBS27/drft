@@ -191,10 +191,13 @@ becomes active so midnight rolls over):
    client-side from `createdAt`; empty groups are omitted). Rows: first-line
    verbatim `preview`, 17–18pt light, ink, hairline-separated; a small vermilion
    dot trails rows where `waiting` is true. Tapping a row opens the Thought view.
-3. **Bottom affordance**, fixed above the safe area: the vermilion dot +
-   `CATCH A THOUGHT` (tracked caps — the widget's copy; it means "go to capture"
-   everywhere). Tapping it raises capture. When a draft exists, the label shows
-   the draft's first words instead, faint, truncated.
+3. **The new-thought bar**, fixed above the safe area: a full-width vermilion
+   (`now`-filled) rounded rect — 14pt continuous corners, 24pt side margins,
+   54pt tall — with `NEW THOUGHT` centered in near-white (`onNow`) tracked caps.
+   (Chosen design: `docs/shelf-button.html`, variant 07b.) Tapping it raises
+   capture; pressed state dims to ~70% opacity — no scale, no bounce. When a
+   draft exists, the label shows the draft's first words instead — lowercase,
+   lightly tracked, truncated.
 
 **No counts anywhere, ever** — not in groups, not on the app icon. Empty state is
 near-silence: wordmark, whitespace, the bottom affordance. No copy.

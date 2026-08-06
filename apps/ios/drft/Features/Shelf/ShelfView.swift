@@ -154,28 +154,33 @@ struct ShelfView: View {
         Button {
             onCatchThought()
         } label: {
-            HStack(spacing: StillnessSpacing.dotLabelGap) {
-                NowDot()
+            Group {
                 if let preview = ShelfFormatting.draftPreview(draft) {
                     Text(preview)
                         .font(StillnessType.action)
                         .tracking(1.2)
-                        .foregroundStyle(Stillness.faint)
+                        .opacity(0.9)
                         .lineLimit(1)
                 } else {
-                    Text("CATCH A THOUGHT")
-                        .stillnessLabel(.actionInk)
+                    Text("NEW THOUGHT")
+                        .font(StillnessType.action)
+                        .tracking(StillnessType.actionTracking)
                 }
             }
+            .foregroundStyle(Stillness.onNow)
             .frame(maxWidth: .infinity)
-            .padding(.horizontal, 28)
-            .padding(.vertical, 13)
-            .frame(minHeight: 58)
-            .contentShape(Rectangle())
+            .frame(height: 54)
+            .background(
+                Stillness.now,
+                in: RoundedRectangle(cornerRadius: 14, style: .continuous)
+            )
+            .padding(.horizontal, 24)
+            .padding(.top, 13)
+            .padding(.bottom, 8)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(NewThoughtBarStyle())
         .background(Stillness.page)
-        .accessibilityLabel("Catch a thought")
+        .accessibilityLabel("New thought")
     }
 
     private var returnedThought: ConvexService.CollectionThought? {
@@ -240,5 +245,12 @@ struct ShelfView: View {
         withAnimation(.easeInOut(duration: 0.24)) {
             selectedThoughtID = nil
         }
+    }
+}
+
+private struct NewThoughtBarStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .opacity(configuration.isPressed ? 0.7 : 1)
     }
 }
