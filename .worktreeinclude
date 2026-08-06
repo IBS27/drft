@@ -1,0 +1,6 @@
+# Local configuration required in managed worktrees.
+apps/web/.env.local
+packages/backend/.env.local
+
+# The root .env.local contains a short-lived Vercel OIDC token and is
+# intentionally regenerated when needed instead of copied.
