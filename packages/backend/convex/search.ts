@@ -10,7 +10,9 @@ export const thoughts = query({
   handler: async (ctx, { query: raw }) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) return [];
-    const trimmed = raw.trim();
+    // Convex search errors above 16 terms; a long paste searches by its
+    // first sixteen words instead of erroring the subscription.
+    const trimmed = raw.trim().split(/\s+/).slice(0, 16).join(" ");
     if (!trimmed) return [];
     const rows = await ctx.db
       .query("thoughts")
