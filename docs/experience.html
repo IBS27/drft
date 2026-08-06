@@ -214,7 +214,7 @@
   <p>The mutation lands the raw text instantly, then an async action embeds it, searches for resonant older thoughts, and drafts one or two questions from the partner. All of it stays silent. <strong>The partner is prepared, but waits</strong> — nothing notifies, nothing replies, capture never becomes the start of a conversation you didn't ask for.</p>
 
   <div class="callout">
-    <strong>iOS is deliberately capture-only.</strong> No list, no reading, no replies on the phone. The app is an inbox slot: widget, dictation, keep, gone. This keeps the iOS surface tiny (fast to ship, phase 4) and protects the product's rhythm — development is a sitting-down activity, not a standing-in-line one.
+    <strong>The phone captures and glances; development stays seated.</strong> Capture is the app — launch always lands on the empty field, keyboard up. Behind it sits the shelf: a quiet, read-only view of the collection you can pull down into, re-read, and set a thought to rest from. What the phone never gets is the conversation — no reply box, no partner exchange, no wake, no search. Re-exposure belongs anywhere; development is a sitting-down activity, and the web is where you sit. The original phase-4 rule ("no list, no reading on the phone") was half shipping pragmatism, half rhythm protection; the shelf revises the first half and keeps the second — the phone must never become an obligation surface, so the shelf shows no counts, sends no notifications, and asks for nothing.
   </div>
 
   <h3>Rules of capture</h3>
@@ -251,7 +251,7 @@
   <h3>Why email, and not a push notification</h3>
   <ul>
     <li><strong>The medium already behaves the way the product wants to.</strong> Email is read-and-let-lie by default; nothing about it demands a reply. And the inbox row is a lock screen you already check — the re-exposure lands whether or not you open the message.</li>
-    <li><strong>The phone stays capture-only.</strong> A push would give the return moment a tap target leading into an app with nothing to read. Email links to the web, which is where developing a thought belongs anyway.</li>
+    <li><strong>A push would make the return a demand.</strong> Even now that the phone's shelf gives a tap target something to land on, a notification turns the return moment into an interruption that expects handling — the opposite of read-and-let-lie. The shelf pins today's returned thought for whoever wanders in; email remains the channel that goes out.</li>
     <li><strong>It arrives on time, everywhere.</strong> A Convex cron sends at the chosen minute, and it reaches the phone through Mail, so the morning-with-coffee moment survives intact. Web push would only fire if a browser happened to be awake, and would land at the desk — pressure to click, at the wrong hour.</li>
     <li><strong>Nothing to install, nothing to renew.</strong> No device tokens, no APNs keys, no dependency on the iOS app being installed and re-signed. (Push would also require a paid Apple Developer account: free personal-team provisioning grants App Groups, but never <code>aps-environment</code>.)</li>
   </ul>

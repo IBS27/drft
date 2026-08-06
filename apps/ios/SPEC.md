@@ -1,7 +1,10 @@
-# drft iOS — Phase 4 Spec
+# drft iOS — Spec
 
-The iOS app is an inbox slot: widget, dictation, keep, gone. Capture-only — no list,
-no reading, no replies, no AI surface on the phone. Development happens on the web.
+The iOS app is capture first: widget, dictation, keep, gone. Behind capture sits
+**the shelf** — a quiet, read-only view of the collection (pull capture down to
+reveal it, re-read a thought, set it to rest). No replies, no conversation, no
+search, no wake on the phone: the phone captures and glances; development happens
+on the web. Phase 4 shipped capture-only; phase 6 adds the shelf.
 
 ## Hard rules (product contract, non-negotiable)
 
@@ -46,9 +49,23 @@ no reading, no replies, no AI surface on the phone. Development happens on the w
 ## Backend surface used
 
 - `thoughts:capture` mutation with `{ text: string }` → returns the new thought id.
+- `thoughts:collection` query with `{ date: "YYYY-MM-DD" }` (client-local date) →
+  `{ thoughts: [{ _id, preview, createdAt, waiting }], resurfacedId | null }` —
+  open thoughts newest-first; `waiting` marks an unseen partner question;
+  `resurfacedId` is today's returned thought (force-included in the list).
+- `thoughts:view` query with `{ thoughtId }` → `null` or the full thought:
+  `{ _id, text, createdAt, status, questions: [{ _id, text, seen }], ... }`
+  (connections are returned but unused on iOS).
+- `thoughts:conversation` query with `{ thoughtId, paginationOpts }` → paginated
+  messages; iOS requests one item only, to know whether a conversation exists.
+- `thoughts:markQuestionsSeen` mutation with `{ thoughtId }` → clears the dot.
+- `thoughts:rest` mutation with `{ thoughtId, note? }` → sets the thought down.
 - `settings:get` query with no args → returns the daily email settings or `null`.
 - `settings:save` mutation with `{ sendTime, timezone, email? }` → writes the daily
   email settings.
+
+No codegen: results are decoded into hand-written Swift `Decodable` mirrors of the
+Convex validators. Reads use live subscriptions so the shelf updates in real time.
 
 Auth is a Clerk JWT (template name `convex`); the clerk-convex-swift bridge handles
 attaching it. Everything else (enrichment, questions, linking) is server-side and
@@ -63,6 +80,7 @@ apps/ios/
     App/                    DrftApp entry, root routing (signed out → SignIn, else Capture)
     Features/
       Capture/              CaptureView + CaptureModel
+      Shelf/                ShelfView (collection list) + ThoughtView (single thought)
       Settings/             SettingsView
       SignIn/               SignInView
     Services/
@@ -146,6 +164,62 @@ Behavior:
   explaining failure mid-capture.
 - Sign-out or auth expiry mid-session must not interrupt an in-progress capture;
   queued items wait for the next signed-in flush.
+- **Pull down to the shelf**: capture is the front layer; the shelf sits behind it.
+  A committed downward drag anywhere on the capture screen slides the whole capture
+  layer off the bottom edge, keyboard dropping with it in the same motion, revealing
+  the shelf. Small drags keep behaving as interactive keyboard dismissal — use a
+  simultaneous gesture with a vertical threshold so the two don't fight. Returning
+  (see Shelf), capture rises from the bottom like a sheet, field already focused,
+  keyboard rising with it.
+- **A draft survives the trip.** Swiping down with text in the field never discards
+  or auto-keeps it; the words are waiting when capture rises again.
+- **Every entry lands on capture.** Cold launch, widget, `drft://capture`, the App
+  Intent — always the empty (or draft-holding) focused field. The shelf is
+  session-transient, never the resume state.
+
+### Shelf (behind capture)
+
+`page` background, same wordmark at top (tap → Settings sheet, same as capture).
+Below, a scrolling read-only list of the open collection, driven by a live
+`thoughts:collection` subscription (client-local date, recomputed when the app
+becomes active so midnight rolls over):
+
+1. **Today's returned thought**, when `resurfacedId` is set: pinned above the
+   groups, held apart by whitespace, under a tracked-caps faint label
+   `RETURNED TODAY`. Same row treatment otherwise.
+2. **Groups** `TODAY` / `THIS WEEK` / `EARLIER` (tracked caps, faint, computed
+   client-side from `createdAt`; empty groups are omitted). Rows: first-line
+   verbatim `preview`, 17–18pt light, ink, hairline-separated; a small vermilion
+   dot trails rows where `waiting` is true. Tapping a row opens the Thought view.
+3. **Bottom affordance**, fixed above the safe area: the vermilion dot +
+   `CATCH A THOUGHT` (tracked caps — the widget's copy; it means "go to capture"
+   everywhere). Tapping it raises capture. When a draft exists, the label shows
+   the draft's first words instead, faint, truncated.
+
+**No counts anywhere, ever** — not in groups, not on the app icon. Empty state is
+near-silence: wordmark, whitespace, the bottom affordance. No copy.
+
+### Thought (from a shelf row)
+
+Slides in over the shelf with a quiet back affordance (a faint `←`, no nav bar).
+Top to bottom:
+
+1. The verbatim text, 24–26pt light, ink — a step below capture's 30pt; here you
+   read, not write. Selectable, never editable.
+2. The capture timestamp line, same ambient treatment as capture's.
+3. The partner's prepared questions as marginalia — muted, smaller, generously
+   spaced. On appear, call `thoughts:markQuestionsSeen` so the dot clears here
+   and on the web.
+4. If a conversation exists (probe `thoughts:conversation` with one item), one
+   faint line at the bottom: `continue on the web`. Never the messages themselves.
+5. `REST`, tracked caps, muted, at the bottom. Tapping it reveals a single
+   borderless one-line field for the optional closing line (mirror the web's
+   resting-note copy from `apps/web/src/routes/thought.$thoughtId.tsx`) with a
+   quiet confirm; resting with or without a note fades the thought and returns
+   to the shelf. Resting from the phone is one-way — wake stays on the web.
+
+No reply box, no conversation history, no connections, no search, no resting
+list. Those are web surfaces.
 
 ### Sign-in (shown only when signed out)
 
@@ -214,10 +288,10 @@ text entry.
   app to capture — makes Shortcuts / Action button / Siri entry work.
 - Widget shows no user data, so it needs no auth.
 
-## Out of scope for phase 4
+## Out of scope
 
-Resurfacing, any reading surface, share extension, iPad, Live Activities,
-onboarding beyond sign-in.
+Replies / partner conversation, wake, search, the resting list, connections,
+share extension, iPad, Live Activities, onboarding beyond sign-in.
 
 Push notifications / APNs are not merely deferred — the daily return ships as
 email instead (see `docs/experience.html` §03). The phone captures; it is not a

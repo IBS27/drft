@@ -3,23 +3,22 @@ import SwiftUI
 
 struct RootView: View {
     @Environment(Clerk.self) private var clerk
+    @Environment(\.scenePhase) private var scenePhase
     @ObservedObject var authService: AuthService
     @ObservedObject var convexService: ConvexService
     let captureQueue: CaptureQueue
     let captureFocusRequest: Int
     @State private var hasEnteredCapture = false
+    @State private var captureIsPresented = true
+    @State private var captureDragOffset: CGFloat = 0
+    @State private var draft = ""
 
     var body: some View {
         Group {
             if !clerk.isLoaded {
                 Stillness.page.ignoresSafeArea()
             } else if authService.isSignedIn || (hasEnteredCapture && !authService.didExplicitlySignOut) {
-                CaptureView(
-                    captureQueue: captureQueue,
-                    authService: authService,
-                    convexService: convexService,
-                    focusRequest: captureFocusRequest
-                )
+                captureAndShelf
             } else {
                 SignInView()
             }
@@ -30,6 +29,7 @@ struct RootView: View {
         .onChange(of: authService.isSignedIn, initial: true) { _, isSignedIn in
             guard isSignedIn else { return }
             hasEnteredCapture = true
+            presentCapture()
         }
         .onChange(of: authService.didExplicitlySignOut) { _, didSignOut in
             guard didSignOut else { return }
@@ -46,6 +46,70 @@ struct RootView: View {
                 )
             }
             captureQueue.updateAuthenticatedUserID(userID)
+        }
+        .onChange(of: captureFocusRequest) {
+            presentCapture()
+        }
+        .onChange(of: scenePhase) { _, phase in
+            guard phase == .active else { return }
+            presentCapture()
+        }
+    }
+
+    private var captureAndShelf: some View {
+        GeometryReader { geometry in
+            ZStack {
+                ShelfView(
+                    draft: draft,
+                    authService: authService,
+                    convexService: convexService,
+                    onCatchThought: presentCapture
+                )
+
+                CaptureView(
+                    captureQueue: captureQueue,
+                    authService: authService,
+                    convexService: convexService,
+                    focusRequest: captureFocusRequest,
+                    isPresented: captureIsPresented,
+                    onDraftChange: { draft = $0 },
+                    onShelfDragChanged: updateCaptureDrag,
+                    onRevealShelf: revealShelf
+                )
+                .offset(
+                    y: captureIsPresented
+                        ? captureDragOffset
+                        : geometry.size.height + geometry.safeAreaInsets.bottom + 24
+                )
+                .allowsHitTesting(captureIsPresented)
+                .zIndex(1)
+            }
+            .clipped()
+        }
+        .background(Stillness.page)
+    }
+
+    private func updateCaptureDrag(_ offset: CGFloat) {
+        if offset == 0 {
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.9)) {
+                captureDragOffset = 0
+            }
+        } else {
+            captureDragOffset = offset
+        }
+    }
+
+    private func revealShelf() {
+        withAnimation(.easeInOut(duration: 0.34)) {
+            captureIsPresented = false
+            captureDragOffset = 0
+        }
+    }
+
+    private func presentCapture() {
+        captureDragOffset = 0
+        withAnimation(.spring(response: 0.42, dampingFraction: 0.9)) {
+            captureIsPresented = true
         }
     }
 }

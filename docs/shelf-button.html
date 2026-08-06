@@ -1,0 +1,520 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>drft — the shelf's new-thought button</title>
+<style>
+/* ============================================================
+   drft — redesigning the shelf's return-to-capture affordance
+   Five candidates, each shown light + dark, in place at the
+   bottom of the shelf. Same tokens as design.html.
+   ============================================================ */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+body {
+  font-family: "Helvetica Neue", ui-sans-serif, sans-serif; font-weight: 300;
+  background: #FAFAF8; color: #2B2B28;
+  padding: 44px clamp(20px, 5vw, 64px) 110px;
+}
+
+.crumb { font-size: 11px; letter-spacing: .3em; text-transform: uppercase; color: #6B6B65; }
+h1 { font-size: clamp(28px, 4vw, 40px); font-weight: 300; margin-top: 40px; letter-spacing: .01em; }
+.lede { margin-top: 14px; font-size: 15.5px; line-height: 1.65; color: #45453F; max-width: 62ch; font-weight: 400; }
+.lede + .lede { margin-top: 10px; }
+
+section { margin-top: 72px; max-width: 980px; }
+.vnum { font-size: 11px; letter-spacing: .3em; text-transform: uppercase; color: #6B6B65; }
+h2 { font-size: 22px; font-weight: 300; margin-top: 10px; }
+.note { margin-top: 12px; font-size: 14.5px; line-height: 1.7; color: #45453F; max-width: 62ch; font-weight: 400; }
+.note strong { font-weight: 500; }
+.tradeoff { margin-top: 10px; font-size: 13px; line-height: 1.65; color: #6B6B65; max-width: 62ch; font-weight: 400; }
+.tradeoff::before { content: "trade-off — "; font-size: 10px; letter-spacing: .22em; text-transform: uppercase; }
+
+/* ---------- the mocks ---------- */
+.pair { display: flex; gap: 28px; flex-wrap: wrap; margin-top: 26px; }
+
+.mock {
+  width: 348px; border-radius: 22px 22px 0 0; overflow: hidden;
+  border: 1px solid var(--frame); border-bottom: 0;
+  background: var(--pg); color: var(--ink);
+  padding-top: 26px;
+}
+.mock.light { --pg:#FAFAF8; --scr:#FCFCFB; --ink:#2B2B28; --mut:#75756F; --faint:#9E9E98; --line:#E8E8E4; --dot:#C73E1D; --frame:#E0E0DC; }
+.mock.dark  { --pg:#131311; --scr:#181816; --ink:#EAEAE5; --mut:#A0A099; --faint:#74746D; --line:#2B2B28; --dot:#D9502A; --frame:#2A2A27; }
+
+.rows { padding: 0 28px; }
+.grouplabel { font-size: 10px; letter-spacing: .3em; text-transform: uppercase; color: var(--faint); padding-bottom: 12px; }
+.row { font-size: 15px; font-weight: 300; color: var(--ink); padding: 15px 0; display: flex; align-items: center; gap: 12px;
+       border-bottom: 1px solid var(--line); white-space: nowrap; overflow: hidden; }
+.row:first-of-type { border-top: 0; }
+.row .txt { overflow: hidden; text-overflow: ellipsis; flex: 1; }
+.row .wdot { width: 6px; height: 6px; border-radius: 50%; background: var(--dot); flex: none; }
+
+.zone { padding: 22px 28px 10px; display: flex; justify-content: center; }
+.homebar { width: 120px; height: 4px; border-radius: 2px; background: var(--line); margin: 8px auto 10px; }
+
+.dot { width: 9px; height: 9px; border-radius: 50%; background: var(--dot); flex: none; }
+.lbl { font-size: 12px; letter-spacing: .28em; text-transform: uppercase; font-weight: 400; }
+
+/* v1 — hairline capsule */
+.cap-hair { display: inline-flex; align-items: center; gap: 11px; padding: 14px 26px; border-radius: 999px;
+            border: 1px solid var(--line); color: var(--ink); }
+
+/* v2 — surface capsule */
+.cap-surface { display: inline-flex; align-items: center; gap: 11px; padding: 14px 26px; border-radius: 999px;
+               background: var(--scr); border: 1px solid var(--line); color: var(--ink); }
+.mock.light .cap-surface { box-shadow: 0 2px 10px rgba(40,40,35,.05); }
+.mock.dark  .cap-surface { box-shadow: 0 2px 10px rgba(0,0,0,.3); }
+
+/* v3 — ink pill */
+.cap-ink { display: inline-flex; align-items: center; gap: 11px; padding: 15px 28px; border-radius: 999px;
+           background: var(--ink); color: var(--pg); }
+
+/* v6 — vermilion pill */
+.cap-verm { display: inline-flex; align-items: center; gap: 11px; padding: 15px 28px; border-radius: 999px;
+            background: var(--dot); color: #FCFCFB; }
+
+/* v7 — vermilion, reshaped */
+.cap-vline { display: inline-flex; align-items: center; gap: 11px; padding: 14px 26px; border-radius: 999px;
+             border: 1.5px solid var(--dot); color: var(--dot); background: transparent; }
+.cta-verm { display: flex; justify-content: center; align-items: center; width: 100%; padding: 17px 0;
+            border-radius: 14px; background: var(--dot); color: #FCFCFB; }
+.fab-verm { width: 54px; height: 54px; border-radius: 50%; background: var(--dot); color: #FCFCFB;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 26px; font-weight: 300; line-height: 1; padding-bottom: 2px; }
+.arch-verm { width: 78px; height: 30px; border-radius: 39px 39px 0 0; background: var(--dot);
+             display: flex; align-items: flex-end; justify-content: center; padding-bottom: 7px; }
+.arch-verm .nub { width: 5px; height: 5px; border-radius: 50%; background: #FCFCFB; opacity: .95; }
+
+/* v4 — the dot, grown */
+.fab { width: 52px; height: 52px; border-radius: 50%; background: var(--dot); }
+
+/* v5 — divided bar */
+.zone.bar { padding: 0; display: block; }
+.barinner { border-top: 1px solid var(--line); background: var(--scr); padding: 19px 28px 8px;
+            display: flex; justify-content: center; align-items: center; gap: 11px; color: var(--ink); }
+
+/* draft-state mock */
+.draftlbl { font-size: 12px; letter-spacing: .12em; font-weight: 300; color: var(--mut); font-style: normal;
+            max-width: 21ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-transform: none; }
+
+/* v8 — full-screen head to head */
+.mock.full { border-radius: 32px; border-bottom: 1px solid var(--frame); padding-top: 0;
+             height: 758px; display: flex; flex-direction: column; }
+.island { width: 96px; height: 27px; border-radius: 15px; background: #060606; margin: 13px auto 0; flex: none; }
+.mock.dark .island { outline: 1px solid #232320; }
+.fullwordmark { text-align: center; font-size: 13px; letter-spacing: .55em; color: var(--faint);
+                padding: 20px 0 4px; flex: none; }
+.mock.full .rows { flex: 1; padding-top: 26px; overflow: hidden; }
+.ggap { height: 30px; }
+.mock.full .zone { flex: none; }
+
+.callout { margin-top: 60px; max-width: 62ch; border-left: 2px solid #C73E1D; padding: 4px 0 4px 20px;
+           font-size: 14.5px; line-height: 1.7; color: #45453F; font-weight: 400; }
+.callout strong { font-weight: 500; }
+</style>
+</head>
+<body>
+
+<div class="crumb">drft · design exploration</div>
+<h1>The shelf's new-thought button</h1>
+<p class="lede">The current affordance — <span style="letter-spacing:.25em; font-size:12px;">● CATCH A THOUGHT</span> as bare text — fails twice. The copy is twee, and the form has no figure-ground: on a screen where every action is already quiet tracked caps, one more quiet tracked-caps line cannot read as <em>the</em> action. The primary act of the whole product deserves a shape.</p>
+<p class="lede">On the label: <strong>NEW THOUGHT</strong> over <strong>COMPOSE</strong>. "Compose" is borrowed from email and treats the fragment as a document; "new thought" names the object the product is actually made of, stays inside the vocabulary rules, and pairs naturally with the dot the same way <span style="letter-spacing:.25em; font-size:12px;">● KEEP</span> does on capture. All variants below use it; swapping the string is trivial if you prefer "compose."</p>
+
+<!-- ============ 1 ============ -->
+<section>
+  <div class="vnum">01</div>
+  <h2>Hairline capsule</h2>
+  <p class="note">The quietest thing that still reads as a button: the existing label, enclosed. Stillness says "hairlines instead of boxes" — this uses the one sanctioned line-weight to draw the one enclosure on the screen. Because nothing else on the shelf has a border, the capsule owns the eye despite being one pixel deep.</p>
+  <div class="pair">
+    <div class="mock light">
+      <div class="rows">
+        <div class="grouplabel">Earlier</div>
+        <div class="row"><span class="txt">recipes as version control — forks &amp; merges</span><span class="wdot"></span></div>
+        <div class="row"><span class="txt">cities feel more creative because collisions are free</span></div>
+      </div>
+      <div class="zone"><span class="cap-hair"><span class="dot"></span><span class="lbl">New thought</span></span></div>
+      <div class="homebar"></div>
+    </div>
+    <div class="mock dark">
+      <div class="rows">
+        <div class="grouplabel">Earlier</div>
+        <div class="row"><span class="txt">recipes as version control — forks &amp; merges</span><span class="wdot"></span></div>
+        <div class="row"><span class="txt">cities feel more creative because collisions are free</span></div>
+      </div>
+      <div class="zone"><span class="cap-hair"><span class="dot"></span><span class="lbl">New thought</span></span></div>
+      <div class="homebar"></div>
+    </div>
+  </div>
+  <p class="tradeoff">still subtle. If the complaint is "it disappears," one hairline may not buy enough separation — especially in dark mode, where the hairline token is faint by design.</p>
+</section>
+
+<!-- ============ 2 ============ -->
+<section>
+  <div class="vnum">02</div>
+  <h2>Surface capsule</h2>
+  <p class="note">The capsule again, but filled with the <code style="font-size:13px;">surface</code> token and lifted off the page by a whisper of shadow — the first variant that feels <em>raised</em>, like something a thumb lands on. This is the standard modern quiet-button and it stays entirely inside the palette.</p>
+  <div class="pair">
+    <div class="mock light">
+      <div class="rows">
+        <div class="grouplabel">Earlier</div>
+        <div class="row"><span class="txt">recipes as version control — forks &amp; merges</span><span class="wdot"></span></div>
+        <div class="row"><span class="txt">cities feel more creative because collisions are free</span></div>
+      </div>
+      <div class="zone"><span class="cap-surface"><span class="dot"></span><span class="lbl">New thought</span></span></div>
+      <div class="homebar"></div>
+    </div>
+    <div class="mock dark">
+      <div class="rows">
+        <div class="grouplabel">Earlier</div>
+        <div class="row"><span class="txt">recipes as version control — forks &amp; merges</span><span class="wdot"></span></div>
+        <div class="row"><span class="txt">cities feel more creative because collisions are free</span></div>
+      </div>
+      <div class="zone"><span class="cap-surface"><span class="dot"></span><span class="lbl">New thought</span></span></div>
+      <div class="homebar"></div>
+    </div>
+  </div>
+  <p class="tradeoff">surface-on-page contrast is nearly invisible in both palettes (#FCFCFB on #FAFAF8), so the shadow is doing the work — and Stillness has never used shadows. A small precedent-break for a small gain.</p>
+</section>
+
+<!-- ============ 3 ============ -->
+<section>
+  <div class="vnum">03</div>
+  <h2>Ink pill — recommended</h2>
+  <p class="note">Invert the two tones the system already owns: ink fill, page-colored label, the vermilion dot burning inside. This is unambiguous — the darkest (light mode) or brightest (dark mode) object on the screen, unmistakably pressable, and it spends <strong>zero new color</strong>. It gives the shelf what capture's <span style="letter-spacing:.25em; font-size:12px;">● KEEP</span> never needed, because keep sits alone on an empty screen and this button competes with a list. Strong figure over quiet ground is the most Stillness-native way to say "primary action."</p>
+  <div class="pair">
+    <div class="mock light">
+      <div class="rows">
+        <div class="grouplabel">Earlier</div>
+        <div class="row"><span class="txt">recipes as version control — forks &amp; merges</span><span class="wdot"></span></div>
+        <div class="row"><span class="txt">cities feel more creative because collisions are free</span></div>
+      </div>
+      <div class="zone"><span class="cap-ink"><span class="dot"></span><span class="lbl">New thought</span></span></div>
+      <div class="homebar"></div>
+    </div>
+    <div class="mock dark">
+      <div class="rows">
+        <div class="grouplabel">Earlier</div>
+        <div class="row"><span class="txt">recipes as version control — forks &amp; merges</span><span class="wdot"></span></div>
+        <div class="row"><span class="txt">cities feel more creative because collisions are free</span></div>
+      </div>
+      <div class="zone"><span class="cap-ink"><span class="dot"></span><span class="lbl">New thought</span></span></div>
+      <div class="homebar"></div>
+    </div>
+  </div>
+  <p class="note" style="margin-top:22px;"><strong>With a draft in flight</strong>, the label yields to your own words — lowercase, untracked, truncated — so the button doubles as the reminder that a thought is waiting mid-air:</p>
+  <div class="pair">
+    <div class="mock light">
+      <div class="rows">
+        <div class="row" style="border-bottom:1px solid var(--line);"><span class="txt">cities feel more creative because collisions are free</span></div>
+      </div>
+      <div class="zone"><span class="cap-ink"><span class="dot"></span><span class="draftlbl" style="color:var(--pg); opacity:.85;">maybe the reason meetings feel…</span></span></div>
+      <div class="homebar"></div>
+    </div>
+  </div>
+  <p class="tradeoff">it is the loudest option here. If it feels heavy in practice, the same geometry falls back to variant 01 by removing the fill — the code is one modifier apart.</p>
+</section>
+
+<!-- ============ 4 ============ -->
+<section>
+  <div class="vnum">04</div>
+  <h2>The dot, grown</h2>
+  <p class="note">No words at all: the vermilion dot scaled to a 52pt circle, floating above the safe area. The dot already means "now" everywhere it appears — on keep, on waiting rows — so the biggest dot in the product marking "start now" is coherent, and it is the most confident, most ownable mark of the five.</p>
+  <div class="pair">
+    <div class="mock light">
+      <div class="rows">
+        <div class="grouplabel">Earlier</div>
+        <div class="row"><span class="txt">recipes as version control — forks &amp; merges</span><span class="wdot"></span></div>
+        <div class="row"><span class="txt">cities feel more creative because collisions are free</span></div>
+      </div>
+      <div class="zone"><span class="fab"></span></div>
+      <div class="homebar"></div>
+    </div>
+    <div class="mock dark">
+      <div class="rows">
+        <div class="grouplabel">Earlier</div>
+        <div class="row"><span class="txt">recipes as version control — forks &amp; merges</span><span class="wdot"></span></div>
+        <div class="row"><span class="txt">cities feel more creative because collisions are free</span></div>
+      </div>
+      <div class="zone"><span class="fab"></span></div>
+      <div class="homebar"></div>
+    </div>
+  </div>
+  <p class="tradeoff">it spends the accent on chrome. The design contract is "color is spent in exactly one place" — a permanent 52pt vermilion disc makes that place a button, and the small dots elsewhere (waiting rows, keep) stop feeling special. It also can't carry the draft preview. Bold, but it rebalances the whole system around one control.</p>
+</section>
+
+<!-- ============ 5 ============ -->
+<section>
+  <div class="vnum">05</div>
+  <h2>Divided bar</h2>
+  <p class="note">Instead of shaping the button, shape the region: a full-width band on <code style="font-size:13px;">surface</code>, separated from the list by a hairline, holding the dot + label. The shelf becomes two rooms — the collection above, the way home below. Closest to the current build, structurally honest, zero new vocabulary of form.</p>
+  <div class="pair">
+    <div class="mock light">
+      <div class="rows">
+        <div class="grouplabel">Earlier</div>
+        <div class="row"><span class="txt">recipes as version control — forks &amp; merges</span><span class="wdot"></span></div>
+        <div class="row" style="border-bottom:0;"><span class="txt">cities feel more creative because collisions are free</span></div>
+      </div>
+      <div class="zone bar"><div class="barinner"><span class="dot"></span><span class="lbl">New thought</span></div><div class="homebar" style="background:var(--line);"></div></div>
+    </div>
+    <div class="mock dark">
+      <div class="rows">
+        <div class="grouplabel">Earlier</div>
+        <div class="row"><span class="txt">recipes as version control — forks &amp; merges</span><span class="wdot"></span></div>
+        <div class="row" style="border-bottom:0;"><span class="txt">cities feel more creative because collisions are free</span></div>
+      </div>
+      <div class="zone bar"><div class="barinner"><span class="dot"></span><span class="lbl">New thought</span></div><div class="homebar" style="background:var(--line);"></div></div>
+    </div>
+  </div>
+  <p class="tradeoff">a full-width tappable band at the bottom of a scrolling list is the anatomy of a chat input bar — the association we deliberately avoided when we rejected the ghost text field. It marks a zone, not a button, so the "doesn't stand out" complaint is only half-answered.</p>
+</section>
+
+<!-- ============ 6 ============ -->
+<section>
+  <div class="vnum">06</div>
+  <h2>Vermilion pill</h2>
+  <p class="note">The ink pill's geometry, filled with the accent itself: the <code style="font-size:13px;">now</code> vermilion (#C73E1D light / #D9502A dark), label in near-white. The dot dissolves into the fill — the whole button <em>is</em> the dot. This is the loudest legitimate option: unmissable in both palettes, warm where the ink pill is stark, and it reads instantly as "the one colored thing here is the thing to press."</p>
+  <div class="pair">
+    <div class="mock light">
+      <div class="rows">
+        <div class="grouplabel">Earlier</div>
+        <div class="row"><span class="txt">recipes as version control — forks &amp; merges</span><span class="wdot"></span></div>
+        <div class="row"><span class="txt">cities feel more creative because collisions are free</span></div>
+      </div>
+      <div class="zone"><span class="cap-verm"><span class="lbl">New thought</span></span></div>
+      <div class="homebar"></div>
+    </div>
+    <div class="mock dark">
+      <div class="rows">
+        <div class="grouplabel">Earlier</div>
+        <div class="row"><span class="txt">recipes as version control — forks &amp; merges</span><span class="wdot"></span></div>
+        <div class="row"><span class="txt">cities feel more creative because collisions are free</span></div>
+      </div>
+      <div class="zone"><span class="cap-verm"><span class="lbl">New thought</span></span></div>
+      <div class="homebar"></div>
+    </div>
+  </div>
+  <p class="note" style="margin-top:22px;"><strong>With a draft in flight</strong>, same behavior as the ink pill — the label yields to your first words, near-white on vermilion:</p>
+  <div class="pair">
+    <div class="mock light">
+      <div class="rows">
+        <div class="row" style="border-bottom:1px solid var(--line);"><span class="txt">cities feel more creative because collisions are free</span></div>
+      </div>
+      <div class="zone"><span class="cap-verm"><span class="draftlbl" style="color:#FCFCFB; opacity:.9;">maybe the reason meetings feel…</span></span></div>
+      <div class="homebar"></div>
+    </div>
+  </div>
+  <p class="tradeoff">it carries variant 04's cost in a more useful shape: the accent stops meaning "now" and starts meaning "button," and the small dots on waiting rows must share the screen with a much bigger sibling. If drft ever feels like it has a brand color instead of a single burning point, this is where it happened. Against that: every other capture app makes its plus-button loud, and this is the version of loud that still belongs to this palette.</p>
+</section>
+
+<!-- ============ 7 ============ -->
+<section>
+  <div class="vnum">07</div>
+  <h2>Vermilion, reshaped</h2>
+  <p class="note">Same color commitment as 06, four other bodies for it. These vary along two axes: how much surface the color claims, and where the button lives — floating center, full bleed, corner, or fused to the edge the capture sheet actually rises from.</p>
+
+  <p class="note" style="margin-top:34px;"><strong>07a · Outlined capsule.</strong> The color as a line, not a mass: 1.5px vermilion stroke, vermilion label, transparent fill. The most Stillness-literate way to use the accent on a button — a hairline that burns. Reads clearly as pressable in light mode; in dark mode the orange stroke glows nicely against #131311.</p>
+  <div class="pair">
+    <div class="mock light">
+      <div class="rows">
+        <div class="grouplabel">Earlier</div>
+        <div class="row"><span class="txt">recipes as version control — forks &amp; merges</span><span class="wdot"></span></div>
+        <div class="row"><span class="txt">cities feel more creative because collisions are free</span></div>
+      </div>
+      <div class="zone"><span class="cap-vline"><span class="lbl">New thought</span></span></div>
+      <div class="homebar"></div>
+    </div>
+    <div class="mock dark">
+      <div class="rows">
+        <div class="grouplabel">Earlier</div>
+        <div class="row"><span class="txt">recipes as version control — forks &amp; merges</span><span class="wdot"></span></div>
+        <div class="row"><span class="txt">cities feel more creative because collisions are free</span></div>
+      </div>
+      <div class="zone"><span class="cap-vline"><span class="lbl">New thought</span></span></div>
+      <div class="homebar"></div>
+    </div>
+  </div>
+  <p class="tradeoff">a colored outline around colored text can read "secondary action" to eyes trained on modern apps, where filled = primary. It also duplicates the waiting-dot hue at heavier weight without fully committing the way 06 does.</p>
+
+  <p class="note" style="margin-top:44px;"><strong>07b · Full-width bar.</strong> The modern iOS primary CTA: edge-to-edge within the margins, softly rounded, label centered. Impossible to miss, biggest thumb target of any variant, and the rounded rect (rather than the divided bar's hard band) keeps it a button, not a zone — so it dodges the chat-input association.</p>
+  <div class="pair">
+    <div class="mock light">
+      <div class="rows">
+        <div class="grouplabel">Earlier</div>
+        <div class="row"><span class="txt">recipes as version control — forks &amp; merges</span><span class="wdot"></span></div>
+        <div class="row"><span class="txt">cities feel more creative because collisions are free</span></div>
+      </div>
+      <div class="zone" style="padding-left:24px; padding-right:24px;"><span class="cta-verm"><span class="lbl">New thought</span></span></div>
+      <div class="homebar"></div>
+    </div>
+    <div class="mock dark">
+      <div class="rows">
+        <div class="grouplabel">Earlier</div>
+        <div class="row"><span class="txt">recipes as version control — forks &amp; merges</span><span class="wdot"></span></div>
+        <div class="row"><span class="txt">cities feel more creative because collisions are free</span></div>
+      </div>
+      <div class="zone" style="padding-left:24px; padding-right:24px;"><span class="cta-verm"><span class="lbl">New thought</span></span></div>
+      <div class="homebar"></div>
+    </div>
+  </div>
+  <p class="tradeoff">this is the most color per square point of any option — a permanent vermilion slab across the screen's foot. It's the vocabulary of checkout buttons and onboarding flows; drft would be borrowing urgency it doesn't mean.</p>
+
+  <p class="note" style="margin-top:44px;"><strong>07c · Corner circle.</strong> A 54pt vermilion disc, bottom-right, with a thin white <span style="font-weight:400;">+</span> — the classic FAB, in this palette. Frees the bottom-center for pure list; one-thumb reachable; the plus says "new" without a word. The most conventional variant here, which is both its strength (zero learning) and its weakness (drft has avoided convention on purpose).</p>
+  <div class="pair">
+    <div class="mock light">
+      <div class="rows">
+        <div class="grouplabel">Earlier</div>
+        <div class="row"><span class="txt">recipes as version control — forks &amp; merges</span><span class="wdot"></span></div>
+        <div class="row"><span class="txt">cities feel more creative because collisions are free</span></div>
+      </div>
+      <div class="zone" style="justify-content:flex-end; padding-right:24px;"><span class="fab-verm">+</span></div>
+      <div class="homebar"></div>
+    </div>
+    <div class="mock dark">
+      <div class="rows">
+        <div class="grouplabel">Earlier</div>
+        <div class="row"><span class="txt">recipes as version control — forks &amp; merges</span><span class="wdot"></span></div>
+        <div class="row"><span class="txt">cities feel more creative because collisions are free</span></div>
+      </div>
+      <div class="zone" style="justify-content:flex-end; padding-right:24px;"><span class="fab-verm">+</span></div>
+      <div class="homebar"></div>
+    </div>
+  </div>
+  <p class="tradeoff">it floats over list content while scrolling (needs a scrim or content inset), can't carry the draft preview, and a plus glyph is the first icon in an app that has none. Corner placement also breaks the shelf's strict center axis — everything else on this screen is symmetric.</p>
+
+  <p class="note" style="margin-top:44px;"><strong>07d · The arch.</strong> A half-capsule fused to the bottom edge, like the top of the capture sheet peeking into the room. This is the only shape that <em>explains itself</em>: capture lives below the shelf and rises from the bottom — the arch is that sheet's crown, always slightly through the door. Tap it (or drag it up) and capture follows. The white nub echoes the home indicator just above the true screen edge.</p>
+  <div class="pair">
+    <div class="mock light">
+      <div class="rows">
+        <div class="grouplabel">Earlier</div>
+        <div class="row"><span class="txt">recipes as version control — forks &amp; merges</span><span class="wdot"></span></div>
+        <div class="row"><span class="txt">cities feel more creative because collisions are free</span></div>
+      </div>
+      <div class="zone" style="padding-bottom:0; align-items:flex-end;"><span class="arch-verm"><span class="nub"></span></span></div>
+    </div>
+    <div class="mock dark">
+      <div class="rows">
+        <div class="grouplabel">Earlier</div>
+        <div class="row"><span class="txt">recipes as version control — forks &amp; merges</span><span class="wdot"></span></div>
+        <div class="row"><span class="txt">cities feel more creative because collisions are free</span></div>
+      </div>
+      <div class="zone" style="padding-bottom:0; align-items:flex-end;"><span class="arch-verm"><span class="nub"></span></span></div>
+    </div>
+  </div>
+  <p class="tradeoff">wordless, so it leans on the gesture being discovered (first-run users may not read a bump as a door). It competes with the home indicator's territory, and the draft preview has nowhere to live — though a faint first-words line could float above it. The most original option; also the most designed.</p>
+</section>
+
+
+<!-- ============ 8 ============ -->
+<section>
+  <div class="vnum">08</div>
+  <h2>Head to head, full screen — 06 vs 07b</h2>
+  <p class="note">The two finalists on a complete shelf: wordmark, today's returned thought held apart, the three groups, the button in place above the home indicator. Same content in all four frames so only the button differs.</p>
+
+  <p class="note" style="margin-top:34px;"><strong>06 · Vermilion pill</strong></p>
+  <div class="pair">
+    <div class="mock full light">
+      <div class="island"></div>
+      <div class="fullwordmark">drft</div>
+      <div class="rows">
+        <div class="grouplabel">Returned today</div>
+        <div class="row"><span class="txt">invite the new neighbors over for dinner before it gets weird</span></div>
+        <div class="ggap"></div>
+        <div class="grouplabel">Today</div>
+        <div class="row"><span class="txt">maybe the reason meetings feel useless is that nobody is allowed to think mid-sentence</span><span class="wdot"></span></div>
+        <div class="row"><span class="txt">cities feel more creative because collisions are free</span></div>
+        <div class="ggap"></div>
+        <div class="grouplabel">This week</div>
+        <div class="row"><span class="txt">a month without instagram — what would I reach for instead</span></div>
+        <div class="row"><span class="txt">scan dad's slides before they fade any further</span><span class="wdot"></span></div>
+        <div class="ggap"></div>
+        <div class="grouplabel">Earlier</div>
+        <div class="row"><span class="txt">recipes as version control — forks &amp; merges</span></div>
+        <div class="row"><span class="txt">should we get a dog first or move to a smaller city first</span></div>
+      </div>
+      <div class="zone"><span class="cap-verm"><span class="lbl">New thought</span></span></div>
+      <div class="homebar"></div>
+    </div>
+    <div class="mock full dark">
+      <div class="island"></div>
+      <div class="fullwordmark">drft</div>
+      <div class="rows">
+        <div class="grouplabel">Returned today</div>
+        <div class="row"><span class="txt">invite the new neighbors over for dinner before it gets weird</span></div>
+        <div class="ggap"></div>
+        <div class="grouplabel">Today</div>
+        <div class="row"><span class="txt">maybe the reason meetings feel useless is that nobody is allowed to think mid-sentence</span><span class="wdot"></span></div>
+        <div class="row"><span class="txt">cities feel more creative because collisions are free</span></div>
+        <div class="ggap"></div>
+        <div class="grouplabel">This week</div>
+        <div class="row"><span class="txt">a month without instagram — what would I reach for instead</span></div>
+        <div class="row"><span class="txt">scan dad's slides before they fade any further</span><span class="wdot"></span></div>
+        <div class="ggap"></div>
+        <div class="grouplabel">Earlier</div>
+        <div class="row"><span class="txt">recipes as version control — forks &amp; merges</span></div>
+        <div class="row"><span class="txt">should we get a dog first or move to a smaller city first</span></div>
+      </div>
+      <div class="zone"><span class="cap-verm"><span class="lbl">New thought</span></span></div>
+      <div class="homebar"></div>
+    </div>
+  </div>
+
+  <p class="note" style="margin-top:44px;"><strong>07b · Full-width bar</strong></p>
+  <div class="pair">
+    <div class="mock full light">
+      <div class="island"></div>
+      <div class="fullwordmark">drft</div>
+      <div class="rows">
+        <div class="grouplabel">Returned today</div>
+        <div class="row"><span class="txt">invite the new neighbors over for dinner before it gets weird</span></div>
+        <div class="ggap"></div>
+        <div class="grouplabel">Today</div>
+        <div class="row"><span class="txt">maybe the reason meetings feel useless is that nobody is allowed to think mid-sentence</span><span class="wdot"></span></div>
+        <div class="row"><span class="txt">cities feel more creative because collisions are free</span></div>
+        <div class="ggap"></div>
+        <div class="grouplabel">This week</div>
+        <div class="row"><span class="txt">a month without instagram — what would I reach for instead</span></div>
+        <div class="row"><span class="txt">scan dad's slides before they fade any further</span><span class="wdot"></span></div>
+        <div class="ggap"></div>
+        <div class="grouplabel">Earlier</div>
+        <div class="row"><span class="txt">recipes as version control — forks &amp; merges</span></div>
+        <div class="row"><span class="txt">should we get a dog first or move to a smaller city first</span></div>
+      </div>
+      <div class="zone" style="padding-left:24px; padding-right:24px;"><span class="cta-verm"><span class="lbl">New thought</span></span></div>
+      <div class="homebar"></div>
+    </div>
+    <div class="mock full dark">
+      <div class="island"></div>
+      <div class="fullwordmark">drft</div>
+      <div class="rows">
+        <div class="grouplabel">Returned today</div>
+        <div class="row"><span class="txt">invite the new neighbors over for dinner before it gets weird</span></div>
+        <div class="ggap"></div>
+        <div class="grouplabel">Today</div>
+        <div class="row"><span class="txt">maybe the reason meetings feel useless is that nobody is allowed to think mid-sentence</span><span class="wdot"></span></div>
+        <div class="row"><span class="txt">cities feel more creative because collisions are free</span></div>
+        <div class="ggap"></div>
+        <div class="grouplabel">This week</div>
+        <div class="row"><span class="txt">a month without instagram — what would I reach for instead</span></div>
+        <div class="row"><span class="txt">scan dad's slides before they fade any further</span><span class="wdot"></span></div>
+        <div class="ggap"></div>
+        <div class="grouplabel">Earlier</div>
+        <div class="row"><span class="txt">recipes as version control — forks &amp; merges</span></div>
+        <div class="row"><span class="txt">should we get a dog first or move to a smaller city first</span></div>
+      </div>
+      <div class="zone" style="padding-left:24px; padding-right:24px;"><span class="cta-verm"><span class="lbl">New thought</span></span></div>
+      <div class="homebar"></div>
+    </div>
+  </div>
+
+  <p class="note" style="margin-top:26px;">What the full frame reveals: the pill leaves the page's air intact — the color floats in whitespace and the list stays the loudest thing. The bar closes the screen with a colored floor; it anchors harder and thumbs cannot miss it, but every glance at the shelf now ends on the button rather than on your own words. Worth judging on exactly that: which thing should the eye leave the screen remembering?</p>
+</section>
+
+<div class="callout">
+  <strong>Recommendation: 03, the ink pill,</strong> labeled <strong>NEW THOUGHT</strong>. It is the only variant that fully answers "make it look like a button" without new colors, new shadows, or respending the vermilion budget — and it inherits the draft-preview behavior cleanly. Runner-up: 01, if the pill proves too loud on-device — or 06, if it proves not loud enough. All three share geometry, so trying them in the simulator is a one-line change each. Pressed state in all variants: opacity to ~70%, no scale, no bounce — Stillness doesn't jump.
+</div>
+
+</body>
+</html>
