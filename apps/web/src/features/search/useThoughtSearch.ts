@@ -1,7 +1,7 @@
 import { useQuery } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
 import type { Id } from "@drft/backend/convex/_generated/dataModel";
-import { useEffect, useState, type KeyboardEvent } from "react";
+import { useEffect, useMemo, useState, type KeyboardEvent } from "react";
 
 export type Hit = {
   _id: Id<"thoughts">;
@@ -17,18 +17,33 @@ export function hitOptionId(listboxId: string, index: number) {
   return `${listboxId}-${index}`;
 }
 
+// A cheap local approximation of the index's word/prefix matching, for
+// narrowing already-fetched hits while the authoritative answer is on
+// the wire: every typed word must appear somewhere in the hit.
+function localMatch(text: string, query: string) {
+  const t = text.toLowerCase();
+  return query
+    .toLowerCase()
+    .split(/\s+/)
+    .every((word) => t.includes(word));
+}
+
 // The find contract, shared by both surfaces (the rail and the narrow
-// sheet): every keystroke re-subscribes the reactive query — the search
-// index answers fast enough that no debounce is needed — and the last
-// hits stay on screen for the beat until the new ones land, so the list
-// never blinks empty mid-word.
+// sheet): every keystroke re-subscribes the reactive query, and while
+// the new answer is in flight the previous one — tagged with the query
+// it answered — is narrowed locally, so the list tightens at typing
+// speed and the round trip only refines it. An interim list that
+// narrows to nothing renders as null (blank), never as "nothing found":
+// that verdict belongs to the server.
 export function useThoughtSearch(query: string) {
   const trimmed = query.trim();
   const result = useQuery(
     api.search.thoughts,
     trimmed ? { query: trimmed } : "skip",
   );
-  const [hits, setHits] = useState<Hit[] | null>(null);
+  const [held, setHeld] = useState<{ query: string; hits: Hit[] } | null>(
+    null,
+  );
   const [active, setActive] = useState(0);
 
   // The highlight restarts only when the *query* changes; a reactive
@@ -41,12 +56,19 @@ export function useThoughtSearch(query: string) {
 
   useEffect(() => {
     if (!trimmed) {
-      setHits(null);
+      setHeld(null);
     } else if (result !== undefined) {
-      setHits(result);
+      setHeld({ query: trimmed, hits: result });
       setActive((i) => Math.max(0, Math.min(i, result.length - 1)));
     }
   }, [trimmed, result]);
+
+  const hits = useMemo(() => {
+    if (!trimmed || !held) return null;
+    if (held.query === trimmed) return held.hits;
+    const interim = held.hits.filter((h) => localMatch(h.text, trimmed));
+    return interim.length > 0 ? interim : null;
+  }, [held, trimmed]);
 
   // Both surfaces steer the hits identically, so the input's list keys
   // live here too: arrows clamp inside the list (staying at 0 while it
