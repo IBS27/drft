@@ -184,7 +184,7 @@
 <header>
   <div class="kicker">Product &amp; Tech Overview</div>
   <h1>drft</h1>
-  <p class="tagline">A space for unfinished thoughts — capture ideas the instant they occur, then develop them later with a thinking partner.</p>
+  <p class="tagline">A space for unfinished thoughts — capture ideas the instant they occur, then let them find their way back to you.</p>
 </header>
 
 <!-- ============ 1. CONCEPT ============ -->
@@ -200,8 +200,8 @@
     </div>
     <div class="card">
       <div class="label">Develop · Web Workspace</div>
-      <h3>A thinking partner</h3>
-      <p>Asks useful questions, connects related thoughts, challenges assumptions, gathers context — helping each fragment mature into an opinion, project, experiment, or concept.</p>
+      <h3>Quiet connections</h3>
+      <p>Every fragment is embedded and auto-linked to the older ones it echoes. A room to re-read in, where thoughts lead to thoughts — no folders, no feed, nothing to answer.</p>
     </div>
   </div>
 
@@ -209,9 +209,9 @@
     <strong>The bet:</strong> existing tools fail at the middle. Notes apps are graveyards; task managers force premature structure. The interesting work happens <strong>between capture and conclusion</strong> — and nothing today is designed for that incubation phase.
   </div>
 
-  <p><strong>Success metric:</strong> "thoughts I captured actually came back to me and became clearer" — not "number of notes stored." The <strong>return loop</strong> is the hard design problem: the product must pull you back (resurfacing, questions waiting for you), not passively wait.</p>
+  <p><strong>Success metric:</strong> "thoughts I captured actually came back to me and became clearer" — not "number of notes stored." The <strong>return loop</strong> is the hard design problem: the product must pull you back (the daily resurfacing, the links that accumulate on their own), not passively wait.</p>
 
-  <p><strong>Experience:</strong> the moment-by-moment product — capture rules, the daily return, partner contract, thought lifecycle — is specified in <a href="experience.html">the experience doc</a>. Headline decisions: iOS is capture-only; the partner prepares questions in the background but waits; the return loop is one thought a day, delivered by email rather than push; thoughts have no stages — just <code>open</code> and <code>resting</code>.</p>
+  <p><strong>Experience:</strong> the moment-by-moment product — capture rules, the daily return, the thought lifecycle — is specified in <a href="experience.html">the experience doc</a>. Headline decisions: iOS is capture-only; the AI stays in the background, where its whole visible output is a link between two of your own fragments; the return loop is one thought a day, delivered by email rather than push; thoughts have no stages — just <code>open</code> and <code>resting</code>.</p>
 
   <p><strong>Design:</strong> both clients follow the <a href="design.html">Stillness design language</a> — one thought at a time, near-monochrome, the interface receding until the fragment is the only thing in the room. Light and dark mode specs, tokens included.</p>
 </section>
@@ -254,8 +254,8 @@
     </tr>
     <tr>
       <td>AI</td>
-      <td>GPT via Vercel AI SDK</td>
-      <td>Top-tier model for interactive thinking-partner sessions; cheap model for background work (embeddings, tagging, linking). AI SDK keeps models swappable, streaming for free.</td>
+      <td>OpenAI embeddings via Vercel AI SDK</td>
+      <td>The AI layer is enrichment only: embed each capture, vector-search the collection, link what resonates. Cheap, background, invisible. AI SDK keeps the provider swappable; model routing lives in one file (<code>convex/ai/models.ts</code>).</td>
     </tr>
     <tr>
       <td>Delivery</td>
@@ -276,7 +276,7 @@
 
   <h3>Architecture in one line</h3>
   <div class="flow">
-    iOS widget <span class="arrow">→</span> <b>Convex mutation</b> <span class="cm">(capture is dumb &amp; instant)</span> <span class="arrow">→</span> <b>async action</b> <span class="cm">(embed · link · generate questions)</span> <span class="arrow">→</span> web workspace + <b>daily email</b> close the loop
+    iOS widget <span class="arrow">→</span> <b>Convex mutation</b> <span class="cm">(capture is dumb &amp; instant)</span> <span class="arrow">→</span> <b>async action</b> <span class="cm">(embed · link)</span> <span class="arrow">→</span> web workspace + <b>daily email</b> close the loop
   </div>
 
 </section>
@@ -315,9 +315,9 @@
 ├── <span class="dir">packages/</span>
 │   └── <span class="hl">backend/</span>                    <span class="cm"># Convex — the entire backend</span>
 │       └── <span class="dir">convex/</span>
-│           ├── schema.ts           <span class="cm"># thoughts, connections, questions</span>
+│           ├── schema.ts           <span class="cm"># thoughts, connections, resurfacings</span>
 │           ├── thoughts.ts         <span class="cm"># capture mutation, queries</span>
-│           ├── enrichment.ts       <span class="cm"># actions: embed, link, generate questions</span>
+│           ├── enrichment.ts       <span class="cm"># actions: embed, link</span>
 │           ├── resurfacing.ts      <span class="cm"># cron + daily selection (channel-agnostic)</span>
 │           ├── delivery.ts         <span class="cm"># email adapter (Resend); APNs later</span>
 │           ├── ai/                 <span class="cm"># prompt templates, model routing</span>
@@ -333,7 +333,7 @@
     <li><strong><code>packages/backend</code>, not <code>apps/web/convex</code></strong> — both clients consume it; web imports generated API types directly (<code>@drft/backend</code>), iOS talks to the deployment.</li>
     <li><strong>Feature folders over type folders</strong> on both clients — <code>features/thoughts/</code> holds its own components and hooks rather than global piles.</li>
     <li><strong>iOS lives in the monorepo but outside the Bun workspace</strong> — no JS tooling touches it; co-located for shared context only.</li>
-    <li><strong><code>ai/</code> isolated inside convex</strong> — prompts and model routing in one place, so tuning the thinking-partner never touches business logic.</li>
+    <li><strong><code>ai/</code> isolated inside convex</strong> — model routing in one place, so tuning enrichment never touches business logic.</li>
     <li><strong>Start flat, split later</strong> — <code>thoughts.ts</code> can hold everything until enrichment logic justifies its own file.</li>
   </ul>
 </section>
@@ -343,9 +343,9 @@
   <h2><span class="num">04</span>Build Plan</h2>
   <p>Vertical slices, backend-out, web before iOS. Each phase is shippable to myself.</p>
   <ul>
-    <li><strong>1 · Foundation</strong> — Convex schema (<code>thoughts</code>, <code>connections</code>, <code>questions</code>) + capture mutation; Clerk↔Convex auth; web: Tailwind + TanStack Router + Stillness tokens, minimal capture input for dogfooding.</li>
+    <li><strong>1 · Foundation</strong> — Convex schema (<code>thoughts</code>, <code>connections</code>, <code>resurfacings</code>) + capture mutation; Clerk↔Convex auth; web: Tailwind + TanStack Router + Stillness tokens, minimal capture input for dogfooding.</li>
     <li><strong>2 · Web workspace</strong> — collection list (today / this week / earlier) and thought view, no AI yet. Validates schema + design in one pass.</li>
-    <li><strong>3 · AI layer</strong> — streaming thinking-partner sessions (Convex action, AI SDK); background enrichment on capture: embeddings → vector search, auto-linking, generated questions.</li>
+    <li><strong>3 · AI layer</strong> — background enrichment on capture (Convex action, AI SDK): embeddings → vector search → auto-linked connections, plus embedding-backed search. Enrichment is the whole AI layer; nothing it produces is written into a thought.</li>
     <li><strong>4 · iOS</strong> — SwiftUI capture, WidgetKit + App Intents, dictation, Convex Swift client + Clerk.</li>
     <li><strong>5 · Return loop</strong> — scheduled resurfacing (the selection algorithm, where the risk is) + a daily email adapter over it; daily-time preference moves into Convex. Last on purpose: tuning it needs weeks of real captured thoughts.</li>
   </ul>

@@ -17,7 +17,6 @@ final class ConvexService: ObservableObject {
         let _id: String
         let preview: String
         let createdAt: Double
-        let waiting: Bool
 
         var id: String { _id }
     }
@@ -35,16 +34,7 @@ final class ConvexService: ObservableObject {
         let restingNote: String?
         let restedAt: Double?
         let lastReturnedAt: Double?
-        let questions: [Question]
         let connections: [Connection]
-    }
-
-    struct Question: Decodable, Identifiable, Equatable {
-        let _id: String
-        let text: String
-        let seen: Bool
-
-        var id: String { _id }
     }
 
     struct Connection: Decodable, Equatable {
@@ -57,21 +47,6 @@ final class ConvexService: ObservableObject {
         let otherId: String
         let otherText: String
         let otherStatus: ThoughtStatus
-    }
-
-    struct ConversationPage: Decodable {
-        let page: [Message]
-    }
-
-    struct Message: Decodable {
-        enum Role: String, Decodable {
-            case you
-            case partner
-        }
-
-        let _id: String
-        let role: Role
-        let text: String
     }
 
     private struct DailyThoughtSettings: Decodable {
@@ -131,28 +106,6 @@ final class ConvexService: ObservableObject {
             to: "thoughts:view",
             with: ["thoughtId": id],
             yielding: Thought?.self
-        )
-    }
-
-    func conversationProbe(thoughtID: String) -> AnyPublisher<ConversationPage, ClientError> {
-        let paginationOptions: [String: ConvexEncodable?] = [
-            "numItems": 1,
-            "cursor": nil,
-        ]
-        return client.subscribe(
-            to: "thoughts:conversation",
-            with: [
-                "thoughtId": thoughtID,
-                "paginationOpts": paginationOptions,
-            ],
-            yielding: ConversationPage.self
-        )
-    }
-
-    func markQuestionsSeen(thoughtID: String) async throws {
-        try await client.mutation(
-            "thoughts:markQuestionsSeen",
-            with: ["thoughtId": thoughtID]
         )
     }
 

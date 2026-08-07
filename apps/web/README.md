@@ -1,9 +1,9 @@
 # drft web
 
-The thinking-partner workspace: the collection, the thought view with
-the partner session, search, and settings. Vite + React + TypeScript +
-TanStack Router + Convex + Clerk; styled with Tailwind against the
-Stillness tokens in `docs/design.html`.
+The workspace: the collection, the thought view (the thought, its
+connections, rest/wake), search, and settings. Vite + React +
+TypeScript + TanStack Router + Convex + Clerk; styled with Tailwind
+against the Stillness tokens in `docs/design.html`.
 
 ## Commands
 
@@ -22,9 +22,10 @@ bun run build
 ## Notes
 
 - Routes are file-based in `src/routes/` (codegen in `src/routeTree.gen.ts`).
-- Streaming partner replies arrive through the reactive
-  `api.thoughts.view` query — the backend patches the message row as
-  tokens land; there is no client-side streaming transport.
+- A thought's connections arrive through the reactive
+  `api.thoughts.view` query — background enrichment writes them after
+  capture, so they simply appear; dismissing one is an optimistic
+  mutation with undo.
 - Keyboard: `⌘K` or `/` opens search; on a thought, `j`/`k` move through
   the collection and `Esc` returns to it.
 - `middleware.ts` is a Vercel edge middleware (production only) that

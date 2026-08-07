@@ -11,8 +11,7 @@ export default defineSchema({
     status: v.union(v.literal("open"), v.literal("resting")),
     restingNote: v.optional(v.string()),
     restedAt: v.optional(v.number()),
-    // Denormalized so the collection can render its waiting dot without
-    // joining every thought to its question history.
+    // Legacy partner field; remove (with migrations.ts) once clearPartnerData has run in prod.
     unseenQuestionCount: v.optional(v.number()),
     embedding: v.optional(v.array(v.float64())),
   })
@@ -22,10 +21,6 @@ export default defineSchema({
     // order from newest-captured — it needs its own index to be able to
     // stop reading early.
     .index("by_user_status_restedAt", ["userId", "status", "restedAt"])
-    .index("by_user_and_unseenQuestionCount", [
-      "userId",
-      "unseenQuestionCount",
-    ])
     .vectorIndex("by_embedding", {
       vectorField: "embedding",
       dimensions: 1536,
@@ -39,16 +34,6 @@ export default defineSchema({
       filterFields: ["userId"],
     }),
 
-  // Partner-drafted questions; an unseen one lights the vermilion dot and
-  // can shape the question carried by a resurfacing.
-  questions: defineTable({
-    thoughtId: v.id("thoughts"),
-    text: v.string(),
-    seenAt: v.optional(v.number()),
-  })
-    .index("by_thought", ["thoughtId"])
-    .index("by_thought_and_seenAt", ["thoughtId", "seenAt"]),
-
   // Auto-linked by resonance, user-dismissable, never user-curated.
   connections: defineTable({
     fromId: v.id("thoughts"),
@@ -60,24 +45,6 @@ export default defineSchema({
     .index("by_to", ["toId"])
     .index("by_from_and_dismissedAt", ["fromId", "dismissedAt"])
     .index("by_to_and_dismissedAt", ["toId", "dismissedAt"]),
-
-  // Append-only conversation per thought; no session end-state, so no
-  // sessions table — the thought is the session. Your messages carry your
-  // userId and an embedding so they resonate with future captures like
-  // fragments do; the partner's side is never embedded.
-  messages: defineTable({
-    thoughtId: v.id("thoughts"),
-    userId: v.optional(v.string()),
-    role: v.union(v.literal("you"), v.literal("partner")),
-    text: v.string(),
-    embedding: v.optional(v.array(v.float64())),
-  })
-    .index("by_thought", ["thoughtId"])
-    .vectorIndex("by_embedding", {
-      vectorField: "embedding",
-      dimensions: 1536,
-      filterFields: ["userId"],
-    }),
 
   // The selection log: one per user per day, never repeat too soon, never
   // resting thoughts; date is the user's local YYYY-MM-DD. Selection is

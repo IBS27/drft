@@ -2,17 +2,17 @@
 
 The iOS app is capture first: widget, dictation, keep, gone. Behind capture sits
 **the shelf** — a quiet, read-only view of the collection (pull capture down to
-reveal it, re-read a thought, set it to rest). No replies, no conversation, no
-search, no wake on the phone: the phone captures and glances; development happens
-on the web. Phase 4 shipped capture-only; phase 6 adds the shelf.
+reveal it, re-read a thought, set it to rest). The phone captures and glances;
+deeper collection work happens on the web. Phase 4 shipped capture-only; phase 6
+adds the shelf.
 
 ## Hard rules (product contract, non-negotiable)
 
 1. **Capture never fails visibly.** If the network is down, the fragment queues
    on-device and the confirmation still plays. The user must never see an error,
    spinner, or retry button on the capture path.
-2. **Capture never asks a question.** No titles, tags, folders, confirmation dialogs,
-   or choices of any kind. Text in, keep, done.
+2. **Capture never asks for anything else.** No titles, tags, folders, confirmation
+   dialogs, or choices of any kind. Text in, keep, done.
 3. **Verbatim in.** The app never rewrites, trims (beyond whitespace), titles, or
    "cleans up" the user's words.
 4. **Under 10 seconds** from app launch to captured-and-gone. Keyboard is already up
@@ -50,15 +50,12 @@ on the web. Phase 4 shipped capture-only; phase 6 adds the shelf.
 
 - `thoughts:capture` mutation with `{ text: string }` → returns the new thought id.
 - `thoughts:collection` query with `{ date: "YYYY-MM-DD" }` (client-local date) →
-  `{ thoughts: [{ _id, preview, createdAt, waiting }], resurfacedId | null }` —
-  open thoughts newest-first; `waiting` marks an unseen partner question;
-  `resurfacedId` is today's returned thought (force-included in the list).
+  `{ thoughts: [{ _id, preview, createdAt }], resurfacedId | null }` — open
+  thoughts newest-first; `resurfacedId` is today's returned thought
+  (force-included in the list).
 - `thoughts:view` query with `{ thoughtId }` → `null` or the full thought:
-  `{ _id, text, createdAt, status, questions: [{ _id, text, seen }], ... }`
+  `{ _id, text, createdAt, status, ... }`
   (connections are returned but unused on iOS).
-- `thoughts:conversation` query with `{ thoughtId, paginationOpts }` → paginated
-  messages; iOS requests one item only, to know whether a conversation exists.
-- `thoughts:markQuestionsSeen` mutation with `{ thoughtId }` → clears the dot.
 - `thoughts:rest` mutation with `{ thoughtId, note? }` → sets the thought down.
 - `settings:get` query with no args → returns the daily email settings or `null`.
 - `settings:save` mutation with `{ sendTime, timezone, email? }` → writes the daily
@@ -68,8 +65,8 @@ No codegen: results are decoded into hand-written Swift `Decodable` mirrors of t
 Convex validators. Reads use live subscriptions so the shelf updates in real time.
 
 Auth is a Clerk JWT (template name `convex`); the clerk-convex-swift bridge handles
-attaching it. Everything else (enrichment, questions, linking) is server-side and
-invisible to this app.
+attaching it. Everything else (enrichment and linking) is server-side and invisible
+to this app.
 
 ## Project structure
 
@@ -172,7 +169,7 @@ Behavior:
   (see Shelf), capture rises from the bottom like a sheet, field already focused,
   keyboard rising with it.
 - **A draft survives the trip.** Swiping down with text in the field never discards
-  or auto-keeps it; the words are waiting when capture rises again.
+  or auto-keeps it; the words remain when capture rises again.
 - **Every entry lands on capture.** Cold launch, widget, `drft://capture`, the App
   Intent — always the empty (or draft-holding) focused field. The shelf is
   session-transient, never the resume state.
@@ -189,8 +186,8 @@ becomes active so midnight rolls over):
    `RETURNED TODAY`. Same row treatment otherwise.
 2. **Groups** `TODAY` / `THIS WEEK` / `EARLIER` (tracked caps, faint, computed
    client-side from `createdAt`; empty groups are omitted). Rows: first-line
-   verbatim `preview`, 17–18pt light, ink, hairline-separated; a small vermilion
-   dot trails rows where `waiting` is true. Tapping a row opens the Thought view.
+   verbatim `preview`, 17–18pt light, ink, hairline-separated. Tapping a row opens
+   the Thought view.
 3. **The new-thought bar**, fixed above the safe area: a full-width vermilion
    (`now`-filled) rounded rect — 14pt continuous corners, 24pt side margins,
    54pt tall — with `NEW THOUGHT` centered in near-white (`onNow`) tracked caps.
@@ -210,19 +207,13 @@ Top to bottom:
 1. The verbatim text, 24–26pt light, ink — a step below capture's 30pt; here you
    read, not write. Selectable, never editable.
 2. The capture timestamp line, same ambient treatment as capture's.
-3. The partner's prepared questions as marginalia — muted, smaller, generously
-   spaced. On appear, call `thoughts:markQuestionsSeen` so the dot clears here
-   and on the web.
-4. If a conversation exists (probe `thoughts:conversation` with one item), one
-   faint line at the bottom: `continue on the web`. Never the messages themselves.
-5. `REST`, tracked caps, muted, at the bottom. Tapping it reveals a single
+3. `REST`, tracked caps, muted, at the bottom. Tapping it reveals a single
    borderless one-line field for the optional closing line (mirror the web's
    resting-note copy from `apps/web/src/routes/thought.$thoughtId.tsx`) with a
    quiet confirm; resting with or without a note fades the thought and returns
    to the shelf. Resting from the phone is one-way — wake stays on the web.
 
-No reply box, no conversation history, no connections, no search, no resting
-list. Those are web surfaces.
+No connections, search, or resting list. Those are web surfaces.
 
 ### Sign-in (shown only when signed out)
 
@@ -293,8 +284,8 @@ text entry.
 
 ## Out of scope
 
-Replies / partner conversation, wake, search, the resting list, connections,
-share extension, iPad, Live Activities, onboarding beyond sign-in.
+Wake, search, the resting list, connections, share extension, iPad, Live
+Activities, onboarding beyond sign-in.
 
 Push notifications / APNs are not merely deferred — the daily return ships as
 email instead (see `docs/experience.html` §03). The phone captures; it is not a

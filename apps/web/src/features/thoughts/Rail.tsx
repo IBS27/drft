@@ -18,7 +18,6 @@ type RailThought = {
   _id: Id<"thoughts">;
   preview: string;
   createdAt: number;
-  waiting: boolean;
 };
 
 // The design mockup's edge rail: the collection stays in the periphery —
@@ -409,7 +408,7 @@ const RailRow = memo(function RailRow({
       />
       <span
         className={`truncate text-[15px] font-normal transition-colors group-hover:text-ink ${
-          active ? "text-ink" : t.waiting ? "text-pt" : "text-pl"
+          active ? "text-ink" : "text-pl"
         }`}
       >
         {t.preview}

@@ -1,20 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import {
-  useConvexAuth,
-  useMutation,
-  usePaginatedQuery,
-  useQuery,
-} from "convex/react";
+import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
-import { Fragment, useEffect, useMemo, useRef, useState } from "react";
-import type { Dispatch, SetStateAction } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ageLabel, dateLine, firstLine, groupOf } from "../features/thoughts/format";
 import { Rail } from "../features/thoughts/Rail";
-import {
-  CONVERSATION_PAGE_SIZE,
-  conversationPageArgs,
-  useThoughtPrewarm,
-} from "../features/thoughts/useThoughtPrewarm";
+import { useThoughtPrewarm } from "../features/thoughts/useThoughtPrewarm";
 import { BackLink } from "../features/ui/BackLink";
 import { Skeleton } from "../features/ui/Skeleton";
 import type { FunctionReturnType } from "convex/server";
@@ -27,8 +17,6 @@ export const Route = createFileRoute("/thought/$thoughtId")({
 
 type ThoughtData = NonNullable<FunctionReturnType<typeof api.thoughts.view>>;
 type Connection = ThoughtData["connections"][number];
-type Message =
-  FunctionReturnType<typeof api.thoughts.conversation>["page"][number];
 
 function NotHere() {
   return (
@@ -67,8 +55,9 @@ function BackHeader({
 }
 
 // Your words sit large at the top, exactly as captured. Below, quietly,
-// what accumulated while you were away. On wide screens the collection
-// stays in the periphery as an edge rail.
+// where the thought has been — set down, returned to, what it turned out
+// to be near. On wide screens the collection stays in the periphery as an
+// edge rail.
 function ThoughtView() {
   const { thoughtId } = Route.useParams();
   const id = thoughtId as Id<"thoughts">;
@@ -79,22 +68,6 @@ function ThoughtView() {
     api.thoughts.view,
     isAuthenticated ? { thoughtId: id } : "skip",
   );
-  const conversation = usePaginatedQuery(
-    api.thoughts.conversation,
-    isAuthenticated ? { thoughtId: id } : "skip",
-    { initialNumItems: CONVERSATION_PAGE_SIZE },
-  );
-  // The paginated hook's first page carries a per-hook id, so hovering can't
-  // warm it — it always costs a round trip after arrival. The same page read
-  // plainly *can* be warmed (useThoughtPrewarm), so it holds the margin for
-  // the moment before the hook delivers, then steps aside: identical rows,
-  // identical keys, no swap to see. Its subscription is dropped after.
-  const paged = conversation.status !== "LoadingFirstPage";
-  const preview = useQuery(
-    api.thoughts.conversation,
-    isAuthenticated && !paged ? conversationPageArgs(id) : "skip",
-  );
-  const markSeen = useMutation(api.thoughts.markQuestionsSeen);
   const prewarm = useThoughtPrewarm();
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
@@ -102,57 +75,9 @@ function ThoughtView() {
     return () => window.clearInterval(timer);
   }, []);
 
-  // What was waiting when you walked in keeps its dot for this visit —
-  // the margin's way of saying which questions are new. Keyed by thought:
-  // the router reuses this component when only the param changes.
-  const arrivedUnseen = useRef<{ id: Id<"thoughts">; ids: Set<string> } | null>(
-    null,
-  );
-  if (view && arrivedUnseen.current?.id !== id) {
-    arrivedUnseen.current = {
-      id,
-      ids: new Set(view.questions.filter((q) => !q.seen).map((q) => q._id)),
-    };
-  }
-
-  // Arriving is what sees the questions; the dot in the collection goes out.
-  const hasUnseen = view?.questions.some((q) => !q.seen) ?? false;
-  useEffect(() => {
-    if (isAuthenticated && hasUnseen)
-      void markSeen({ thoughtId: id }).catch(() => {});
-  }, [isAuthenticated, hasUnseen, markSeen, id]);
-
-  // While the partner's reply streams in, keep its words on screen — but
-  // only if the reader is already at the bottom; scrolling up to reread
-  // is never fought.
-  const messages = useMemo(() => {
-    const newestFirst: Message[] = paged
-      ? conversation.results
-      : (preview?.page ?? []);
-    return newestFirst.toReversed();
-  }, [paged, conversation.results, preview]);
-  const tail = messages[messages.length - 1];
-  const streamText = tail?.role === "partner" ? tail.text : null;
-  // Only words arriving *during this visit* pull the page down — walking
-  // into a thought whose last word is the partner's must not jump. The
-  // ref remembers the last tail per thought; the first sight of a thought
-  // (or of a finished reply) records without scrolling.
-  const lastStream = useRef<{ id: Id<"thoughts">; text: string } | null>(null);
-  useEffect(() => {
-    if (streamText === null || streamText === undefined) return;
-    const prev = lastStream.current;
-    lastStream.current = { id, text: streamText };
-    if (!prev || prev.id !== id || prev.text === streamText) return;
-    const nearBottom =
-      window.innerHeight + window.scrollY >=
-      document.documentElement.scrollHeight - 240;
-    if (nearBottom)
-      window.scrollTo({ top: document.documentElement.scrollHeight });
-  }, [streamText, id]);
-
   // A dismissed link lingers for a moment as an undo — the one-click
-  // path back, same as everything else here. The click takes it out of the
-  // margin itself; the server only confirms. Where it sat is remembered so
+  // path back, same as everything else here. The click takes it off the
+  // page itself; the server only confirms. Where it sat is remembered so
   // undo can put it back in the same place, just as immediately.
   const [aside, setAside] = useState<
     { id: Id<"connections">; failed: boolean } | null
@@ -210,24 +135,13 @@ function ThoughtView() {
     setAside(null);
     void undismissConn({ connectionId }).catch(() => {});
   };
-  // The composer's words live above the composer. Setting the thought down
-  // flips the status optimistically, which takes the composer off screen —
-  // and if the rest then fails, the half-typed line has to be there when it
-  // comes back. Only moving to another thought clears it.
-  const [draft, setDraft] = useState("");
 
   useEffect(() => {
     // Moving to another thought (the component is reused) drops the undo.
     setAside(null);
     setAsideRow.current = null;
-    setDraft("");
     window.clearTimeout(asideTimer.current);
   }, [id]);
-
-  const hasMargin =
-    view !== undefined &&
-    view !== null &&
-    (view.questions.length > 0 || messages.length > 0);
 
   return (
     <main className="flex min-h-dvh flex-col">
@@ -256,126 +170,92 @@ function ThoughtView() {
               {view.text}
             </h1>
 
-          {view.status === "resting" && (
-            <div className="mt-7 flex flex-col items-center gap-2.5">
-              <span className="text-[10.5px] tracking-[0.34em] text-pl uppercase">
-                set down{view.restedAt ? ` · ${ageLabel(view.restedAt, now)}` : ""}
-              </span>
-              {view.restingNote && (
-                <p className="max-w-[44ch] text-center text-[15px] leading-[1.7] font-normal text-mut">
-                  {view.restingNote}
-                </p>
-              )}
-            </div>
-          )}
-
-          {view.lastReturnedAt && (
-            <span className="mt-6 text-[10px] tracking-[0.3em] text-faint uppercase">
-              returned ·{" "}
-              {groupOf(view.lastReturnedAt, now) === "today"
-                ? "today"
-                : ageLabel(view.lastReturnedAt, now)}
-            </span>
-          )}
-
-          {hasMargin && <div className="mt-10 mb-1 h-7 w-px bg-line" />}
-
-          <div className="w-full max-w-[52ch] text-center">
-            {view.questions.map((q) => (
-              <Fragment key={q._id}>
-                <Who dot={arrivedUnseen.current?.ids.has(q._id)}>partner</Who>
-                <Msg muted>{q.text}</Msg>
-              </Fragment>
-            ))}
-            {(conversation.status === "CanLoadMore" ||
-              conversation.status === "LoadingMore") && (
-              <button
-                type="button"
-                disabled={conversation.status === "LoadingMore"}
-                onClick={() => conversation.loadMore(CONVERSATION_PAGE_SIZE)}
-                className="mt-8 text-[10px] tracking-[0.3em] text-pl uppercase transition-colors hover:text-ink disabled:opacity-50"
-              >
-                {conversation.status === "LoadingMore" ? "loading" : "earlier"}
-              </button>
-            )}
-            {messages.map((m) => (
-              <Fragment key={m._id}>
-                <Who>{m.role}</Who>
-                {/* A partner row streams in from empty; until the first words
-                    land, a single quiet mark holds the space. */}
-                {m.role === "partner" && m.text === "" ? (
-                  <p className="animate-pulse text-[16px] leading-[1.7] text-pl">·</p>
-                ) : (
-                  <Msg muted={m.role === "partner"}>{m.text}</Msg>
+            {view.status === "resting" && (
+              <div className="mt-7 flex flex-col items-center gap-2.5">
+                <span className="text-[10.5px] tracking-[0.34em] text-pl uppercase">
+                  set down{view.restedAt ? ` · ${ageLabel(view.restedAt, now)}` : ""}
+                </span>
+                {view.restingNote && (
+                  <p className="max-w-[44ch] text-center text-[15px] leading-[1.7] font-normal text-mut">
+                    {view.restingNote}
+                  </p>
                 )}
-              </Fragment>
-            ))}
-          </div>
+              </div>
+            )}
 
-          {view.connections.length > 0 && (
-            <div className="mt-11 flex max-w-[52ch] flex-wrap items-center justify-center gap-x-2.5 gap-y-2">
-              {view.connections.map((c, i) => (
-                <span key={c._id} className="group flex items-center gap-2">
-                  {i > 0 && <span className="text-[11.5px] text-pl">·</span>}
-                  <Link
-                    to="/thought/$thoughtId"
-                    params={{ thoughtId: c.otherId }}
-                    onPointerEnter={() => {
-                      prewarm(id);
-                      prewarm(c.otherId);
-                    }}
-                    onPointerDown={() => {
-                      prewarm(id);
-                      prewarm(c.otherId);
-                    }}
-                    onFocus={() => {
-                      prewarm(id);
-                      prewarm(c.otherId);
-                    }}
-                    className="inline-block max-w-[26ch] truncate text-[11.5px] tracking-[0.22em] text-pl uppercase transition-colors hover:text-ink"
-                  >
-                    {c.otherStatus === "resting" && (
-                      <span className="text-faint">set down · </span>
-                    )}
-                    {firstLine(c.otherText)}
-                  </Link>
+            {view.lastReturnedAt && (
+              <span className="mt-6 text-[10px] tracking-[0.3em] text-faint uppercase">
+                returned ·{" "}
+                {groupOf(view.lastReturnedAt, now) === "today"
+                  ? "today"
+                  : ageLabel(view.lastReturnedAt, now)}
+              </span>
+            )}
+
+            {/* The mockup's short vertical rule: what the thought turned out
+                to be near hangs below it, an equal measure of air either
+                side. Nothing near it, nothing to hang. */}
+            {view.connections.length > 0 && (
+              <>
+                <div className="mt-9 h-7 w-px bg-line" />
+                <div className="mt-9 flex max-w-[52ch] flex-wrap items-center justify-center gap-x-2.5 gap-y-2">
+                  {view.connections.map((c, i) => (
+                    <span key={c._id} className="group flex items-center gap-2">
+                      {i > 0 && <span className="text-[11.5px] text-pl">·</span>}
+                      <Link
+                        to="/thought/$thoughtId"
+                        params={{ thoughtId: c.otherId }}
+                        onPointerEnter={() => {
+                          prewarm(id);
+                          prewarm(c.otherId);
+                        }}
+                        onPointerDown={() => {
+                          prewarm(id);
+                          prewarm(c.otherId);
+                        }}
+                        onFocus={() => {
+                          prewarm(id);
+                          prewarm(c.otherId);
+                        }}
+                        className="inline-block max-w-[26ch] truncate text-[11.5px] tracking-[0.22em] text-pl uppercase transition-colors hover:text-ink"
+                      >
+                        {c.otherStatus === "resting" && (
+                          <span className="text-faint">set down · </span>
+                        )}
+                        {firstLine(c.otherText)}
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => dismiss(c, i)}
+                        className="text-[13px] leading-none text-pl opacity-0 transition-opacity group-hover:opacity-100 hover:text-dot"
+                        aria-label="dismiss connection"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              </>
+            )}
+
+            {aside && (
+              <div className="mt-5 flex items-center gap-5 text-[10px] tracking-[0.3em] uppercase">
+                <span className="text-pl">
+                  {aside.failed ? "couldn't set the link aside" : "link set aside"}
+                </span>
+                {!aside.failed && (
                   <button
                     type="button"
-                    onClick={() => dismiss(c, i)}
-                    className="text-[13px] leading-none text-pl opacity-0 transition-opacity group-hover:opacity-100 hover:text-dot"
-                    aria-label="dismiss connection"
+                    onClick={undo}
+                    className="text-pt transition-colors hover:text-ink"
                   >
-                    ×
+                    undo
                   </button>
-                </span>
-              ))}
-            </div>
-          )}
+                )}
+              </div>
+            )}
 
-          {aside && (
-            <div className="mt-5 flex items-center gap-5 text-[10px] tracking-[0.3em] uppercase">
-              <span className="text-pl">
-                {aside.failed ? "couldn't set the link aside" : "link set aside"}
-              </span>
-              {!aside.failed && (
-                <button
-                  type="button"
-                  onClick={undo}
-                  className="text-pt transition-colors hover:text-ink"
-                >
-                  undo
-                </button>
-              )}
-            </div>
-          )}
-
-          {/* Siblings, not branches: the status flips optimistically, and a
-              ternary here would remount the footer under it — taking the
-              half-typed note and the error line with it. */}
-          {view.status === "open" && (
-            <Composer thoughtId={view._id} text={draft} setText={setDraft} />
-          )}
-          <StatusFooter thoughtId={view._id} status={view.status} />
+            <StatusFooter thoughtId={view._id} status={view.status} />
           </section>
         )}
       </div>
@@ -384,8 +264,12 @@ function ThoughtView() {
 }
 
 // The thought in its own proportions before its words arrive: the same
-// column, the same line boxes, the same hairline into the margin — so
-// nothing moves when it lands. Stillness has no spinners.
+// column, the same line boxes, the same closing rule — so nothing moves
+// when it lands. Stillness has no spinners.
+//
+// Only what every thought has is drawn. Where it landed, when it was
+// returned to, what it sits near are all conditional, and a skeleton that
+// guesses them wrong moves the page more than one that leaves them out.
 function ThoughtSkeleton() {
   return (
     <section
@@ -393,157 +277,20 @@ function ThoughtSkeleton() {
       aria-label="loading thought"
       className="mx-auto flex w-full max-w-[64ch] flex-col items-center px-6 pt-16 pb-10"
     >
-      {/* three line boxes of the thought's own type: 28px at 1.6 */}
+      {/* two line boxes of the thought's own type — 28px at 1.6 — the
+          length a captured thought usually runs to at 36ch */}
       <div className="flex w-full max-w-[36ch] flex-col items-center gap-[28px]">
         <Skeleton className="h-4 w-full" />
-        <Skeleton className="h-4 w-[88%]" />
-        <Skeleton className="h-4 w-[52%]" />
+        <Skeleton className="h-4 w-[62%]" />
       </div>
 
-      <div className="mt-10 mb-1 h-7 w-px bg-line" />
-
-      <div className="flex w-full max-w-[52ch] flex-col items-center">
-        {[0, 1].map((row) => (
-          <Fragment key={row}>
-            <div className="mt-8 mb-2.5 flex h-4 items-center">
-              <Skeleton className="h-[7px] w-14" />
-            </div>
-            {/* body lines: 16px at 1.7 */}
-            <div className="flex w-full flex-col items-center gap-[15px]">
-              <Skeleton className={`h-3 ${row === 0 ? "w-[93%]" : "w-[81%]"}`} />
-              <Skeleton className={`h-3 ${row === 0 ? "w-[58%]" : "w-[36%]"}`} />
-            </div>
-          </Fragment>
-        ))}
+      {/* the footer's rule and the one word waiting on it */}
+      <div className="mt-14 flex w-full max-w-[48ch] justify-center border-t border-line pt-6">
+        <span className="flex h-4 items-center">
+          <Skeleton className="h-[9px] w-20" />
+        </span>
       </div>
-
-      {/* the composer's hairline and the line it waits on — the dot stays
-          grey here: vermilion is only ever now, and nothing is yet. */}
-      <div className="mt-14 w-full max-w-[48ch] border-t border-line pt-5">
-        <div className="flex items-start gap-3">
-          <Skeleton className="mt-[9px] size-2 flex-none" />
-          <Skeleton className="mt-[9px] h-[9px] w-[13ch]" />
-        </div>
-      </div>
-
-      <Skeleton className="mt-16 h-[9px] w-20" />
     </section>
-  );
-}
-
-function Who({ children, dot }: { children: string; dot?: boolean }) {
-  return (
-    <div className="mt-8 mb-2.5 flex items-center justify-center gap-2 text-[10.5px] tracking-[0.34em] text-pl uppercase">
-      {dot && <span className="size-1.5 rounded-full bg-dot" />}
-      {children}
-    </div>
-  );
-}
-
-function Msg({ muted, children }: { muted?: boolean; children: string }) {
-  return (
-    <p
-      className={`text-[16px] leading-[1.7] font-normal whitespace-pre-wrap ${
-        muted ? "text-mut" : "text-ink"
-      }`}
-    >
-      {children}
-    </p>
-  );
-}
-
-// A single input: think out loud. Enter sends it, like capture; the
-// partner's reply streams back through the same reactive view query. What
-// is typed but unsent is held by the view above, so an optimistic rest
-// that turns out to have failed doesn't cost the line.
-function Composer({
-  thoughtId,
-  text,
-  setText,
-}: {
-  thoughtId: Id<"thoughts">;
-  text: string;
-  setText: Dispatch<SetStateAction<string>>;
-}) {
-  // Your own words never wait on a server: they go into the conversation the
-  // instant you press enter. Every loaded newest-page of this thought's
-  // conversation gets the line — the paginated hook's page and the plain
-  // first page the view reads while that hook is still on its way — so it
-  // lands wherever the margin is currently reading from. Convex drops this
-  // when the mutation resolves, by which point the real row (same position,
-  // same text) is already there.
-  const say = useMutation(api.thoughts.say).withOptimisticUpdate(
-    (localStore, args) => {
-      const trimmed = args.text.trim();
-      if (!trimmed) return;
-      const said = {
-        _id: crypto.randomUUID() as Id<"messages">,
-        role: "you" as const,
-        text: trimmed,
-      };
-      for (const { args: pageArgs, value } of localStore.getAllQueries(
-        api.thoughts.conversation,
-      )) {
-        if (value === undefined) continue;
-        if (pageArgs.thoughtId !== args.thoughtId) continue;
-        if (pageArgs.paginationOpts.cursor !== null) continue;
-        localStore.setQuery(api.thoughts.conversation, pageArgs, {
-          ...value,
-          page: [said, ...value.page],
-        });
-      }
-    },
-  );
-  const areaRef = useRef<HTMLTextAreaElement>(null);
-
-  // Height tracks content here (not in onChange) so it also follows
-  // programmatic changes: clearing on send, restoring on failure.
-  useEffect(() => {
-    const el = areaRef.current;
-    if (!el) return;
-    el.style.height = "auto";
-    el.style.height = `${el.scrollHeight}px`;
-  }, [text]);
-
-  const send = () => {
-    const trimmed = text.trim();
-    if (!trimmed) return;
-    setText("");
-    void say({ thoughtId, text: trimmed }).catch(() => {
-      // The words are the product — never lose them to a failed send.
-      setText((current) => (current ? `${trimmed}\n${current}` : trimmed));
-    });
-  };
-
-  return (
-    <div className="mt-14 w-full max-w-[48ch] border-t border-line pt-5">
-      <div className="flex items-start gap-3">
-        <span className="mt-[9px] size-2 flex-none rounded-full bg-dot" />
-        <div className="relative flex-1">
-          {/* Overlay instead of a native placeholder: the browser sizes a
-              placeholder's line box from its own small font, so it won't
-              center on the textarea's first line the way the dot does. */}
-          {!text && (
-            <span className="pointer-events-none absolute top-0 left-[3px] flex h-[26px] items-center text-[11.5px] tracking-[0.28em] text-pl uppercase">
-              think out loud
-            </span>
-          )}
-          <textarea
-            ref={areaRef}
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                send();
-              }
-            }}
-            rows={1}
-            className="w-full resize-none overflow-hidden bg-transparent text-[16px] leading-[1.6] font-normal outline-none"
-          />
-        </div>
-      </div>
-    </div>
   );
 }
 
@@ -617,7 +364,7 @@ function StatusFooter({
   };
 
   return (
-    <footer className="mt-16 flex flex-col items-center gap-4">
+    <footer className="mt-14 flex w-full max-w-[48ch] flex-col items-center gap-4 border-t border-line pt-6">
       {leaving ? null : status === "resting" ? (
         <button
           type="button"

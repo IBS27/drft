@@ -31,12 +31,6 @@ enum StillnessType {
         size: 25,
         relativeTo: .title2
     ).weight(.light)
-    static let marginalia = Font.custom(
-        "Helvetica Neue",
-        size: 16,
-        relativeTo: .body
-    ).weight(.light)
-
     static let wordmarkTracking: CGFloat = 7.5
     static let thoughtLineSpacing: CGFloat = 15
     static let timestampTracking: CGFloat = 3.9

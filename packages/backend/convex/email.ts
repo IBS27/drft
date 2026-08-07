@@ -1,11 +1,8 @@
 "use node";
 
 import { v } from "convex/values";
-import { generateText } from "ai";
 import { internalAction } from "./_generated/server";
 import { internal } from "./_generated/api";
-import { QUESTION_MODEL, openaiProvider } from "./ai/models";
-import { resurfaceEmailPrompt } from "./ai/prompts";
 
 // The delivery half of the return loop — an adapter over the selection
 // rows resurfacing.ts writes. One email, one quiet link, nothing to
@@ -66,33 +63,7 @@ export const deliver = internalAction({
     if (!payload) {
       const now = Date.now();
       const ago = agoPhrase(delivery.thought.createdAt, now);
-      const context = await ctx.runQuery(internal.store.thoughtContext, {
-        thoughtId: delivery.thought._id,
-      });
-      const questions = context?.questions ?? [];
-      const preparedQuestion = (
-        questions.find((q) => !q.seen) ?? questions[questions.length - 1]
-      )?.text;
-
-      // The model writes the two lines under the subject; if it stumbles,
-      // a plain templated body goes out — the send never waits on it.
-      let body = `You kept this ${ago}.${preparedQuestion ? ` ${preparedQuestion}` : ""}`;
-      try {
-        const openai = openaiProvider();
-        const result = await generateText({
-          model: openai(QUESTION_MODEL),
-          prompt: resurfaceEmailPrompt({
-            thoughtText: delivery.thought.text,
-            capturedAgo: ago,
-            preparedQuestion,
-            connectedTexts: context?.connectedTexts ?? [],
-          }),
-        });
-        const composed = result.text.trim();
-        if (composed) body = composed;
-      } catch (error) {
-        console.error("[email] body composition failed, using template", error);
-      }
+      const body = `You kept this ${ago}.`;
 
       const appUrl = (
         process.env.DRFT_APP_URL ?? "http://localhost:5173"
