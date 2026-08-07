@@ -11,16 +11,28 @@ struct CaptureView: View {
     @State private var listeningPulse = false
     @FocusState private var inputIsFocused: Bool
     private let focusRequest: Int
+    private let isPresented: Bool
+    private let onDraftChange: (String) -> Void
+    private let onShelfDragChanged: (CGFloat) -> Void
+    private let onRevealShelf: () -> Void
 
     init(
         captureQueue: CaptureQueue,
         authService: AuthService,
         convexService: ConvexService,
-        focusRequest: Int
+        focusRequest: Int,
+        isPresented: Bool,
+        onDraftChange: @escaping (String) -> Void,
+        onShelfDragChanged: @escaping (CGFloat) -> Void,
+        onRevealShelf: @escaping () -> Void
     ) {
         self.authService = authService
         self.convexService = convexService
         self.focusRequest = focusRequest
+        self.isPresented = isPresented
+        self.onDraftChange = onDraftChange
+        self.onShelfDragChanged = onShelfDragChanged
+        self.onRevealShelf = onRevealShelf
         _model = StateObject(
             wrappedValue: CaptureModel(
                 captureQueue: captureQueue,
@@ -56,6 +68,7 @@ struct CaptureView: View {
                     TextField("", text: $model.text, axis: .vertical)
                         .textFieldStyle(.plain)
                         .stillnessThought()
+                        .tint(Stillness.ink)
                         .focused($inputIsFocused)
                         .lineLimit(1...(dynamicTypeSize.isAccessibilitySize ? 8 : 5))
                         .submitLabel(.return)
@@ -107,14 +120,30 @@ struct CaptureView: View {
         .sensoryFeedback(.impact(weight: .light), trigger: model.phase) { _, phase in
             phase == .fadingCapture
         }
+        .simultaneousGesture(shelfDragGesture)
         .task(id: focusRequest) {
             inputIsFocused = false
             if settingsArePresented {
                 settingsArePresented = false
                 return
             }
+            guard isPresented else { return }
             await Task.yield()
             inputIsFocused = true
+        }
+        .onChange(of: isPresented, initial: true) { _, isPresented in
+            guard isPresented else {
+                inputIsFocused = false
+                model.stopDictation()
+                return
+            }
+            Task { @MainActor in
+                await Task.yield()
+                inputIsFocused = true
+            }
+        }
+        .onChange(of: model.text, initial: true) { _, text in
+            onDraftChange(text)
         }
         .onChange(of: model.focusRequest) {
             inputIsFocused = true
@@ -129,8 +158,16 @@ struct CaptureView: View {
             model.stopDictation()
         }
         .onChange(of: scenePhase) { _, phase in
-            guard phase != .active else { return }
-            model.stopDictation()
+            if phase == .active {
+                guard isPresented else { return }
+                inputIsFocused = false
+                Task { @MainActor in
+                    await Task.yield()
+                    inputIsFocused = true
+                }
+            } else {
+                model.stopDictation()
+            }
         }
         .sheet(isPresented: $settingsArePresented, onDismiss: {
             inputIsFocused = false
@@ -189,6 +226,40 @@ struct CaptureView: View {
             value: model.isCaptureVisible
         )
         .allowsHitTesting(model.isCaptureVisible)
+    }
+
+    private var shelfDragGesture: some Gesture {
+        DragGesture(minimumDistance: 4, coordinateSpace: .local)
+            .onChanged { value in
+                guard isPresented, model.phase == .editing else { return }
+                let vertical = value.translation.height
+                let horizontal = abs(value.translation.width)
+                guard vertical > 0, vertical > horizontal else { return }
+
+                if vertical > 8 {
+                    inputIsFocused = false
+                    model.stopDictation()
+                }
+                onShelfDragChanged(vertical)
+            }
+            .onEnded { value in
+                guard isPresented, model.phase == .editing else {
+                    onShelfDragChanged(0)
+                    return
+                }
+                let vertical = value.translation.height
+                let horizontal = abs(value.translation.width)
+                let predictedVertical = value.predictedEndTranslation.height
+                let isVerticalPull = vertical > 0 && vertical > horizontal
+                let isCommitted = vertical > 110 || predictedVertical > 190
+
+                if isVerticalPull && isCommitted {
+                    inputIsFocused = false
+                    onRevealShelf()
+                } else {
+                    onShelfDragChanged(0)
+                }
+            }
     }
 
     @ViewBuilder

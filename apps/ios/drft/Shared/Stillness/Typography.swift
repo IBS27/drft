@@ -21,6 +21,21 @@ enum StillnessType {
         size: 15,
         relativeTo: .subheadline
     ).weight(.regular)
+    static let shelfThought = Font.custom(
+        "Helvetica Neue",
+        size: 18,
+        relativeTo: .body
+    ).weight(.light)
+    static let readingThought = Font.custom(
+        "Helvetica Neue",
+        size: 25,
+        relativeTo: .title2
+    ).weight(.light)
+    static let marginalia = Font.custom(
+        "Helvetica Neue",
+        size: 16,
+        relativeTo: .body
+    ).weight(.light)
 
     static let wordmarkTracking: CGFloat = 7.5
     static let thoughtLineSpacing: CGFloat = 15
@@ -33,7 +48,6 @@ private struct WordmarkStyle: ViewModifier {
         content
             .font(StillnessType.wordmark)
             .tracking(StillnessType.wordmarkTracking)
-            .textCase(.uppercase)
             .foregroundStyle(Stillness.faint)
     }
 }

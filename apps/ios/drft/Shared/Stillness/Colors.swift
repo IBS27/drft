@@ -30,6 +30,11 @@ enum Stillness {
         light: UIColor(red: 199 / 255, green: 62 / 255, blue: 29 / 255, alpha: 1),
         dark: UIColor(red: 217 / 255, green: 80 / 255, blue: 42 / 255, alpha: 1)
     )
+    /// Label color on a `now`-filled control; near-white in both palettes.
+    static let onNow = dynamic(
+        light: UIColor(red: 252 / 255, green: 252 / 255, blue: 251 / 255, alpha: 1),
+        dark: UIColor(red: 252 / 255, green: 252 / 255, blue: 251 / 255, alpha: 1)
+    )
     static let faint = dynamic(
         light: UIColor(red: 117 / 255, green: 117 / 255, blue: 111 / 255, alpha: 0.6),
         dark: UIColor(red: 160 / 255, green: 160 / 255, blue: 153 / 255, alpha: 0.6),
