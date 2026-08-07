@@ -232,7 +232,11 @@ struct ShelfView: View {
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel(thought.preview)
+                .accessibilityLabel(
+                    thought.waiting
+                        ? "\(thought.preview), question waiting"
+                        : thought.preview
+                )
             }
             Hairline()
         }

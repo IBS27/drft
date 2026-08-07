@@ -21,12 +21,13 @@ enum ShelfFormatting {
     // The backend speaks Gregorian dates (en-CA `YYYY-MM-DD`); a device
     // set to a Buddhist or Japanese system calendar must not leak its
     // own year numbering into them, so all shelf math pins the calendar
-    // and keeps only the user's timezone.
-    private static let calendar: Calendar = {
+    // and keeps only the user's timezone — read per call, so a timezone
+    // change mid-flight isn't frozen until relaunch.
+    private static var calendar: Calendar {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = .current
         return calendar
-    }()
+    }
 
     static func localDate(for date: Date) -> String {
         let components = calendar.dateComponents(

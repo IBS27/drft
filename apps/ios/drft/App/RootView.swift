@@ -9,6 +9,7 @@ struct RootView: View {
     let captureQueue: CaptureQueue
     let captureFocusRequest: Int
     @State private var hasEnteredCapture = false
+    @State private var cameFromBackground = false
     @State private var captureIsPresented = true
     @State private var captureDragOffset: CGFloat = 0
     @State private var draft = ""
@@ -50,9 +51,18 @@ struct RootView: View {
         .onChange(of: captureFocusRequest) {
             presentCapture()
         }
-        .onChange(of: scenePhase) { oldPhase, newPhase in
-            guard oldPhase == .background, newPhase == .active else { return }
-            presentCapture()
+        // Re-entering the app lands on capture ("the shelf is never the
+        // resume state"), but only a true return from background counts:
+        // resume passes through .inactive, and notification-shade or
+        // Control Center blips visit .inactive without ever leaving, so
+        // the flag — not any single phase transition — decides.
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .background {
+                cameFromBackground = true
+            } else if phase == .active, cameFromBackground {
+                cameFromBackground = false
+                presentCapture()
+            }
         }
     }
 
