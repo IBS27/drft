@@ -54,10 +54,11 @@ function BackHeader({
   );
 }
 
-// Your words sit large at the top, exactly as captured. Below, quietly,
-// where the thought has been — set down, returned to, what it turned out
-// to be near. On wide screens the collection stays in the periphery as an
-// edge rail.
+// Your words hold the center of the page, exactly as captured. Gathered
+// quietly around them, where the thought has been — set down, returned to,
+// what it turned out to be near — and one action waiting at the bottom
+// edge. On wide screens the collection stays in the periphery as an edge
+// rail.
 function ThoughtView() {
   const { thoughtId } = Route.useParams();
   const id = thoughtId as Id<"thoughts">;
@@ -152,11 +153,11 @@ function ThoughtView() {
       />
       <Rail activeId={id} now={now} />
 
-      <div className="flex-1 lg:pl-72 xl:pl-80">
+      <div className="flex flex-1 flex-col lg:pl-72 xl:pl-80">
         {view === undefined ? (
           <ThoughtSkeleton />
         ) : view === null ? (
-          <section className="flex min-h-[70dvh] items-center justify-center pb-24">
+          <section className="flex flex-1 items-center justify-center pb-24">
             <span className="text-[10.5px] tracking-[0.34em] text-pl uppercase">
               this thought isn't here
             </span>
@@ -164,96 +165,95 @@ function ThoughtView() {
         ) : (
           <section
             key={view._id}
-            className="mx-auto flex w-full max-w-[64ch] flex-col items-center px-6 pt-16 pb-10"
+            className="mx-auto flex w-full max-w-[64ch] flex-1 flex-col items-center px-6"
           >
-            <h1 className="max-w-[36ch] text-center text-[clamp(24px,2.6vw,28px)] leading-[1.6] font-light whitespace-pre-wrap">
-              {view.text}
-            </h1>
+            <div className="flex w-full flex-1 flex-col items-center justify-center py-12">
+              <h1 className="max-w-[36ch] text-center text-[clamp(26px,3vw,34px)] leading-[1.55] font-light whitespace-pre-wrap">
+                {view.text}
+              </h1>
 
-            {view.status === "resting" && (
-              <div className="mt-7 flex flex-col items-center gap-2.5">
-                <span className="text-[10.5px] tracking-[0.34em] text-pl uppercase">
-                  set down{view.restedAt ? ` · ${ageLabel(view.restedAt, now)}` : ""}
-                </span>
-                {view.restingNote && (
-                  <p className="max-w-[44ch] text-center text-[15px] leading-[1.7] font-normal text-mut">
-                    {view.restingNote}
-                  </p>
-                )}
-              </div>
-            )}
-
-            {view.lastReturnedAt && (
-              <span className="mt-6 text-[10px] tracking-[0.3em] text-faint uppercase">
-                returned ·{" "}
-                {groupOf(view.lastReturnedAt, now) === "today"
-                  ? "today"
-                  : ageLabel(view.lastReturnedAt, now)}
-              </span>
-            )}
-
-            {/* The mockup's short vertical rule: what the thought turned out
-                to be near hangs below it, an equal measure of air either
-                side. Nothing near it, nothing to hang. */}
-            {view.connections.length > 0 && (
-              <>
-                <div className="mt-9 h-7 w-px bg-line" />
-                <div className="mt-9 flex max-w-[52ch] flex-wrap items-center justify-center gap-x-2.5 gap-y-2">
-                  {view.connections.map((c, i) => (
-                    <span key={c._id} className="group flex items-center gap-2">
-                      {i > 0 && <span className="text-[11.5px] text-pl">·</span>}
-                      <Link
-                        to="/thought/$thoughtId"
-                        params={{ thoughtId: c.otherId }}
-                        onPointerEnter={() => {
-                          prewarm(id);
-                          prewarm(c.otherId);
-                        }}
-                        onPointerDown={() => {
-                          prewarm(id);
-                          prewarm(c.otherId);
-                        }}
-                        onFocus={() => {
-                          prewarm(id);
-                          prewarm(c.otherId);
-                        }}
-                        className="inline-block max-w-[26ch] truncate text-[11.5px] tracking-[0.22em] text-pl uppercase transition-colors hover:text-ink"
-                      >
-                        {c.otherStatus === "resting" && (
-                          <span className="text-faint">set down · </span>
-                        )}
-                        {firstLine(c.otherText)}
-                      </Link>
-                      <button
-                        type="button"
-                        onClick={() => dismiss(c, i)}
-                        className="text-[13px] leading-none text-pl opacity-0 transition-opacity group-hover:opacity-100 hover:text-dot"
-                        aria-label="dismiss connection"
-                      >
-                        ×
-                      </button>
-                    </span>
-                  ))}
+              {view.status === "resting" && (
+                <div className="mt-7 flex flex-col items-center gap-2.5">
+                  <span className="text-[10.5px] tracking-[0.34em] text-pl uppercase">
+                    set down{view.restedAt ? ` · ${ageLabel(view.restedAt, now)}` : ""}
+                  </span>
+                  {view.restingNote && (
+                    <p className="max-w-[44ch] text-center text-[15px] leading-[1.7] font-normal text-mut">
+                      {view.restingNote}
+                    </p>
+                  )}
                 </div>
-              </>
-            )}
+              )}
 
-            {aside && (
-              <div className="mt-5 flex items-center gap-5 text-[10px] tracking-[0.3em] uppercase">
-                <span className="text-pl">
-                  {aside.failed ? "couldn't set the link aside" : "link set aside"}
+              {view.lastReturnedAt && (
+                <span className="mt-6 text-[10px] tracking-[0.3em] text-faint uppercase">
+                  returned ·{" "}
+                  {groupOf(view.lastReturnedAt, now) === "today"
+                    ? "today"
+                    : ageLabel(view.lastReturnedAt, now)}
                 </span>
-                {!aside.failed && (
-                  <button
-                    type="button"
-                    onClick={undo}
-                    className="text-pt transition-colors hover:text-ink"
-                  >
-                    undo
-                  </button>
-                )}
-              </div>
-            )}
+              )}
+
+              {/* What the thought turned out to be near, hanging quietly
+                  below it — near enough to belong to it, no rule needed. */}
+              {view.connections.length > 0 && (
+                <div className="mt-12 flex max-w-[52ch] flex-wrap items-center justify-center gap-x-2.5 gap-y-2">
+                    {view.connections.map((c, i) => (
+                      <span key={c._id} className="group flex items-center gap-2">
+                        {i > 0 && <span className="text-[11.5px] text-pl">·</span>}
+                        <Link
+                          to="/thought/$thoughtId"
+                          params={{ thoughtId: c.otherId }}
+                          onPointerEnter={() => {
+                            prewarm(id);
+                            prewarm(c.otherId);
+                          }}
+                          onPointerDown={() => {
+                            prewarm(id);
+                            prewarm(c.otherId);
+                          }}
+                          onFocus={() => {
+                            prewarm(id);
+                            prewarm(c.otherId);
+                          }}
+                          className="inline-block max-w-[26ch] truncate text-[11.5px] tracking-[0.22em] text-pl uppercase transition-colors hover:text-ink"
+                        >
+                          {c.otherStatus === "resting" && (
+                            <span className="text-faint">set down · </span>
+                          )}
+                          {firstLine(c.otherText)}
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={() => dismiss(c, i)}
+                          className="text-[13px] leading-none text-pl opacity-0 transition-opacity group-hover:opacity-100 hover:text-dot"
+                          aria-label="dismiss connection"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                </div>
+              )}
+
+              {aside && (
+                <div className="mt-5 flex items-center gap-5 text-[10px] tracking-[0.3em] uppercase">
+                  <span className="text-pl">
+                    {aside.failed ? "couldn't set the link aside" : "link set aside"}
+                  </span>
+                  {!aside.failed && (
+                    <button
+                      type="button"
+                      onClick={undo}
+                      className="text-pt transition-colors hover:text-ink"
+                    >
+                      undo
+                    </button>
+                  )}
+                </div>
+              )}
+
+            </div>
 
             <StatusFooter thoughtId={view._id} status={view.status} />
           </section>
@@ -264,8 +264,8 @@ function ThoughtView() {
 }
 
 // The thought in its own proportions before its words arrive: the same
-// column, the same line boxes, the same closing rule — so nothing moves
-// when it lands. Stillness has no spinners.
+// centered column, the same line boxes, the same word waiting at the
+// bottom edge — so nothing moves when it lands. Stillness has no spinners.
 //
 // Only what every thought has is drawn. Where it landed, when it was
 // returned to, what it sits near are all conditional, and a skeleton that
@@ -275,17 +275,19 @@ function ThoughtSkeleton() {
     <section
       aria-busy="true"
       aria-label="loading thought"
-      className="mx-auto flex w-full max-w-[64ch] flex-col items-center px-6 pt-16 pb-10"
+      className="mx-auto flex w-full max-w-[64ch] flex-1 flex-col items-center px-6"
     >
-      {/* two line boxes of the thought's own type — 28px at 1.6 — the
-          length a captured thought usually runs to at 36ch */}
-      <div className="flex w-full max-w-[36ch] flex-col items-center gap-[28px]">
-        <Skeleton className="h-4 w-full" />
-        <Skeleton className="h-4 w-[62%]" />
+      {/* two line boxes of the thought's own type, held at the center the
+          way the thought itself will be */}
+      <div className="flex w-full flex-1 flex-col items-center justify-center py-12">
+        <div className="flex w-full max-w-[36ch] flex-col items-center gap-[30px]">
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-[62%]" />
+        </div>
       </div>
 
-      {/* the footer's rule and the one word waiting on it */}
-      <div className="mt-14 flex w-full max-w-[48ch] justify-center border-t border-line pt-6">
+      {/* the one word waiting at the bottom edge */}
+      <div className="flex w-full max-w-[48ch] justify-center pb-14">
         <span className="flex h-4 items-center">
           <Skeleton className="h-[9px] w-20" />
         </span>
@@ -364,7 +366,7 @@ function StatusFooter({
   };
 
   return (
-    <footer className="mt-14 flex w-full max-w-[48ch] flex-col items-center gap-4 border-t border-line pt-6">
+    <footer className="flex w-full max-w-[48ch] flex-col items-center gap-4 pb-14">
       {leaving ? null : status === "resting" ? (
         <button
           type="button"

@@ -117,13 +117,14 @@ body { font-family: "Helvetica Neue", ui-sans-serif, sans-serif; font-weight: 30
 .lst .row.pin { margin-bottom: 14px; }
 .lst .row:not(.on) .t { color: var(--mut); }
 
-/* the thought — its words, what it echoes, one way to set it down */
-.th { text-align: center; font-size: 13.5px; line-height: 1.6; font-weight: 300; padding: 22px 24px 0; }
+/* the thought — held at the center of the screen, its echoes gathered
+   just below, one action waiting at the bottom edge. No rules between:
+   proximity does the separating. */
+.th { text-align: center; font-size: 13.5px; line-height: 1.6; font-weight: 300; padding: 0 24px; margin-top: auto; }
 .ret { display: flex; align-items: center; justify-content: center; gap: 7px; margin-top: 16px; font-size: 7px; letter-spacing: .32em; text-transform: uppercase; color: var(--faint); }
-.vline { width: 1px; height: 22px; background: var(--line); margin: 16px auto; flex: none; }
-.links { padding: 0 24px; text-align: center; display: flex; flex-direction: column; gap: 10px; }
+.links { padding: 0 24px; margin-top: 22px; text-align: center; display: flex; flex-direction: column; gap: 10px; }
 .links .lnk { font-size: 8px; letter-spacing: .24em; text-transform: uppercase; color: var(--mut); }
-.rest { margin: auto 22px 18px; padding: 9px 0 8px; border-top: 1px solid var(--line); text-align: center; font-size: 8.5px; letter-spacing: .26em; text-transform: uppercase; color: var(--faint); }
+.rest { margin: auto 22px 18px; padding: 9px 0 8px; text-align: center; font-size: 8.5px; letter-spacing: .26em; text-transform: uppercase; color: var(--faint); }
 
 /* ---------- laptop workspace ---------- */
 .wsp { flex: 1; display: flex; min-height: 0; position: relative; }
@@ -135,13 +136,12 @@ body { font-family: "Helvetica Neue", ui-sans-serif, sans-serif; font-weight: 30
 .edge li.on::before { content: ""; display: inline-block; width: 4px; height: 4px; border-radius: 50%; background: var(--dot); margin-right: 6px; vertical-align: 1px; }
 .edge li.pin { margin-bottom: 10px; }
 .count { position: absolute; top: 16px; right: 20px; font-size: 7.5px; letter-spacing: .3em; color: var(--faint); }
-.main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px 156px 20px 0; }
-.m-date { font-size: 7.5px; letter-spacing: .4em; text-transform: uppercase; color: var(--faint); }
-.m-thought { font-size: 19px; line-height: 1.6; font-weight: 300; max-width: 34ch; margin-top: 14px; }
-.main .vline { margin: 14px auto; height: 20px; }
+.main { flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 20px 156px 20px 0; }
+.m-date { font-size: 7.5px; letter-spacing: .4em; text-transform: uppercase; color: var(--faint); margin-bottom: auto; }
+.m-thought { font-size: 22px; line-height: 1.55; font-weight: 300; max-width: 34ch; }
 .main .ret { margin-top: 14px; }
-.m-rel { font-size: 8px; letter-spacing: .24em; text-transform: uppercase; color: var(--mut); }
-.m-rest { margin-top: 26px; width: 300px; padding-top: 9px; border-top: 1px solid var(--line); text-align: center; font-size: 8px; letter-spacing: .28em; text-transform: uppercase; color: var(--faint); }
+.m-rel { font-size: 8px; letter-spacing: .24em; text-transform: uppercase; color: var(--mut); margin-top: 22px; }
+.m-rest { margin-top: auto; width: 300px; text-align: center; font-size: 8px; letter-spacing: .28em; text-transform: uppercase; color: var(--faint); }
 
 /* ---------- pager ---------- */
 .pager { position: fixed; right: 18px; bottom: 18px; z-index: 50; display: flex; align-items: center; gap: 3px; padding: 5px; border-radius: 999px; background: rgba(16,17,22,.72); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: 0 6px 24px rgba(0,0,0,.25), inset 0 0 0 .5px rgba(255,255,255,.14); }
@@ -236,7 +236,6 @@ body { font-family: "Helvetica Neue", ui-sans-serif, sans-serif; font-weight: 30
           <div class="p-hd"><span class="bk">‹</span><span class="ttl">3 jul · 9:41</span><span class="ct"> </span></div>
           <div class="th">cities feel more creative because collisions are free</div>
           <div class="ret"><span class="reddot"></span>returned · today</div>
-          <div class="vline"></div>
           <div class="links">
             <span class="lnk">edited silence</span>
             <span class="lnk">attention is a garden</span>
@@ -282,7 +281,6 @@ body { font-family: "Helvetica Neue", ui-sans-serif, sans-serif; font-weight: 30
                 <div class="m-date">3 jul · 9:41</div>
                 <div class="m-thought">cities feel more creative because collisions are free</div>
                 <div class="ret"><span class="reddot"></span>returned · today</div>
-                <div class="vline"></div>
                 <div class="m-rel">edited silence · attention is a garden · third places</div>
                 <div class="m-rest">let it rest</div>
               </div>
@@ -375,7 +373,6 @@ body { font-family: "Helvetica Neue", ui-sans-serif, sans-serif; font-weight: 30
           <div class="p-hd"><span class="bk">‹</span><span class="ttl">3 jul · 23:12</span><span class="ct"> </span></div>
           <div class="th">cities feel more creative because collisions are free</div>
           <div class="ret"><span class="reddot"></span>returned · today</div>
-          <div class="vline"></div>
           <div class="links">
             <span class="lnk">edited silence</span>
             <span class="lnk">attention is a garden</span>
@@ -421,7 +418,6 @@ body { font-family: "Helvetica Neue", ui-sans-serif, sans-serif; font-weight: 30
                 <div class="m-date">3 jul · 23:12</div>
                 <div class="m-thought">cities feel more creative because collisions are free</div>
                 <div class="ret"><span class="reddot"></span>returned · today</div>
-                <div class="vline"></div>
                 <div class="m-rel">edited silence · attention is a garden · third places</div>
                 <div class="m-rest">let it rest</div>
               </div>
