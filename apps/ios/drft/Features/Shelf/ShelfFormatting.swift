@@ -18,8 +18,18 @@ enum ShelfGroup: CaseIterable {
 }
 
 enum ShelfFormatting {
+    // The backend speaks Gregorian dates (en-CA `YYYY-MM-DD`); a device
+    // set to a Buddhist or Japanese system calendar must not leak its
+    // own year numbering into them, so all shelf math pins the calendar
+    // and keeps only the user's timezone.
+    private static let calendar: Calendar = {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = .current
+        return calendar
+    }()
+
     static func localDate(for date: Date) -> String {
-        let components = Calendar.current.dateComponents(
+        let components = calendar.dateComponents(
             [.year, .month, .day],
             from: date
         )
@@ -32,7 +42,6 @@ enum ShelfFormatting {
     }
 
     static func group(for milliseconds: Double, now: Date) -> ShelfGroup {
-        let calendar = Calendar.current
         let date = Date(timeIntervalSince1970: milliseconds / 1_000)
         let today = calendar.startOfDay(for: now)
         if date >= today {
@@ -44,7 +53,6 @@ enum ShelfFormatting {
 
     static func captureLine(for milliseconds: Double, now: Date = .now) -> String {
         let date = Date(timeIntervalSince1970: milliseconds / 1_000)
-        let calendar = Calendar.current
         let day: String
 
         if group(for: milliseconds, now: now) == .earlier {

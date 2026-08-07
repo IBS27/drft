@@ -50,8 +50,8 @@ struct RootView: View {
         .onChange(of: captureFocusRequest) {
             presentCapture()
         }
-        .onChange(of: scenePhase) { _, phase in
-            guard phase == .active else { return }
+        .onChange(of: scenePhase) { oldPhase, newPhase in
+            guard oldPhase == .background, newPhase == .active else { return }
             presentCapture()
         }
     }

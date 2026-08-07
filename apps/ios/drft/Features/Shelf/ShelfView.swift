@@ -177,6 +177,7 @@ struct ShelfView: View {
             .padding(.horizontal, 24)
             .padding(.top, 13)
             .padding(.bottom, 8)
+            .contentShape(Rectangle())
         }
         .buttonStyle(NewThoughtBarStyle())
         .background(Stillness.page)
