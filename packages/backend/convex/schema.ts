@@ -30,6 +30,13 @@ export default defineSchema({
       vectorField: "embedding",
       dimensions: 1536,
       filterFields: ["userId", "status"],
+    })
+    // Find answers every keystroke from this index: relevance-ranked,
+    // prefix-matched on the last term, filtered to one user inside the
+    // index itself.
+    .searchIndex("by_text", {
+      searchField: "text",
+      filterFields: ["userId"],
     }),
 
   // Partner-drafted questions; an unseen one lights the vermilion dot and

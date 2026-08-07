@@ -8,7 +8,6 @@ import { hitOptionId, type Hit } from "./useThoughtSearch";
 // answering to fewer names. Resting thoughts say so, quietly.
 export function FindResults({
   hits,
-  failed,
   active,
   setActive,
   now,
@@ -17,7 +16,6 @@ export function FindResults({
   listboxId,
 }: {
   hits: Hit[] | null;
-  failed: boolean;
   active: number;
   setActive: (i: number) => void;
   now: number;
@@ -28,7 +26,6 @@ export function FindResults({
   // names each option (see hitOptionId).
   listboxId: string;
 }) {
-  if (failed) return <Note text="couldn't search — try again" />;
   if (hits && hits.length === 0) return <Note text="nothing found" />;
   if (!hits) return null;
   return (

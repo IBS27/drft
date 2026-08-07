@@ -67,8 +67,7 @@ function Sheet({ close }: { close: () => void }) {
   const navigate = useNavigate();
   const prewarm = useThoughtPrewarm();
   const [query, setQuery] = useState("");
-  const { hits, failed, active, setActive, onResultsKey } =
-    useThoughtSearch(query);
+  const { hits, active, setActive, onResultsKey } = useThoughtSearch(query);
   const listboxId = useId();
   const [now] = useState(() => Date.now());
   const sheetRef = useRef<HTMLDivElement>(null);
@@ -142,7 +141,6 @@ function Sheet({ close }: { close: () => void }) {
             <div className="-mx-3 max-h-[60dvh] overflow-y-auto px-3 pb-3">
               <FindResults
                 hits={hits}
-                failed={failed}
                 active={active}
                 setActive={setActive}
                 now={now}
