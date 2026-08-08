@@ -2,7 +2,7 @@ import { v } from "convex/values";
 import { internalMutation, internalQuery } from "./_generated/server";
 
 const BACKFILL_PAGE_SIZE = 100;
-const BACKFILL_MAXIMUM_ROWS_READ = 1_000;
+const BACKFILL_MAXIMUM_BYTES_READ = 4_000_000;
 
 // Internal reads/writes for enrichment.ts. Actions can't touch the db
 // directly, so database access and link uniqueness live here.
@@ -67,15 +67,23 @@ export const insertConnection = internalMutation({
 
 // Backfill support for thoughts captured before embeddings were introduced.
 export const unembedded = internalQuery({
-  args: { cursor: v.union(v.string(), v.null()) },
-  handler: async (ctx, { cursor }) => {
+  args: {
+    cursor: v.union(v.string(), v.null()),
+    pageSize: v.number(),
+  },
+  handler: async (ctx, { cursor, pageSize }) => {
+    const boundedPageSize = Math.max(
+      1,
+      Math.min(BACKFILL_PAGE_SIZE, Math.floor(pageSize)),
+    );
     const result = await ctx.db
       .query("thoughts")
       .filter((q) => q.eq(q.field("embedding"), undefined))
       .paginate({
         cursor,
-        numItems: BACKFILL_PAGE_SIZE,
-        maximumRowsRead: BACKFILL_MAXIMUM_ROWS_READ,
+        numItems: boundedPageSize,
+        maximumRowsRead: boundedPageSize,
+        maximumBytesRead: BACKFILL_MAXIMUM_BYTES_READ,
       });
     return {
       ...result,

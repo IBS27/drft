@@ -10,7 +10,10 @@ import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { internalMutation } from "./_generated/server";
 
-const BATCH_SIZE = 100;
+const MAX_BATCH_SIZE = 100;
+const MAX_PAGE_BYTES_READ = 4_000_000;
+const LEGACY_DELETE_BATCH_SIZE = 1;
+const MAX_LEGACY_PAGE_BYTES_READ = 2_000_000;
 
 // These tables are deliberately absent from schema.ts. This local definition
 // only gives the cleanup mutation precise types for legacy rows that still
@@ -35,6 +38,7 @@ type LegacyPartnerDataModel = DataModelFromSchemaDefinition<
 >;
 type ClearPartnerDataArgs = {
   thoughtCursor?: string;
+  thoughtBatchSize?: number;
   thoughtsDone?: boolean;
 };
 type ClearPartnerDataResult = {
@@ -47,6 +51,7 @@ type ClearPartnerDataResult = {
 export const clearPartnerData = internalMutation({
   args: {
     thoughtCursor: v.optional(v.string()),
+    thoughtBatchSize: v.optional(v.number()),
     thoughtsDone: v.optional(v.boolean()),
   },
   returns: v.object({
@@ -57,8 +62,12 @@ export const clearPartnerData = internalMutation({
   }),
   handler: async (
     ctx,
-    { thoughtCursor, thoughtsDone },
+    { thoughtCursor, thoughtBatchSize, thoughtsDone },
   ): Promise<ClearPartnerDataResult> => {
+    const pageSize = Math.max(
+      1,
+      Math.min(MAX_BATCH_SIZE, Math.floor(thoughtBatchSize ?? MAX_BATCH_SIZE)),
+    );
     const thoughtPage = thoughtsDone
       ? null
       : await ctx.db
@@ -68,9 +77,36 @@ export const clearPartnerData = internalMutation({
           )
           .paginate({
             cursor: thoughtCursor ?? null,
-            numItems: BATCH_SIZE,
-            maximumRowsRead: BATCH_SIZE,
+            numItems: pageSize,
+            maximumRowsRead: pageSize,
+            maximumBytesRead: MAX_PAGE_BYTES_READ,
           });
+
+    // A SplitRequired page may be incomplete. Do not mutate anything from it
+    // or advance its cursor; retry the same range with fewer rows instead.
+    if (thoughtPage?.pageStatus === "SplitRequired") {
+      if (pageSize === 1) {
+        throw new Error("A single thought exceeds the migration read limit");
+      }
+      const retryArgs: ClearPartnerDataArgs = {
+        thoughtBatchSize: Math.max(1, Math.floor(pageSize / 2)),
+      };
+      if (thoughtCursor !== undefined) {
+        retryArgs.thoughtCursor = thoughtCursor;
+      }
+      await ctx.scheduler.runAfter(
+        0,
+        internal.migrations.clearPartnerData,
+        retryArgs,
+      );
+      return {
+        thoughtsCleared: 0,
+        questionsDeleted: 0,
+        messagesDeleted: 0,
+        scheduledNextBatch: true,
+      };
+    }
+
     const thoughts = thoughtPage?.page ?? [];
     for (const thought of thoughts) {
       await ctx.db.patch(thought._id, { unseenQuestionCount: undefined });
@@ -78,22 +114,45 @@ export const clearPartnerData = internalMutation({
 
     const legacyDb =
       ctx.db as unknown as GenericDatabaseWriter<LegacyPartnerDataModel>;
-    const [questions, messages] = await Promise.all([
-      legacyDb.query("questions").take(BATCH_SIZE),
-      legacyDb.query("messages").take(BATCH_SIZE),
+    const [questionPage, messagePage] = await Promise.all([
+      legacyDb.query("questions").paginate({
+        cursor: null,
+        numItems: LEGACY_DELETE_BATCH_SIZE,
+        maximumRowsRead: LEGACY_DELETE_BATCH_SIZE,
+        maximumBytesRead: MAX_LEGACY_PAGE_BYTES_READ,
+      }),
+      legacyDb.query("messages").paginate({
+        cursor: null,
+        numItems: LEGACY_DELETE_BATCH_SIZE,
+        maximumRowsRead: LEGACY_DELETE_BATCH_SIZE,
+        maximumBytesRead: MAX_LEGACY_PAGE_BYTES_READ,
+      }),
     ]);
+    if (
+      questionPage.pageStatus === "SplitRequired" ||
+      messagePage.pageStatus === "SplitRequired"
+    ) {
+      throw new Error(
+        "A single legacy partner row exceeds the migration read limit",
+      );
+    }
+    const questions = questionPage.page;
+    const messages = messagePage.page;
     for (const question of questions) await legacyDb.delete(question._id);
     for (const message of messages) await legacyDb.delete(message._id);
 
     const thoughtScanDone = thoughtsDone || thoughtPage?.isDone === true;
     const scheduledNextBatch =
       !thoughtScanDone ||
-      questions.length === BATCH_SIZE ||
-      messages.length === BATCH_SIZE;
+      !questionPage.isDone ||
+      !messagePage.isDone;
     if (scheduledNextBatch) {
       const nextArgs: ClearPartnerDataArgs = thoughtScanDone
         ? { thoughtsDone: true }
-        : { thoughtCursor: thoughtPage?.continueCursor };
+        : {
+            thoughtCursor: thoughtPage?.continueCursor,
+            thoughtBatchSize: pageSize,
+          };
       await ctx.scheduler.runAfter(
         0,
         internal.migrations.clearPartnerData,

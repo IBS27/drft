@@ -13,6 +13,8 @@ type BackfillEmbeddingsResult = {
   scheduledNextBatch: boolean;
 };
 
+const BACKFILL_PAGE_SIZE = 100;
+
 // The silent work after every capture: embed, search for resonant older
 // thinking, and link related thoughts. Nothing here notifies anyone.
 export const enrich = internalAction({
@@ -65,11 +67,41 @@ export const enrich = internalAction({
 // One-time catch-up for thoughts captured before embeddings were introduced.
 // Run with: bunx convex run enrichment:backfillEmbeddings
 export const backfillEmbeddings = internalAction({
-  args: { cursor: v.optional(v.string()) },
-  handler: async (ctx, { cursor }): Promise<BackfillEmbeddingsResult> => {
+  args: {
+    cursor: v.optional(v.string()),
+    pageSize: v.optional(v.number()),
+  },
+  handler: async (
+    ctx,
+    { cursor, pageSize },
+  ): Promise<BackfillEmbeddingsResult> => {
+    const boundedPageSize = Math.max(
+      1,
+      Math.min(BACKFILL_PAGE_SIZE, Math.floor(pageSize ?? BACKFILL_PAGE_SIZE)),
+    );
     const thoughts = await ctx.runQuery(internal.store.unembedded, {
       cursor: cursor ?? null,
+      pageSize: boundedPageSize,
     });
+
+    // Never embed an incomplete page or advance past it. Shrinking both the
+    // row and byte-bounded scan makes progress without split-range bookkeeping.
+    if (thoughts.pageStatus === "SplitRequired") {
+      if (boundedPageSize === 1) {
+        throw new Error("A single thought exceeds the backfill read limit");
+      }
+      const retryArgs: { cursor?: string; pageSize: number } = {
+        pageSize: Math.max(1, Math.floor(boundedPageSize / 2)),
+      };
+      if (cursor !== undefined) retryArgs.cursor = cursor;
+      await ctx.scheduler.runAfter(
+        0,
+        internal.enrichment.backfillEmbeddings,
+        retryArgs,
+      );
+      return { embedded: 0, scheduledNextBatch: true };
+    }
+
     let embedded = 0;
     if (thoughts.page.length > 0) {
       const openai = openaiProvider();
@@ -90,7 +122,7 @@ export const backfillEmbeddings = internalAction({
       await ctx.scheduler.runAfter(
         0,
         internal.enrichment.backfillEmbeddings,
-        { cursor: thoughts.continueCursor },
+        { cursor: thoughts.continueCursor, pageSize: boundedPageSize },
       );
     }
     return { embedded, scheduledNextBatch: !thoughts.isDone };
