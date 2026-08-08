@@ -40,6 +40,7 @@ type ClearPartnerDataArgs = {
   phase?: "thoughts" | "questions" | "messages";
   thoughtCursor?: string;
   thoughtBatchSize?: number;
+  thoughtsDone?: boolean;
 };
 type ClearPartnerDataResult = {
   thoughtsCleared: number;
@@ -59,6 +60,8 @@ export const clearPartnerData = internalMutation({
     ),
     thoughtCursor: v.optional(v.string()),
     thoughtBatchSize: v.optional(v.number()),
+    // Compatibility for jobs scheduled before cleanup was split into phases.
+    thoughtsDone: v.optional(v.boolean()),
   },
   returns: v.object({
     thoughtsCleared: v.number(),
@@ -68,8 +71,10 @@ export const clearPartnerData = internalMutation({
   }),
   handler: async (
     ctx,
-    { phase = "thoughts", thoughtCursor, thoughtBatchSize },
+    { phase, thoughtCursor, thoughtBatchSize, thoughtsDone },
   ): Promise<ClearPartnerDataResult> => {
+    phase ??= thoughtsDone ? "questions" : "thoughts";
+
     if (phase === "questions") {
       const legacyDb =
         ctx.db as unknown as GenericDatabaseWriter<LegacyPartnerDataModel>;
