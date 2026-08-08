@@ -205,7 +205,11 @@ export function ConnectionsGraph({
           edge.setAttribute("x2", String(target.x ?? size.width / 2));
           edge.setAttribute("y2", String(target.y ?? size.height / 2));
         }
-        if (!userMoved.current && (tick === 8 || tick === 24 || tick === 56)) {
+        if (
+          !userMoved.current &&
+          !pan.current &&
+          (tick === 8 || tick === 24 || tick === 56)
+        ) {
           setTransform(fitTransform(layout.nodes, size.width, size.height));
         }
       });
