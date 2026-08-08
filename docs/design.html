@@ -113,17 +113,18 @@ body { font-family: "Helvetica Neue", ui-sans-serif, sans-serif; font-weight: 30
 .lst .row .t { flex: 1; font-size: 9.5px; font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .lst .row .age { font-size: 7.5px; color: var(--faint); flex: none; letter-spacing: .06em; }
 .lst .row.on .t { color: var(--ink); }
+/* today's returned thought — held apart above the groups */
+.lst .row.pin { margin-bottom: 14px; }
 .lst .row:not(.on) .t { color: var(--mut); }
 
-/* develop */
-.th { text-align: center; font-size: 13.5px; line-height: 1.6; font-weight: 300; padding: 22px 24px 0; }
-.vline { width: 1px; height: 22px; background: var(--line); margin: 16px auto; flex: none; }
-.x { padding: 0 24px; text-align: center; }
-.x .who { font-size: 6.5px; letter-spacing: .34em; text-transform: uppercase; color: var(--faint); margin: 14px 0 6px; }
-.x .msg { font-size: 10px; line-height: 1.7; font-weight: 400; }
-.x .msg.q { color: var(--mut); }
-.x .msg.me { color: var(--ink); }
-.reply { margin: auto 22px 18px; padding: 9px 0 8px; border-top: 1px solid var(--line); display: flex; align-items: center; gap: 8px; font-size: 8.5px; letter-spacing: .26em; text-transform: uppercase; color: var(--faint); }
+/* the thought — held at the center of the screen, its echoes gathered
+   just below, one action waiting at the bottom edge. No rules between:
+   proximity does the separating. */
+.th { text-align: center; font-size: 13.5px; line-height: 1.6; font-weight: 300; padding: 0 24px; margin-top: auto; }
+.ret { display: flex; align-items: center; justify-content: center; gap: 7px; margin-top: 16px; font-size: 7px; letter-spacing: .32em; text-transform: uppercase; color: var(--faint); }
+.links { padding: 0 24px; margin-top: 22px; text-align: center; display: flex; flex-direction: column; gap: 10px; }
+.links .lnk { font-size: 8px; letter-spacing: .24em; text-transform: uppercase; color: var(--mut); }
+.rest { margin: auto 22px 18px; padding: 9px 0 8px; text-align: center; font-size: 8.5px; letter-spacing: .26em; text-transform: uppercase; color: var(--faint); }
 
 /* ---------- laptop workspace ---------- */
 .wsp { flex: 1; display: flex; min-height: 0; position: relative; }
@@ -133,16 +134,14 @@ body { font-family: "Helvetica Neue", ui-sans-serif, sans-serif; font-weight: 30
 .edge li { font-size: 7.5px; font-weight: 400; color: var(--faint); padding: 4px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 118px; }
 .edge li.on { color: var(--ink); }
 .edge li.on::before { content: ""; display: inline-block; width: 4px; height: 4px; border-radius: 50%; background: var(--dot); margin-right: 6px; vertical-align: 1px; }
+.edge li.pin { margin-bottom: 10px; }
 .count { position: absolute; top: 16px; right: 20px; font-size: 7.5px; letter-spacing: .3em; color: var(--faint); }
-.main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px 156px 20px 0; }
-.m-date { font-size: 7.5px; letter-spacing: .4em; text-transform: uppercase; color: var(--faint); }
-.m-thought { font-size: 19px; line-height: 1.6; font-weight: 300; max-width: 34ch; margin-top: 14px; }
-.main .vline { margin: 14px auto; height: 20px; }
-.main .x { max-width: 46ch; }
-.main .x .who { margin: 10px 0 4px; }
-.main .x .msg { font-size: 9.5px; line-height: 1.65; }
-.m-rel { margin-top: 16px; font-size: 7.5px; letter-spacing: .22em; text-transform: uppercase; color: var(--faint); }
-.m-reply { margin-top: 14px; width: 300px; padding-top: 9px; border-top: 1px solid var(--line); display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 8px; letter-spacing: .28em; text-transform: uppercase; color: var(--faint); }
+.main { flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 20px 156px 20px 0; }
+.m-date { font-size: 7.5px; letter-spacing: .4em; text-transform: uppercase; color: var(--faint); margin-bottom: auto; }
+.m-thought { font-size: 22px; line-height: 1.55; font-weight: 300; max-width: 34ch; }
+.main .ret { margin-top: 14px; }
+.m-rel { font-size: 8px; letter-spacing: .24em; text-transform: uppercase; color: var(--mut); margin-top: 22px; }
+.m-rest { margin-top: auto; width: 300px; text-align: center; font-size: 8px; letter-spacing: .28em; text-transform: uppercase; color: var(--faint); }
 
 /* ---------- pager ---------- */
 .pager { position: fixed; right: 18px; bottom: 18px; z-index: 50; display: flex; align-items: center; gap: 3px; padding: 5px; border-radius: 999px; background: rgba(16,17,22,.72); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: 0 6px 24px rgba(0,0,0,.25), inset 0 0 0 .5px rgba(255,255,255,.14); }
@@ -211,8 +210,9 @@ body { font-family: "Helvetica Neue", ui-sans-serif, sans-serif; font-weight: 30
           <div class="sb"><span>9:41</span><span class="batt"></span></div>
           <div class="p-hd"><span class="bk"> </span><span class="ttl">drft</span><span class="ct">142</span></div>
           <div class="lst">
+            <div class="row on pin"><span class="reddot"></span><span class="t">cities feel more creative because collisions…</span><span class="age">3 jul</span></div>
             <div class="sec">today</div>
-            <div class="row on"><span class="reddot"></span><span class="t">cities feel more creative because collisions…</span><span class="age">9:41</span></div>
+            <div class="row"><span class="t">the shortest path is rarely the one you remember</span><span class="age">9:41</span></div>
             <div class="row"><span class="t">what if onboarding is just the product, slow…</span><span class="age">9:12</span></div>
             <div class="sec">this week</div>
             <div class="row"><span class="t">recipes as version control — forks &amp; merges</span><span class="age">tue</span></div>
@@ -233,22 +233,18 @@ body { font-family: "Helvetica Neue", ui-sans-serif, sans-serif; font-weight: 30
         <div class="scr">
           <div class="island"></div>
           <div class="sb"><span>9:41</span><span class="batt"></span></div>
-          <div class="p-hd"><span class="bk">‹</span><span class="ttl">tuesday · 9:41</span><span class="ct"> </span></div>
+          <div class="p-hd"><span class="bk">‹</span><span class="ttl">3 jul · 9:41</span><span class="ct"> </span></div>
           <div class="th">cities feel more creative because collisions are free</div>
-          <div class="vline"></div>
-          <div class="x">
-            <div class="who">partner</div>
-            <div class="msg q">Is it the collisions — or the permission to be interrupted?</div>
-            <div class="who">you</div>
-            <div class="msg me">maybe it's that nobody schedules a collision. the city does it for you.</div>
-            <div class="who">partner</div>
-            <div class="msg q">delegated serendipity, then. what would software need, to earn that permission?</div>
+          <div class="ret"><span class="reddot"></span>returned · today</div>
+          <div class="links">
+            <span class="lnk">edited silence</span>
+            <span class="lnk">attention is a garden</span>
           </div>
-          <div class="reply"><span class="reddot"></span>think out loud</div>
+          <div class="rest">let it rest</div>
           <div class="homebar"></div>
         </div>
       </div>
-      <div class="cap">develop</div>
+      <div class="cap">the thought</div>
     </div>
   </div>
 
@@ -260,9 +256,12 @@ body { font-family: "Helvetica Neue", ui-sans-serif, sans-serif; font-weight: 30
             <div class="tbar"><div class="dots"><i></i><i></i><i></i></div><span class="ttl">drft</span></div>
             <div class="wsp">
               <aside class="edge">
+                <ul>
+                  <li class="on pin">cities feel more creative…</li>
+                </ul>
                 <div class="sec">today</div>
                 <ul>
-                  <li class="on">cities feel more creative…</li>
+                  <li>the shortest path is rarely…</li>
                   <li>what if onboarding is just…</li>
                 </ul>
                 <div class="sec">this week</div>
@@ -279,19 +278,11 @@ body { font-family: "Helvetica Neue", ui-sans-serif, sans-serif; font-weight: 30
               </aside>
               <span class="count">142</span>
               <div class="main">
-                <div class="m-date">tuesday · 9:41</div>
+                <div class="m-date">3 jul · 9:41</div>
                 <div class="m-thought">cities feel more creative because collisions are free</div>
-                <div class="vline"></div>
-                <div class="x">
-                  <div class="who">partner</div>
-                  <div class="msg q">Is it the collisions — or the permission to be interrupted?</div>
-                  <div class="who">you</div>
-                  <div class="msg me">maybe it's that nobody schedules a collision. the city does it for you.</div>
-                  <div class="who">partner</div>
-                  <div class="msg q">delegated serendipity, then. what would software need, to earn that permission to interrupt?</div>
-                </div>
+                <div class="ret"><span class="reddot"></span>returned · today</div>
                 <div class="m-rel">edited silence · attention is a garden · third places</div>
-                <div class="m-reply"><span class="reddot"></span>think out loud</div>
+                <div class="m-rest">let it rest</div>
               </div>
             </div>
           </div>
@@ -356,8 +347,9 @@ body { font-family: "Helvetica Neue", ui-sans-serif, sans-serif; font-weight: 30
           <div class="sb"><span>23:12</span><span class="batt"></span></div>
           <div class="p-hd"><span class="bk"> </span><span class="ttl">drft</span><span class="ct">142</span></div>
           <div class="lst">
+            <div class="row on pin"><span class="reddot"></span><span class="t">cities feel more creative because collisions…</span><span class="age">3 jul</span></div>
             <div class="sec">today</div>
-            <div class="row on"><span class="reddot"></span><span class="t">cities feel more creative because collisions…</span><span class="age">23:12</span></div>
+            <div class="row"><span class="t">the shortest path is rarely the one you remember</span><span class="age">23:12</span></div>
             <div class="row"><span class="t">what if onboarding is just the product, slow…</span><span class="age">9:12</span></div>
             <div class="sec">this week</div>
             <div class="row"><span class="t">recipes as version control — forks &amp; merges</span><span class="age">tue</span></div>
@@ -378,22 +370,18 @@ body { font-family: "Helvetica Neue", ui-sans-serif, sans-serif; font-weight: 30
         <div class="scr">
           <div class="island"></div>
           <div class="sb"><span>23:12</span><span class="batt"></span></div>
-          <div class="p-hd"><span class="bk">‹</span><span class="ttl">tuesday · 23:12</span><span class="ct"> </span></div>
+          <div class="p-hd"><span class="bk">‹</span><span class="ttl">3 jul · 23:12</span><span class="ct"> </span></div>
           <div class="th">cities feel more creative because collisions are free</div>
-          <div class="vline"></div>
-          <div class="x">
-            <div class="who">partner</div>
-            <div class="msg q">Is it the collisions — or the permission to be interrupted?</div>
-            <div class="who">you</div>
-            <div class="msg me">maybe it's that nobody schedules a collision. the city does it for you.</div>
-            <div class="who">partner</div>
-            <div class="msg q">delegated serendipity, then. what would software need, to earn that permission?</div>
+          <div class="ret"><span class="reddot"></span>returned · today</div>
+          <div class="links">
+            <span class="lnk">edited silence</span>
+            <span class="lnk">attention is a garden</span>
           </div>
-          <div class="reply"><span class="reddot"></span>think out loud</div>
+          <div class="rest">let it rest</div>
           <div class="homebar"></div>
         </div>
       </div>
-      <div class="cap">develop</div>
+      <div class="cap">the thought</div>
     </div>
   </div>
 
@@ -405,9 +393,12 @@ body { font-family: "Helvetica Neue", ui-sans-serif, sans-serif; font-weight: 30
             <div class="tbar"><div class="dots"><i></i><i></i><i></i></div><span class="ttl">drft</span></div>
             <div class="wsp">
               <aside class="edge">
+                <ul>
+                  <li class="on pin">cities feel more creative…</li>
+                </ul>
                 <div class="sec">today</div>
                 <ul>
-                  <li class="on">cities feel more creative…</li>
+                  <li>the shortest path is rarely…</li>
                   <li>what if onboarding is just…</li>
                 </ul>
                 <div class="sec">this week</div>
@@ -424,19 +415,11 @@ body { font-family: "Helvetica Neue", ui-sans-serif, sans-serif; font-weight: 30
               </aside>
               <span class="count">142</span>
               <div class="main">
-                <div class="m-date">tuesday · 23:12</div>
+                <div class="m-date">3 jul · 23:12</div>
                 <div class="m-thought">cities feel more creative because collisions are free</div>
-                <div class="vline"></div>
-                <div class="x">
-                  <div class="who">partner</div>
-                  <div class="msg q">Is it the collisions — or the permission to be interrupted?</div>
-                  <div class="who">you</div>
-                  <div class="msg me">maybe it's that nobody schedules a collision. the city does it for you.</div>
-                  <div class="who">partner</div>
-                  <div class="msg q">delegated serendipity, then. what would software need, to earn that permission to interrupt?</div>
-                </div>
+                <div class="ret"><span class="reddot"></span>returned · today</div>
                 <div class="m-rel">edited silence · attention is a garden · third places</div>
-                <div class="m-reply"><span class="reddot"></span>think out loud</div>
+                <div class="m-rest">let it rest</div>
               </div>
             </div>
           </div>

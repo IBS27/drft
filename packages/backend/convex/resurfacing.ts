@@ -97,8 +97,7 @@ async function select(ctx: MutationCtx, userId: string, now: number) {
   return selectThoughtId(open, lastReturned, now);
 }
 
-// Everything delivery needs in one read; thoughtContext (store.ts) adds
-// the questions and connected fragments.
+// Everything delivery needs in one read.
 export const deliveryContext = internalQuery({
   args: { resurfacingId: v.id("resurfacings") },
   handler: async (ctx, { resurfacingId }) => {

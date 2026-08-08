@@ -216,27 +216,16 @@ struct ShelfView: View {
                         selectedThoughtID = thought.id
                     }
                 } label: {
-                    HStack(spacing: 14) {
-                        Text(thought.preview)
-                            .font(StillnessType.shelfThought)
-                            .foregroundStyle(Stillness.ink)
-                            .lineLimit(1)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-
-                        if thought.waiting {
-                            NowDot(diameter: 7)
-                                .accessibilityHidden(true)
-                        }
-                    }
-                    .padding(.vertical, 18)
-                    .contentShape(Rectangle())
+                    Text(thought.preview)
+                        .font(StillnessType.shelfThought)
+                        .foregroundStyle(Stillness.ink)
+                        .lineLimit(1)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.vertical, 18)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel(
-                    thought.waiting
-                        ? "\(thought.preview), question waiting"
-                        : thought.preview
-                )
+                .accessibilityLabel(thought.preview)
             }
             Hairline()
         }

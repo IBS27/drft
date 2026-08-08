@@ -2,12 +2,11 @@ import { v } from "convex/values";
 import { internalMutation } from "./_generated/server";
 import { internal } from "./_generated/api";
 
-// Dev-only. Phase 3 made enrichment real, so seeding plants the design
-// doc's sample fragments (aged across today / this week / earlier) and lets
-// real enrichment embed, link, and question them. Phase 5 made the return
-// loop real too; seeding still fabricates one resurfacing for the given
-// date so design work never waits on the scheduler. (Selection-log only —
-// no channel/deliveredAt — so no email is ever sent for it.)
+// Dev-only. Seeding plants the design doc's sample fragments (aged across
+// today / this week / earlier) and lets real enrichment embed and link them.
+// It also fabricates one resurfacing for the given date so design work never
+// waits on the scheduler. It stamps deliveredAt without a channel, so no email
+// is ever sent for it.
 // Run:   bunx convex run seed:run '{"date":"2026-07-20"}'
 // Undo:  bunx convex run seed:clear
 const DAY = 86_400_000;
@@ -33,13 +32,6 @@ const SAMPLES: [string, number][] = [
   ["a commute you choose is a walk", 30],
 ];
 
-// Questions the pre-phase-3 seed fabricated (sometimes onto real thoughts,
-// since it targeted the newest open one) — clear hunts these down by text.
-const LEGACY_FAKE_QUESTIONS = new Set([
-  "What would have to be true for the opposite to hold?",
-  "Is this about the thing itself, or about your attention to it?",
-  "You kept this and moved on — what were you in the middle of?",
-]);
 // Same for its connections: real scores are cosine similarities and won't
 // land exactly on these hand-picked values.
 const LEGACY_FAKE_SCORES = new Set([0.82, 0.74]);
@@ -68,7 +60,6 @@ export const run = internalMutation({
         text,
         createdAt: Date.now() - daysAgo * DAY - 3_600_000,
         status: "open",
-        unseenQuestionCount: 0,
       });
       // Real enrichment, same as a capture (needs OPENAI_API_KEY set).
       await ctx.scheduler.runAfter(0, internal.enrichment.enrich, { thoughtId });
@@ -102,9 +93,8 @@ export const run = internalMutation({
   },
 });
 
-// Removes everything seeding created: the sample thoughts and all rows
-// hanging off them (messages, questions, connections, resurfacings), plus
-// any legacy fabricated questions/connections the old seed left on real
+// Removes everything seeding created: sample thoughts, connections, and
+// resurfacings, plus legacy fabricated connections the old seed left on real
 // thoughts. Real captures and their real enrichment are untouched.
 export const clear = internalMutation({
   args: {},
@@ -116,10 +106,6 @@ export const clear = internalMutation({
       thoughts.filter((t) => sampleTexts.has(t.text)).map((t) => t._id),
     );
 
-    for (const q of await ctx.db.query("questions").collect()) {
-      if (sampleIds.has(q.thoughtId) || LEGACY_FAKE_QUESTIONS.has(q.text))
-        await ctx.db.delete(q._id);
-    }
     for (const c of await ctx.db.query("connections").collect()) {
       if (
         sampleIds.has(c.fromId) ||
@@ -137,11 +123,6 @@ export const clear = internalMutation({
     }
     let removed = 0;
     for (const id of sampleIds) {
-      const messages = await ctx.db
-        .query("messages")
-        .withIndex("by_thought", (q) => q.eq("thoughtId", id))
-        .collect();
-      for (const m of messages) await ctx.db.delete(m._id);
       await ctx.db.delete(id);
       removed++;
     }

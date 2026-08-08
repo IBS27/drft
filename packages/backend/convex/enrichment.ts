@@ -1,29 +1,22 @@
 "use node";
 
 import { v } from "convex/values";
-import { embed, embedMany, generateText, Output } from "ai";
-import { z } from "zod";
+import { embed, embedMany } from "ai";
 import { internalAction } from "./_generated/server";
 import { internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
-import { EMBEDDING_MODEL, QUESTION_MODEL, openaiProvider } from "./ai/models";
-import {
-  LINK_THRESHOLD,
-  MAX_LINKS_PER_ENRICH,
-  MAX_UNSEEN_QUESTIONS,
-} from "./ai/limits";
-import { captureQuestionsPrompt } from "./ai/prompts";
+import { EMBEDDING_MODEL, openaiProvider } from "./ai/models";
+import { LINK_THRESHOLD, MAX_LINKS_PER_ENRICH } from "./ai/limits";
 
-const questionsSchema = z.object({
-  questions: z
-    .array(z.string())
-    .max(2)
-    .describe("Zero, one, or two prepared questions. Empty if nothing good."),
-});
+type BackfillEmbeddingsResult = {
+  embedded: number;
+  scheduledNextBatch: boolean;
+};
+
+const BACKFILL_PAGE_SIZE = 100;
 
 // The silent work after every capture: embed, search for resonant older
-// thinking, link, draft questions. Nothing here notifies anyone — the
-// partner is prepared, but waits.
+// thinking, and link related thoughts. Nothing here notifies anyone.
 export const enrich = internalAction({
   args: { thoughtId: v.id("thoughts") },
   handler: async (ctx, { thoughtId }) => {
@@ -40,41 +33,23 @@ export const enrich = internalAction({
       embedding,
     });
 
-    // Resonance lives in two places: other fragments, and the user's own
-    // words in past sessions (which point back at their thought). Resting
-    // thoughts stay searchable — "this echoes something you set down in May."
+    // Resting thoughts stay searchable so older thinking can still connect.
     const thoughtHits = await ctx.vectorSearch("thoughts", "by_embedding", {
       vector: embedding,
       limit: 8,
       filter: (q) => q.eq("userId", thought.userId),
     });
-    const messageHits = await ctx.vectorSearch("messages", "by_embedding", {
-      vector: embedding,
-      limit: 8,
-      filter: (q) => q.eq("userId", thought.userId),
-    });
-    const messageSources = await ctx.runQuery(internal.store.messageThoughtIds, {
-      ids: messageHits.map((h) => h._id),
-    });
-    const messageScores = new Map(messageHits.map((h) => [h._id, h._score]));
 
     const byThought = new Map<Id<"thoughts">, number>();
     for (const hit of thoughtHits) {
       byThought.set(hit._id, Math.max(byThought.get(hit._id) ?? 0, hit._score));
     }
-    for (const source of messageSources) {
-      const score = messageScores.get(source._id) ?? 0;
-      byThought.set(
-        source.thoughtId,
-        Math.max(byThought.get(source.thoughtId) ?? 0, score),
-      );
-    }
     byThought.delete(thoughtId);
 
     // alreadyLinked includes dismissed pairs — a dismissed link is never
-    // re-offered, not as a chip and not quoted inside a question.
+    // re-offered.
     const alreadyLinked = new Set(
-      await ctx.runQuery(internal.store.linkedPartnerIds, { thoughtId }),
+      await ctx.runQuery(internal.store.linkedThoughtIds, { thoughtId }),
     );
     const offerable = [...byThought.entries()]
       .filter(([id, score]) => score >= LINK_THRESHOLD && !alreadyLinked.has(id))
@@ -86,79 +61,70 @@ export const enrich = internalAction({
         score,
       });
     }
-
-    // Draft at most two questions to leave waiting. The resonant fragments
-    // travel along so a question can reach across the collection.
-    const context = await ctx.runQuery(internal.store.thoughtContext, {
-      thoughtId,
-    });
-    if (!context) return;
-    const unseen = context.questions.filter((q) => !q.seen).length;
-    if (unseen >= MAX_UNSEEN_QUESTIONS) return;
-    const resonantTexts = (
-      await ctx.runQuery(internal.store.thoughtTexts, {
-        ids: offerable.slice(0, 3).map(([id]) => id),
-      })
-    ).map((t) => t.text);
-    const result = await generateText({
-      model: openai(QUESTION_MODEL),
-      output: Output.object({ schema: questionsSchema }),
-      prompt: captureQuestionsPrompt({
-        thoughtText: thought.text,
-        resonantTexts,
-      }),
-    });
-    const texts = result.output.questions.map((q) => q.trim()).filter(Boolean);
-    if (texts.length > 0) {
-      // insertQuestions re-checks the unseen cap in-transaction.
-      await ctx.runMutation(internal.store.insertQuestions, { thoughtId, texts });
-    }
   },
 });
 
-// One-time catch-up for thoughts and messages captured before phase 3:
-// embeddings only, so they can be found. Links and questions arrive
-// naturally as new thinking resonates with them.
+// One-time catch-up for thoughts captured before embeddings were introduced.
 // Run with: bunx convex run enrichment:backfillEmbeddings
 export const backfillEmbeddings = internalAction({
-  args: {},
-  handler: async (ctx) => {
-    // Ownership first: a message embedding is unsearchable without the
-    // userId the vector index filters on.
-    await ctx.runMutation(internal.store.backfillMessageUsers, {});
-    const { thoughts, messages } = await ctx.runQuery(internal.store.unembedded, {});
-    const openai = openaiProvider();
-    const model = openai.textEmbedding(EMBEDDING_MODEL);
+  args: {
+    cursor: v.optional(v.string()),
+    pageSize: v.optional(v.number()),
+  },
+  handler: async (
+    ctx,
+    { cursor, pageSize },
+  ): Promise<BackfillEmbeddingsResult> => {
+    const boundedPageSize = Math.max(
+      1,
+      Math.min(BACKFILL_PAGE_SIZE, Math.floor(pageSize ?? BACKFILL_PAGE_SIZE)),
+    );
+    const thoughts = await ctx.runQuery(internal.store.unembedded, {
+      cursor: cursor ?? null,
+      pageSize: boundedPageSize,
+    });
+
+    // Never embed an incomplete page or advance past it. Shrinking both the
+    // row and byte-bounded scan makes progress without split-range bookkeeping.
+    if (thoughts.pageStatus === "SplitRequired") {
+      if (boundedPageSize === 1) {
+        throw new Error("A single thought exceeds the backfill read limit");
+      }
+      const retryArgs: { cursor?: string; pageSize: number } = {
+        pageSize: Math.max(1, Math.floor(boundedPageSize / 2)),
+      };
+      if (cursor !== undefined) retryArgs.cursor = cursor;
+      await ctx.scheduler.runAfter(
+        0,
+        internal.enrichment.backfillEmbeddings,
+        retryArgs,
+      );
+      return { embedded: 0, scheduledNextBatch: true };
+    }
+
     let embedded = 0;
-    const batch = 100;
-    for (let i = 0; i < thoughts.length; i += batch) {
-      const slice = thoughts.slice(i, i + batch);
+    if (thoughts.page.length > 0) {
+      const openai = openaiProvider();
       const { embeddings } = await embedMany({
-        model,
-        values: slice.map((t) => t.text),
+        model: openai.textEmbedding(EMBEDDING_MODEL),
+        values: thoughts.page.map((t) => t.text),
       });
-      for (let j = 0; j < slice.length; j++) {
+      for (let i = 0; i < thoughts.page.length; i++) {
         await ctx.runMutation(internal.store.patchThoughtEmbedding, {
-          thoughtId: slice[j]._id,
-          embedding: embeddings[j],
+          thoughtId: thoughts.page[i]._id,
+          embedding: embeddings[i],
         });
         embedded += 1;
       }
     }
-    for (let i = 0; i < messages.length; i += batch) {
-      const slice = messages.slice(i, i + batch);
-      const { embeddings } = await embedMany({
-        model,
-        values: slice.map((m) => m.text),
-      });
-      for (let j = 0; j < slice.length; j++) {
-        await ctx.runMutation(internal.store.patchMessageEmbedding, {
-          messageId: slice[j]._id,
-          embedding: embeddings[j],
-        });
-        embedded += 1;
-      }
+
+    if (!thoughts.isDone) {
+      await ctx.scheduler.runAfter(
+        0,
+        internal.enrichment.backfillEmbeddings,
+        { cursor: thoughts.continueCursor, pageSize: boundedPageSize },
+      );
     }
-    return { embedded };
+    return { embedded, scheduledNextBatch: !thoughts.isDone };
   },
 });

@@ -14,6 +14,11 @@ import { readSeenUser } from "../auth/seenUser";
 // once while the live subscription catches up behind it, and the moment
 // real data lands it takes over. A browser the handshake rejects gets
 // its memory cleared along with the seen-user flag.
+//
+// The version only has to move when a stored answer would *render wrong* —
+// a field that has gone away is read by nothing and costs nothing, and the
+// first live answer overwrites it anyway. Bumping for one of those would
+// trade every returning visitor's instant first paint for nothing.
 const PREFIX = "drft:query:v1:";
 
 function storageKey(userId: string, name: string): string {

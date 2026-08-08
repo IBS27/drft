@@ -1,5 +1,4 @@
 import { v } from "convex/values";
-import { internal } from "./_generated/api";
 import { mutation, query } from "./_generated/server";
 import type { MutationCtx } from "./_generated/server";
 
@@ -78,20 +77,7 @@ export const get = query({
 export const ensure = mutation({
   args: { timezone: v.string(), email: v.optional(v.string()) },
   handler: async (ctx, args) => {
-    const userId = await upsert(ctx, args);
-    const legacy = await ctx.db
-      .query("thoughts")
-      .withIndex("by_user_and_unseenQuestionCount", (q) =>
-        q.eq("userId", userId).eq("unseenQuestionCount", undefined),
-      )
-      .first();
-    if (legacy) {
-      await ctx.scheduler.runAfter(
-        0,
-        internal.thoughts.backfillQuestionCounts,
-        { userId },
-      );
-    }
+    await upsert(ctx, args);
   },
 });
 

@@ -4,14 +4,11 @@ import SwiftUI
 @MainActor
 private final class ThoughtModel: ObservableObject {
     @Published private(set) var thought: ConvexService.Thought?
-    @Published private(set) var hasConversation = false
 
     private var thoughtSubscription: AnyCancellable?
-    private var conversationSubscription: AnyCancellable?
 
     func subscribe(thoughtID: String, convexService: ConvexService) {
         thoughtSubscription?.cancel()
-        conversationSubscription?.cancel()
 
         thoughtSubscription = convexService.thought(id: thoughtID)
             .receive(on: DispatchQueue.main)
@@ -19,14 +16,6 @@ private final class ThoughtModel: ObservableObject {
                 receiveCompletion: { _ in },
                 receiveValue: { [weak self] thought in
                     self?.thought = thought
-                }
-            )
-        conversationSubscription = convexService.conversationProbe(thoughtID: thoughtID)
-            .receive(on: DispatchQueue.main)
-            .sink(
-                receiveCompletion: { _ in },
-                receiveValue: { [weak self] page in
-                    self?.hasConversation = !page.page.isEmpty
                 }
             )
     }
@@ -103,7 +92,6 @@ struct ThoughtView: View {
                 thoughtID: thoughtID,
                 convexService: convexService
             )
-            try? await convexService.markQuestionsSeen(thoughtID: thoughtID)
         }
     }
 
@@ -124,30 +112,9 @@ struct ThoughtView: View {
                 .stillnessLabel(.timestamp)
                 .padding(.top, 30)
 
-            if !thought.questions.isEmpty {
-                VStack(spacing: 28) {
-                    ForEach(thought.questions) { question in
-                        Text(question.text)
-                            .font(StillnessType.marginalia)
-                            .lineSpacing(9)
-                            .multilineTextAlignment(.center)
-                            .foregroundStyle(Stillness.muted)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                }
-                .frame(maxWidth: 340)
-                .padding(.top, 48)
-            }
-
-            Spacer(minLength: 48)
-
-            if model.hasConversation {
-                Text("continue on the web")
-                    .stillnessFaintFootnote()
-            }
+            Spacer(minLength: 64)
 
             restControls
-                .padding(.top, model.hasConversation ? 32 : 0)
                 .padding(.bottom, 34)
         }
         .frame(maxWidth: .infinity)

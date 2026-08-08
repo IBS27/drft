@@ -4,11 +4,8 @@ import { createOpenAI } from "@ai-sdk/openai";
 // also typechecks inside the web app's program (no node types there).
 declare const process: { env: Record<string, string | undefined> };
 
-// All model routing in one place — tuning the partner never touches
-// business logic. Sessions get the top tier; background work the cheap one.
-// (Behavioral caps/thresholds live in ./limits.ts, importable everywhere.)
-export const SESSION_MODEL = "gpt-5.6-sol";
-export const QUESTION_MODEL = "gpt-5.6-luna";
+// Model routing for embedding-backed enrichment lives here so provider and
+// model changes stay out of business logic.
 export const EMBEDDING_MODEL = "text-embedding-3-small"; // 1536 dims, pinned by the vector indexes
 
 export function openaiProvider() {

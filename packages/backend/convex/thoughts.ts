@@ -1,17 +1,10 @@
 import { v } from "convex/values";
-import {
-  paginationOptsValidator,
-  paginationResultValidator,
-} from "convex/server";
-import { internalMutation, mutation, query } from "./_generated/server";
-import type { MutationCtx, QueryCtx } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
+import type { QueryCtx } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
 import { internal } from "./_generated/api";
-import { MAX_UNSEEN_QUESTIONS } from "./ai/limits";
 
-const QUESTION_HISTORY_LIMIT = 100;
 const CONNECTIONS_PER_DIRECTION_LIMIT = 50;
-const QUESTION_COUNT_BACKFILL_BATCH = 64;
 const COLLECTION_LIMIT = 500;
 const PREVIEW_LIMIT = 160;
 
@@ -19,13 +12,6 @@ const collectionRowValidator = v.object({
   _id: v.id("thoughts"),
   preview: v.string(),
   createdAt: v.number(),
-  waiting: v.boolean(),
-});
-
-const questionViewValidator = v.object({
-  _id: v.id("questions"),
-  text: v.string(),
-  seen: v.boolean(),
 });
 
 const connectionViewValidator = v.object({
@@ -33,12 +19,6 @@ const connectionViewValidator = v.object({
   otherId: v.id("thoughts"),
   otherText: v.string(),
   otherStatus: v.union(v.literal("open"), v.literal("resting")),
-});
-
-const messageViewValidator = v.object({
-  _id: v.id("messages"),
-  role: v.union(v.literal("you"), v.literal("partner")),
-  text: v.string(),
 });
 
 function preview(text: string): string {
@@ -51,7 +31,6 @@ function collectionRow(thought: Doc<"thoughts">) {
     _id: thought._id,
     preview: preview(thought.text),
     createdAt: thought.createdAt,
-    waiting: (thought.unseenQuestionCount ?? 0) > 0,
   };
 }
 
@@ -64,9 +43,8 @@ async function ownedThought(ctx: QueryCtx, thoughtId: Id<"thoughts">) {
   return thought;
 }
 
-// Capture stays dumb: insert text + timestamp, return. Everything
-// intelligent (embed, link, questions) happens async in enrichment.ts —
-// prepared, but waiting; capture never becomes a conversation.
+// Capture stays dumb: insert text + timestamp, return. Embedding and linking
+// happen asynchronously in enrichment.ts.
 export const capture = mutation({
   args: { text: v.string() },
   returns: v.id("thoughts"),
@@ -80,17 +58,15 @@ export const capture = mutation({
       text: trimmed,
       createdAt: Date.now(),
       status: "open",
-      unseenQuestionCount: 0,
     });
     await ctx.scheduler.runAfter(0, internal.enrichment.enrich, { thoughtId });
     return thoughtId;
   },
 });
 
-// The collection: open thoughts, newest first. `waiting` (an unseen
-// question) is what lights the vermilion dot. `date` is the client's
-// local YYYY-MM-DD — the server has no timezone, so "today" is the
-// client's to define; it selects today's resurfaced thought, if any.
+// The collection: open thoughts, newest first. `date` is the client's local
+// YYYY-MM-DD — the server has no timezone, so "today" is the client's to
+// define; it selects today's resurfaced thought, if any.
 export const collection = query({
   args: { date: v.string() },
   returns: v.object({
@@ -132,8 +108,7 @@ export const collection = query({
   },
 });
 
-// Mostly-static thought material. The hot message stream has its own
-// paginated query below, so a token patch does not reread this whole margin.
+// The thought, its connections, and its return/rest state.
 export const view = query({
   args: { thoughtId: v.id("thoughts") },
   returns: v.union(
@@ -146,19 +121,13 @@ export const view = query({
       restingNote: v.optional(v.string()),
       restedAt: v.optional(v.number()),
       lastReturnedAt: v.union(v.number(), v.null()),
-      questions: v.array(questionViewValidator),
       connections: v.array(connectionViewValidator),
     }),
   ),
   handler: async (ctx, { thoughtId }) => {
     const thought = await ownedThought(ctx, thoughtId);
     if (!thought) return null;
-    const [questionRows, fromLinks, toLinks, lastReturn] = await Promise.all([
-      ctx.db
-        .query("questions")
-        .withIndex("by_thought", (q) => q.eq("thoughtId", thoughtId))
-        .order("desc")
-        .take(QUESTION_HISTORY_LIMIT),
+    const [fromLinks, toLinks, lastReturn] = await Promise.all([
       ctx.db
         .query("connections")
         .withIndex("by_from_and_dismissedAt", (q) =>
@@ -177,9 +146,6 @@ export const view = query({
         .order("desc")
         .first(),
     ]);
-    const questions = [...questionRows]
-      .reverse()
-      .map((q) => ({ _id: q._id, text: q.text, seen: q.seenAt !== undefined }));
     const links = [...fromLinks, ...toLinks].sort((a, b) => b.score - a.score);
     const connections = (
       await Promise.all(
@@ -205,90 +171,8 @@ export const view = query({
       restingNote: thought.restingNote,
       restedAt: thought.restedAt,
       lastReturnedAt: lastReturn?._creationTime ?? null,
-      questions,
       connections,
     };
-  },
-});
-
-// The append-only, frequently changing part of a thought. Newest-first
-// pagination keeps streaming updates inside the first small reactive page.
-export const conversation = query({
-  args: {
-    thoughtId: v.id("thoughts"),
-    paginationOpts: paginationOptsValidator,
-  },
-  returns: paginationResultValidator(messageViewValidator),
-  handler: async (ctx, { thoughtId, paginationOpts }) => {
-    const thought = await ownedThought(ctx, thoughtId);
-    if (!thought) {
-      return { page: [], continueCursor: "", isDone: true };
-    }
-    const page = await ctx.db
-      .query("messages")
-      .withIndex("by_thought", (q) => q.eq("thoughtId", thoughtId))
-      .order("desc")
-      .paginate(paginationOpts);
-    return {
-      ...page,
-      page: page.page.map((m) => ({
-        _id: m._id,
-        role: m.role,
-        text: m.text,
-      })),
-    };
-  },
-});
-
-async function backfillQuestionCountBatch(
-  ctx: MutationCtx,
-  userId: string,
-): Promise<boolean> {
-  const legacy = await ctx.db
-    .query("thoughts")
-    .withIndex("by_user_and_unseenQuestionCount", (q) =>
-      q.eq("userId", userId).eq("unseenQuestionCount", undefined),
-    )
-    .take(QUESTION_COUNT_BACKFILL_BATCH);
-  for (const thought of legacy) {
-    const unseen = await ctx.db
-      .query("questions")
-      .withIndex("by_thought_and_seenAt", (q) =>
-        q.eq("thoughtId", thought._id).eq("seenAt", undefined),
-      )
-      .take(MAX_UNSEEN_QUESTIONS);
-    await ctx.db.patch(thought._id, {
-      unseenQuestionCount: unseen.length,
-    });
-  }
-  return legacy.length === QUESTION_COUNT_BACKFILL_BATCH;
-}
-
-// Compatibility entry point retained for callers from before the migration
-// became server-owned. Indexed batches keep it cheap and resumable.
-export const ensureQuestionCounts = mutation({
-  args: {},
-  returns: v.boolean(),
-  handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) return false;
-    return backfillQuestionCountBatch(ctx, identity.subject);
-  },
-});
-
-export const backfillQuestionCounts = internalMutation({
-  args: { userId: v.string() },
-  returns: v.null(),
-  handler: async (ctx, { userId }): Promise<null> => {
-    const hasMore = await backfillQuestionCountBatch(ctx, userId);
-    if (hasMore) {
-      await ctx.scheduler.runAfter(
-        0,
-        internal.thoughts.backfillQuestionCounts,
-        { userId },
-      );
-    }
-    return null;
   },
 });
 
@@ -314,54 +198,6 @@ export const resting = query({
       restedAt: t.restedAt,
       restingNote: t.restingNote,
     }));
-  },
-});
-
-// Your side of the conversation. Kept verbatim, like a capture; the
-// partner streams a reply and your words get embedded, both async.
-export const say = mutation({
-  args: { thoughtId: v.id("thoughts"), text: v.string() },
-  handler: async (ctx, { thoughtId, text }) => {
-    const thought = await ownedThought(ctx, thoughtId);
-    if (!thought) throw new Error("Not found");
-    const trimmed = text.trim();
-    if (!trimmed) throw new Error("Empty message");
-    const messageId = await ctx.db.insert("messages", {
-      thoughtId,
-      userId: thought.userId,
-      role: "you",
-      text: trimmed,
-    });
-    await ctx.scheduler.runAfter(0, internal.partner.reply, {
-      thoughtId,
-      userMessageId: messageId,
-    });
-    return messageId;
-  },
-});
-
-// Arriving at a thought is what "sees" its questions — the dot marks
-// now, and now is over once you're in the room.
-export const markQuestionsSeen = mutation({
-  args: { thoughtId: v.id("thoughts") },
-  returns: v.null(),
-  handler: async (ctx, { thoughtId }) => {
-    const thought = await ownedThought(ctx, thoughtId);
-    if (!thought) return null;
-    const questions = await ctx.db
-      .query("questions")
-      .withIndex("by_thought_and_seenAt", (q) =>
-        q.eq("thoughtId", thoughtId).eq("seenAt", undefined),
-      )
-      .take(MAX_UNSEEN_QUESTIONS);
-    const now = Date.now();
-    for (const q of questions) {
-      await ctx.db.patch(q._id, { seenAt: now });
-    }
-    if (thought.unseenQuestionCount !== 0) {
-      await ctx.db.patch(thoughtId, { unseenQuestionCount: 0 });
-    }
-    return null;
   },
 });
 

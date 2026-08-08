@@ -1,6 +1,6 @@
 # drft
 
-A space for unfinished thoughts — capture ideas the instant they occur, then develop them later with an AI thinking partner.
+A space for unfinished thoughts — capture ideas the instant they occur, then let them come back to you: a quiet collection that links what echoes, and one thought returned by email each morning.
 
 See [docs/overview.html](docs/overview.html) for the full product and tech overview.
 
