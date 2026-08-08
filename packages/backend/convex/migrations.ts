@@ -37,9 +37,9 @@ type LegacyPartnerDataModel = DataModelFromSchemaDefinition<
   typeof legacyPartnerSchema
 >;
 type ClearPartnerDataArgs = {
+  phase?: "thoughts" | "questions" | "messages";
   thoughtCursor?: string;
   thoughtBatchSize?: number;
-  thoughtsDone?: boolean;
 };
 type ClearPartnerDataResult = {
   thoughtsCleared: number;
@@ -50,9 +50,15 @@ type ClearPartnerDataResult = {
 
 export const clearPartnerData = internalMutation({
   args: {
+    phase: v.optional(
+      v.union(
+        v.literal("thoughts"),
+        v.literal("questions"),
+        v.literal("messages"),
+      ),
+    ),
     thoughtCursor: v.optional(v.string()),
     thoughtBatchSize: v.optional(v.number()),
-    thoughtsDone: v.optional(v.boolean()),
   },
   returns: v.object({
     thoughtsCleared: v.number(),
@@ -62,29 +68,83 @@ export const clearPartnerData = internalMutation({
   }),
   handler: async (
     ctx,
-    { thoughtCursor, thoughtBatchSize, thoughtsDone },
+    { phase = "thoughts", thoughtCursor, thoughtBatchSize },
   ): Promise<ClearPartnerDataResult> => {
+    if (phase === "questions") {
+      const legacyDb =
+        ctx.db as unknown as GenericDatabaseWriter<LegacyPartnerDataModel>;
+      const questionPage = await legacyDb.query("questions").paginate({
+        cursor: null,
+        numItems: LEGACY_DELETE_BATCH_SIZE,
+        maximumRowsRead: LEGACY_DELETE_BATCH_SIZE,
+        maximumBytesRead: MAX_LEGACY_PAGE_BYTES_READ,
+      });
+      if (questionPage.pageStatus === "SplitRequired") {
+        throw new Error(
+          "A single legacy partner row exceeds the migration read limit",
+        );
+      }
+      for (const question of questionPage.page) {
+        await legacyDb.delete(question._id);
+      }
+      await ctx.scheduler.runAfter(0, internal.migrations.clearPartnerData, {
+        phase: questionPage.isDone ? "messages" : "questions",
+      });
+      return {
+        thoughtsCleared: 0,
+        questionsDeleted: questionPage.page.length,
+        messagesDeleted: 0,
+        scheduledNextBatch: true,
+      };
+    }
+
+    if (phase === "messages") {
+      const legacyDb =
+        ctx.db as unknown as GenericDatabaseWriter<LegacyPartnerDataModel>;
+      const messagePage = await legacyDb.query("messages").paginate({
+        cursor: null,
+        numItems: LEGACY_DELETE_BATCH_SIZE,
+        maximumRowsRead: LEGACY_DELETE_BATCH_SIZE,
+        maximumBytesRead: MAX_LEGACY_PAGE_BYTES_READ,
+      });
+      if (messagePage.pageStatus === "SplitRequired") {
+        throw new Error(
+          "A single legacy partner row exceeds the migration read limit",
+        );
+      }
+      for (const message of messagePage.page) {
+        await legacyDb.delete(message._id);
+      }
+      if (!messagePage.isDone) {
+        await ctx.scheduler.runAfter(0, internal.migrations.clearPartnerData, {
+          phase: "messages",
+        });
+      }
+      return {
+        thoughtsCleared: 0,
+        questionsDeleted: 0,
+        messagesDeleted: messagePage.page.length,
+        scheduledNextBatch: !messagePage.isDone,
+      };
+    }
+
     const pageSize = Math.max(
       1,
       Math.min(MAX_BATCH_SIZE, Math.floor(thoughtBatchSize ?? MAX_BATCH_SIZE)),
     );
-    const thoughtPage = thoughtsDone
-      ? null
-      : await ctx.db
-          .query("thoughts")
-          .filter((q) =>
-            q.neq(q.field("unseenQuestionCount"), undefined),
-          )
-          .paginate({
-            cursor: thoughtCursor ?? null,
-            numItems: pageSize,
-            maximumRowsRead: pageSize,
-            maximumBytesRead: MAX_PAGE_BYTES_READ,
-          });
+    const thoughtPage = await ctx.db
+      .query("thoughts")
+      .filter((q) => q.neq(q.field("unseenQuestionCount"), undefined))
+      .paginate({
+        cursor: thoughtCursor ?? null,
+        numItems: pageSize,
+        maximumRowsRead: pageSize,
+        maximumBytesRead: MAX_PAGE_BYTES_READ,
+      });
 
     // A SplitRequired page may be incomplete. Do not mutate anything from it
     // or advance its cursor; retry the same range with fewer rows instead.
-    if (thoughtPage?.pageStatus === "SplitRequired") {
+    if (thoughtPage.pageStatus === "SplitRequired") {
       if (pageSize === 1) {
         throw new Error("A single thought exceeds the migration read limit");
       }
@@ -107,64 +167,29 @@ export const clearPartnerData = internalMutation({
       };
     }
 
-    const thoughts = thoughtPage?.page ?? [];
+    const thoughts = thoughtPage.page;
     for (const thought of thoughts) {
       await ctx.db.patch(thought._id, { unseenQuestionCount: undefined });
     }
 
-    const legacyDb =
-      ctx.db as unknown as GenericDatabaseWriter<LegacyPartnerDataModel>;
-    const [questionPage, messagePage] = await Promise.all([
-      legacyDb.query("questions").paginate({
-        cursor: null,
-        numItems: LEGACY_DELETE_BATCH_SIZE,
-        maximumRowsRead: LEGACY_DELETE_BATCH_SIZE,
-        maximumBytesRead: MAX_LEGACY_PAGE_BYTES_READ,
-      }),
-      legacyDb.query("messages").paginate({
-        cursor: null,
-        numItems: LEGACY_DELETE_BATCH_SIZE,
-        maximumRowsRead: LEGACY_DELETE_BATCH_SIZE,
-        maximumBytesRead: MAX_LEGACY_PAGE_BYTES_READ,
-      }),
-    ]);
-    if (
-      questionPage.pageStatus === "SplitRequired" ||
-      messagePage.pageStatus === "SplitRequired"
-    ) {
-      throw new Error(
-        "A single legacy partner row exceeds the migration read limit",
-      );
-    }
-    const questions = questionPage.page;
-    const messages = messagePage.page;
-    for (const question of questions) await legacyDb.delete(question._id);
-    for (const message of messages) await legacyDb.delete(message._id);
-
-    const thoughtScanDone = thoughtsDone || thoughtPage?.isDone === true;
-    const scheduledNextBatch =
-      !thoughtScanDone ||
-      !questionPage.isDone ||
-      !messagePage.isDone;
-    if (scheduledNextBatch) {
-      const nextArgs: ClearPartnerDataArgs = thoughtScanDone
-        ? { thoughtsDone: true }
-        : {
-            thoughtCursor: thoughtPage?.continueCursor,
-            thoughtBatchSize: pageSize,
-          };
-      await ctx.scheduler.runAfter(
-        0,
-        internal.migrations.clearPartnerData,
-        nextArgs,
-      );
-    }
+    const nextArgs: ClearPartnerDataArgs = thoughtPage.isDone
+      ? { phase: "questions" }
+      : {
+          phase: "thoughts",
+          thoughtCursor: thoughtPage.continueCursor,
+          thoughtBatchSize: pageSize,
+        };
+    await ctx.scheduler.runAfter(
+      0,
+      internal.migrations.clearPartnerData,
+      nextArgs,
+    );
 
     return {
       thoughtsCleared: thoughts.length,
-      questionsDeleted: questions.length,
-      messagesDeleted: messages.length,
-      scheduledNextBatch,
+      questionsDeleted: 0,
+      messagesDeleted: 0,
+      scheduledNextBatch: true,
     };
   },
 });
