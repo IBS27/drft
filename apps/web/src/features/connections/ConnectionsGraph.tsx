@@ -217,6 +217,9 @@ export function ConnectionsGraph({
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== "Escape") return;
+      // The find sheet can stand open over this page; while it does,
+      // escape belongs to it (see features/search/FindSheet).
+      if (document.querySelector("[data-overlay]") !== null) return;
       void navigate({ to: "/" });
     };
     window.addEventListener("keydown", onKeyDown);
@@ -263,7 +266,6 @@ export function ConnectionsGraph({
 
   const onPointerDown = (event: ReactPointerEvent<SVGSVGElement>) => {
     if ((event.target as Element).closest("[data-thought-node]")) return;
-    userMoved.current = true;
     pan.current = {
       pointerId: event.pointerId,
       origin: { x: event.clientX, y: event.clientY },
@@ -273,6 +275,9 @@ export function ConnectionsGraph({
   };
   const onPointerMove = (event: ReactPointerEvent<SVGSVGElement>) => {
     if (!pan.current || pan.current.pointerId !== event.pointerId) return;
+    // Only a real drag hands the view to the user — a bare click keeps
+    // auto-fit alive while pages are still arriving.
+    userMoved.current = true;
     setTransform({
       ...pan.current.transform,
       x: pan.current.transform.x + event.clientX - pan.current.origin.x,
