@@ -31,10 +31,26 @@ enum StillnessType {
         size: 25,
         relativeTo: .title2
     ).weight(.light)
+    static let relatedThought = Font.custom(
+        "Helvetica Neue",
+        size: 16,
+        relativeTo: .body
+    ).weight(.regular)
+    static let relatedMetadata = Font.custom(
+        "Helvetica Neue",
+        size: 11,
+        relativeTo: .caption
+    ).weight(.regular)
+    static let sectionLabel = Font.custom(
+        "Helvetica Neue",
+        size: 11,
+        relativeTo: .caption
+    ).weight(.regular)
     static let wordmarkTracking: CGFloat = 7.5
     static let thoughtLineSpacing: CGFloat = 15
     static let timestampTracking: CGFloat = 3.9
     static let actionTracking: CGFloat = 4.5
+    static let sectionLabelTracking: CGFloat = 3.08
 }
 
 private struct WordmarkStyle: ViewModifier {
@@ -94,6 +110,7 @@ private struct StillnessLabelStyle: ViewModifier {
 
 enum StillnessLabelKind {
     case timestamp
+    case section
     case actionMuted
     case actionInk
 
@@ -101,6 +118,8 @@ enum StillnessLabelKind {
         switch self {
         case .timestamp:
             StillnessType.timestamp
+        case .section:
+            StillnessType.sectionLabel
         case .actionMuted, .actionInk:
             StillnessType.action
         }
@@ -110,6 +129,8 @@ enum StillnessLabelKind {
         switch self {
         case .timestamp:
             StillnessType.timestampTracking
+        case .section:
+            StillnessType.sectionLabelTracking
         case .actionMuted, .actionInk:
             StillnessType.actionTracking
         }
@@ -119,6 +140,8 @@ enum StillnessLabelKind {
         switch self {
         case .timestamp:
             Stillness.faint
+        case .section:
+            Stillness.muted
         case .actionMuted:
             Stillness.muted
         case .actionInk:

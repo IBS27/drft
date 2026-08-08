@@ -54,9 +54,11 @@ adds the shelf.
   thoughts newest-first; `resurfacedId` is today's returned thought
   (force-included in the list).
 - `thoughts:view` query with `{ thoughtId }` → `null` or the full thought:
-  `{ _id, text, createdAt, status, ... }`
-  (connections are returned but unused on iOS).
+  `{ _id, text, createdAt, status, connections, ... }`; connections supply the
+  related-thought list, including each thought's text, capture time, and status.
 - `thoughts:rest` mutation with `{ thoughtId, note? }` → sets the thought down.
+- `thoughts:dismissConnection` / `thoughts:undismissConnection` mutations with
+  `{ connectionId }` → set a related thought aside or restore it.
 - `settings:get` query with no args → returns the daily email settings or `null`.
 - `settings:save` mutation with `{ sendTime, timezone, email? }` → writes the daily
   email settings.
@@ -207,13 +209,19 @@ The capture timestamp sits centered in that quiet header. Below it:
 1. The verbatim text is held at the center of the available reading area, 24–26pt
    light, ink — a step below capture's 30pt; here you read, not write. Selectable,
    never editable.
-2. `REST`, tracked caps, muted, waits at the bottom. Tapping it reveals a single
+2. When related thoughts exist, a left-aligned `RELATED THOUGHTS` list follows
+   after a wide field of space. Rows show the complete thought in sentence case,
+   wrap without truncation, and carry a quiet capture-age or `SET DOWN` label.
+   Tapping follows the thought; back returns through followed thoughts before the
+   shelf. A trailing swipe reveals `SET ASIDE`, followed by an eight-second undo.
+   With no related thoughts, the entire section is absent.
+3. `REST`, tracked caps, muted, waits at the bottom. Tapping it reveals a single
    borderless one-line field for the optional closing line (mirror the web's
    resting-note copy from `apps/web/src/routes/thought.$thoughtId.tsx`) with a
    quiet confirm; resting with or without a note fades the thought and returns
    to the shelf. Resting from the phone is one-way — wake stays on the web.
 
-No connections, search, or resting list. Those are web surfaces.
+No search or resting list. Those remain web surfaces.
 
 ### Sign-in (shown only when signed out)
 
@@ -284,7 +292,7 @@ text entry.
 
 ## Out of scope
 
-Wake, search, the resting list, connections, share extension, iPad, Live
+Wake, search, the resting list, share extension, iPad, Live
 Activities, onboarding beyond sign-in.
 
 Push notifications / APNs are not merely deferred — the daily return ships as

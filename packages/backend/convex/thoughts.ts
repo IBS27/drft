@@ -23,6 +23,7 @@ const connectionViewValidator = v.object({
   _id: v.id("connections"),
   otherId: v.id("thoughts"),
   otherText: v.string(),
+  otherCreatedAt: v.number(),
   otherStatus: v.union(v.literal("open"), v.literal("resting")),
 });
 
@@ -229,6 +230,7 @@ export const view = query({
                 _id: c._id,
                 otherId,
                 otherText: other.text,
+                otherCreatedAt: other.createdAt,
                 otherStatus: other.status,
               }
             : null;

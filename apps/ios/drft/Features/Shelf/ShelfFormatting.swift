@@ -79,6 +79,31 @@ enum ShelfFormatting {
         return "\(day) · \(time)"
     }
 
+    static func ageLabel(for milliseconds: Double, now: Date = .now) -> String {
+        let date = Date(timeIntervalSince1970: milliseconds / 1_000)
+        switch group(for: milliseconds, now: now) {
+        case .today:
+            return date.formatted(
+                .dateTime
+                    .hour(.twoDigits(amPM: .omitted))
+                    .minute(.twoDigits)
+            )
+        case .thisWeek:
+            let formatter = DateFormatter()
+            formatter.locale = Locale(identifier: "en_US_POSIX")
+            formatter.calendar = calendar
+            formatter.dateFormat = "EEE"
+            return formatter.string(from: date)
+        case .earlier:
+            let formatter = DateFormatter()
+            formatter.locale = Locale(identifier: "en_US_POSIX")
+            formatter.calendar = calendar
+            formatter.dateFormat = calendar.component(.year, from: date)
+                == calendar.component(.year, from: now) ? "d MMM" : "d MMM yy"
+            return formatter.string(from: date)
+        }
+    }
+
     static func draftPreview(_ text: String) -> String? {
         let words = text.split(whereSeparator: { $0.isWhitespace })
         guard !words.isEmpty else { return nil }

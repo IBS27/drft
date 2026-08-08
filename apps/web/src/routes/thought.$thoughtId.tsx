@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
 import { useEffect, useRef, useState } from "react";
-import { ageLabel, dateLine, firstLine, groupOf } from "../features/thoughts/format";
+import { ageLabel, dateLine, groupOf } from "../features/thoughts/format";
 import { Rail } from "../features/thoughts/Rail";
 import { useThoughtPrewarm } from "../features/thoughts/useThoughtPrewarm";
 import { BackLink } from "../features/ui/BackLink";
@@ -194,13 +194,24 @@ function ThoughtView() {
                 </span>
               )}
 
-              {/* What the thought turned out to be near, hanging quietly
-                  below it — near enough to belong to it, no rule needed. */}
+              {/* Related thoughts are destinations, not tags: their words
+                  keep their natural case and wrap for as long as they need. */}
               {view.connections.length > 0 && (
-                <div className="mt-12 flex max-w-[52ch] flex-wrap items-center justify-center gap-x-2.5 gap-y-2">
+                <div className="mt-12 w-full max-w-[52ch]">
+                  <div className="flex items-baseline justify-between pb-3">
+                    <span className="text-[10px] tracking-[0.28em] text-pl uppercase">
+                      related thoughts
+                    </span>
+                    <span className="text-[10px] font-normal text-faint">
+                      {view.connections.length}
+                    </span>
+                  </div>
+                  <div className="border-t border-line">
                     {view.connections.map((c, i) => (
-                      <span key={c._id} className="group flex items-center gap-2">
-                        {i > 0 && <span className="text-[11.5px] text-pl">·</span>}
+                      <div
+                        key={c._id}
+                        className="group relative border-b border-line"
+                      >
                         <Link
                           to="/thought/$thoughtId"
                           params={{ thoughtId: c.otherId }}
@@ -216,23 +227,28 @@ function ThoughtView() {
                             prewarm(id);
                             prewarm(c.otherId);
                           }}
-                          className="inline-block max-w-[26ch] truncate text-[11.5px] tracking-[0.22em] text-pl uppercase transition-colors hover:text-ink"
+                          className="grid min-h-17 w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-5 py-4 pr-11 text-left"
                         >
-                          {c.otherStatus === "resting" && (
-                            <span className="text-faint">set down · </span>
-                          )}
-                          {firstLine(c.otherText)}
+                          <span className="whitespace-pre-wrap text-[14.5px] leading-[1.55] font-normal text-pt transition-colors group-hover:text-ink">
+                            {c.otherText}
+                          </span>
+                          <span className="text-right text-[9px] leading-[1.4] font-normal tracking-[0.18em] text-faint uppercase">
+                            {c.otherStatus === "resting"
+                              ? "set down"
+                              : ageLabel(c.otherCreatedAt, now)}
+                          </span>
                         </Link>
                         <button
                           type="button"
                           onClick={() => dismiss(c, i)}
-                          className="text-[13px] leading-none text-pl opacity-0 transition-opacity group-hover:opacity-100 hover:text-dot focus-visible:opacity-100"
-                          aria-label="dismiss connection"
+                          className="absolute top-1/2 right-0 flex size-10 -translate-y-1/2 items-center justify-center text-[15px] leading-none text-pl opacity-0 transition-[color,opacity] group-hover:opacity-100 hover:text-dot focus-visible:opacity-100 [@media(hover:none)]:opacity-100"
+                          aria-label="set related thought aside"
                         >
                           ×
                         </button>
-                      </span>
+                      </div>
                     ))}
+                  </div>
                 </div>
               )}
 
@@ -242,7 +258,9 @@ function ThoughtView() {
                   className="mt-5 flex items-center gap-5 text-[10px] tracking-[0.3em] uppercase"
                 >
                   <span className="text-pl">
-                    {aside.failed ? "couldn't set the link aside" : "link set aside"}
+                    {aside.failed
+                      ? "couldn't set the related thought aside"
+                      : "related thought set aside"}
                   </span>
                   {!aside.failed && (
                     <button
