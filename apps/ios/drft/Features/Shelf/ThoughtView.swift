@@ -74,6 +74,8 @@ struct ThoughtView: View {
                             .stillnessLabel(.timestamp)
                             .lineLimit(1)
                             .allowsHitTesting(false)
+                            .opacity(isLeaving ? 0 : 1)
+                            .animation(.easeOut(duration: 0.24), value: isLeaving)
                     }
                 }
                 .padding(.horizontal, 12)
