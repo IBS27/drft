@@ -46,6 +46,7 @@ final class ConvexService: ObservableObject {
         let _id: String
         let otherId: String
         let otherText: String
+        let otherCreatedAt: Double
         let otherStatus: ThoughtStatus
     }
 
@@ -124,6 +125,20 @@ final class ConvexService: ObservableObject {
                 with: ["thoughtId": thoughtID]
             )
         }
+    }
+
+    func dismissConnection(id: String) async throws {
+        try await client.mutation(
+            "thoughts:dismissConnection",
+            with: ["connectionId": id]
+        )
+    }
+
+    func undismissConnection(id: String) async throws {
+        try await client.mutation(
+            "thoughts:undismissConnection",
+            with: ["connectionId": id]
+        )
     }
 
     func dailyThoughtSendTime() async throws -> String? {

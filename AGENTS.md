@@ -17,6 +17,8 @@ From `apps/landing`: `bun dev` · `bun run build` · `bun run typecheck`
 The web dev server mirrors production routing (see `landingSite` in `apps/web/vite.config.ts`): signed-out `/` serves the landing site, `/?signin` bypasses it. It builds `apps/landing` on start and rebuilds + reloads on landing source changes — no second dev server needed; use `bun dev` in `apps/landing` only for focused landing work with HMR.
 From `packages/backend`: `bun run dev` (convex dev) · `bun run typecheck`
 
+Convex deploys the entire backend snapshot. Never run `convex dev` from parallel worktrees against the same deployment; use a worktree-specific `dev/<name>` deployment and point its clients to it, or use one designated backend worktree.
+
 Dev-only design seed (plants sample thoughts + schedules real enrichment on them; fabricates one resurfacing for the given date — selection-log only, so no email is sent for it), from `packages/backend`:
 `bunx convex run seed:run '{"date":"YYYY-MM-DD"}'` · undo with `bunx convex run seed:clear`
 Both no-op unless the deployment sets `SEED_ALLOWED=1` (dev only, already set) — guards against an accidental `--prod` run.

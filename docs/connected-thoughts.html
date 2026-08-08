@@ -1,0 +1,619 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>drft — related thoughts</title>
+<style>
+/* ============================================================
+   drft — related thoughts as a quiet list
+   One proposal, shown in place on web and iOS. The controls in
+   the top-right change the mock state; they are not product UI.
+   ============================================================ */
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+button { border: 0; background: none; color: inherit; font: inherit; cursor: pointer; }
+body {
+  min-width: 320px;
+  background: #f3f2ee;
+  color: #2b2b28;
+  font-family: "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
+  font-weight: 300;
+}
+
+.page {
+  width: min(1500px, 100%);
+  margin: 0 auto;
+  padding: 44px clamp(20px, 5vw, 72px) 100px;
+}
+
+.crumb,
+.eyebrow,
+.platform,
+.legend,
+.section-label,
+.rail-label,
+.rail-meta,
+.date,
+.returned,
+.rest,
+.connection-state,
+.annotation strong {
+  text-transform: uppercase;
+  letter-spacing: .28em;
+}
+
+.crumb { color: #6b6b65; font-size: 11px; }
+.intro { max-width: 760px; margin-top: 42px; }
+.eyebrow { color: #c73e1d; font-size: 10.5px; font-weight: 400; }
+h1 {
+  max-width: 16ch;
+  margin-top: 14px;
+  font-size: clamp(38px, 5.2vw, 68px);
+  font-weight: 300;
+  letter-spacing: -.035em;
+  line-height: 1.04;
+}
+.lede {
+  max-width: 62ch;
+  margin-top: 24px;
+  color: #55554f;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.75;
+}
+.lede strong { color: #2b2b28; font-weight: 500; }
+
+.proposal-note {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  max-width: 920px;
+  margin-top: 38px;
+  border-top: 1px solid #deded9;
+  border-bottom: 1px solid #deded9;
+}
+.principle { padding: 18px 28px 20px 0; }
+.principle + .principle { padding-left: 28px; border-left: 1px solid #deded9; }
+.principle .no { color: #9e9e98; font-size: 10px; letter-spacing: .18em; }
+.principle h2 { margin-top: 10px; font-size: 15px; font-weight: 500; }
+.principle p { margin-top: 7px; color: #6b6b65; font-size: 13px; font-weight: 400; line-height: 1.55; }
+
+.mock-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 28px;
+  margin-top: 80px;
+}
+.mock-header h2 { margin-top: 8px; font-size: 28px; font-weight: 300; }
+.mock-header .copy { max-width: 560px; }
+.mock-header p { margin-top: 10px; color: #6b6b65; font-size: 14px; font-weight: 400; line-height: 1.65; }
+
+.controls {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid #d9d8d3;
+  border-radius: 999px;
+  background: rgba(250,250,248,.72);
+  flex: none;
+}
+.controls button {
+  min-height: 34px;
+  padding: 0 14px;
+  border-radius: 999px;
+  color: #75756f;
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+.controls button[aria-pressed="true"] { background: #2b2b28; color: #fafaf8; }
+.controls .divider { width: 1px; height: 18px; margin: 8px 3px; background: #deded9; }
+
+.mocks {
+  display: grid;
+  grid-template-columns: minmax(680px, 1fr) 390px;
+  gap: clamp(28px, 4vw, 54px);
+  align-items: start;
+  margin-top: 30px;
+}
+.platform { margin-bottom: 12px; color: #6b6b65; font-size: 10px; }
+
+/* ---------- shared product tokens ---------- */
+.product {
+  --pg: #fafaf8;
+  --scr: #fcfcfb;
+  --ink: #2b2b28;
+  --mut: #75756f;
+  --faint: #9e9e98;
+  --line: #e8e8e4;
+  --dot: #c73e1d;
+  --pt: #45453f;
+  --pl: #6b6b65;
+  background: var(--pg);
+  color: var(--ink);
+}
+body[data-theme="dark"] .product {
+  --pg: #131311;
+  --scr: #181816;
+  --ink: #eaeae5;
+  --mut: #a0a099;
+  --faint: #74746d;
+  --line: #2b2b28;
+  --dot: #d9502a;
+  --pt: #c9c9c2;
+  --pl: #97978f;
+}
+
+/* ---------- web ---------- */
+.browser {
+  overflow: hidden;
+  min-height: 710px;
+  border: 1px solid #d9d8d3;
+  border-radius: 15px;
+  box-shadow: 0 24px 70px rgba(43,43,40,.11);
+}
+body[data-theme="dark"] .browser { border-color: #2b2b28; box-shadow: 0 24px 70px rgba(0,0,0,.32); }
+.browser-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 38px;
+  padding: 0 14px;
+  border-bottom: 1px solid var(--line);
+  background: var(--scr);
+}
+.browser-dots { display: flex; gap: 6px; }
+.browser-dots i { display: block; width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
+.browser-wordmark {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--faint);
+  font-size: 9px;
+  letter-spacing: .48em;
+  text-transform: lowercase;
+}
+.web-workspace { display: grid; grid-template-columns: 232px minmax(0, 1fr); min-height: 672px; }
+.rail {
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--line);
+  background: var(--scr);
+  padding: 52px 20px 24px 28px;
+}
+.find {
+  display: flex;
+  justify-content: space-between;
+  margin: 0 -8px 24px;
+  padding: 10px 8px;
+  color: var(--pl);
+  font-size: 9px;
+  letter-spacing: .28em;
+  text-transform: uppercase;
+}
+.find kbd { font: inherit; letter-spacing: .1em; }
+.rail-label { margin-top: 23px; color: var(--pl); font-size: 8px; }
+.rail-label:first-of-type { margin-top: 0; }
+.rail-row {
+  overflow: hidden;
+  padding: 9px 8px;
+  margin: 3px -8px 0;
+  border-radius: 3px;
+  color: var(--mut);
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rail-row.active { background: var(--pg); color: var(--ink); }
+.rail-row.returned::before {
+  content: "";
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin-right: 8px;
+  border-radius: 50%;
+  background: var(--dot);
+  vertical-align: 1px;
+}
+.settings { margin-top: auto; color: var(--pl); font-size: 9px; letter-spacing: .27em; text-transform: uppercase; }
+
+.web-main { position: relative; display: flex; min-width: 0; flex-direction: column; }
+.web-top {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 58px;
+  padding: 0 24px;
+}
+.back { color: var(--faint); font-size: 16px; }
+.date {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--pl);
+  font-size: 8.5px;
+}
+.web-content {
+  display: flex;
+  min-height: 614px;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  padding: 38px clamp(32px, 6vw, 80px) 34px;
+}
+.thought-cluster { width: min(100%, 570px); margin: auto 0; }
+.thought {
+  max-width: 34ch;
+  margin: 0 auto;
+  text-align: center;
+  font-size: clamp(24px, 2.6vw, 31px);
+  font-weight: 300;
+  line-height: 1.55;
+}
+.returned { margin-top: 18px; text-align: center; color: var(--faint); font-size: 8px; }
+
+.connections { width: 100%; margin-top: 54px; }
+.connections-head { display: flex; align-items: baseline; justify-content: space-between; padding-bottom: 12px; }
+.section-label { color: var(--pl); font-size: 9px; }
+.connection-count { color: var(--faint); font-size: 10px; font-weight: 400; }
+.connection-list { border-top: 1px solid var(--line); }
+.connection-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 22px;
+  align-items: center;
+  min-height: 68px;
+  padding: 15px 4px;
+  border-bottom: 1px solid var(--line);
+}
+.connection-copy {
+  color: var(--pt);
+  font-size: 14.5px;
+  font-weight: 400;
+  line-height: 1.55;
+}
+.connection-meta {
+  min-width: 58px;
+  color: var(--faint);
+  font-size: 8px;
+  font-weight: 400;
+  letter-spacing: .18em;
+  text-align: right;
+  text-transform: uppercase;
+}
+.dismiss {
+  position: absolute;
+  top: 50%;
+  right: -29px;
+  display: grid;
+  width: 28px;
+  height: 36px;
+  place-items: center;
+  transform: translateY(-50%);
+  color: var(--faint);
+  font-size: 15px;
+  opacity: 0;
+}
+.connection-row:hover .dismiss,
+.dismiss:focus-visible { opacity: 1; }
+.connection-row:hover .connection-copy { color: var(--ink); }
+.rest { margin-top: auto; padding-top: 46px; color: var(--pl); font-size: 9px; }
+
+/* ---------- iOS ---------- */
+.phone-wrap { display: flex; justify-content: center; }
+.phone {
+  width: 390px;
+  height: 804px;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid #d9d8d3;
+  border-radius: 48px;
+  box-shadow: 0 24px 70px rgba(43,43,40,.15), inset 0 0 0 8px rgba(43,43,40,.035);
+}
+body[data-theme="dark"] .phone { border-color: #2b2b28; box-shadow: 0 24px 70px rgba(0,0,0,.38), inset 0 0 0 8px rgba(255,255,255,.025); }
+.island { position: absolute; z-index: 3; top: 12px; left: 50%; width: 104px; height: 29px; transform: translateX(-50%); border-radius: 18px; background: #070707; }
+.status-bar {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  height: 48px;
+  padding: 16px 28px 0;
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 500;
+}
+.signal { letter-spacing: .08em; }
+.phone-top { position: relative; display: flex; align-items: center; height: 50px; padding: 0 18px; }
+.phone-top .back { display: grid; width: 44px; height: 44px; place-items: center; font-size: 22px; }
+.phone-top .date { font-size: 10px; }
+.phone-scroll {
+  height: calc(100% - 98px);
+  overflow: hidden;
+  padding: 30px 24px 0;
+}
+.phone-content { display: flex; min-height: 676px; flex-direction: column; align-items: center; }
+.phone .thought-cluster { width: 100%; margin: auto 0; }
+.phone .thought { max-width: 330px; font-size: 25px; line-height: 1.62; }
+.phone .returned { margin-top: 19px; font-size: 9px; }
+.phone .connections { margin-top: 46px; }
+.phone .connections-head { padding-bottom: 13px; }
+.phone .section-label { font-size: 10px; }
+.phone .connection-count { display: none; }
+.phone .connection-row {
+  min-height: 78px;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  padding: 17px 0 15px;
+}
+.phone .connection-copy { padding-right: 8px; font-size: 16px; line-height: 1.52; }
+.phone .connection-meta { min-width: 0; text-align: left; font-size: 9px; }
+.phone .dismiss { display: none; }
+.phone .rest { padding: 42px 0 34px; font-size: 11px; }
+.home-indicator { position: absolute; bottom: 8px; left: 50%; width: 128px; height: 5px; transform: translateX(-50%); border-radius: 3px; background: var(--ink); opacity: .9; }
+
+/* No placeholder, label, or reserve space: the whole section is absent. */
+body[data-state="empty"] .connections { display: none; }
+
+.annotations {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 36px;
+}
+.annotation { padding-top: 18px; border-top: 1px solid #deded9; }
+.annotation strong { display: block; color: #6b6b65; font-size: 9px; font-weight: 500; }
+.annotation p { margin-top: 9px; color: #55554f; font-size: 13px; font-weight: 400; line-height: 1.65; }
+
+.decision {
+  max-width: 840px;
+  margin-top: 86px;
+  padding: 30px 0 0 24px;
+  border-top: 1px solid #deded9;
+  border-left: 2px solid #c73e1d;
+}
+.decision h2 { font-size: 25px; font-weight: 300; }
+.decision p { margin-top: 13px; color: #55554f; font-size: 15px; font-weight: 400; line-height: 1.75; }
+.decision strong { color: #2b2b28; font-weight: 500; }
+
+@media (max-width: 1120px) {
+  .mocks { grid-template-columns: 1fr; }
+  .mobile-mock { margin-top: 18px; }
+  .phone-wrap { justify-content: flex-start; }
+}
+
+@media (max-width: 760px) {
+  .page { padding-top: 28px; }
+  .proposal-note, .annotations { grid-template-columns: 1fr; }
+  .principle { padding: 18px 0; }
+  .principle + .principle { padding-left: 0; border-top: 1px solid #deded9; border-left: 0; }
+  .mock-header { align-items: flex-start; flex-direction: column; }
+  .controls { max-width: 100%; flex-wrap: wrap; border-radius: 18px; }
+  .controls .divider { display: none; }
+  .mocks { display: block; }
+  .web-mock { overflow-x: auto; padding-bottom: 12px; }
+  .browser { width: 820px; }
+  .mobile-mock { margin-top: 42px; }
+  .phone { width: min(390px, calc(100vw - 40px)); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .product, .connection-copy, .dismiss { transition: background-color .2s ease, color .2s ease, opacity .18s ease; }
+}
+</style>
+</head>
+<body data-theme="light" data-state="connected">
+<main class="page">
+  <div class="crumb">drft · design proposal</div>
+
+  <header class="intro">
+    <div class="eyebrow">Related thoughts · web + iOS</div>
+    <h1>Let the words take the width.</h1>
+    <p class="lede">Replace the current horizontal string of clipped labels with one quiet, left-aligned list below the thought. <strong>The thought remains the center of gravity.</strong> Related thoughts become readable destinations rather than tags, and when there are none, the section leaves no trace.</p>
+  </header>
+
+  <div class="proposal-note" aria-label="Design principles">
+    <div class="principle">
+      <div class="no">01</div>
+      <h2>Verbatim, not compressed</h2>
+      <p>Sentence case, natural wrapping, and the full thought. No uppercase transformation or character cap.</p>
+    </div>
+    <div class="principle">
+      <div class="no">02</div>
+      <h2>Near, not competing</h2>
+      <p>A wide field of space separates the primary thought from a smaller, quieter reading list.</p>
+    </div>
+    <div class="principle">
+      <div class="no">03</div>
+      <h2>Absent means absent</h2>
+      <p>No empty-state copy, count, divider, or reserved gap when a thought has no related thoughts.</p>
+    </div>
+  </div>
+
+  <section>
+    <div class="mock-header">
+      <div class="copy">
+        <div class="eyebrow">Recommended direction</div>
+        <h2>A shared list language</h2>
+        <p>Same hierarchy on both platforms; only density and native interaction change. Use the controls to see dark mode and the truly empty state.</p>
+      </div>
+      <div class="controls" aria-label="Mockup controls">
+        <button type="button" data-theme-button="light" aria-pressed="true">Light</button>
+        <button type="button" data-theme-button="dark" aria-pressed="false">Dark</button>
+        <span class="divider" aria-hidden="true"></span>
+        <button type="button" data-state-button="connected" aria-pressed="true">3 related</button>
+        <button type="button" data-state-button="empty" aria-pressed="false">None related</button>
+      </div>
+    </div>
+
+    <div class="mocks">
+      <div class="web-mock">
+        <div class="platform">Web · desktop thought view</div>
+        <div class="browser product">
+          <div class="browser-bar">
+            <div class="browser-dots" aria-hidden="true"><i></i><i></i><i></i></div>
+            <div class="browser-wordmark">drft</div>
+          </div>
+          <div class="web-workspace">
+            <aside class="rail" aria-label="Collection rail">
+              <div class="find"><span>Find</span><kbd>⌘K</kbd></div>
+              <div class="rail-row returned active">cities feel more creative because collisions are free</div>
+              <div class="rail-label">Today</div>
+              <div class="rail-row">a room changes when nobody is performing</div>
+              <div class="rail-row">good tools shorten the distance to instinct</div>
+              <div class="rail-label">This week</div>
+              <div class="rail-row">the shortest path is rarely the one you remember</div>
+              <div class="rail-row">attention is a garden, not a mine</div>
+              <div class="rail-label">Earlier</div>
+              <div class="rail-row">the best interviews are mostly edited silence</div>
+              <div class="settings">Settings</div>
+            </aside>
+
+            <div class="web-main">
+              <div class="web-top">
+                <span class="back" aria-hidden="true">←</span>
+                <span class="date">3 Jul · 9:41</span>
+              </div>
+              <div class="web-content">
+                <div class="thought-cluster">
+                  <div class="thought">cities feel more creative because collisions are free</div>
+                  <div class="returned">returned · today</div>
+
+                  <section class="connections" aria-label="Related thoughts">
+                    <div class="connections-head">
+                      <span class="section-label">Related thoughts</span>
+                      <span class="connection-count">3</span>
+                    </div>
+                    <div class="connection-list">
+                      <div class="connection-row">
+                        <div class="connection-copy">The best interviews are mostly edited silence — the person arrives in the pauses.</div>
+                        <div class="connection-meta">8 Jul</div>
+                        <button class="dismiss" type="button" aria-label="Set related thought aside">×</button>
+                      </div>
+                      <div class="connection-row">
+                        <div class="connection-copy">Attention is a garden, not a mine; the useful work is often choosing what gets watered.</div>
+                        <div class="connection-meta">Mon</div>
+                        <button class="dismiss" type="button" aria-label="Set related thought aside">×</button>
+                      </div>
+                      <div class="connection-row">
+                        <div class="connection-copy">Third places are really permission to linger without having to explain why.</div>
+                        <div class="connection-meta">Set down</div>
+                        <button class="dismiss" type="button" aria-label="Set related thought aside">×</button>
+                      </div>
+                    </div>
+                  </section>
+                </div>
+                <div class="rest">Let it rest</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mobile-mock">
+        <div class="platform">iOS · thought view</div>
+        <div class="phone-wrap">
+          <div class="phone product">
+            <div class="island" aria-hidden="true"></div>
+            <div class="status-bar"><span>9:41</span><span class="signal">● ● ● ▰</span></div>
+            <div class="phone-top">
+              <span class="back" aria-hidden="true">←</span>
+              <span class="date">3 Jul · 9:41</span>
+            </div>
+            <div class="phone-scroll">
+              <div class="phone-content">
+                <div class="thought-cluster">
+                  <div class="thought">cities feel more creative because collisions are free</div>
+                  <div class="returned">returned · today</div>
+
+                  <section class="connections" aria-label="Related thoughts">
+                    <div class="connections-head">
+                      <span class="section-label">Related thoughts</span>
+                    </div>
+                    <div class="connection-list">
+                      <div class="connection-row">
+                        <div class="connection-copy">The best interviews are mostly edited silence — the person arrives in the pauses.</div>
+                        <div class="connection-meta">8 Jul</div>
+                      </div>
+                      <div class="connection-row">
+                        <div class="connection-copy">Attention is a garden, not a mine; the useful work is often choosing what gets watered.</div>
+                        <div class="connection-meta">Mon</div>
+                      </div>
+                      <div class="connection-row">
+                        <div class="connection-copy">Third places are really permission to linger without having to explain why.</div>
+                        <div class="connection-meta">Set down</div>
+                      </div>
+                    </div>
+                  </section>
+                </div>
+                <div class="rest">Rest</div>
+              </div>
+            </div>
+            <div class="home-indicator" aria-hidden="true"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="annotations">
+      <div class="annotation">
+        <strong>Text</strong>
+        <p>Related thoughts use sentence case at a body size. They wrap for as many lines as needed; nothing is ellipsized.</p>
+      </div>
+      <div class="annotation">
+        <strong>Hierarchy</strong>
+        <p>The main thought stays centered and light. The list is left-aligned, smaller, and begins after 46–54px of air.</p>
+      </div>
+      <div class="annotation">
+        <strong>Open</strong>
+        <p>The whole row is a destination. Web gets a quiet hover state; iOS gets the native pressed state and push transition.</p>
+      </div>
+      <div class="annotation">
+        <strong>Set aside</strong>
+        <p>Web reveals × on hover or focus. iOS uses a trailing swipe action. Both keep the existing eight-second undo.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="decision">
+    <h2>Why this is the right fit</h2>
+    <p>The list fixes the readability problem without turning related thoughts into a new product surface. <strong>There are no cards, scores, summaries, or AI explanations</strong>—just a small heading and the user’s own words. On iOS it extends the existing thought screen cleanly: the API model already carries the relationship data, so the new surface can share the web’s navigation and set-aside behavior while staying native in gesture and spacing.</p>
+  </section>
+</main>
+
+<script>
+const body = document.body;
+const themeButtons = [...document.querySelectorAll('[data-theme-button]')];
+const stateButtons = [...document.querySelectorAll('[data-state-button]')];
+
+function select(buttons, activeButton) {
+  buttons.forEach(button => {
+    button.setAttribute('aria-pressed', String(button === activeButton));
+  });
+}
+
+themeButtons.forEach(button => {
+  button.addEventListener('click', () => {
+    body.dataset.theme = button.dataset.themeButton;
+    select(themeButtons, button);
+  });
+});
+
+stateButtons.forEach(button => {
+  button.addEventListener('click', () => {
+    body.dataset.state = button.dataset.stateButton;
+    select(stateButtons, button);
+  });
+});
+</script>
+</body>
+</html>
