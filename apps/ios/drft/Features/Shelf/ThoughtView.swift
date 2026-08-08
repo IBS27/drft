@@ -48,24 +48,35 @@ struct ThoughtView: View {
             Stillness.page.ignoresSafeArea()
 
             VStack(spacing: 0) {
-                HStack {
-                    Button {
-                        onBack()
-                    } label: {
-                        Text("←")
-                            .font(.custom(
-                                "Helvetica Neue",
-                                size: 22,
-                                relativeTo: .title3
-                            ).weight(.light))
-                            .foregroundStyle(Stillness.faint)
-                            .frame(width: 44, height: 44)
-                            .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel("Back to shelf")
+                ZStack {
+                    HStack {
+                        Button {
+                            onBack()
+                        } label: {
+                            Text("←")
+                                .font(.custom(
+                                    "Helvetica Neue",
+                                    size: 22,
+                                    relativeTo: .title3
+                                ).weight(.light))
+                                .foregroundStyle(Stillness.faint)
+                                .frame(width: 44, height: 44)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("Back to shelf")
 
-                    Spacer()
+                        Spacer()
+                    }
+
+                    if let thought = model.thought {
+                        Text(ShelfFormatting.captureLine(for: thought.createdAt))
+                            .stillnessLabel(.timestamp)
+                            .lineLimit(1)
+                            .allowsHitTesting(false)
+                            .opacity(isLeaving ? 0 : 1)
+                            .animation(.easeOut(duration: 0.24), value: isLeaving)
+                    }
                 }
                 .padding(.horizontal, 12)
                 .padding(.top, 5)
@@ -100,6 +111,8 @@ struct ThoughtView: View {
         minimumHeight: CGFloat
     ) -> some View {
         VStack(spacing: 0) {
+            Spacer(minLength: 42)
+
             Text(thought.text)
                 .font(StillnessType.readingThought)
                 .lineSpacing(12)
@@ -108,19 +121,14 @@ struct ThoughtView: View {
                 .textSelection(.enabled)
                 .frame(maxWidth: 350)
 
-            Text(ShelfFormatting.captureLine(for: thought.createdAt))
-                .stillnessLabel(.timestamp)
-                .padding(.top, 30)
-
-            Spacer(minLength: 64)
+            Spacer(minLength: 42)
 
             restControls
                 .padding(.bottom, 34)
         }
         .frame(maxWidth: .infinity)
-        .frame(minHeight: minimumHeight, alignment: .top)
+        .frame(minHeight: minimumHeight)
         .padding(.horizontal, 24)
-        .padding(.top, 42)
     }
 
     @ViewBuilder

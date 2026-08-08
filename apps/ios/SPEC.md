@@ -202,12 +202,12 @@ near-silence: wordmark, whitespace, the bottom affordance. No copy.
 ### Thought (from a shelf row)
 
 Slides in over the shelf with a quiet back affordance (a faint `←`, no nav bar).
-Top to bottom:
+The capture timestamp sits centered in that quiet header. Below it:
 
-1. The verbatim text, 24–26pt light, ink — a step below capture's 30pt; here you
-   read, not write. Selectable, never editable.
-2. The capture timestamp line, same ambient treatment as capture's.
-3. `REST`, tracked caps, muted, at the bottom. Tapping it reveals a single
+1. The verbatim text is held at the center of the available reading area, 24–26pt
+   light, ink — a step below capture's 30pt; here you read, not write. Selectable,
+   never editable.
+2. `REST`, tracked caps, muted, waits at the bottom. Tapping it reveals a single
    borderless one-line field for the optional closing line (mirror the web's
    resting-note copy from `apps/web/src/routes/thought.$thoughtId.tsx`) with a
    quiet confirm; resting with or without a note fades the thought and returns
