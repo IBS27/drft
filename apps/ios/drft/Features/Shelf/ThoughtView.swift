@@ -44,6 +44,8 @@ struct ThoughtView: View {
     @State private var setAside: SetAsideState?
     @State private var restoredConnection: RestoredConnection?
     @State private var setAsideToken = UUID()
+    @State private var navigationEpoch = UUID()
+    @State private var dismissTask: Task<Void, Never>?
     @FocusState private var closingLineIsFocused: Bool
 
     let thoughtID: String
@@ -124,6 +126,14 @@ struct ThoughtView: View {
                 thoughtID: activeThoughtID,
                 convexService: convexService
             )
+        }
+        // Once the subscription itself carries the restored connection the
+        // optimistic overlay has done its job — dropping it here keeps a
+        // later dismissal from another device from being papered over.
+        .onChange(of: model.thought?.connections.map(\._id)) { _, ids in
+            guard let restored = restoredConnection,
+                  ids?.contains(restored.connection._id) == true else { return }
+            restoredConnection = nil
         }
     }
 
@@ -296,7 +306,7 @@ struct ThoughtView: View {
             failed: false
         )
 
-        Task { @MainActor in
+        dismissTask = Task { @MainActor in
             do {
                 try await convexService.dismissConnection(id: connection._id)
             } catch {
@@ -321,7 +331,11 @@ struct ThoughtView: View {
         )
         self.setAside = nil
 
+        let dismissal = dismissTask
         Task { @MainActor in
+            // The undo must land after the dismissal it reverses — racing
+            // them lets a late dismissal commit win and swallow the undo.
+            await dismissal?.value
             do {
                 try await convexService.undismissConnection(
                     id: setAside.connection._id
@@ -340,7 +354,7 @@ struct ThoughtView: View {
             return
         }
         withAnimation(.easeInOut(duration: 0.22)) {
-            thoughtPath.removeLast()
+            thoughtPath.removeLast(1)
         }
     }
 
@@ -348,6 +362,8 @@ struct ThoughtView: View {
         isEnteringClosingLine = false
         closingLine = ""
         isSendingToRest = false
+        isLeaving = false
+        navigationEpoch = UUID()
         setAsideToken = UUID()
         setAside = nil
         restoredConnection = nil
@@ -411,17 +427,25 @@ struct ThoughtView: View {
         isSendingToRest = true
         closingLineIsFocused = false
         let trimmed = closingLine.trimmingCharacters(in: .whitespacesAndNewlines)
+        // The task outlives navigation, so it must only steer the visit it
+        // was started on — the epoch changes on every move, so even leaving
+        // and returning to the same thought orphans it.
+        let submittedID = activeThoughtID
+        let epoch = navigationEpoch
 
         Task { @MainActor in
             do {
                 try await convexService.rest(
-                    thoughtID: activeThoughtID,
+                    thoughtID: submittedID,
                     closingLine: trimmed.isEmpty ? nil : trimmed
                 )
+                guard epoch == navigationEpoch else { return }
                 isLeaving = true
                 try? await Task.sleep(for: .milliseconds(240))
+                guard epoch == navigationEpoch else { return }
                 onBack()
             } catch {
+                guard epoch == navigationEpoch else { return }
                 isSendingToRest = false
             }
         }
