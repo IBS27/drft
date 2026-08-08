@@ -22,9 +22,10 @@ type RailThought = {
 
 // The design mockup's edge rail: the collection stays in the periphery —
 // while you sit with one thought, and at home too, where the main area
-// holds only capture. Faint until hovered; the vermilion dot marks where
-// you are (null at home). Also owns the collection's keyboard: j/k move
-// between thoughts (j enters the top from home), Esc returns to the door.
+// holds only capture. Faint until hovered; the vermilion dot marks today's
+// returned thought, while the active row is held by its background and ink.
+// Also owns the collection's keyboard: j/k move between thoughts (j enters
+// the top from home), Esc returns to the door.
 export const Rail = memo(function Rail({
   activeId,
   now,
@@ -250,6 +251,7 @@ export const Rail = memo(function Rail({
                 <RailRow
                   t={ordered.pinned}
                   active={ordered.pinned._id === activeId}
+                  returned
                   prewarm={prepareNavigation}
                 />
               </div>
@@ -367,7 +369,7 @@ const RestingRailRow = memo(function RestingRailRow({
       }`}
     >
       <span
-        className={`size-1.5 flex-none rounded-full ${active ? "bg-dot" : "bg-transparent"}`}
+        className="size-1.5 flex-none rounded-full bg-transparent"
       />
       <span
         className={`truncate text-[15px] font-normal transition-colors group-hover:text-ink ${
@@ -385,10 +387,12 @@ const RestingRailRow = memo(function RestingRailRow({
 const RailRow = memo(function RailRow({
   t,
   active,
+  returned = false,
   prewarm,
 }: {
   t: RailThought;
   active: boolean;
+  returned?: boolean;
   prewarm: (thoughtId: Id<"thoughts">) => void;
 }) {
   return (
@@ -403,8 +407,10 @@ const RailRow = memo(function RailRow({
         active ? "bg-pg" : ""
       }`}
     >
+      {returned && <span className="sr-only">returned today: </span>}
       <span
-        className={`size-1.5 flex-none rounded-full ${active ? "bg-dot" : "bg-transparent"}`}
+        aria-hidden="true"
+        className={`size-1.5 flex-none rounded-full ${returned ? "bg-dot" : "bg-transparent"}`}
       />
       <span
         className={`truncate text-[15px] font-normal transition-colors group-hover:text-ink ${

@@ -211,7 +211,7 @@
 
   <p><strong>Success metric:</strong> "thoughts I captured actually came back to me and became clearer" — not "number of notes stored." The <strong>return loop</strong> is the hard design problem: the product must pull you back (the daily resurfacing, the links that accumulate on their own), not passively wait.</p>
 
-  <p><strong>Experience:</strong> the moment-by-moment product — capture rules, the daily return, the thought lifecycle — is specified in <a href="experience.html">the experience doc</a>. Headline decisions: iOS is capture-only; the AI stays in the background, where its whole visible output is a link between two of your own fragments; the return loop is one thought a day, delivered by email rather than push; thoughts have no stages — just <code>open</code> and <code>resting</code>.</p>
+  <p><strong>Experience:</strong> the moment-by-moment product — capture rules, the daily return, the thought lifecycle — is specified in <a href="experience.html">the experience doc</a>. Headline decisions: iOS centers capture and keeps a quiet shelf for re-reading or resting thoughts; the AI stays in the background, where its whole visible output is a link between two of your own fragments; the return loop is one thought a day, delivered by email rather than push; thoughts have no stages — just <code>open</code> and <code>resting</code>.</p>
 
   <p><strong>Design:</strong> both clients follow the <a href="design.html">Stillness design language</a> — one thought at a time, near-monochrome, the interface receding until the fragment is the only thing in the room. Light and dark mode specs, tokens included.</p>
 </section>
@@ -260,7 +260,7 @@
     <tr>
       <td>Delivery</td>
       <td>Email — Resend, sent from a Convex action</td>
-      <td>The daily return is core product, not an add-on. Email lands at an exact time without a live browser or an installed app, and the subject line carries the whole interaction. Push was rejected: it puts a reading surface on a capture-only phone, and APNs needs a paid Apple Developer account. Delivery is an adapter over channel-agnostic selection, so APNs can join later.</td>
+      <td>The daily return is core product, not an add-on. Email lands at an exact time without a live browser or an installed app, and the subject line carries the whole interaction. Push was rejected because it would turn the phone's passive shelf into an interruption that expects handling; APNs also needs a paid Apple Developer account. Delivery is an adapter over channel-agnostic selection, so APNs can join later.</td>
     </tr>
     <tr>
       <td>Hosting</td>
@@ -291,7 +291,7 @@
 │   ├── <span class="hl">ios/</span>                        <span class="cm"># Xcode project (not part of Bun workspace)</span>
 │   │   ├── <span class="dir">Drft/</span>                   <span class="cm"># Main app target</span>
 │   │   │   ├── App/                <span class="cm"># Entry point, root views</span>
-│   │   │   ├── Features/           <span class="cm"># Capture, Settings (capture-only by design)</span>
+│   │   │   ├── Features/           <span class="cm"># Capture, Shelf, Thought, Settings</span>
 │   │   │   ├── Services/           <span class="cm"># ConvexClient, ClerkAuth, Dictation</span>
 │   │   │   └── Shared/             <span class="cm"># Models, extensions, design tokens</span>
 │   │   ├── <span class="dir">DrftWidget/</span>             <span class="cm"># Widget extension target (capture widget)</span>

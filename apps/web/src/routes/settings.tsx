@@ -10,7 +10,7 @@ export const Route = createFileRoute("/settings")({ component: Settings });
 
 // Nearly empty by design: the daily email time is the only real
 // preference the product has. The server sends the email, so the time
-// lives in Convex (docs/experience.html §08) — this page writes through.
+// lives in Convex (docs/experience.html §07) — this page writes through.
 function Settings() {
   const { user } = useUser();
   const { isAuthenticated } = useConvexAuth();

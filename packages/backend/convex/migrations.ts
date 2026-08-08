@@ -1,17 +1,13 @@
 // Run with `bunx convex run migrations:clearPartnerData` (add `--prod` for
 // production before removing the legacy schema field).
 
-import {
-  defineSchema,
-  defineTable,
-  makeFunctionReference,
-} from "convex/server";
+import { defineSchema, defineTable } from "convex/server";
 import type {
   DataModelFromSchemaDefinition,
-  FunctionReference,
   GenericDatabaseWriter,
 } from "convex/server";
 import { v } from "convex/values";
+import { internal } from "./_generated/api";
 import { internalMutation } from "./_generated/server";
 
 const BATCH_SIZE = 100;
@@ -37,7 +33,10 @@ const legacyPartnerSchema = defineSchema({
 type LegacyPartnerDataModel = DataModelFromSchemaDefinition<
   typeof legacyPartnerSchema
 >;
-type EmptyArgs = Record<string, never>;
+type ClearPartnerDataArgs = {
+  thoughtCursor?: string;
+  thoughtsDone?: boolean;
+};
 type ClearPartnerDataResult = {
   thoughtsCleared: number;
   questionsDeleted: number;
@@ -45,32 +44,34 @@ type ClearPartnerDataResult = {
   scheduledNextBatch: boolean;
 };
 
-const clearPartnerDataRef = makeFunctionReference<
-  "mutation",
-  EmptyArgs,
-  ClearPartnerDataResult
->("migrations:clearPartnerData") as unknown as FunctionReference<
-  "mutation",
-  "internal",
-  EmptyArgs,
-  ClearPartnerDataResult
->;
-
 export const clearPartnerData = internalMutation({
-  args: {},
+  args: {
+    thoughtCursor: v.optional(v.string()),
+    thoughtsDone: v.optional(v.boolean()),
+  },
   returns: v.object({
     thoughtsCleared: v.number(),
     questionsDeleted: v.number(),
     messagesDeleted: v.number(),
     scheduledNextBatch: v.boolean(),
   }),
-  handler: async (ctx): Promise<ClearPartnerDataResult> => {
-    const thoughts = await ctx.db
-      .query("thoughts")
-      .filter((q) =>
-        q.neq(q.field("unseenQuestionCount"), undefined),
-      )
-      .take(BATCH_SIZE);
+  handler: async (
+    ctx,
+    { thoughtCursor, thoughtsDone },
+  ): Promise<ClearPartnerDataResult> => {
+    const thoughtPage = thoughtsDone
+      ? null
+      : await ctx.db
+          .query("thoughts")
+          .filter((q) =>
+            q.neq(q.field("unseenQuestionCount"), undefined),
+          )
+          .paginate({
+            cursor: thoughtCursor ?? null,
+            numItems: BATCH_SIZE,
+            maximumRowsRead: BATCH_SIZE,
+          });
+    const thoughts = thoughtPage?.page ?? [];
     for (const thought of thoughts) {
       await ctx.db.patch(thought._id, { unseenQuestionCount: undefined });
     }
@@ -84,12 +85,20 @@ export const clearPartnerData = internalMutation({
     for (const question of questions) await legacyDb.delete(question._id);
     for (const message of messages) await legacyDb.delete(message._id);
 
+    const thoughtScanDone = thoughtsDone || thoughtPage?.isDone === true;
     const scheduledNextBatch =
-      thoughts.length === BATCH_SIZE ||
+      !thoughtScanDone ||
       questions.length === BATCH_SIZE ||
       messages.length === BATCH_SIZE;
     if (scheduledNextBatch) {
-      await ctx.scheduler.runAfter(0, clearPartnerDataRef, {});
+      const nextArgs: ClearPartnerDataArgs = thoughtScanDone
+        ? { thoughtsDone: true }
+        : { thoughtCursor: thoughtPage?.continueCursor };
+      await ctx.scheduler.runAfter(
+        0,
+        internal.migrations.clearPartnerData,
+        nextArgs,
+      );
     }
 
     return {

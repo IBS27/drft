@@ -112,7 +112,7 @@ function Collection() {
               <>
                 {pinned && (
                   <div className="mb-12">
-                    <ThoughtRow t={pinned} now={now} prewarm={prewarm} />
+                    <ThoughtRow t={pinned} now={now} returned prewarm={prewarm} />
                   </div>
                 )}
                 {groups.map(({ group, rows }, i) => (
@@ -152,10 +152,12 @@ function Collection() {
 const ThoughtRow = memo(function ThoughtRow({
   t,
   now,
+  returned = false,
   prewarm,
 }: {
   t: Row;
   now: number;
+  returned?: boolean;
   prewarm: (thoughtId: Id<"thoughts">) => void;
 }) {
   return (
@@ -167,6 +169,10 @@ const ThoughtRow = memo(function ThoughtRow({
       onFocus={() => prewarm(t._id)}
       className="group flex items-center gap-3.5 border-b border-line py-4"
     >
+      {returned && <span className="sr-only">returned today: </span>}
+      {returned && (
+        <span aria-hidden="true" className="size-2 flex-none rounded-full bg-dot" />
+      )}
       <span className="flex-1 truncate text-[16px] font-normal text-pt transition-colors group-hover:text-ink">
         {t.preview}
       </span>

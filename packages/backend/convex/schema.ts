@@ -1,7 +1,7 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
-// Shapes pinned down in docs/experience.html §08. No title, no tags, no
+// Shapes pinned down in docs/experience.html §07. No title, no tags, no
 // category on thoughts — their absence is the product.
 export default defineSchema({
   thoughts: defineTable({

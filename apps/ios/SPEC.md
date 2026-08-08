@@ -1,7 +1,7 @@
 # drft iOS — Spec
 
 The iOS app is capture first: widget, dictation, keep, gone. Behind capture sits
-**the shelf** — a quiet, read-only view of the collection (pull capture down to
+**the shelf** — a quiet, non-editing view of the collection (pull capture down to
 reveal it, re-read a thought, set it to rest). The phone captures and glances;
 deeper collection work happens on the web. Phase 4 shipped capture-only; phase 6
 adds the shelf.
@@ -177,7 +177,7 @@ Behavior:
 ### Shelf (behind capture)
 
 `page` background, same wordmark at top (tap → Settings sheet, same as capture).
-Below, a scrolling read-only list of the open collection, driven by a live
+Below, a scrolling non-editing list of the open collection, driven by a live
 `thoughts:collection` subscription (client-local date, recomputed when the app
 becomes active so midnight rolls over):
 

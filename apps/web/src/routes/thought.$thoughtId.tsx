@@ -226,7 +226,7 @@ function ThoughtView() {
                         <button
                           type="button"
                           onClick={() => dismiss(c, i)}
-                          className="text-[13px] leading-none text-pl opacity-0 transition-opacity group-hover:opacity-100 hover:text-dot"
+                          className="text-[13px] leading-none text-pl opacity-0 transition-opacity group-hover:opacity-100 hover:text-dot focus-visible:opacity-100"
                           aria-label="dismiss connection"
                         >
                           ×
@@ -237,7 +237,10 @@ function ThoughtView() {
               )}
 
               {aside && (
-                <div className="mt-5 flex items-center gap-5 text-[10px] tracking-[0.3em] uppercase">
+                <div
+                  role="status"
+                  className="mt-5 flex items-center gap-5 text-[10px] tracking-[0.3em] uppercase"
+                >
                   <span className="text-pl">
                     {aside.failed ? "couldn't set the link aside" : "link set aside"}
                   </span>

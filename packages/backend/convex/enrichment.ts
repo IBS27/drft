@@ -8,6 +8,11 @@ import type { Id } from "./_generated/dataModel";
 import { EMBEDDING_MODEL, openaiProvider } from "./ai/models";
 import { LINK_THRESHOLD, MAX_LINKS_PER_ENRICH } from "./ai/limits";
 
+type BackfillEmbeddingsResult = {
+  embedded: number;
+  scheduledNextBatch: boolean;
+};
+
 // The silent work after every capture: embed, search for resonant older
 // thinking, and link related thoughts. Nothing here notifies anyone.
 export const enrich = internalAction({
@@ -60,27 +65,34 @@ export const enrich = internalAction({
 // One-time catch-up for thoughts captured before embeddings were introduced.
 // Run with: bunx convex run enrichment:backfillEmbeddings
 export const backfillEmbeddings = internalAction({
-  args: {},
-  handler: async (ctx) => {
-    const thoughts = await ctx.runQuery(internal.store.unembedded, {});
-    const openai = openaiProvider();
-    const model = openai.textEmbedding(EMBEDDING_MODEL);
+  args: { cursor: v.optional(v.string()) },
+  handler: async (ctx, { cursor }): Promise<BackfillEmbeddingsResult> => {
+    const thoughts = await ctx.runQuery(internal.store.unembedded, {
+      cursor: cursor ?? null,
+    });
     let embedded = 0;
-    const batch = 100;
-    for (let i = 0; i < thoughts.length; i += batch) {
-      const slice = thoughts.slice(i, i + batch);
+    if (thoughts.page.length > 0) {
+      const openai = openaiProvider();
       const { embeddings } = await embedMany({
-        model,
-        values: slice.map((t) => t.text),
+        model: openai.textEmbedding(EMBEDDING_MODEL),
+        values: thoughts.page.map((t) => t.text),
       });
-      for (let j = 0; j < slice.length; j++) {
+      for (let i = 0; i < thoughts.page.length; i++) {
         await ctx.runMutation(internal.store.patchThoughtEmbedding, {
-          thoughtId: slice[j]._id,
-          embedding: embeddings[j],
+          thoughtId: thoughts.page[i]._id,
+          embedding: embeddings[i],
         });
         embedded += 1;
       }
     }
-    return { embedded };
+
+    if (!thoughts.isDone) {
+      await ctx.scheduler.runAfter(
+        0,
+        internal.enrichment.backfillEmbeddings,
+        { cursor: thoughts.continueCursor },
+      );
+    }
+    return { embedded, scheduledNextBatch: !thoughts.isDone };
   },
 });
