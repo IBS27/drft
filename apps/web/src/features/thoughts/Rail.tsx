@@ -313,7 +313,13 @@ export const Rail = memo(function Rail({
         )}
       </div>
 
-      <div className="flex flex-none flex-col border-t border-line pt-5 pb-7 text-[10.5px] tracking-[0.3em] text-pl uppercase">
+      <div className="flex flex-none flex-col gap-4 border-t border-line pt-5 pb-7 text-[10.5px] tracking-[0.3em] text-pl uppercase">
+        <Link
+          to="/connections"
+          className="mx-8 transition-colors hover:text-ink"
+        >
+          connections
+        </Link>
         <Link
           to="/settings"
           className="mx-8 transition-colors hover:text-ink"
