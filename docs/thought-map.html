@@ -1,0 +1,611 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>drft — connections studies</title>
+<style>
+/* ============================================================
+   drft — THOUGHT MAP STUDIES
+   Three desktop-only ways to reveal the resonance graph without
+   turning it into a taxonomy, dashboard, or obligation surface.
+   ============================================================ */
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+button { border: 0; background: none; color: inherit; font: inherit; cursor: pointer; }
+body {
+  --doc-pg: #f3f3f0;
+  --doc-ink: #2b2b28;
+  --doc-mut: #6b6b65;
+  --doc-line: #dcdcd7;
+  min-width: 320px;
+  background: var(--doc-pg);
+  color: var(--doc-ink);
+  font-family: "Helvetica Neue", ui-sans-serif, sans-serif;
+  font-weight: 300;
+}
+
+.document { padding: 44px clamp(20px, 5vw, 68px) 120px; }
+.crumb, .number, .eyebrow {
+  color: var(--doc-mut);
+  font-size: 10.5px;
+  letter-spacing: .3em;
+  text-transform: uppercase;
+}
+.intro { max-width: 760px; margin-top: 42px; }
+.intro h1 {
+  max-width: 680px;
+  font-size: clamp(34px, 5vw, 56px);
+  font-weight: 300;
+  letter-spacing: -.025em;
+  line-height: 1.04;
+}
+.intro p {
+  max-width: 62ch;
+  margin-top: 18px;
+  color: #45453f;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.7;
+}
+.principles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px 22px;
+  margin-top: 26px;
+  padding: 17px 0;
+  border-top: 1px solid var(--doc-line);
+  border-bottom: 1px solid var(--doc-line);
+  color: var(--doc-mut);
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+}
+.principles span::before { content: "·"; margin-right: 22px; color: #c73e1d; }
+.principles span:first-child::before { content: none; margin: 0; }
+
+.study { max-width: 1440px; margin: 92px auto 0; }
+.study-head { display: grid; grid-template-columns: minmax(220px, .8fr) minmax(420px, 1.2fr); gap: 48px; align-items: end; }
+.study-title h2 { margin-top: 10px; font-size: clamp(26px, 3vw, 38px); font-weight: 300; letter-spacing: -.015em; }
+.study-copy p { color: #45453f; font-size: 14.5px; font-weight: 400; line-height: 1.7; }
+.study-copy .tradeoff { margin-top: 8px; color: #6b6b65; font-size: 13px; }
+.study-copy strong { color: #2b2b28; font-weight: 500; }
+.recommend {
+  display: inline-block;
+  margin-left: 14px;
+  color: #c73e1d;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  vertical-align: .2em;
+}
+
+.window {
+  --pg: #fafaf8;
+  --scr: #fcfcfb;
+  --ink: #2b2b28;
+  --mut: #75756f;
+  --faint: #9e9e98;
+  --line: #e8e8e4;
+  --dot: #c73e1d;
+  --pt: #45453f;
+  --pl: #6b6b65;
+  position: relative;
+  min-width: 820px;
+  height: min(760px, 72vw);
+  min-height: 600px;
+  margin-top: 30px;
+  overflow: hidden;
+  border: 1px solid #dededa;
+  border-radius: 14px;
+  background: var(--pg);
+  box-shadow: 0 28px 70px rgba(40, 40, 35, .13);
+  color: var(--ink);
+}
+.window.dark {
+  --pg: #131311;
+  --scr: #181816;
+  --ink: #eaeae5;
+  --mut: #a0a099;
+  --faint: #74746d;
+  --line: #2b2b28;
+  --dot: #d9502a;
+  --pt: #c9c9c2;
+  --pl: #97978f;
+  border-color: #292925;
+  box-shadow: 0 28px 70px rgba(0, 0, 0, .35);
+}
+.browserbar { position: relative; height: 38px; border-bottom: 1px solid var(--line); background: var(--scr); }
+.traffic { position: absolute; left: 15px; top: 15px; display: flex; gap: 6px; }
+.traffic i { width: 7px; height: 7px; border-radius: 50%; background: var(--line); }
+.browser-title {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--faint);
+  font-size: 8px;
+  letter-spacing: .36em;
+  text-transform: uppercase;
+}
+.workspace { position: absolute; inset: 38px 0 0; background: var(--pg); }
+.appbar {
+  position: absolute;
+  z-index: 7;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  pointer-events: none;
+}
+.appbar > * { pointer-events: auto; }
+.wordmark {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--pt);
+  font-size: 10px;
+  letter-spacing: .5em;
+  text-transform: uppercase;
+}
+.quiet-action, .count, .key {
+  color: var(--pl);
+  font-size: 9px;
+  font-weight: 400;
+  letter-spacing: .26em;
+  text-transform: uppercase;
+}
+.quiet-action:hover { color: var(--ink); }
+.appbar-right { display: flex; align-items: center; gap: 24px; }
+.count { letter-spacing: .1em; font-variant-numeric: tabular-nums; }
+.theme {
+  position: absolute;
+  z-index: 12;
+  right: 17px;
+  bottom: 16px;
+  width: 29px;
+  height: 29px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--pg) 84%, transparent);
+  color: var(--pl);
+  font-size: 11px;
+  backdrop-filter: blur(9px);
+}
+.theme:hover { color: var(--ink); }
+.graph-shell { position: absolute; inset: 58px 0 0; overflow: hidden; }
+.graph-shell svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.graph-shell .edge { stroke: var(--line); stroke-width: 1; vector-effect: non-scaling-stroke; transition: opacity .25s, stroke .25s, stroke-width .25s; }
+.graph-shell .edge.strong { stroke: var(--mut); stroke-width: 1.2; }
+.graph-shell .edge.active { stroke: var(--ink); stroke-width: 1.2; opacity: .56 !important; }
+.graph-shell .node { cursor: pointer; outline: none; }
+.graph-shell .node .halo { fill: transparent; }
+.graph-shell .node .mark { fill: var(--mut); transition: r .2s, fill .2s, opacity .2s; }
+.graph-shell .node.resting .mark { fill: var(--pg); stroke: var(--faint); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.graph-shell .node:hover .mark, .graph-shell .node:focus .mark { fill: var(--ink); }
+.graph-shell .node.selected .mark { fill: var(--dot); stroke: none; }
+.graph-shell text { font-family: "Helvetica Neue", ui-sans-serif, sans-serif; }
+.node-label { fill: var(--pt); font-size: 11px; font-weight: 300; pointer-events: none; }
+.node-date { fill: var(--pl); font-size: 7.5px; font-weight: 400; letter-spacing: .14em; text-transform: uppercase; pointer-events: none; }
+
+/* 01 — the literal constellation */
+.constellation .graph-shell { right: 280px; }
+.constellation .edge { opacity: .64; }
+.constellation .node .mark { opacity: .86; }
+.inspector {
+  position: absolute;
+  z-index: 6;
+  top: 58px;
+  right: 0;
+  bottom: 0;
+  width: 280px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 38px;
+  border-left: 1px solid var(--line);
+  background: var(--scr);
+}
+.inspector-date { color: var(--pl); font-size: 8px; font-weight: 400; letter-spacing: .28em; text-transform: uppercase; }
+.inspector-text { margin-top: 18px; color: var(--ink); font-size: 21px; font-weight: 300; line-height: 1.55; }
+.inspector-rule { width: 28px; height: 1px; margin: 28px 0 20px; background: var(--line); }
+.inspector-meta { color: var(--pl); font-size: 8px; font-weight: 400; letter-spacing: .22em; line-height: 1.7; text-transform: uppercase; }
+.inspector-meta .accent { color: var(--dot); }
+.inspector-open { margin-top: 40px; align-self: flex-start; color: var(--pl); font-size: 8px; letter-spacing: .24em; text-transform: uppercase; }
+.inspector-open:hover { color: var(--ink); }
+
+/* 02 — the quiet field */
+.field .graph-shell { inset: 58px 0 0; }
+.field .edge { opacity: 0; }
+.field .edge.active { opacity: .46; }
+.field .node .mark { opacity: .48; }
+.field .node.neighbor .mark { fill: var(--ink); opacity: .8; }
+.field .node.selected .mark { opacity: 1; }
+.field .node-label { opacity: 0; transition: opacity .22s; }
+.field .node.neighbor .node-label, .field .node.selected .node-label { opacity: 1; }
+.field-readout {
+  position: absolute;
+  z-index: 5;
+  left: 50%;
+  bottom: 34px;
+  width: min(580px, 65%);
+  transform: translateX(-50%);
+  text-align: center;
+  pointer-events: none;
+}
+.field-readout .field-date { color: var(--pl); font-size: 8px; font-weight: 400; letter-spacing: .28em; text-transform: uppercase; }
+.field-readout .field-text { margin-top: 10px; color: var(--ink); font-size: 17px; font-weight: 300; line-height: 1.5; }
+.field-readout .field-hint { margin-top: 12px; color: var(--pl); font-size: 8px; font-weight: 400; letter-spacing: .22em; text-transform: uppercase; }
+
+/* 03 — a magnified local thread, full collection in the periphery */
+.lens .graph-shell { inset: 58px 0 0; }
+.lens .edge { opacity: .12; }
+.lens .edge.active { opacity: .6; }
+.lens .node .mark { opacity: .26; }
+.lens .node.neighbor .mark { fill: var(--ink); opacity: .85; }
+.lens .node.selected .mark { opacity: 1; }
+.lens .node-label { opacity: 0; }
+.lens .node.neighbor .node-label, .lens .node.selected .node-label { opacity: 1; }
+.lens-ring { fill: color-mix(in srgb, var(--scr) 76%, transparent); stroke: var(--line); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.lens-caption { fill: var(--pl); font-size: 7.5px; font-weight: 400; letter-spacing: .24em; text-transform: uppercase; }
+.lens-key {
+  position: absolute;
+  z-index: 5;
+  right: 30px;
+  bottom: 30px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  color: var(--pl);
+  font-size: 8px;
+  font-weight: 400;
+  letter-spacing: .17em;
+  text-transform: uppercase;
+}
+.lens-key span { display: flex; align-items: center; gap: 7px; }
+.lens-key i { display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: var(--mut); }
+.lens-key .rest-key { background: transparent; border: 1px solid var(--faint); }
+
+.decision {
+  max-width: 980px;
+  margin: 96px auto 0;
+  padding-top: 38px;
+  border-top: 1px solid var(--doc-line);
+}
+.decision h2 { font-size: 28px; font-weight: 300; }
+.decision-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; margin-top: 30px; }
+.decision-grid h3 { font-size: 14px; font-weight: 400; }
+.decision-grid p { margin-top: 9px; color: #5c5c56; font-size: 13.5px; font-weight: 400; line-height: 1.65; }
+.decision-grid .best h3::after { content: "recommended"; margin-left: 10px; color: #c73e1d; font-size: 8px; letter-spacing: .16em; text-transform: uppercase; }
+
+.mobile-note {
+  display: none;
+  margin: 28px 0 0;
+  padding: 22px;
+  border: 1px solid var(--doc-line);
+  color: var(--doc-mut);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+@media (max-width: 920px) {
+  .study-head { grid-template-columns: 1fr; gap: 18px; }
+  .mock-scroll { margin: 0 calc(-1 * clamp(20px, 5vw, 68px)); padding: 0 clamp(20px, 5vw, 68px) 34px; overflow-x: auto; }
+  .window { width: 920px; height: 650px; }
+  .mobile-note { display: block; }
+  .decision-grid { grid-template-columns: 1fr; }
+}
+
+@media (prefers-color-scheme: dark) {
+  body { --doc-pg: #10100f; --doc-ink: #eaeae5; --doc-mut: #97978f; --doc-line: #2b2b28; }
+  .intro p, .study-copy p { color: #c9c9c2; }
+  .study-copy .tradeoff, .decision-grid p { color: #97978f; }
+  .study-copy strong { color: #eaeae5; }
+}
+</style>
+</head>
+<body>
+<main class="document">
+  <div class="crumb">drft · web study · connections</div>
+  <header class="intro">
+    <h1>Every thought, and what it connects to.</h1>
+    <p>Three ways to make every thought visible through the connections drft already creates. This is a web-only room for deliberate exploration: no tags, no named clusters, no scores, and nothing presented as work waiting to be processed.</p>
+    <div class="principles">
+      <span>every thought remains visible</span>
+      <span>your words stay primary</span>
+      <span>resonance is the only structure</span>
+      <span>resting remains part of the history</span>
+    </div>
+  </header>
+
+  <div class="mobile-note"><strong>Desktop study.</strong> The page itself remains readable here, but each mock is intentionally a wide workspace. Connections does not enter the iOS app.</div>
+
+  <section class="study">
+    <div class="study-head">
+      <div class="study-title">
+        <div class="number">01 · literal</div>
+        <h2>The constellation</h2>
+      </div>
+      <div class="study-copy">
+        <p>The closest reading of an Obsidian-style graph: every connection is always present, node size follows the number of links, and selecting a point opens the thought in a fixed margin. It makes the system legible immediately.</p>
+        <p class="tradeoff"><strong>Trade-off:</strong> honest and explorable, but larger collections become a hairball. The permanent inspector also makes the room feel more like software than drft.</p>
+      </div>
+    </div>
+    <div class="mock-scroll">
+      <div class="window constellation" data-concept="constellation">
+        <div class="browserbar"><div class="traffic"><i></i><i></i><i></i></div><div class="browser-title">drft</div></div>
+        <div class="workspace">
+          <header class="appbar">
+            <button class="quiet-action">‹ collection</button>
+            <div class="wordmark">drft</div>
+            <div class="appbar-right"><button class="quiet-action">find</button><span class="count">28</span></div>
+          </header>
+          <div class="graph-shell"><svg role="img" aria-label="All thoughts connected as a constellation"></svg></div>
+          <aside class="inspector" aria-live="polite">
+            <div class="inspector-date">3 jul · 9:41</div>
+            <div class="inspector-text">cities feel more creative because collisions are free</div>
+            <div class="inspector-rule"></div>
+            <div class="inspector-meta"><span class="accent">●</span> 4 resonances<br>open thought</div>
+            <button class="inspector-open">sit with this thought →</button>
+          </aside>
+          <button class="theme" aria-label="toggle mockup theme">◐</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="study">
+    <div class="study-head">
+      <div class="study-title">
+        <div class="number">02 · quiet by default <span class="recommend">recommended</span></div>
+        <h2>The quiet field</h2>
+      </div>
+      <div class="study-copy">
+        <p>All thoughts are present, but the web of edges waits for intent. Points sit like dust in the room; hover or keyboard focus reveals one thought, its words, and only its direct resonances. Clicking opens the existing thought page.</p>
+        <p class="tradeoff"><strong>Why it fits:</strong> the whole collection is perceptible without becoming a diagram to decode. It preserves Stillness, scales better, and lets the accent keep its current meaning: the vermilion point is where attention is now.</p>
+      </div>
+    </div>
+    <div class="mock-scroll">
+      <div class="window field" data-concept="field">
+        <div class="browserbar"><div class="traffic"><i></i><i></i><i></i></div><div class="browser-title">drft</div></div>
+        <div class="workspace">
+          <header class="appbar">
+            <button class="quiet-action">‹ collection</button>
+            <div class="wordmark">drft</div>
+            <div class="appbar-right"><span class="eyebrow">connections</span><span class="count">28</span></div>
+          </header>
+          <div class="graph-shell"><svg role="img" aria-label="All thoughts in a quiet field with selected connections"></svg></div>
+          <div class="field-readout" aria-live="polite">
+            <div class="field-date">3 jul · 9:41</div>
+            <div class="field-text">cities feel more creative because collisions are free</div>
+            <div class="field-hint">4 thoughts echo this · click to open</div>
+          </div>
+          <button class="theme" aria-label="toggle mockup theme">◐</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="study">
+    <div class="study-head">
+      <div class="study-title">
+        <div class="number">03 · guided</div>
+        <h2>The thread lens</h2>
+      </div>
+      <div class="study-copy">
+        <p>The complete graph stays in the periphery while one local neighborhood is magnified into a calm reading circle. Direct links sit close; the next hop marks possible paths outward. It turns the graph into a way of wandering rather than surveying.</p>
+        <p class="tradeoff"><strong>Trade-off:</strong> the most readable concept, but it weakens the feeling of seeing the whole collection at once. The lens is also a new interaction model that must be learned.</p>
+      </div>
+    </div>
+    <div class="mock-scroll">
+      <div class="window lens" data-concept="lens">
+        <div class="browserbar"><div class="traffic"><i></i><i></i><i></i></div><div class="browser-title">drft</div></div>
+        <div class="workspace">
+          <header class="appbar">
+            <button class="quiet-action">‹ collection</button>
+            <div class="wordmark">drft</div>
+            <div class="appbar-right"><span class="eyebrow">connections</span><span class="count">28</span></div>
+          </header>
+          <div class="graph-shell"><svg role="img" aria-label="A local thread magnified within the complete thought graph"></svg></div>
+          <div class="lens-key"><span><i></i>open</span><span><i class="rest-key"></i>set down</span></div>
+          <button class="theme" aria-label="toggle mockup theme">◐</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="decision">
+    <div class="number">direction</div>
+    <h2>Start with quiet, keep the graph honest.</h2>
+    <div class="decision-grid">
+      <div>
+        <h3>Use the connection table</h3>
+        <p>Edges should be the same user-dismissable resonance links already visible on thought pages. Do not invent cluster names or expose similarity scores.</p>
+      </div>
+      <div class="best">
+        <h3>Ship the quiet field</h3>
+        <p>It satisfies “all thoughts” while postponing density until the user points somewhere. The default frame feels like drft; interaction reveals the graph.</p>
+      </div>
+      <div>
+        <h3>Keep it at the desk</h3>
+        <p>Add <em>connections</em> directly above settings in the desktop rail. No compact fallback and no iOS version: deliberate wandering belongs to the web workspace.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+const thoughts = [
+  { id: 0, text: "cities feel more creative because collisions are free", date: "3 jul · 9:41", x: 465, y: 285 },
+  { id: 1, text: "the best interviews are mostly edited silence", date: "8 jul", x: 330, y: 208 },
+  { id: 2, text: "attention is a garden, not a mine", date: "4 days ago", x: 605, y: 186 },
+  { id: 3, text: "a commute you choose is a walk", date: "28 jun", x: 614, y: 360 },
+  { id: 4, text: "what if onboarding is just the product, slowed down", date: "today · 9:12", x: 448, y: 116 },
+  { id: 5, text: "recipes as version control — forks & merges", date: "tuesday", x: 750, y: 270 },
+  { id: 6, text: "everyone's second language is autocomplete", date: "2 jul", x: 742, y: 130 },
+  { id: 7, text: "the shortest path is rarely the one you remember", date: "today · 9:41", x: 260, y: 344 },
+  { id: 8, text: "a blank page is a room with the lights off", date: "19 jun", x: 352, y: 440 },
+  { id: 9, text: "ritual is memory with a place to sit", date: "14 jun", x: 530, y: 466 },
+  { id: 10, text: "good tools make returning easier than organizing", date: "9 jun", x: 782, y: 420 },
+  { id: 11, text: "constraints are invitations written backwards", date: "30 may", x: 870, y: 210 },
+  { id: 12, text: "the meeting ended when everyone stopped editing themselves", date: "22 may", x: 192, y: 194 },
+  { id: 13, text: "software should have weather, not moods", date: "16 may", x: 102, y: 340 },
+  { id: 14, text: "a product tour is often an apology for the product", date: "4 may", x: 307, y: 91 },
+  { id: 15, text: "the archive is where decisions lose their reasons", date: "29 apr", x: 685, y: 495, resting: true },
+  { id: 16, text: "small rooms make attention visible", date: "18 apr", x: 900, y: 360 },
+  { id: 17, text: "unfinished work has a different kind of gravity", date: "10 apr", x: 118, y: 473 },
+  { id: 18, text: "the interface should know when to leave", date: "28 mar", x: 438, y: 525 },
+  { id: 19, text: "walking is thinking with a horizon", date: "17 mar", x: 226, y: 512 },
+  { id: 20, text: "email is a place thoughts can wait without staring", date: "2 mar", x: 817, y: 520 },
+  { id: 21, text: "ideas need collisions but attention needs walls", date: "21 feb", x: 548, y: 72 },
+  { id: 22, text: "a list becomes guilt when it learns to count", date: "8 feb", x: 62, y: 188 },
+  { id: 23, text: "the right name can close a door too early", date: "26 jan", x: 925, y: 84, resting: true },
+  { id: 24, text: "search remembers what hierarchy forgets", date: "12 jan", x: 918, y: 480 },
+  { id: 25, text: "quiet software has sharp edges too", date: "29 dec", x: 676, y: 82 },
+  { id: 26, text: "a sketch is a question that kept its ambiguity", date: "11 dec", x: 78, y: 535, resting: true },
+  { id: 27, text: "the first version should leave some air unclaimed", date: "20 nov", x: 366, y: 30 }
+];
+
+const links = [
+  [0,1],[0,2],[0,3],[0,7],[1,4],[1,12],[1,16],[2,4],[2,9],[2,21],
+  [3,7],[3,19],[4,10],[4,14],[4,27],[5,6],[5,10],[5,15],[5,24],[6,10],
+  [6,11],[6,24],[7,8],[7,19],[8,9],[8,17],[8,18],[9,15],[9,20],[10,11],
+  [10,18],[10,24],[11,16],[12,16],[13,16],[13,17],[13,22],[14,27],[15,20],
+  [17,19],[17,26],[18,25],[20,24],[21,25],[22,26],[23,24],[23,25]
+];
+
+const ns = "http://www.w3.org/2000/svg";
+const degree = thoughts.map((t) => links.filter((pair) => pair.includes(t.id)).length);
+
+function svgElement(name, attributes = {}) {
+  const el = document.createElementNS(ns, name);
+  for (const [key, value] of Object.entries(attributes)) el.setAttribute(key, String(value));
+  return el;
+}
+
+function short(text, limit = 34) {
+  return text.length > limit ? `${text.slice(0, limit - 1)}…` : text;
+}
+
+function neighborsOf(id) {
+  return new Set(links.flatMap(([a, b]) => a === id ? [b] : b === id ? [a] : []));
+}
+
+function updateClasses(root, selected) {
+  const neighbors = neighborsOf(selected);
+  root.querySelectorAll(".node").forEach((node) => {
+    const id = Number(node.dataset.id);
+    node.classList.toggle("selected", id === selected);
+    node.classList.toggle("neighbor", neighbors.has(id));
+  });
+  root.querySelectorAll(".edge").forEach((edge) => {
+    const active = Number(edge.dataset.a) === selected || Number(edge.dataset.b) === selected;
+    edge.classList.toggle("active", active);
+  });
+}
+
+function setReadout(root, selected) {
+  const thought = thoughts[selected];
+  const connections = degree[selected];
+  const inspector = root.querySelector(".inspector");
+  if (inspector) {
+    inspector.querySelector(".inspector-date").textContent = thought.date;
+    inspector.querySelector(".inspector-text").textContent = thought.text;
+    inspector.querySelector(".inspector-meta").innerHTML = `<span class="accent">●</span> ${connections} resonance${connections === 1 ? "" : "s"}<br>${thought.resting ? "set down" : "open thought"}`;
+  }
+  const readout = root.querySelector(".field-readout");
+  if (readout) {
+    readout.querySelector(".field-date").textContent = thought.date;
+    readout.querySelector(".field-text").textContent = thought.text;
+    readout.querySelector(".field-hint").textContent = `${connections} thought${connections === 1 ? "" : "s"} echo this · click to open`;
+  }
+}
+
+function labelFor(thought, concept) {
+  const label = svgElement("text", {
+    x: thought.x + 12,
+    y: thought.y - 3,
+    class: "node-label"
+  });
+  label.textContent = short(thought.text, concept === "constellation" ? 27 : 32);
+  return label;
+}
+
+function drawGraph(root) {
+  const concept = root.dataset.concept;
+  const svg = root.querySelector("svg");
+  svg.setAttribute("viewBox", "0 0 1000 570");
+  svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+
+  if (concept === "lens") {
+    const ring = svgElement("circle", { cx: 465, cy: 285, r: 176, class: "lens-ring" });
+    svg.appendChild(ring);
+    const caption = svgElement("text", { x: 465, y: 92, "text-anchor": "middle", class: "lens-caption" });
+    caption.textContent = "one thought · the paths immediately around it";
+    svg.appendChild(caption);
+  }
+
+  const edgeLayer = svgElement("g");
+  for (const [a, b] of links) {
+    const start = thoughts[a];
+    const end = thoughts[b];
+    edgeLayer.appendChild(svgElement("line", {
+      x1: start.x, y1: start.y, x2: end.x, y2: end.y,
+      class: `edge${degree[a] > 3 && degree[b] > 3 ? " strong" : ""}`,
+      "data-a": a, "data-b": b
+    }));
+  }
+  svg.appendChild(edgeLayer);
+
+  const nodeLayer = svgElement("g");
+  for (const thought of thoughts) {
+    const group = svgElement("g", {
+      class: `node${thought.resting ? " resting" : ""}`,
+      "data-id": thought.id,
+      tabindex: "0",
+      role: "button",
+      "aria-label": `${thought.text}, ${degree[thought.id]} connected thoughts`
+    });
+    group.appendChild(svgElement("circle", { cx: thought.x, cy: thought.y, r: 15, class: "halo" }));
+    group.appendChild(svgElement("circle", {
+      cx: thought.x, cy: thought.y,
+      r: Math.min(3.2 + degree[thought.id] * .55, 6.2),
+      class: "mark"
+    }));
+    group.appendChild(labelFor(thought, concept));
+    group.addEventListener("mouseenter", () => select(root, thought.id));
+    group.addEventListener("focus", () => select(root, thought.id));
+    group.addEventListener("click", () => select(root, thought.id));
+    group.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        select(root, thought.id);
+      }
+    });
+    nodeLayer.appendChild(group);
+  }
+  svg.appendChild(nodeLayer);
+  select(root, 0);
+}
+
+function select(root, id) {
+  updateClasses(root, id);
+  setReadout(root, id);
+}
+
+document.querySelectorAll(".window").forEach((root) => {
+  drawGraph(root);
+  root.querySelector(".theme").addEventListener("click", () => root.classList.toggle("dark"));
+});
+</script>
+</body>
+</html>

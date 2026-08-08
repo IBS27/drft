@@ -1,10 +1,15 @@
 import { v } from "convex/values";
+import {
+  paginationOptsValidator,
+  paginationResultValidator,
+} from "convex/server";
 import { mutation, query } from "./_generated/server";
 import type { QueryCtx } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
 import { internal } from "./_generated/api";
 
 const CONNECTIONS_PER_DIRECTION_LIMIT = 50;
+const CONNECTIONS_PER_GRAPH_THOUGHT_LIMIT = 50;
 const COLLECTION_LIMIT = 500;
 const PREVIEW_LIMIT = 160;
 
@@ -19,6 +24,19 @@ const connectionViewValidator = v.object({
   otherId: v.id("thoughts"),
   otherText: v.string(),
   otherStatus: v.union(v.literal("open"), v.literal("resting")),
+});
+
+const graphThoughtValidator = v.object({
+  _id: v.id("thoughts"),
+  text: v.string(),
+  createdAt: v.number(),
+  status: v.union(v.literal("open"), v.literal("resting")),
+  connections: v.array(
+    v.object({
+      _id: v.id("connections"),
+      toId: v.id("thoughts"),
+    }),
+  ),
 });
 
 function preview(text: string): string {
@@ -105,6 +123,60 @@ export const collection = query({
       }
     }
     return { thoughts, resurfacedId };
+  },
+});
+
+// Every thought and every live resonance, page by page, for the desktop
+// connections field. A link is returned with its source thought, so walking
+// the user's indexed thought pages also walks the graph without scanning the
+// global connections table or adding ownership data to every existing edge.
+export const connectionGraph = query({
+  args: { paginationOpts: paginationOptsValidator },
+  returns: paginationResultValidator(graphThoughtValidator),
+  handler: async (ctx, { paginationOpts }) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      return {
+        page: [],
+        continueCursor: "",
+        isDone: true,
+      };
+    }
+    const result = await ctx.db
+      .query("thoughts")
+      .withIndex("by_user", (q) => q.eq("userId", identity.subject))
+      .order("desc")
+      .paginate(paginationOpts);
+
+    const page = await Promise.all(
+      result.page.map(async (thought) => {
+        const candidates = await ctx.db
+          .query("connections")
+          .withIndex("by_from_and_dismissedAt", (q) =>
+            q.eq("fromId", thought._id).eq("dismissedAt", undefined),
+          )
+          .take(CONNECTIONS_PER_GRAPH_THOUGHT_LIMIT);
+        const connections = (
+          await Promise.all(
+            candidates.map(async (connection) => {
+              const other = await ctx.db.get(connection.toId);
+              return other?.userId === identity.subject
+                ? { _id: connection._id, toId: connection.toId }
+                : null;
+            }),
+          )
+        ).filter((connection) => connection !== null);
+        return {
+          _id: thought._id,
+          text: thought.text,
+          createdAt: thought.createdAt,
+          status: thought.status,
+          connections,
+        };
+      }),
+    );
+
+    return { ...result, page };
   },
 });
 
