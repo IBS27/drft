@@ -16,6 +16,7 @@ From `apps/web`: `bun dev` · `bun run build` · `bun run lint` · `bun run type
 From `apps/landing`: `bun dev` · `bun run build` · `bun run typecheck`
 The web dev server mirrors production routing (see `landingSite` in `apps/web/vite.config.ts`): signed-out `/` serves the landing site, `/?signin` bypasses it. It builds `apps/landing` on start and rebuilds + reloads on landing source changes — no second dev server needed; use `bun dev` in `apps/landing` only for focused landing work with HMR.
 From `packages/backend`: `bun run dev` (convex dev) · `bun run typecheck`
+Whenever the iOS Simulator is needed, use the iPhone 17 Pro Max simulator.
 
 Convex deploys the entire backend snapshot. Never run `convex dev` from parallel worktrees against the same deployment; use one designated backend worktree, or give the worktree its own deployment: from `packages/backend`, `bunx convex deployment create dev/<name> --type dev --select`, set its env vars (including `CLERK_JWT_ISSUER_DOMAIN`), then point that worktree's clients at it — `VITE_CONVEX_URL` in `apps/web/.env.local`, and `ConvexService.deploymentUrl` for iOS Debug builds.
 
