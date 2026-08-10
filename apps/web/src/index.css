@@ -78,3 +78,10 @@ input:focus-visible,
 textarea:focus-visible {
   outline: none;
 }
+
+/* The settings time field edits in place; the browser's clock-icon
+   popup is stock chrome the room doesn't wear (and it vanished against
+   the dark surface anyway). */
+input[type="time"]::-webkit-calendar-picker-indicator {
+  display: none;
+}

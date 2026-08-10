@@ -39,7 +39,7 @@ export function SignIn() {
 
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center px-6">
-      <h1 className="text-[13px] tracking-[0.5em] text-pt uppercase">drft</h1>
+      <h1 className="text-[13px] tracking-[0.5em] text-pt">drft</h1>
       <p className="mt-5 text-[13px] font-normal text-pl">
         a space for unfinished thoughts
       </p>

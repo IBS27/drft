@@ -165,7 +165,7 @@ export function CaptureField({ now }: { now: number }) {
   };
 
   const clock = new Date(now)
-    .toLocaleTimeString([], { hour: "numeric", minute: "2-digit", hour12: false })
+    .toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
     .toLowerCase();
 
   return (

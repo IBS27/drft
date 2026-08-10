@@ -65,7 +65,7 @@ function Connections() {
           >
             ‹ collection
           </Link>
-          <span className="pointer-events-none absolute right-0 left-0 text-center text-[12px] tracking-[0.5em] text-pt uppercase">
+          <span className="pointer-events-none absolute right-0 left-0 text-center text-[12px] tracking-[0.5em] text-pt">
             drft
           </span>
           <span className="flex items-center gap-5">

@@ -380,6 +380,7 @@ struct ThoughtView: View {
                         .foregroundStyle(Stillness.muted)
                 )
                     .textFieldStyle(.plain)
+                    .textInputAutocapitalization(.never)
                     .font(StillnessType.action.weight(.light))
                     .foregroundStyle(Stillness.ink)
                     .multilineTextAlignment(.center)
@@ -465,24 +466,22 @@ private struct RelatedThoughtRow: View {
     private let actionWidth: CGFloat = 112
 
     var body: some View {
-        Button(action: onOpen) {
-            VStack(alignment: .leading, spacing: 9) {
-                Text(connection.otherText)
-                    .font(StillnessType.relatedThought)
-                    .foregroundStyle(Stillness.ink)
-                    .multilineTextAlignment(.leading)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+        VStack(alignment: .leading, spacing: 9) {
+            Text(connection.otherText)
+                .font(StillnessType.relatedThought)
+                .foregroundStyle(Stillness.ink)
+                .multilineTextAlignment(.leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
 
-                Text(metadata)
-                    .font(StillnessType.relatedMetadata)
-                    .tracking(1.98)
-                    .foregroundStyle(Stillness.faint)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
-            .padding(.vertical, 17)
-            .contentShape(Rectangle())
+            Text(metadata)
+                .font(StillnessType.relatedMetadata)
+                .tracking(1.98)
+                .foregroundStyle(Stillness.faint)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .buttonStyle(.plain)
+        .padding(.vertical, 17)
+        .contentShape(Rectangle())
+        .onTapGesture(perform: onOpen)
         .frame(width: width, alignment: .leading)
         .fixedSize(horizontal: false, vertical: true)
         .background(Stillness.page)
@@ -506,6 +505,7 @@ private struct RelatedThoughtRow: View {
         }
         .accessibilityLabel(connection.otherText)
         .accessibilityHint("Opens related thought")
+        .accessibilityAddTraits(.isButton)
         .accessibilityAction(named: Text("Set aside"), onSetAside)
         .frame(width: width)
         .clipped()

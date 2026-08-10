@@ -40,7 +40,7 @@
 	<key>NSMicrophoneUsageDescription</key>
 	<string>drft listens only while you speak a thought.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>drft turns your spoken thoughts into text, on this device.</string>
+	<string>drft turns your spoken thoughts into text.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

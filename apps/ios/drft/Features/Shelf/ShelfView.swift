@@ -208,6 +208,10 @@ struct ShelfView: View {
     ) -> some View {
         VStack(spacing: 0) {
             ForEach(Array(thoughts.enumerated()), id: \.element.id) { index, thought in
+                let age = ShelfFormatting.ageLabel(
+                    for: thought.createdAt,
+                    now: now
+                )
                 if index > 0 {
                     Hairline()
                 }
@@ -216,16 +220,25 @@ struct ShelfView: View {
                         selectedThoughtID = thought.id
                     }
                 } label: {
-                    Text(thought.preview)
-                        .font(StillnessType.shelfThought)
-                        .foregroundStyle(Stillness.ink)
-                        .lineLimit(1)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.vertical, 18)
-                        .contentShape(Rectangle())
+                    HStack(spacing: 14) {
+                        Text(thought.preview)
+                            .font(StillnessType.shelfThought)
+                            .foregroundStyle(Stillness.ink)
+                            .lineLimit(1)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+
+                        Text(age)
+                            .font(StillnessType.relatedMetadata)
+                            .tracking(0.88)
+                            .monospacedDigit()
+                            .foregroundStyle(Stillness.faint)
+                            .lineLimit(1)
+                    }
+                    .padding(.vertical, 18)
+                    .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel(thought.preview)
+                .accessibilityLabel("\(thought.preview), \(age)")
             }
             Hairline()
         }

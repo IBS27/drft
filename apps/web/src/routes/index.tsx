@@ -72,7 +72,7 @@ function Collection() {
           settings
         </Link>
         <span className="hidden lg:block" aria-hidden="true" />
-        <span className="pointer-events-none absolute right-0 left-0 text-center text-[12px] tracking-[0.5em] text-pt uppercase lg:left-72 xl:left-80">
+        <span className="pointer-events-none absolute right-0 left-0 text-center text-[12px] tracking-[0.5em] text-pt lg:left-72 xl:left-80">
           drft
         </span>
         <span className="flex items-baseline gap-6">
