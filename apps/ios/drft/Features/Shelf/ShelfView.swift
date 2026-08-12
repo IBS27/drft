@@ -83,7 +83,7 @@ struct ShelfView: View {
                 }
                 .scrollIndicators(.hidden)
             }
-            .safeAreaInset(edge: .bottom, spacing: 0) {
+            .overlay(alignment: .bottomTrailing) {
                 catchThoughtAffordance
             }
 
@@ -154,33 +154,16 @@ struct ShelfView: View {
         Button {
             onCatchThought()
         } label: {
-            Group {
-                if let preview = ShelfFormatting.draftPreview(draft) {
-                    Text(preview)
-                        .font(StillnessType.action)
-                        .tracking(1.2)
-                        .opacity(0.9)
-                        .lineLimit(1)
-                } else {
-                    Text("NEW THOUGHT")
-                        .font(StillnessType.action)
-                        .tracking(StillnessType.actionTracking)
-                }
-            }
-            .foregroundStyle(Stillness.onNow)
-            .frame(maxWidth: .infinity)
-            .frame(height: 54)
-            .background(
-                Stillness.now,
-                in: RoundedRectangle(cornerRadius: 14, style: .continuous)
-            )
-            .padding(.horizontal, 24)
-            .padding(.top, 13)
-            .padding(.bottom, 8)
-            .contentShape(Rectangle())
+            Image(systemName: "plus")
+                .font(.system(size: 22, weight: .medium))
+                .foregroundStyle(Stillness.onNow)
+                .frame(width: 56, height: 56)
+                .background(Stillness.now, in: Circle())
+                .contentShape(Circle())
         }
-        .buttonStyle(NewThoughtBarStyle())
-        .background(Stillness.page)
+        .buttonStyle(NewThoughtButtonStyle())
+        .padding(.trailing, 28)
+        .padding(.bottom, 20)
         .accessibilityLabel("New thought")
     }
 
@@ -242,9 +225,10 @@ struct ShelfView: View {
     }
 }
 
-private struct NewThoughtBarStyle: ButtonStyle {
+private struct NewThoughtButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .opacity(configuration.isPressed ? 0.7 : 1)
+            .scaleEffect(configuration.isPressed ? 0.96 : 1)
     }
 }
