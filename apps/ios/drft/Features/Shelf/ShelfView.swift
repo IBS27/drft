@@ -38,16 +38,13 @@ struct ShelfView: View {
     @State private var settingsArePresented = false
     @State private var selectedThoughtID: String?
 
-    let draft: String
     let onCatchThought: () -> Void
 
     init(
-        draft: String,
         authService: AuthService,
         convexService: ConvexService,
         onCatchThought: @escaping () -> Void
     ) {
-        self.draft = draft
         self.authService = authService
         self.convexService = convexService
         self.onCatchThought = onCatchThought
@@ -79,7 +76,7 @@ struct ShelfView: View {
                     }
                     .padding(.horizontal, 28)
                     .padding(.top, 34)
-                    .padding(.bottom, 18)
+                    .padding(.bottom, 94)
                 }
                 .scrollIndicators(.hidden)
             }

@@ -103,10 +103,4 @@ enum ShelfFormatting {
             return formatter.string(from: date)
         }
     }
-
-    static func draftPreview(_ text: String) -> String? {
-        let words = text.split(whereSeparator: { $0.isWhitespace })
-        guard !words.isEmpty else { return nil }
-        return words.prefix(8).joined(separator: " ")
-    }
 }
