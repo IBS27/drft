@@ -13,8 +13,9 @@ export const localDate = (now: Now) => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 };
 
+// hour cycle follows the viewer's locale — "9:41" or "9:41 am" alike.
 const time = (d: Date) =>
-  d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit", hour12: false });
+  d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
 
 export type Group = "today" | "this week" | "earlier";
 export const GROUPS: Group[] = ["today", "this week", "earlier"];

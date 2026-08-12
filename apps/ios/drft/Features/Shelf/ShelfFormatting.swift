@@ -52,6 +52,14 @@ enum ShelfFormatting {
         return date >= sixDaysAgo ? .thisWeek : .earlier
     }
 
+    static func time(for date: Date) -> String {
+        date.formatted(
+            .dateTime
+                .hour(.defaultDigits(amPM: .abbreviated))
+                .minute(.twoDigits)
+        )
+    }
+
     static func captureLine(for milliseconds: Double, now: Date = .now) -> String {
         let date = Date(timeIntervalSince1970: milliseconds / 1_000)
         let day: String
@@ -71,36 +79,27 @@ enum ShelfFormatting {
             day = formatter.string(from: date)
         }
 
-        let time = date.formatted(
-            .dateTime
-                .hour(.twoDigits(amPM: .abbreviated))
-                .minute(.twoDigits)
-        )
-        return "\(day) · \(time)"
+        return "\(day) · \(time(for: date))"
     }
 
     static func ageLabel(for milliseconds: Double, now: Date = .now) -> String {
         let date = Date(timeIntervalSince1970: milliseconds / 1_000)
         switch group(for: milliseconds, now: now) {
         case .today:
-            return date.formatted(
-                .dateTime
-                    .hour(.twoDigits(amPM: .omitted))
-                    .minute(.twoDigits)
-            )
+            return time(for: date)
         case .thisWeek:
             let formatter = DateFormatter()
             formatter.locale = Locale(identifier: "en_US_POSIX")
             formatter.calendar = calendar
             formatter.dateFormat = "EEE"
-            return formatter.string(from: date)
+            return formatter.string(from: date).lowercased()
         case .earlier:
             let formatter = DateFormatter()
             formatter.locale = Locale(identifier: "en_US_POSIX")
             formatter.calendar = calendar
             formatter.dateFormat = calendar.component(.year, from: date)
                 == calendar.component(.year, from: now) ? "d MMM" : "d MMM yy"
-            return formatter.string(from: date)
+            return formatter.string(from: date).lowercased()
         }
     }
 

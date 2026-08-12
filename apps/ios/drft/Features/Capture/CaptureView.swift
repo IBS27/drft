@@ -67,6 +67,7 @@ struct CaptureView: View {
                 VStack(spacing: 22) {
                     TextField("", text: $model.text, axis: .vertical)
                         .textFieldStyle(.plain)
+                        .textInputAutocapitalization(.never)
                         .stillnessThought()
                         .tint(Stillness.ink)
                         .focused($inputIsFocused)
@@ -302,11 +303,6 @@ struct CaptureView: View {
     }
 
     private func timestamp(for date: Date) -> String {
-        let time = date.formatted(
-            .dateTime
-                .hour(.twoDigits(amPM: .abbreviated))
-                .minute(.twoDigits)
-        )
-        return "\(time) · unfiled"
+        "\(ShelfFormatting.time(for: date)) · unfiled"
     }
 }

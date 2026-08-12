@@ -247,18 +247,18 @@ export const Rail = memo(function Rail({
         ) : (
           <>
             {ordered.pinned && (
-              <div className="mb-7">
-                <RailRow
-                  t={ordered.pinned}
-                  active={ordered.pinned._id === activeId}
-                  returned
-                  prewarm={prepareNavigation}
-                />
-              </div>
+              <RailRow
+                t={ordered.pinned}
+                active={ordered.pinned._id === activeId}
+                returned
+                prewarm={prepareNavigation}
+              />
             )}
+            {/* Section air lives on the group wrapper: the header alone can't
+                carry it (it is always its group's first child). */}
             {ordered.groups.map(({ group, rows }) => (
-              <div key={group}>
-                <div className="pt-7 pb-2 text-[10.5px] tracking-[0.34em] text-pl uppercase first:pt-0">
+              <div key={group} className="pt-7 first:pt-0">
+                <div className="pb-2 text-[10.5px] tracking-[0.34em] text-pl uppercase">
                   {group}
                 </div>
                 {rows.map((t) => (
