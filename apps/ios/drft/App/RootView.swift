@@ -70,7 +70,6 @@ struct RootView: View {
         GeometryReader { geometry in
             ZStack {
                 ShelfView(
-                    draft: draft,
                     authService: authService,
                     convexService: convexService,
                     onCatchThought: presentCapture
