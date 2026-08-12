@@ -506,6 +506,7 @@ private struct RelatedThoughtRow: View {
         .accessibilityLabel(connection.otherText)
         .accessibilityHint("Opens related thought")
         .accessibilityAddTraits(.isButton)
+        .accessibilityAction { onOpen() }
         .accessibilityAction(named: Text("Set aside"), onSetAside)
         .frame(width: width)
         .clipped()

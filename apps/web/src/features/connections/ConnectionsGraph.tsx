@@ -358,7 +358,7 @@ export function ConnectionsGraph({
                       x2={target.x}
                       y2={target.y}
                       vectorEffect="non-scaling-stroke"
-                      className={`transition-opacity duration-200 ${visible ? "stroke-ink opacity-45" : "stroke-line"}`}
+                      className={`transition-colors duration-200 ${visible ? "stroke-ink/45" : "stroke-line"}`}
                       strokeWidth={1}
                     />
                   );
