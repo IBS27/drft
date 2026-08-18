@@ -12,7 +12,6 @@ struct CaptureView: View {
     @FocusState private var inputIsFocused: Bool
     private let focusRequest: Int
     private let isPresented: Bool
-    private let onDraftChange: (String) -> Void
     private let onShelfDragChanged: (CGFloat) -> Void
     private let onRevealShelf: () -> Void
 
@@ -22,7 +21,6 @@ struct CaptureView: View {
         convexService: ConvexService,
         focusRequest: Int,
         isPresented: Bool,
-        onDraftChange: @escaping (String) -> Void,
         onShelfDragChanged: @escaping (CGFloat) -> Void,
         onRevealShelf: @escaping () -> Void
     ) {
@@ -30,7 +28,6 @@ struct CaptureView: View {
         self.convexService = convexService
         self.focusRequest = focusRequest
         self.isPresented = isPresented
-        self.onDraftChange = onDraftChange
         self.onShelfDragChanged = onShelfDragChanged
         self.onRevealShelf = onRevealShelf
         _model = StateObject(
@@ -142,9 +139,6 @@ struct CaptureView: View {
                 await Task.yield()
                 inputIsFocused = true
             }
-        }
-        .onChange(of: model.text, initial: true) { _, text in
-            onDraftChange(text)
         }
         .onChange(of: model.focusRequest) {
             inputIsFocused = true

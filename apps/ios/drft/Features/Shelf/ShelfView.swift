@@ -7,24 +7,110 @@ private final class ShelfModel: ObservableObject {
 
     private var subscription: AnyCancellable?
     private var subscriptionKey: String?
+    private var displayKey: String?
+    private var liveKey: String?
+    private var cacheTask: Task<Void, Never>?
 
-    func subscribe(
+    func activate(
         date: String,
-        authenticatedUserID: String,
+        displayUserID: String?,
+        authenticatedUserID: String?,
         convexService: ConvexService
     ) {
-        let key = "\(authenticatedUserID)|\(date)"
-        guard key != subscriptionKey else { return }
-        subscriptionKey = key
+        guard let displayUserID else {
+            displayKey = nil
+            liveKey = nil
+            collection = nil
+            cacheTask?.cancel()
+            subscription?.cancel()
+            subscription = nil
+            subscriptionKey = nil
+            return
+        }
+
+        let key = "\(displayUserID)|\(date)"
+        if key != displayKey {
+            displayKey = key
+            liveKey = nil
+            collection = nil
+            cacheTask?.cancel()
+            cacheTask = Task { @MainActor [weak self] in
+                let cached = await convexService.cachedCollection(
+                    userID: displayUserID,
+                    date: date
+                )
+                guard !Task.isCancelled,
+                    self?.displayKey == key,
+                    self?.liveKey != key
+                else { return }
+                self?.collection = cached
+            }
+        }
+
+        guard let authenticatedUserID else {
+            subscription?.cancel()
+            subscription = nil
+            subscriptionKey = nil
+            return
+        }
+
+        let nextSubscriptionKey = "\(authenticatedUserID)|\(date)"
+        guard nextSubscriptionKey != subscriptionKey else { return }
+        subscriptionKey = nextSubscriptionKey
         subscription?.cancel()
         subscription = convexService.collection(date: date)
             .receive(on: DispatchQueue.main)
             .sink(
                 receiveCompletion: { _ in },
-                receiveValue: { [weak self] collection in
-                    self?.collection = collection
+                receiveValue: { [weak self, weak convexService] collection in
+                    guard let self, self.displayKey == key else { return }
+                    liveKey = key
+                    self.collection = collection
+                    guard let convexService else { return }
+                    Task {
+                        await convexService.cacheCollection(
+                            collection,
+                            userID: displayUserID,
+                            date: date
+                        )
+                    }
                 }
             )
+    }
+}
+
+private struct ShelfSection: Identifiable {
+    let group: ShelfGroup
+    let thoughts: [ConvexService.CollectionThought]
+
+    var id: String { group.label }
+}
+
+@MainActor
+private struct ShelfLayout {
+    let returnedThought: ConvexService.CollectionThought?
+    let sections: [ShelfSection]
+
+    init(collection: ConvexService.Collection?, now: Date) {
+        guard let collection else {
+            returnedThought = nil
+            sections = []
+            return
+        }
+
+        returnedThought = collection.thoughts.first {
+            $0.id == collection.resurfacedId
+        }
+
+        var grouped: [ShelfGroup: [ConvexService.CollectionThought]] = [:]
+        for thought in collection.thoughts where thought.id != collection.resurfacedId {
+            grouped[ShelfFormatting.group(for: thought.createdAt, now: now), default: []]
+                .append(thought)
+        }
+        sections = ShelfGroup.allCases.compactMap { group in
+            guard let thoughts = grouped[group], !thoughts.isEmpty else { return nil }
+            return ShelfSection(group: group, thoughts: thoughts)
+        }
     }
 }
 
@@ -38,15 +124,18 @@ struct ShelfView: View {
     @State private var settingsArePresented = false
     @State private var selectedThoughtID: String?
 
+    let isVisible: Bool
     let onCatchThought: () -> Void
 
     init(
         authService: AuthService,
         convexService: ConvexService,
+        isVisible: Bool,
         onCatchThought: @escaping () -> Void
     ) {
         self.authService = authService
         self.convexService = convexService
+        self.isVisible = isVisible
         self.onCatchThought = onCatchThought
     }
 
@@ -54,60 +143,65 @@ struct ShelfView: View {
         ZStack {
             Stillness.page.ignoresSafeArea()
 
-            VStack(spacing: 0) {
-                wordmark
+            if isVisible {
+                let layout = ShelfLayout(collection: model.collection, now: now)
 
-                ScrollView {
-                    LazyVStack(alignment: .leading, spacing: 0) {
-                        if let returnedThought {
-                            sectionLabel("RETURNED TODAY")
-                            thoughtRows([returnedThought])
-                            Spacer(minLength: 42)
-                        }
+                VStack(spacing: 0) {
+                    wordmark
 
-                        ForEach(ShelfGroup.allCases, id: \.label) { group in
-                            let rows = rows(in: group)
-                            if !rows.isEmpty {
-                                sectionLabel(group.label)
-                                thoughtRows(rows)
+                    ScrollView {
+                        LazyVStack(alignment: .leading, spacing: 0) {
+                            if let returnedThought = layout.returnedThought {
+                                sectionLabel("RETURNED TODAY")
+                                thoughtRow(returnedThought)
+                                Hairline()
+                                Spacer(minLength: 42)
+                            }
+
+                            ForEach(layout.sections) { section in
+                                sectionLabel(section.group.label)
+                                ForEach(section.thoughts) { thought in
+                                    thoughtRow(thought)
+                                    Hairline()
+                                }
                                 Spacer(minLength: 34)
                             }
                         }
+                        .padding(.horizontal, 28)
+                        .padding(.top, 34)
+                        .padding(.bottom, 94)
                     }
-                    .padding(.horizontal, 28)
-                    .padding(.top, 34)
-                    .padding(.bottom, 94)
+                    .scrollIndicators(.hidden)
                 }
-                .scrollIndicators(.hidden)
-            }
-            .overlay(alignment: .bottomTrailing) {
-                catchThoughtAffordance
-            }
+                .overlay(alignment: .bottomTrailing) {
+                    catchThoughtAffordance
+                }
 
-            if let selectedThoughtID {
-                ThoughtView(
-                    thoughtID: selectedThoughtID,
-                    convexService: convexService,
-                    onBack: closeThought
-                )
-                .transition(.move(edge: .trailing).combined(with: .opacity))
-                .zIndex(1)
+                if let selectedThoughtID {
+                    ThoughtView(
+                        thoughtID: selectedThoughtID,
+                        convexService: convexService,
+                        onBack: closeThought
+                    )
+                    .transition(.move(edge: .trailing).combined(with: .opacity))
+                    .zIndex(1)
+                }
             }
         }
         .task(id: subscriptionTaskID) {
-            guard let authenticatedUserID = convexService.authenticatedUserID else {
-                return
-            }
-            model.subscribe(
+            model.activate(
                 date: date,
-                authenticatedUserID: authenticatedUserID,
+                displayUserID: displayUserID,
+                authenticatedUserID: convexService.authenticatedUserID,
                 convexService: convexService
             )
         }
         .task {
             while !Task.isCancelled {
+                let nextDay = ShelfFormatting.startOfNextDay(after: .now)
+                let delay = max(1, nextDay.timeIntervalSinceNow)
                 do {
-                    try await Task.sleep(for: .seconds(30))
+                    try await Task.sleep(for: .seconds(delay))
                 } catch {
                     return
                 }
@@ -118,6 +212,19 @@ struct ShelfView: View {
         }
         .onChange(of: scenePhase, initial: true) { _, phase in
             guard phase == .active else { return }
+            now = .now
+            date = ShelfFormatting.localDate(for: now)
+        }
+        .onReceive(
+            NotificationCenter.default.publisher(
+                for: NSNotification.Name.NSSystemTimeZoneDidChange
+            )
+        ) { _ in
+            now = .now
+            date = ShelfFormatting.localDate(for: now)
+        }
+        .onChange(of: isVisible) { _, isVisible in
+            guard isVisible else { return }
             now = .now
             date = ShelfFormatting.localDate(for: now)
         }
@@ -164,68 +271,59 @@ struct ShelfView: View {
         .accessibilityLabel("New thought")
     }
 
-    private var returnedThought: ConvexService.CollectionThought? {
-        guard let returnedID = model.collection?.resurfacedId else { return nil }
-        return model.collection?.thoughts.first { $0.id == returnedID }
-    }
-
-    private func rows(in group: ShelfGroup) -> [ConvexService.CollectionThought] {
-        let returnedID = model.collection?.resurfacedId
-        return (model.collection?.thoughts ?? []).filter { thought in
-            thought.id != returnedID
-                && ShelfFormatting.group(for: thought.createdAt, now: now) == group
-        }
-    }
-
     private func sectionLabel(_ text: String) -> some View {
         Text(text)
             .stillnessLabel(.timestamp)
             .padding(.bottom, 12)
     }
 
-    private func thoughtRows(
-        _ thoughts: [ConvexService.CollectionThought]
-    ) -> some View {
-        VStack(spacing: 0) {
-            ForEach(Array(thoughts.enumerated()), id: \.element.id) { index, thought in
-                let age = ShelfFormatting.ageLabel(
-                    for: thought.createdAt,
-                    now: now
-                )
-                if index > 0 {
-                    Hairline()
-                }
-                Button {
-                    withAnimation(.easeInOut(duration: 0.28)) {
-                        selectedThoughtID = thought.id
-                    }
-                } label: {
-                    HStack(spacing: 14) {
-                        Text(thought.preview)
-                            .font(StillnessType.shelfThought)
-                            .foregroundStyle(Stillness.ink)
-                            .lineLimit(1)
-                            .frame(maxWidth: .infinity, alignment: .leading)
+    private func thoughtRow(_ thought: ConvexService.CollectionThought) -> some View {
+        let age = ShelfFormatting.ageLabel(for: thought.createdAt, now: now)
 
-                        Text(age)
-                            .font(StillnessType.relatedMetadata)
-                            .tracking(0.88)
-                            .monospacedDigit()
-                            .foregroundStyle(Stillness.faint)
-                            .lineLimit(1)
-                    }
-                    .padding(.vertical, 18)
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel("\(thought.preview), \(age)")
+        return Button {
+            convexService.prewarmThought(id: thought.id)
+            withAnimation(.easeInOut(duration: 0.28)) {
+                selectedThoughtID = thought.id
             }
-            Hairline()
+        } label: {
+            HStack(spacing: 14) {
+                Text(thought.preview)
+                    .font(StillnessType.shelfThought)
+                    .foregroundStyle(Stillness.ink)
+                    .lineLimit(1)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                Text(age)
+                    .font(StillnessType.relatedMetadata)
+                    .tracking(0.88)
+                    .monospacedDigit()
+                    .foregroundStyle(Stillness.faint)
+                    .lineLimit(1)
+            }
+            .padding(.vertical, 18)
+            .contentShape(Rectangle())
         }
+        .buttonStyle(.plain)
+        .simultaneousGesture(
+            LongPressGesture(minimumDuration: 0).onEnded { _ in
+                convexService.prewarmThought(id: thought.id)
+            }
+        )
+        .accessibilityLabel("\(thought.preview), \(age)")
+    }
+
+    private var displayUserID: String? {
+        authService.captureOwnerID
+            ?? authService.rememberedUserID
+            ?? convexService.authenticatedUserID
     }
 
     private var subscriptionTaskID: String {
-        "\(convexService.authenticatedUserID ?? "")|\(date)"
+        [
+            displayUserID ?? "",
+            convexService.authenticatedUserID ?? "",
+            date,
+        ].joined(separator: "|")
     }
 
     private func closeThought() {
