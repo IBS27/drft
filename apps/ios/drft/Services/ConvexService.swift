@@ -175,6 +175,10 @@ final class ConvexService: ObservableObject {
         }
     }
 
+    func resumeLocalCaching() {
+        isLocalCachingSuspended = false
+    }
+
     func clearLocalCaches() async {
         // Sign-out subscriptions remain live briefly, so stop their cache writes
         // before clearing data and keep them stopped until a fresh sign-in.

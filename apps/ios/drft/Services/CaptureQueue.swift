@@ -157,20 +157,17 @@ private final class CaptureQueueStore: @unchecked Sendable {
 
         var entriesByID: [UUID: CaptureQueueItem] = [:]
         // The log is authoritative. Legacy formats are read once and deleted only
-        // after their contents are folded into the log.
-        replayLog(into: &entriesByID)
-
-        if let snapshotItems = decodeItems(at: legacySnapshotURL) {
-            for item in snapshotItems {
-                merge(item, into: &entriesByID)
-            }
-        }
+        // after their contents are folded into the log; entries the log already
+        // removed are stale and are not resurrected.
+        var removedIDs: Set<UUID> = []
+        replayLog(into: &entriesByID, removedIDs: &removedIDs)
 
         let legacyFiles = legacyFileItems()
-        for (item, _) in legacyFiles {
-            merge(item, into: &entriesByID)
-        }
-        for item in legacyJournalItems() {
+        let legacyItems =
+            (decodeItems(at: legacySnapshotURL) ?? [])
+            + legacyFiles.map(\.0)
+            + legacyJournalItems()
+        for item in legacyItems where !removedIDs.contains(item.id) {
             merge(item, into: &entriesByID)
         }
 
@@ -279,7 +276,10 @@ private final class CaptureQueueStore: @unchecked Sendable {
         return try? JSONDecoder().decode([CaptureQueueItem].self, from: data)
     }
 
-    private func replayLog(into entriesByID: inout [UUID: CaptureQueueItem]) {
+    private func replayLog(
+        into entriesByID: inout [UUID: CaptureQueueItem],
+        removedIDs: inout Set<UUID>
+    ) {
         guard let data = try? Data(contentsOf: logURL) else { return }
         for recordData in data.split(separator: 0x0A) {
             guard let record = try? JSONDecoder().decode(Record.self, from: Data(recordData))
@@ -289,10 +289,12 @@ private final class CaptureQueueStore: @unchecked Sendable {
             case .put:
                 if let item = record.item {
                     entriesByID[item.id] = item
+                    removedIDs.remove(item.id)
                 }
             case .remove:
                 if let id = record.id {
                     entriesByID.removeValue(forKey: id)
+                    removedIDs.insert(id)
                 }
             }
         }
