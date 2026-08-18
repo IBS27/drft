@@ -1,6 +1,6 @@
 import Foundation
 
-enum ShelfGroup: CaseIterable {
+enum ShelfGroup: CaseIterable, Hashable {
     case today
     case thisWeek
     case earlier
@@ -17,6 +17,7 @@ enum ShelfGroup: CaseIterable {
     }
 }
 
+@MainActor
 enum ShelfFormatting {
     // The backend speaks Gregorian dates (en-CA `YYYY-MM-DD`); a device
     // set to a Buddhist or Japanese system calendar must not leak its
@@ -29,6 +30,11 @@ enum ShelfFormatting {
         return calendar
     }
 
+    private static let weekdayFormatter = makeFormatter(dateFormat: "EEEE")
+    private static let shortWeekdayFormatter = makeFormatter(dateFormat: "EEE")
+    private static let dayMonthFormatter = makeFormatter(dateFormat: "d MMM")
+    private static let dayMonthYearFormatter = makeFormatter(dateFormat: "d MMM yy")
+
     static func localDate(for date: Date) -> String {
         let components = calendar.dateComponents(
             [.year, .month, .day],
@@ -40,6 +46,11 @@ enum ShelfFormatting {
             components.month ?? 0,
             components.day ?? 0
         )
+    }
+
+    static func startOfNextDay(after date: Date) -> Date {
+        let start = calendar.startOfDay(for: date)
+        return calendar.date(byAdding: .day, value: 1, to: start) ?? date.addingTimeInterval(86_400)
     }
 
     static func group(for milliseconds: Double, now: Date) -> ShelfGroup {
@@ -65,18 +76,16 @@ enum ShelfFormatting {
         let day: String
 
         if group(for: milliseconds, now: now) == .earlier {
-            let formatter = DateFormatter()
-            formatter.locale = Locale(identifier: "en_US_POSIX")
-            formatter.calendar = calendar
-            formatter.dateFormat = calendar.component(.year, from: date)
-                == calendar.component(.year, from: now) ? "d MMM" : "d MMM yy"
+            let formatter =
+                calendar.component(.year, from: date)
+                    == calendar.component(.year, from: now)
+                ? dayMonthFormatter
+                : dayMonthYearFormatter
+            update(formatter)
             day = formatter.string(from: date)
         } else {
-            let formatter = DateFormatter()
-            formatter.locale = Locale(identifier: "en_US_POSIX")
-            formatter.calendar = calendar
-            formatter.dateFormat = "EEEE"
-            day = formatter.string(from: date)
+            update(weekdayFormatter)
+            day = weekdayFormatter.string(from: date)
         }
 
         return "\(day) · \(time(for: date))"
@@ -88,18 +97,28 @@ enum ShelfFormatting {
         case .today:
             return time(for: date)
         case .thisWeek:
-            let formatter = DateFormatter()
-            formatter.locale = Locale(identifier: "en_US_POSIX")
-            formatter.calendar = calendar
-            formatter.dateFormat = "EEE"
-            return formatter.string(from: date).lowercased()
+            update(shortWeekdayFormatter)
+            return shortWeekdayFormatter.string(from: date).lowercased()
         case .earlier:
-            let formatter = DateFormatter()
-            formatter.locale = Locale(identifier: "en_US_POSIX")
-            formatter.calendar = calendar
-            formatter.dateFormat = calendar.component(.year, from: date)
-                == calendar.component(.year, from: now) ? "d MMM" : "d MMM yy"
+            let formatter =
+                calendar.component(.year, from: date)
+                    == calendar.component(.year, from: now)
+                ? dayMonthFormatter
+                : dayMonthYearFormatter
+            update(formatter)
             return formatter.string(from: date).lowercased()
         }
+    }
+
+    private static func makeFormatter(dateFormat: String) -> DateFormatter {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = dateFormat
+        return formatter
+    }
+
+    private static func update(_ formatter: DateFormatter) {
+        formatter.calendar = calendar
+        formatter.timeZone = .current
     }
 }

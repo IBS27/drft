@@ -12,12 +12,15 @@ struct RootView: View {
     @State private var cameFromBackground = false
     @State private var captureIsPresented = true
     @State private var captureDragOffset: CGFloat = 0
-    @State private var draft = ""
 
     var body: some View {
         Group {
             if !clerk.isLoaded {
-                Stillness.page.ignoresSafeArea()
+                if authService.rememberedUserID != nil && !authService.didExplicitlySignOut {
+                    captureAndShelf
+                } else {
+                    Stillness.page.ignoresSafeArea()
+                }
             } else if authService.isSignedIn || (hasEnteredCapture && !authService.didExplicitlySignOut) {
                 captureAndShelf
             } else {
@@ -27,14 +30,23 @@ struct RootView: View {
         .task {
             authService.load()
         }
+        .onChange(of: clerk.isLoaded) { _, _ in
+            authService.load()
+        }
         .onChange(of: authService.isSignedIn, initial: true) { _, isSignedIn in
             guard isSignedIn else { return }
             hasEnteredCapture = true
             presentCapture()
         }
         .onChange(of: authService.didExplicitlySignOut) { _, didSignOut in
-            guard didSignOut else { return }
-            hasEnteredCapture = false
+            if didSignOut {
+                hasEnteredCapture = false
+                convexService.clearLocalCaches()
+            } else {
+                // A failed sign-out (or a fresh sign-in) keeps the session live;
+                // caching must not stay suspended for the rest of the process.
+                convexService.resumeLocalCaching()
+            }
         }
         .onChange(of: convexService.authenticatedUserID, initial: true) { _, userID in
             // Items are enqueued under Clerk's user.id but flushed by matching
@@ -72,6 +84,7 @@ struct RootView: View {
                 ShelfView(
                     authService: authService,
                     convexService: convexService,
+                    isVisible: !captureIsPresented || captureDragOffset > 0,
                     onCatchThought: presentCapture
                 )
 
@@ -81,7 +94,6 @@ struct RootView: View {
                     convexService: convexService,
                     focusRequest: captureFocusRequest,
                     isPresented: captureIsPresented,
-                    onDraftChange: { draft = $0 },
                     onShelfDragChanged: updateCaptureDrag,
                     onRevealShelf: revealShelf
                 )

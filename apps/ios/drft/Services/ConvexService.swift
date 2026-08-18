@@ -8,12 +8,12 @@ import Foundation
 final class ConvexService: ObservableObject {
     @Published private(set) var authenticatedUserID: String?
 
-    struct Collection: Decodable {
+    struct Collection: Codable, Equatable, Sendable {
         let thoughts: [CollectionThought]
         let resurfacedId: String?
     }
 
-    struct CollectionThought: Decodable, Identifiable, Equatable {
+    struct CollectionThought: Codable, Identifiable, Equatable, Sendable {
         let _id: String
         let preview: String
         let createdAt: Double
@@ -21,8 +21,8 @@ final class ConvexService: ObservableObject {
         var id: String { _id }
     }
 
-    struct Thought: Decodable, Equatable {
-        enum Status: String, Decodable {
+    struct Thought: Decodable, Equatable, Sendable {
+        enum Status: String, Decodable, Sendable {
             case open
             case resting
         }
@@ -37,8 +37,8 @@ final class ConvexService: ObservableObject {
         let connections: [Connection]
     }
 
-    struct Connection: Decodable, Equatable {
-        enum ThoughtStatus: String, Decodable {
+    struct Connection: Decodable, Equatable, Sendable {
+        enum ThoughtStatus: String, Decodable, Sendable {
             case open
             case resting
         }
@@ -60,7 +60,17 @@ final class ConvexService: ObservableObject {
 
     private let authProvider: ClerkConvexAuthProvider
     private let client: ConvexClientWithAuth<String>
+    private let collectionCache: CollectionCache
     private var authStateCancellable: AnyCancellable?
+    private var thoughtCache: [String: Thought] = [:]
+    private var thoughtRecency: [String] = []
+    private var prewarmSubscriptions: [String: AnyCancellable] = [:]
+    private var prewarmTasks: [String: Task<Void, Never>] = [:]
+    private var isLocalCachingSuspended = false
+
+    private static let thoughtCacheLimit = 24
+    private static let prewarmDuration: Duration = .seconds(30)
+    private static let prewarmLimit = 8
 
     // Debug builds (Xcode runs) use the dev deployment; Release builds on device use prod.
     #if DEBUG
@@ -77,13 +87,18 @@ final class ConvexService: ObservableObject {
         )
         self.authProvider = authProvider
         self.client = client
+        collectionCache = CollectionCache(deploymentURL: Self.deploymentUrl)
 
         authStateCancellable = client.authState
             .receive(on: DispatchQueue.main)
             .sink { [weak self] state in
                 switch state {
                 case .authenticated(let token):
-                    self?.authenticatedUserID = Self.userID(from: token)
+                    let userID = Self.userID(from: token)
+                    if self?.authenticatedUserID == nil, userID != nil {
+                        self?.isLocalCachingSuspended = false
+                    }
+                    self?.authenticatedUserID = userID
                 case .loading, .unauthenticated:
                     self?.authenticatedUserID = nil
                 }
@@ -108,6 +123,81 @@ final class ConvexService: ObservableObject {
             with: ["thoughtId": id],
             yielding: Thought?.self
         )
+    }
+
+    func cachedCollection(userID: String, date: String) async -> Collection? {
+        await collectionCache.load(userID: userID, date: date)
+    }
+
+    func cacheCollection(_ collection: Collection, userID: String, date: String) async {
+        guard !isLocalCachingSuspended else { return }
+        await collectionCache.store(collection, userID: userID, date: date)
+    }
+
+    func cachedThought(id: String) -> Thought? {
+        guard let thought = thoughtCache[id] else { return nil }
+        touchThought(id: id)
+        return thought
+    }
+
+    func cacheThought(_ thought: Thought) {
+        guard !isLocalCachingSuspended else { return }
+        thoughtCache[thought._id] = thought
+        touchThought(id: thought._id)
+
+        while thoughtRecency.count > Self.thoughtCacheLimit {
+            let evictedID = thoughtRecency.removeFirst()
+            thoughtCache.removeValue(forKey: evictedID)
+        }
+    }
+
+    func prewarmThought(id: String) {
+        guard !isLocalCachingSuspended else { return }
+        guard thoughtCache[id] == nil, prewarmSubscriptions[id] == nil else { return }
+        guard prewarmSubscriptions.count < Self.prewarmLimit else { return }
+
+        prewarmSubscriptions[id] = thought(id: id)
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] _ in
+                    self?.stopPrewarmingThought(id: id)
+                },
+                receiveValue: { [weak self] thought in
+                    if let thought {
+                        self?.cacheThought(thought)
+                    }
+                }
+            )
+        prewarmTasks[id] = Task { @MainActor [weak self] in
+            try? await Task.sleep(for: Self.prewarmDuration)
+            guard !Task.isCancelled else { return }
+            self?.stopPrewarmingThought(id: id)
+        }
+    }
+
+    func resumeLocalCaching() {
+        isLocalCachingSuspended = false
+    }
+
+    // Synchronous so the suspension is in place before the caller returns;
+    // only the on-disk clear runs asynchronously.
+    func clearLocalCaches() {
+        // Sign-out subscriptions remain live briefly, so stop their cache writes
+        // before clearing data and keep them stopped until a fresh sign-in.
+        isLocalCachingSuspended = true
+        thoughtCache.removeAll()
+        thoughtRecency.removeAll()
+        for subscription in prewarmSubscriptions.values {
+            subscription.cancel()
+        }
+        prewarmSubscriptions.removeAll()
+        for task in prewarmTasks.values {
+            task.cancel()
+        }
+        prewarmTasks.removeAll()
+        Task { [collectionCache] in
+            await collectionCache.clear()
+        }
     }
 
     func rest(thoughtID: String, closingLine: String?) async throws {
@@ -189,5 +279,15 @@ final class ConvexService: ObservableObject {
 
         guard let data = Data(base64Encoded: payload) else { return nil }
         return try? JSONDecoder().decode(TokenClaims.self, from: data).sub
+    }
+
+    private func touchThought(id: String) {
+        thoughtRecency.removeAll { $0 == id }
+        thoughtRecency.append(id)
+    }
+
+    private func stopPrewarmingThought(id: String) {
+        prewarmSubscriptions.removeValue(forKey: id)?.cancel()
+        prewarmTasks.removeValue(forKey: id)?.cancel()
     }
 }

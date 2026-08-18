@@ -1,80 +1,357 @@
 import Foundation
 import Network
+import os
 import UIKit
+
+private struct CaptureQueueItem: Codable, Sendable {
+    let id: UUID
+    let text: String
+    let createdAt: Date
+    let ownerID: String?
+    let sequence: UInt64
+
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case text
+        case createdAt
+        case ownerID
+        case sequence
+    }
+
+    init(
+        id: UUID,
+        text: String,
+        createdAt: Date,
+        ownerID: String?,
+        sequence: UInt64
+    ) {
+        self.id = id
+        self.text = text
+        self.createdAt = createdAt
+        self.ownerID = ownerID
+        self.sequence = sequence
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        text = try container.decode(String.self, forKey: .text)
+        createdAt = try container.decode(Date.self, forKey: .createdAt)
+        ownerID = try container.decodeIfPresent(String.self, forKey: .ownerID)
+        sequence = try container.decodeIfPresent(UInt64.self, forKey: .sequence) ?? 0
+    }
+
+    func owned(by ownerID: String) -> CaptureQueueItem {
+        CaptureQueueItem(
+            id: id,
+            text: text,
+            createdAt: createdAt,
+            ownerID: ownerID,
+            sequence: sequence
+        )
+    }
+}
+
+private final class CaptureQueueStore: @unchecked Sendable {
+    // The log makes enqueue and acknowledgement constant-time disk appends.
+    // Enqueue appends synchronously so a kept thought is on disk before its
+    // confirmation plays. Flush-side I/O runs off the main actor.
+    private struct Record: Codable {
+        enum Operation: String, Codable {
+            case put
+            case remove
+        }
+
+        let operation: Operation
+        let item: CaptureQueueItem?
+        let id: UUID?
+
+        static func put(_ item: CaptureQueueItem) -> Record {
+            Record(operation: .put, item: item, id: nil)
+        }
+
+        static func remove(_ id: UUID) -> Record {
+            Record(operation: .remove, item: nil, id: id)
+        }
+    }
+
+    private static let logName = "CaptureQueue.log"
+    private static let legacySnapshotName = "CaptureQueue.items.json"
+    private static let legacyJournalName = "CaptureQueue.journal"
+
+    private let fileManager = FileManager()
+    private let directoryURL: URL
+    private let logURL: URL
+    private let legacySnapshotURL: URL
+    private let legacyJournalURL: URL
+    private let lock = OSAllocatedUnfairLock()
+
+    private var didLoad = false
+    private var items: [CaptureQueueItem] = []
+    private var lastSequence: UInt64 = 0
+    private var recordCount = 0
+
+    init(directoryURL: URL) {
+        self.directoryURL = directoryURL
+        logURL = directoryURL.appendingPathComponent(Self.logName)
+        legacySnapshotURL = directoryURL.appendingPathComponent(Self.legacySnapshotName)
+        legacyJournalURL = directoryURL.appendingPathComponent(Self.legacyJournalName)
+    }
+
+    func enqueue(text: String, ownerID: String?) {
+        lock.withLock {
+            loadIfNeeded()
+            lastSequence += 1
+            let item = CaptureQueueItem(
+                id: UUID(),
+                text: text,
+                createdAt: .now,
+                ownerID: ownerID,
+                sequence: lastSequence
+            )
+            _ = append([.put(item)])
+            items.append(item)
+            compactIfNeeded()
+        }
+    }
+
+    func adoptOrphanedItems(ownerID: String) -> Bool {
+        lock.withLock {
+            loadIfNeeded()
+            let orphanedIDs = Set(items.lazy.filter { $0.ownerID == nil }.map(\.id))
+            guard !orphanedIDs.isEmpty else { return true }
+
+            let adopted = items.map { item in
+                item.ownerID == nil ? item.owned(by: ownerID) : item
+            }
+            let records = adopted.filter { orphanedIDs.contains($0.id) }.map(Record.put)
+            guard append(records) else { return false }
+            items = adopted
+            compactIfNeeded()
+            return true
+        }
+    }
+
+    func oldestItem(ownerID: String) -> CaptureQueueItem? {
+        lock.withLock {
+            loadIfNeeded()
+            return items.first { $0.ownerID == ownerID }
+        }
+    }
+
+    func acknowledge(id: UUID) -> Bool {
+        lock.withLock {
+            loadIfNeeded()
+            guard let index = items.firstIndex(where: { $0.id == id }) else { return true }
+            guard append([.remove(id)]) else { return false }
+            items.remove(at: index)
+            compactIfNeeded()
+            return true
+        }
+    }
+
+    private func loadIfNeeded() {
+        guard !didLoad else { return }
+        didLoad = true
+        prepareDirectory()
+
+        var entriesByID: [UUID: CaptureQueueItem] = [:]
+        // The log is authoritative. Legacy formats are read once and deleted only
+        // after their contents are folded into the log; entries the log already
+        // removed are stale and are not resurrected.
+        var removedIDs: Set<UUID> = []
+        replayLog(into: &entriesByID, removedIDs: &removedIDs)
+
+        let legacyFiles = legacyFileItems()
+        let legacyItems =
+            (decodeItems(at: legacySnapshotURL) ?? [])
+            + legacyFiles.map(\.0)
+            + legacyJournalItems()
+        for item in legacyItems where !removedIDs.contains(item.id) {
+            merge(item, into: &entriesByID)
+        }
+
+        items = entriesByID.values.sorted(by: Self.precedes)
+        lastSequence = items.map(\.sequence).max() ?? 0
+
+        guard
+            !legacyFiles.isEmpty
+                || fileManager.fileExists(atPath: legacySnapshotURL.path)
+                || fileManager.fileExists(atPath: legacyJournalURL.path)
+        else { return }
+        guard rewriteLog() else { return }
+
+        for (_, url) in legacyFiles {
+            try? fileManager.removeItem(at: url)
+        }
+        try? fileManager.removeItem(at: legacySnapshotURL)
+        try? fileManager.removeItem(at: legacyJournalURL)
+    }
+
+    private func merge(
+        _ item: CaptureQueueItem,
+        into entriesByID: inout [UUID: CaptureQueueItem]
+    ) {
+        if let existing = entriesByID[item.id] {
+            if existing.ownerID == nil, item.ownerID != nil {
+                entriesByID[item.id] = item
+            }
+        } else {
+            entriesByID[item.id] = item
+        }
+    }
+
+    private func append(_ records: [Record]) -> Bool {
+        guard !records.isEmpty else { return true }
+        prepareDirectory()
+
+        do {
+            let data = try encoded(records)
+            if fileManager.fileExists(atPath: logURL.path) {
+                let handle = try FileHandle(forWritingTo: logURL)
+                defer { try? handle.close() }
+                try handle.seekToEnd()
+                try handle.write(contentsOf: Data([0x0A]) + data)
+                try handle.synchronize()
+            } else {
+                try data.write(
+                    to: logURL,
+                    options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication]
+                )
+            }
+            recordCount += records.count
+            return true
+        } catch {
+            return false
+        }
+    }
+
+    private func rewriteLog() -> Bool {
+        prepareDirectory()
+        do {
+            if items.isEmpty {
+                if fileManager.fileExists(atPath: logURL.path) {
+                    try fileManager.removeItem(at: logURL)
+                }
+                recordCount = 0
+                return true
+            }
+
+            let data = try encoded(items.map(Record.put))
+            try data.write(
+                to: logURL,
+                options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication]
+            )
+            recordCount = items.count
+            return true
+        } catch {
+            return false
+        }
+    }
+
+    private func compactIfNeeded() {
+        guard recordCount > max(128, items.count * 3) else { return }
+        _ = rewriteLog()
+    }
+
+    private func encoded(_ records: [Record]) throws -> Data {
+        let encoder = JSONEncoder()
+        var data = Data()
+        for record in records {
+            data.append(try encoder.encode(record))
+            data.append(0x0A)
+        }
+        return data
+    }
+
+    private func prepareDirectory() {
+        try? fileManager.createDirectory(
+            at: directoryURL,
+            withIntermediateDirectories: true
+        )
+    }
+
+    private func decodeItems(at url: URL) -> [CaptureQueueItem]? {
+        guard let data = try? Data(contentsOf: url) else { return nil }
+        return try? JSONDecoder().decode([CaptureQueueItem].self, from: data)
+    }
+
+    private func replayLog(
+        into entriesByID: inout [UUID: CaptureQueueItem],
+        removedIDs: inout Set<UUID>
+    ) {
+        guard let data = try? Data(contentsOf: logURL) else { return }
+        for recordData in data.split(separator: 0x0A) {
+            guard let record = try? JSONDecoder().decode(Record.self, from: Data(recordData))
+            else { continue }
+            recordCount += 1
+            switch record.operation {
+            case .put:
+                if let item = record.item {
+                    entriesByID[item.id] = item
+                    removedIDs.remove(item.id)
+                }
+            case .remove:
+                if let id = record.id {
+                    entriesByID.removeValue(forKey: id)
+                    removedIDs.insert(id)
+                }
+            }
+        }
+    }
+
+    private func legacyFileItems() -> [(CaptureQueueItem, URL)] {
+        guard
+            let fileURLs = try? fileManager.contentsOfDirectory(
+                at: directoryURL,
+                includingPropertiesForKeys: nil,
+                options: [.skipsHiddenFiles]
+            )
+        else { return [] }
+
+        return fileURLs.compactMap { fileURL in
+            guard fileURL.pathExtension == "json",
+                fileURL != legacySnapshotURL,
+                let data = try? Data(contentsOf: fileURL),
+                let item = try? JSONDecoder().decode(CaptureQueueItem.self, from: data)
+            else { return nil }
+            return (item, fileURL)
+        }
+    }
+
+    private func legacyJournalItems() -> [CaptureQueueItem] {
+        guard let data = try? Data(contentsOf: legacyJournalURL) else { return [] }
+        return data.split(separator: 0x0A).compactMap { recordData in
+            try? JSONDecoder().decode(CaptureQueueItem.self, from: Data(recordData))
+        }
+    }
+
+    private static func precedes(
+        _ left: CaptureQueueItem,
+        _ right: CaptureQueueItem
+    ) -> Bool {
+        if left.sequence == right.sequence {
+            return left.id.uuidString < right.id.uuidString
+        }
+        return left.sequence < right.sequence
+    }
+}
 
 @MainActor
 final class CaptureQueue {
     typealias Sender = @MainActor @Sendable (String) async throws -> String
 
-    private struct Item: Codable, Sendable {
-        let id: UUID
-        let text: String
-        let createdAt: Date
-        let ownerID: String?
-        let sequence: UInt64
-
-        private enum CodingKeys: String, CodingKey {
-            case id
-            case text
-            case createdAt
-            case ownerID
-            case sequence
-        }
-
-        init(id: UUID, text: String, createdAt: Date, ownerID: String?, sequence: UInt64) {
-            self.id = id
-            self.text = text
-            self.createdAt = createdAt
-            self.ownerID = ownerID
-            self.sequence = sequence
-        }
-
-        init(from decoder: Decoder) throws {
-            let container = try decoder.container(keyedBy: CodingKeys.self)
-            id = try container.decode(UUID.self, forKey: .id)
-            text = try container.decode(String.self, forKey: .text)
-            createdAt = try container.decode(Date.self, forKey: .createdAt)
-            ownerID = try container.decodeIfPresent(String.self, forKey: .ownerID)
-            sequence = try container.decodeIfPresent(UInt64.self, forKey: .sequence) ?? 0
-        }
-
-        func owned(by ownerID: String) -> Item {
-            Item(
-                id: id,
-                text: text,
-                createdAt: createdAt,
-                ownerID: ownerID,
-                sequence: sequence
-            )
-        }
-    }
-
-    private struct Entry {
-        let item: Item
-        var fileURL: URL?
-        var isInJournal: Bool
-        var isInMemory = false
-    }
-
-    private struct JournalRecord {
-        let data: Data
-        let item: Item?
-    }
-
     private static let appGroup = "group.com.srinivasib.drft"
     private static let directoryName = "CaptureQueue"
-    private static let journalName = "CaptureQueue.journal"
 
-    private let fileManager: FileManager
-    private let directoryURL: URL
-    private let journalURL: URL
+    private let store: CaptureQueueStore
     private let send: Sender
     private let pathMonitor = NWPathMonitor()
-    private let pathMonitorQueue = DispatchQueue(label: "com.srinivasib.drft.capture-queue.network")
+    private let pathMonitorQueue = DispatchQueue(
+        label: "com.srinivasib.drft.capture-queue.network"
+    )
 
     private var authenticatedUserID: String?
-    private var memoryItems: [Item] = []
-    private var lastSequence: UInt64 = 0
     private var isFlushing = false
     private var flushAgain = false
     private var retryDelay: Int64 = 1
@@ -86,35 +363,19 @@ final class CaptureQueue {
         fileManager: FileManager = .default,
         send: @escaping Sender
     ) {
-        self.fileManager = fileManager
         let directoryURL = Self.makeDirectoryURL(
             deploymentUrl: deploymentUrl,
             fileManager: fileManager
         )
-        self.directoryURL = directoryURL
-        journalURL = directoryURL.appendingPathComponent(Self.journalName)
+        store = CaptureQueueStore(directoryURL: directoryURL)
         self.send = send
 
-        prepareDirectory()
-        lastSequence = maximumStoredSequence()
         startNetworkMonitoring()
         startActiveMonitoring()
     }
 
     func enqueue(text: String, ownerID: String?) {
-        lastSequence += 1
-        let item = Item(
-            id: UUID(),
-            text: text,
-            createdAt: .now,
-            ownerID: ownerID,
-            sequence: lastSequence
-        )
-
-        if !persist(item), !appendToJournal(item) {
-            memoryItems.append(item)
-        }
-
+        store.enqueue(text: text, ownerID: ownerID)
         Task { [weak self] in
             await self?.flush()
         }
@@ -134,7 +395,6 @@ final class CaptureQueue {
     }
 
     func flush() async {
-        promoteMemoryItems()
         guard authenticatedUserID != nil else { return }
         guard !isFlushing else {
             flushAgain = true
@@ -147,21 +407,29 @@ final class CaptureQueue {
 
         repeat {
             flushAgain = false
-            promoteJournalItems()
 
             guard let ownerID = authenticatedUserID else { break }
-            if !adoptOrphanedItems(ownerID: ownerID) {
+            if !(await offMain { [store] in
+                store.adoptOrphanedItems(ownerID: ownerID)
+            }) {
                 scheduleRetry()
+                isFlushing = false
+                return
             }
             while authenticatedUserID == ownerID,
-                  let entry = oldestEntry(for: ownerID) {
+                let item = await offMain({ [store] in
+                    store.oldestItem(ownerID: ownerID)
+                })
+            {
                 do {
-                    _ = try await send(entry.item.text)
+                    _ = try await send(item.text)
                     guard authenticatedUserID == ownerID else {
                         flushAgain = authenticatedUserID != nil
                         break
                     }
-                    guard removeAcknowledged(entry) else {
+                    guard await offMain({ [store] in
+                        store.acknowledge(id: item.id)
+                    }) else {
                         scheduleRetry()
                         isFlushing = false
                         return
@@ -181,9 +449,16 @@ final class CaptureQueue {
         retryDelay = 1
     }
 
-    private static func makeDirectoryURL(deploymentUrl: String, fileManager: FileManager) -> URL {
-        // Storage is scoped per Convex deployment so items queued against one
-        // deployment never flush to another (e.g. Debug installed over Release).
+    private func offMain<T: Sendable>(
+        _ work: @escaping @Sendable () -> T
+    ) async -> T {
+        await Task.detached(priority: .utility, operation: work).value
+    }
+
+    private static func makeDirectoryURL(
+        deploymentUrl: String,
+        fileManager: FileManager
+    ) -> URL {
         let deploymentID = URL(string: deploymentUrl)?.host ?? "default"
 
         let baseURL: URL
@@ -201,243 +476,10 @@ final class CaptureQueue {
                 .appendingPathComponent("drft", isDirectory: true)
         }
 
-        return baseURL
+        return
+            baseURL
             .appendingPathComponent(directoryName, isDirectory: true)
             .appendingPathComponent(deploymentID, isDirectory: true)
-    }
-
-    private func prepareDirectory() {
-        try? fileManager.createDirectory(
-            at: directoryURL,
-            withIntermediateDirectories: true
-        )
-    }
-
-    private func persist(_ item: Item) -> Bool {
-        prepareDirectory()
-
-        do {
-            let data = try JSONEncoder().encode(item)
-            try data.write(to: fileURL(for: item.id), options: .atomic)
-            return true
-        } catch {
-            return false
-        }
-    }
-
-    private func appendToJournal(_ item: Item) -> Bool {
-        prepareDirectory()
-
-        do {
-            let data = try JSONEncoder().encode(item)
-            if !fileManager.fileExists(atPath: journalURL.path) {
-                guard fileManager.createFile(atPath: journalURL.path, contents: nil) else {
-                    return false
-                }
-            }
-
-            let handle = try FileHandle(forWritingTo: journalURL)
-            defer { try? handle.close() }
-            try handle.seekToEnd()
-            try handle.write(contentsOf: Data([0x0A]) + data + Data([0x0A]))
-            try handle.synchronize()
-            return true
-        } catch {
-            return false
-        }
-    }
-
-    private func promoteMemoryItems() {
-        memoryItems.removeAll { persist($0) || appendToJournal($0) }
-    }
-
-    private func promoteJournalItems() {
-        let records = journalRecords()
-        let promotedIDs = Set(records.compactMap { record -> UUID? in
-            guard let item = record.item, persist(item) else { return nil }
-            return item.id
-        })
-        guard !promotedIDs.isEmpty else { return }
-
-        _ = rewriteJournal(
-            records.filter { record in
-                guard let id = record.item?.id else { return true }
-                return !promotedIDs.contains(id)
-            }
-        )
-    }
-
-    private func adoptOrphanedItems(ownerID: String) -> Bool {
-        var adoptedAll = true
-
-        for (item, _) in fileItems() where item.ownerID == nil {
-            if !persist(item.owned(by: ownerID)) {
-                adoptedAll = false
-            }
-        }
-
-        let records = journalRecords()
-        let adoptedJournalIDs = Set(records.compactMap { record -> UUID? in
-            guard let item = record.item, item.ownerID == nil else { return nil }
-            guard persist(item.owned(by: ownerID)) else {
-                adoptedAll = false
-                return nil
-            }
-            return item.id
-        })
-        if !adoptedJournalIDs.isEmpty,
-           !rewriteJournal(
-               records.filter { record in
-                   guard let id = record.item?.id else { return true }
-                   return !adoptedJournalIDs.contains(id)
-               }
-           ) {
-            adoptedAll = false
-        }
-
-        memoryItems = memoryItems.map { item in
-            item.ownerID == nil ? item.owned(by: ownerID) : item
-        }
-
-        return adoptedAll
-    }
-
-    private func oldestEntry(for ownerID: String) -> Entry? {
-        var entriesByID: [UUID: Entry] = [:]
-
-        for (item, fileURL) in fileItems() {
-            entriesByID[item.id] = Entry(
-                item: item,
-                fileURL: fileURL,
-                isInJournal: false
-            )
-        }
-
-        for item in journalRecords().compactMap(\.item) {
-            if var entry = entriesByID[item.id] {
-                entry.isInJournal = true
-                entriesByID[item.id] = entry
-            } else {
-                entriesByID[item.id] = Entry(
-                    item: item,
-                    fileURL: nil,
-                    isInJournal: true
-                )
-            }
-        }
-
-        for item in memoryItems {
-            if var entry = entriesByID[item.id] {
-                entry.isInMemory = true
-                entriesByID[item.id] = entry
-            } else {
-                entriesByID[item.id] = Entry(
-                    item: item,
-                    fileURL: nil,
-                    isInJournal: false,
-                    isInMemory: true
-                )
-            }
-        }
-
-        return entriesByID.values
-            .filter { $0.item.ownerID == ownerID }
-            .min { left, right in
-                if left.item.sequence == right.item.sequence {
-                    return left.item.id.uuidString < right.item.id.uuidString
-                }
-                return left.item.sequence < right.item.sequence
-            }
-    }
-
-    private func removeAcknowledged(_ entry: Entry) -> Bool {
-        if entry.isInJournal, !removeFromJournal(id: entry.item.id) {
-            return false
-        }
-
-        if let fileURL = entry.fileURL {
-            do {
-                try fileManager.removeItem(at: fileURL)
-            } catch {
-                return false
-            }
-        }
-        if entry.isInMemory {
-            memoryItems.removeAll { $0.id == entry.item.id }
-        }
-        return true
-    }
-
-    private func removeFromJournal(id: UUID) -> Bool {
-        rewriteJournal(
-            journalRecords().filter { record in
-                record.item?.id != id
-            }
-        )
-    }
-
-    private func rewriteJournal(_ records: [JournalRecord]) -> Bool {
-        if records.isEmpty {
-            guard fileManager.fileExists(atPath: journalURL.path) else { return true }
-            do {
-                try fileManager.removeItem(at: journalURL)
-                return true
-            } catch {
-                return false
-            }
-        }
-
-        var data = Data()
-        for record in records {
-            data.append(0x0A)
-            data.append(record.data)
-            data.append(0x0A)
-        }
-
-        do {
-            try data.write(to: journalURL, options: .atomic)
-            return true
-        } catch {
-            return false
-        }
-    }
-
-    private func fileItems() -> [(Item, URL)] {
-        guard let fileURLs = try? fileManager.contentsOfDirectory(
-            at: directoryURL,
-            includingPropertiesForKeys: nil,
-            options: [.skipsHiddenFiles]
-        ) else { return [] }
-
-        return fileURLs.compactMap { fileURL in
-            guard
-                fileURL.pathExtension == "json",
-                let data = try? Data(contentsOf: fileURL),
-                let item = try? JSONDecoder().decode(Item.self, from: data)
-            else { return nil }
-            return (item, fileURL)
-        }
-    }
-
-    private func journalRecords() -> [JournalRecord] {
-        guard let data = try? Data(contentsOf: journalURL) else { return [] }
-        return data.split(separator: 0x0A).map { recordData in
-            let data = Data(recordData)
-            return JournalRecord(
-                data: data,
-                item: try? JSONDecoder().decode(Item.self, from: data)
-            )
-        }
-    }
-
-    private func maximumStoredSequence() -> UInt64 {
-        let fileSequences = fileItems().map { $0.0.sequence }
-        let journalSequences = journalRecords().compactMap { $0.item?.sequence }
-        return (fileSequences + journalSequences).max() ?? 0
-    }
-
-    private func fileURL(for id: UUID) -> URL {
-        directoryURL.appendingPathComponent(id.uuidString).appendingPathExtension("json")
     }
 
     private func scheduleRetry() {

@@ -6,17 +6,24 @@ private final class ThoughtModel: ObservableObject {
     @Published private(set) var thought: ConvexService.Thought?
 
     private var thoughtSubscription: AnyCancellable?
+    private var subscribedThoughtID: String?
 
     func subscribe(thoughtID: String, convexService: ConvexService) {
+        guard thoughtID != subscribedThoughtID else { return }
+        subscribedThoughtID = thoughtID
         thoughtSubscription?.cancel()
-        thought = nil
+        thought = convexService.cachedThought(id: thoughtID)
 
         thoughtSubscription = convexService.thought(id: thoughtID)
             .receive(on: DispatchQueue.main)
             .sink(
                 receiveCompletion: { _ in },
-                receiveValue: { [weak self] thought in
+                receiveValue: { [weak self, weak convexService] thought in
+                    guard self?.subscribedThoughtID == thoughtID else { return }
                     self?.thought = thought
+                    if let thought {
+                        convexService?.cacheThought(thought)
+                    }
                 }
             )
     }
@@ -252,6 +259,9 @@ struct ThoughtView: View {
                         : ShelfFormatting.ageLabel(
                             for: connection.otherCreatedAt
                         ).uppercased(),
+                    onPrefetch: {
+                        convexService.prewarmThought(id: connection.otherId)
+                    },
                     onOpen: { openRelatedThought(connection.otherId) },
                     onSetAside: { setRelatedThoughtAside(connection, index: index) }
                 )
@@ -288,6 +298,7 @@ struct ThoughtView: View {
 
     private func openRelatedThought(_ id: String) {
         guard id != activeThoughtID else { return }
+        convexService.prewarmThought(id: id)
         withAnimation(.easeInOut(duration: 0.22)) {
             thoughtPath.append(id)
         }
@@ -460,6 +471,7 @@ private struct RelatedThoughtRow: View {
     let connection: ConvexService.Connection
     let width: CGFloat
     let metadata: String
+    let onPrefetch: () -> Void
     let onOpen: () -> Void
     let onSetAside: () -> Void
 
@@ -511,6 +523,11 @@ private struct RelatedThoughtRow: View {
         .frame(width: width)
         .clipped()
         .contentShape(Rectangle())
+        .simultaneousGesture(
+            LongPressGesture(minimumDuration: 0).onEnded { _ in
+                onPrefetch()
+            }
+        )
         .simultaneousGesture(swipeGesture)
         .onChange(of: connection._id) { _, _ in
             settledOffset = 0
