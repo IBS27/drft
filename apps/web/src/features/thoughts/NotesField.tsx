@@ -129,6 +129,13 @@ export function NotesField({
         }}
         onBlur={() => {
           focused.current = false;
+          // Whitespace alone is nothing — the server keeps no row for it —
+          // so once the field is left, it shows nothing too.
+          if (latest.current.trim() === "") {
+            if (saved.current?.trim() === "") saved.current = "";
+            latest.current = "";
+            setText("");
+          }
           save();
         }}
         className="w-full resize-none overflow-hidden bg-transparent text-center text-[15px] leading-[1.7] font-normal text-mut outline-none focus:text-pt xl:text-left"
