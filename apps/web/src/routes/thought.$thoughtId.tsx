@@ -3,6 +3,7 @@ import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
 import { useEffect, useRef, useState } from "react";
 import { ageLabel, dateLine, groupOf } from "../features/thoughts/format";
+import { NotesField } from "../features/thoughts/NotesField";
 import { Rail } from "../features/thoughts/Rail";
 import { useThoughtPrewarm } from "../features/thoughts/useThoughtPrewarm";
 import { BackLink } from "../features/ui/BackLink";
@@ -45,7 +46,9 @@ function BackHeader({
       <BackLink />
       <span
         className={`pointer-events-none absolute right-0 text-center text-[11.5px] tracking-[0.4em] text-pl uppercase ${
-          withRail ? "left-0 lg:left-72 xl:left-80" : "left-0"
+          withRail
+            ? "left-0 lg:left-72 xl:right-80 xl:left-80"
+            : "left-0"
         }`}
       >
         {loading ? <Skeleton className="mx-auto h-[7px] w-24" /> : (label ?? "")}
@@ -153,7 +156,7 @@ function ThoughtView() {
       />
       <Rail activeId={id} now={now} />
 
-      <div className="flex flex-1 flex-col lg:pl-72 xl:pl-80">
+      <div className="flex flex-1 flex-col lg:pl-72 xl:pr-80 xl:pl-80">
         {view === undefined ? (
           <ThoughtSkeleton />
         ) : view === null ? (
@@ -193,6 +196,10 @@ function ThoughtView() {
                     : ageLabel(view.lastReturnedAt, now)}
                 </span>
               )}
+
+              {/* Your own writing, nearest the thought; the machine's
+                  connections one step further out. */}
+              <NotesField thoughtId={view._id} notes={view.notes} />
 
               {/* Related thoughts are destinations, not tags: their words
                   keep their natural case and wrap for as long as they need. */}

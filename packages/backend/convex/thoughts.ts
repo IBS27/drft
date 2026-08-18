@@ -12,6 +12,7 @@ const CONNECTIONS_PER_DIRECTION_LIMIT = 50;
 const CONNECTIONS_PER_GRAPH_THOUGHT_LIMIT = 50;
 const COLLECTION_LIMIT = 500;
 const PREVIEW_LIMIT = 160;
+const NOTES_LIMIT = 20_000;
 
 const collectionRowValidator = v.object({
   _id: v.id("thoughts"),
@@ -194,13 +195,14 @@ export const view = query({
       restingNote: v.optional(v.string()),
       restedAt: v.optional(v.number()),
       lastReturnedAt: v.union(v.number(), v.null()),
+      notes: v.string(),
       connections: v.array(connectionViewValidator),
     }),
   ),
   handler: async (ctx, { thoughtId }) => {
     const thought = await ownedThought(ctx, thoughtId);
     if (!thought) return null;
-    const [fromLinks, toLinks, lastReturn] = await Promise.all([
+    const [fromLinks, toLinks, lastReturn, note] = await Promise.all([
       ctx.db
         .query("connections")
         .withIndex("by_from_and_dismissedAt", (q) =>
@@ -217,6 +219,10 @@ export const view = query({
         .query("resurfacings")
         .withIndex("by_thought", (q) => q.eq("thoughtId", thoughtId))
         .order("desc")
+        .first(),
+      ctx.db
+        .query("notes")
+        .withIndex("by_thought", (q) => q.eq("thoughtId", thoughtId))
         .first(),
     ]);
     const links = [...fromLinks, ...toLinks].sort((a, b) => b.score - a.score);
@@ -245,6 +251,7 @@ export const view = query({
       restingNote: thought.restingNote,
       restedAt: thought.restedAt,
       lastReturnedAt: lastReturn?._creationTime ?? null,
+      notes: note?.text ?? "",
       connections,
     };
   },
@@ -302,6 +309,33 @@ export const wake = mutation({
       restedAt: undefined,
       restingNote: undefined,
     });
+  },
+});
+
+// Your own writing next to the thought. Whole-text replace, last write
+// wins — one person, one field. The row is created on the first real
+// text and removed when it is cleared, so a thought without notes has no
+// row at all.
+export const setNotes = mutation({
+  args: { thoughtId: v.id("thoughts"), text: v.string() },
+  handler: async (ctx, { thoughtId, text }) => {
+    const thought = await ownedThought(ctx, thoughtId);
+    if (!thought) throw new Error("Not found");
+    if (text.length > NOTES_LIMIT) throw new Error("Notes too long");
+    const existing = await ctx.db
+      .query("notes")
+      .withIndex("by_thought", (q) => q.eq("thoughtId", thoughtId))
+      .first();
+    if (text.trim() === "") {
+      if (existing) await ctx.db.delete(existing._id);
+      return;
+    }
+    if (existing) {
+      if (existing.text !== text)
+        await ctx.db.patch(existing._id, { text, updatedAt: Date.now() });
+      return;
+    }
+    await ctx.db.insert("notes", { thoughtId, text, updatedAt: Date.now() });
   },
 });
 
