@@ -41,9 +41,7 @@ struct RootView: View {
         .onChange(of: authService.didExplicitlySignOut) { _, didSignOut in
             if didSignOut {
                 hasEnteredCapture = false
-                Task {
-                    await convexService.clearLocalCaches()
-                }
+                convexService.clearLocalCaches()
             } else {
                 // A failed sign-out (or a fresh sign-in) keeps the session live;
                 // caching must not stay suspended for the rest of the process.

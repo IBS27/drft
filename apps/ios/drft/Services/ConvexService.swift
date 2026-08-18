@@ -179,7 +179,9 @@ final class ConvexService: ObservableObject {
         isLocalCachingSuspended = false
     }
 
-    func clearLocalCaches() async {
+    // Synchronous so the suspension is in place before the caller returns;
+    // only the on-disk clear runs asynchronously.
+    func clearLocalCaches() {
         // Sign-out subscriptions remain live briefly, so stop their cache writes
         // before clearing data and keep them stopped until a fresh sign-in.
         isLocalCachingSuspended = true
@@ -193,7 +195,9 @@ final class ConvexService: ObservableObject {
             task.cancel()
         }
         prewarmTasks.removeAll()
-        await collectionCache.clear()
+        Task { [collectionCache] in
+            await collectionCache.clear()
+        }
     }
 
     func rest(thoughtID: String, closingLine: String?) async throws {
