@@ -130,9 +130,9 @@ export function NotesField({
         onBlur={() => {
           focused.current = false;
           // Whitespace alone is nothing — the server keeps no row for it —
-          // so once the field is left, it shows nothing too.
+          // so once the field is left, it shows nothing too. Sent as its own
+          // write, so a failure is still caught and offered for retry.
           if (latest.current.trim() === "") {
-            if (saved.current?.trim() === "") saved.current = "";
             latest.current = "";
             setText("");
           }
