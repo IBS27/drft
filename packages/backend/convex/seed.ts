@@ -121,6 +121,9 @@ export const clear = internalMutation({
       if (sampleIds.has(r.thoughtId) || r.userId === undefined)
         await ctx.db.delete(r._id);
     }
+    for (const n of await ctx.db.query("notes").collect()) {
+      if (sampleIds.has(n.thoughtId)) await ctx.db.delete(n._id);
+    }
     let removed = 0;
     for (const id of sampleIds) {
       await ctx.db.delete(id);

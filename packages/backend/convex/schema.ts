@@ -76,6 +76,16 @@ export default defineSchema({
     .index("by_user_date", ["userId", "date"])
     .index("by_thought", ["thoughtId"]),
 
+  // Your own writing next to a thought — one free-text field per thought,
+  // edited in place. Its own table so the constant autosave never rewrites
+  // the thought document (which carries the embedding) and never wakes the
+  // collection/rail subscriptions. Ownership is the thought's.
+  notes: defineTable({
+    thoughtId: v.id("thoughts"),
+    text: v.string(),
+    updatedAt: v.number(),
+  }).index("by_thought", ["thoughtId"]),
+
   // The product's one real preference: when the daily email arrives.
   // Server-owned (the server sends the email), so it lives here, not on a
   // device. sendTime is "HH:MM" 24h in the user's IANA timezone; email is

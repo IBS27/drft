@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>drft — notes on a thought</title>
+<style>
+/* ============================================================
+   drft — notes on a thought (web)
+   Six candidates for where a user's own jottings live on the
+   thought page, each shown light + dark, in place. Same tokens
+   as design.html. Sample thought throughout:
+   "cities feel more creative because collisions are free"
+   ============================================================ */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+body {
+  font-family: "Helvetica Neue", ui-sans-serif, sans-serif; font-weight: 300;
+  background: #FAFAF8; color: #2B2B28;
+  padding: 44px clamp(20px, 5vw, 64px) 110px;
+}
+
+.crumb { font-size: 11px; letter-spacing: .3em; text-transform: uppercase; color: #6B6B65; }
+h1 { font-size: clamp(28px, 4vw, 40px); font-weight: 300; margin-top: 40px; letter-spacing: .01em; }
+.lede { margin-top: 14px; font-size: 15.5px; line-height: 1.65; color: #45453F; max-width: 62ch; font-weight: 400; }
+.lede + .lede { margin-top: 10px; }
+.lede strong, .note strong { font-weight: 500; }
+
+section { margin-top: 56px; max-width: 1040px; }
+.vnum { font-size: 11px; letter-spacing: .3em; text-transform: uppercase; color: #6B6B65; }
+h2 { font-size: 22px; font-weight: 300; margin-top: 10px; }
+h3 { font-size: 15px; font-weight: 500; margin-top: 34px; color: #2B2B28; }
+.note { margin-top: 12px; font-size: 14.5px; line-height: 1.7; color: #45453F; max-width: 62ch; font-weight: 400; }
+.tradeoff { margin-top: 10px; font-size: 13px; line-height: 1.65; color: #6B6B65; max-width: 62ch; font-weight: 400; }
+.tradeoff::before { content: "trade-off — "; font-size: 10px; letter-spacing: .22em; text-transform: uppercase; }
+code { font-size: 13px; }
+
+/* ---------- the mocks: a browser viewport, cropped ---------- */
+.pair { display: flex; gap: 28px; flex-wrap: wrap; margin-top: 26px; align-items: flex-start; }
+
+.mock {
+  width: 500px; max-width: 100%; border-radius: 10px; overflow: hidden;
+  border: 1px solid var(--frame);
+  background: var(--pg); color: var(--ink);
+  display: flex; flex-direction: column; min-height: 400px; position: relative;
+}
+.mock.light { --pg:#FAFAF8; --scr:#FCFCFB; --ink:#2B2B28; --mut:#75756F; --faint:#9E9E98; --line:#E8E8E4; --dot:#C73E1D; --pt:#45453F; --pl:#6B6B65; --frame:#E0E0DC; }
+.mock.dark  { --pg:#131311; --scr:#181816; --ink:#EAEAE5; --mut:#A0A099; --faint:#74746D; --line:#2B2B28; --dot:#D9502A; --pt:#C9C9C2; --pl:#97978F; --frame:#2A2A27; }
+.mock.tall { min-height: 560px; }
+.mock.narrow { width: 300px; }
+
+/* page chrome, as built */
+.hdr { display: flex; align-items: center; padding: 14px 18px 0; position: relative; flex: none; height: 30px; }
+.hdr .bk { font-size: 12px; color: var(--faint); }
+.hdr .date { position: absolute; left: 0; right: 0; text-align: center; font-size: 8px; letter-spacing: .4em; text-transform: uppercase; color: var(--pl); pointer-events: none; }
+.col { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 0 30px; }
+.center { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; padding: 30px 0 22px; }
+.th { text-align: center; font-size: 17px; line-height: 1.55; font-weight: 300; max-width: 30ch; }
+.ret { margin-top: 12px; font-size: 7px; letter-spacing: .3em; text-transform: uppercase; color: var(--faint); }
+.rel { width: 100%; max-width: 300px; margin-top: 26px; }
+.rel .lbl { display: flex; justify-content: space-between; font-size: 7px; letter-spacing: .28em; text-transform: uppercase; color: var(--pl); padding-bottom: 7px; }
+.rel .lbl span:last-child { color: var(--faint); letter-spacing: 0; }
+.rel ul { border-top: 1px solid var(--line); }
+.rel li { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 9.5px; font-weight: 400; color: var(--pt); }
+.rel li span:last-child { font-size: 6.5px; letter-spacing: .18em; text-transform: uppercase; color: var(--faint); flex: none; }
+.foot { flex: none; padding: 0 0 20px; font-size: 7.5px; letter-spacing: .28em; text-transform: uppercase; color: var(--faint); text-align: center; }
+.foot b { font-weight: 400; color: var(--pt); }
+.foot .sep { padding: 0 12px; }
+
+/* the note text itself — restingNote's voice: 15px/1.7 muted, normal weight */
+.nt { font-size: 10px; line-height: 1.7; font-weight: 400; color: var(--mut); white-space: pre-wrap; }
+.ph { font-size: 7.5px; letter-spacing: .34em; text-transform: uppercase; color: var(--faint); }
+.caret { display: inline-block; width: 1px; height: .95em; vertical-align: -.12em; background: var(--ink); animation: blink 1.1s steps(1) infinite; margin-left: 1px; }
+@keyframes blink { 50% { opacity: 0; } }
+.reddot { width: 4px; height: 4px; border-radius: 50%; background: var(--dot); display: inline-block; flex: none; }
+
+/* 01 — beneath the thought */
+.n-beneath { margin-top: 20px; width: 100%; max-width: 34ch; text-align: center; }
+.n-beneath.empty { margin-top: 24px; }
+
+/* 02 — margin note */
+.mock.wide { width: 700px; }
+.wsp { flex: 1; display: flex; min-height: 0; }
+.rail { width: 120px; flex: none; padding: 16px 0 0 18px; }
+.rail .sec { font-size: 6px; letter-spacing: .32em; text-transform: uppercase; color: var(--faint); padding: 8px 0 3px; }
+.rail .sec:first-child { padding-top: 0; }
+.rail li { font-size: 7px; font-weight: 400; color: var(--faint); padding: 3px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rail li.on { color: var(--ink); }
+.rail li.on::before { content: ""; display: inline-block; width: 3px; height: 3px; border-radius: 50%; background: var(--dot); margin-right: 5px; vertical-align: 1px; }
+.margin { width: 150px; flex: none; padding: 34px 18px 0 0; }
+.margin .ph { display: block; padding-bottom: 8px; }
+.margin .nt { font-size: 8.5px; line-height: 1.75; text-align: left; }
+.mock.wide .col { padding: 0 20px; }
+
+/* 03 — a second room */
+.room { width: 100%; max-width: 300px; margin-top: 4px; padding: 22px 0 6px; border-top: 1px solid var(--line); }
+.room .ph { display: block; padding-bottom: 8px; }
+.room .nt { text-align: left; }
+.fold { position: absolute; left: 0; right: 0; height: 60px; pointer-events: none; }
+.mock.light .fold { background: linear-gradient(rgba(250,250,248,0), #FAFAF8); }
+.mock.dark .fold { background: linear-gradient(rgba(19,19,17,0), #131311); }
+
+/* 04 — reveal from the footer */
+.rev { width: 100%; max-width: 34ch; margin-top: 18px; text-align: left; }
+.rev .nt { text-align: left; }
+
+/* 05 — the log */
+.log { width: 100%; max-width: 300px; margin-top: 26px; }
+.log .lbl { font-size: 7px; letter-spacing: .28em; text-transform: uppercase; color: var(--pl); padding-bottom: 7px; }
+.log ul { border-top: 1px solid var(--line); }
+.log li { display: grid; grid-template-columns: 1fr auto; gap: 14px; align-items: baseline; padding: 9px 0; border-bottom: 1px solid var(--line); }
+.log li .nt { text-align: left; font-size: 9.5px; }
+.log li .when { font-size: 6.5px; letter-spacing: .18em; text-transform: uppercase; color: var(--faint); }
+.log .add { padding: 10px 0 0; }
+
+/* 06 — the continuation */
+.cont { margin-top: 12px; max-width: 30ch; text-align: center; font-size: 12px; line-height: 1.7; font-weight: 300; color: var(--mut); }
+
+/* states strip */
+.states { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; margin-top: 22px; }
+.state { border: 1px solid var(--frame); border-radius: 8px; padding: 22px 22px 18px; background: var(--pg); color: var(--ink); min-height: 150px; display: flex; flex-direction: column; }
+.state .cap { font-size: 9px; letter-spacing: .3em; text-transform: uppercase; color: #6B6B65; margin-bottom: auto; }
+.state .st { font-size: 7.5px; letter-spacing: .3em; text-transform: uppercase; color: var(--pl); margin-top: 12px; display: flex; gap: 14px; }
+.state .st b { font-weight: 400; color: var(--pt); }
+.state .nt { text-align: left; }
+.state .ph.pt { color: var(--pt); }
+
+.callout { margin-top: 60px; max-width: 62ch; border-left: 2px solid #C73E1D; padding: 4px 0 4px 20px;
+           font-size: 14.5px; line-height: 1.7; color: #45453F; font-weight: 400; }
+.callout strong { font-weight: 500; }
+.callout + .callout { margin-top: 18px; }
+</style>
+</head>
+<body>
+
+<div class="crumb">drft · design exploration</div>
+<h1>Notes on a thought</h1>
+<p class="lede">One free-text field per thought, on the web thought page, that saves itself. Six places it could live. Notes are set in the resting-note voice — muted, 15px, weight 400 — one step quieter than the thought, one step louder than chrome.</p>
+
+<!-- ============ 1 ============ -->
+<section>
+  <div class="vnum">01</div>
+  <h2>Beneath the thought</h2>
+  <p class="note">Under the thought, where a resting note sits. Empty, one faint word; typing pushes the related list down.</p>
+  <div class="pair">
+    <div class="mock light">
+      <div class="hdr"><span class="bk">←</span><span class="date">Tuesday, 12 August</span></div>
+      <div class="col">
+        <div class="center">
+          <div class="th">cities feel more creative because collisions are free</div>
+          <div class="n-beneath empty"><span class="ph">notes</span></div>
+          <div class="rel">
+            <div class="lbl"><span>related thoughts</span><span>2</span></div>
+            <ul>
+              <li><span>remote teams schedule serendipity and it dies</span><span>3 wk</span></li>
+              <li><span>the best ideas at work came from the corridor</span><span>set down</span></li>
+            </ul>
+          </div>
+        </div>
+        <div class="foot">set down</div>
+      </div>
+    </div>
+    <div class="mock dark">
+      <div class="hdr"><span class="bk">←</span><span class="date">Tuesday, 12 August</span></div>
+      <div class="col">
+        <div class="center">
+          <div class="th">cities feel more creative because collisions are free</div>
+          <div class="n-beneath"><div class="nt">Jacobs, ch. 2 — sidewalk contact. The point is not density, it's that the meetings cost nothing to arrange.
+Compare: remote teams schedule collisions and they die.<span class="caret"></span></div></div>
+          <div class="rel">
+            <div class="lbl"><span>related thoughts</span><span>2</span></div>
+            <ul>
+              <li><span>remote teams schedule serendipity and it dies</span><span>3 wk</span></li>
+              <li><span>the best ideas at work came from the corridor</span><span>set down</span></li>
+            </ul>
+          </div>
+        </div>
+        <div class="foot">set down</div>
+      </div>
+    </div>
+  </div>
+  <p class="tradeoff">a long note moves the vertical centering, and the faint word is a permanent small ask on every thought.</p>
+</section>
+
+<!-- ============ 2 ============ -->
+<section>
+  <div class="vnum">02</div>
+  <h2>Marginalia</h2>
+  <p class="note">On wide screens, notes take the right periphery opposite the rail; the center never moves. Below <code>xl</code> it becomes 01.</p>
+  <div class="pair">
+    <div class="mock light wide">
+      <div class="hdr"><span class="bk">←</span><span class="date">Tuesday, 12 August</span></div>
+      <div class="wsp">
+        <div class="rail">
+          <ul>
+            <li class="sec">today</li>
+            <li>maybe the reason meetings feel…</li>
+            <li class="sec">this week</li>
+            <li class="on">cities feel more creative bec…</li>
+            <li>recipes as version control</li>
+            <li class="sec">earlier</li>
+            <li>the best ideas at work came…</li>
+            <li>slow is smooth</li>
+          </ul>
+        </div>
+        <div class="col">
+          <div class="center">
+            <div class="th">cities feel more creative because collisions are free</div>
+            <div class="rel">
+              <div class="lbl"><span>related thoughts</span><span>2</span></div>
+              <ul>
+                <li><span>remote teams schedule serendipity and it dies</span><span>3 wk</span></li>
+                <li><span>the best ideas at work came from the corridor</span><span>set down</span></li>
+              </ul>
+            </div>
+          </div>
+          <div class="foot">set down</div>
+        </div>
+        <div class="margin">
+          <span class="ph">notes</span>
+          <div class="nt">Jacobs, ch. 2 — sidewalk contact. The point is not density, it's that the meetings cost nothing to arrange.
+
+Compare: remote teams schedule collisions and they die.
+
+Is this the same as "cheap experiments"? Ask J.</div>
+        </div>
+      </div>
+    </div>
+    <div class="mock dark wide">
+      <div class="hdr"><span class="bk">←</span><span class="date">Tuesday, 12 August</span></div>
+      <div class="wsp">
+        <div class="rail">
+          <ul>
+            <li class="sec">today</li>
+            <li>maybe the reason meetings feel…</li>
+            <li class="sec">this week</li>
+            <li class="on">cities feel more creative bec…</li>
+            <li>recipes as version control</li>
+            <li class="sec">earlier</li>
+            <li>the best ideas at work came…</li>
+            <li>slow is smooth</li>
+          </ul>
+        </div>
+        <div class="col">
+          <div class="center">
+            <div class="th">cities feel more creative because collisions are free</div>
+            <div class="rel">
+              <div class="lbl"><span>related thoughts</span><span>2</span></div>
+              <ul>
+                <li><span>remote teams schedule serendipity and it dies</span><span>3 wk</span></li>
+                <li><span>the best ideas at work came from the corridor</span><span>set down</span></li>
+              </ul>
+            </div>
+          </div>
+          <div class="foot">set down</div>
+        </div>
+        <div class="margin">
+          <span class="ph">notes</span>
+          <span class="caret"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p class="tradeoff">two shapes for one feature; the eye must leave the center to read notes.</p>
+</section>
+
+<!-- ============ 3 ============ -->
+<section>
+  <div class="vnum">03</div>
+  <h2>A second room</h2>
+  <p class="note">The page as it is today; notes live below “set down”, one scroll away.</p>
+  <div class="pair">
+    <div class="mock light tall">
+      <div class="hdr"><span class="bk">←</span><span class="date">Tuesday, 12 August</span></div>
+      <div class="col">
+        <div class="center">
+          <div class="th">cities feel more creative because collisions are free</div>
+          <div class="rel">
+            <div class="lbl"><span>related thoughts</span><span>2</span></div>
+            <ul>
+              <li><span>remote teams schedule serendipity and it dies</span><span>3 wk</span></li>
+              <li><span>the best ideas at work came from the corridor</span><span>set down</span></li>
+            </ul>
+          </div>
+        </div>
+        <div class="foot">set down</div>
+        <div class="room">
+          <span class="ph">notes</span>
+          <div class="nt">Jacobs, ch. 2 — sidewalk contact. The point is not density, it's that the meetings cost nothing to arrange.
+Compare: remote teams schedule collisions and they die.</div>
+        </div>
+      </div>
+      <div class="fold" style="bottom:0;"></div>
+    </div>
+    <div class="mock dark tall">
+      <div class="hdr"><span class="bk">←</span><span class="date">Tuesday, 12 August</span></div>
+      <div class="col">
+        <div class="center">
+          <div class="th">cities feel more creative because collisions are free</div>
+          <div class="rel">
+            <div class="lbl"><span>related thoughts</span><span>2</span></div>
+            <ul>
+              <li><span>remote teams schedule serendipity and it dies</span><span>3 wk</span></li>
+              <li><span>the best ideas at work came from the corridor</span><span>set down</span></li>
+            </ul>
+          </div>
+        </div>
+        <div class="foot">set down</div>
+        <div class="room">
+          <span class="ph">notes</span>
+          <span class="caret"></span>
+        </div>
+      </div>
+      <div class="fold" style="bottom:0;"></div>
+    </div>
+  </div>
+  <p class="tradeoff">hidden — a note from last month is a scroll away with no sign it exists.</p>
+</section>
+
+<!-- ============ 4 ============ -->
+<section>
+  <div class="vnum">04</div>
+  <h2>Revealed from the footer</h2>
+  <p class="note">The footer gains a second word. Click it and the field fades in under the thought; once notes exist the word steps up to page-text weight.</p>
+  <div class="pair">
+    <div class="mock light">
+      <div class="hdr"><span class="bk">←</span><span class="date">Tuesday, 12 August</span></div>
+      <div class="col">
+        <div class="center">
+          <div class="th">cities feel more creative because collisions are free</div>
+          <div class="rel">
+            <div class="lbl"><span>related thoughts</span><span>2</span></div>
+            <ul>
+              <li><span>remote teams schedule serendipity and it dies</span><span>3 wk</span></li>
+              <li><span>the best ideas at work came from the corridor</span><span>set down</span></li>
+            </ul>
+          </div>
+        </div>
+        <div class="foot">notes<span class="sep">·</span>set down</div>
+      </div>
+    </div>
+    <div class="mock dark">
+      <div class="hdr"><span class="bk">←</span><span class="date">Tuesday, 12 August</span></div>
+      <div class="col">
+        <div class="center">
+          <div class="th">cities feel more creative because collisions are free</div>
+          <div class="rev"><div class="nt">Jacobs, ch. 2 — sidewalk contact. The point is not density, it's that the meetings cost nothing to arrange.<span class="caret"></span></div></div>
+          <div class="rel">
+            <div class="lbl"><span>related thoughts</span><span>2</span></div>
+            <ul>
+              <li><span>remote teams schedule serendipity and it dies</span><span>3 wk</span></li>
+              <li><span>the best ideas at work came from the corridor</span><span>set down</span></li>
+            </ul>
+          </div>
+        </div>
+        <div class="foot"><b>notes</b><span class="sep">·</span>set down</div>
+      </div>
+    </div>
+  </div>
+  <p class="tradeoff">two clicks to start writing, and the one-word footer becomes two.</p>
+</section>
+
+<!-- ============ 5 ============ -->
+<section>
+  <div class="vnum">05</div>
+  <h2>The log</h2>
+  <p class="note">A different object: dated, append-only lines in the related-thoughts anatomy, with a quiet “add a line” row.</p>
+  <div class="pair">
+    <div class="mock light">
+      <div class="hdr"><span class="bk">←</span><span class="date">Tuesday, 12 August</span></div>
+      <div class="col">
+        <div class="center">
+          <div class="th">cities feel more creative because collisions are free</div>
+          <div class="log">
+            <div class="lbl">notes</div>
+            <ul>
+              <li><div class="nt">Jacobs, ch. 2 — sidewalk contact.</div><span class="when">12 aug</span></li>
+              <li><div class="nt">it's not density, it's that meeting costs nothing to arrange</div><span class="when">14 aug</span></li>
+              <li><div class="nt">remote teams schedule collisions and they die. is this "cheap experiments"?</div><span class="when">today</span></li>
+            </ul>
+            <div class="add"><span class="ph">add a line</span></div>
+          </div>
+        </div>
+        <div class="foot">set down</div>
+      </div>
+    </div>
+    <div class="mock dark">
+      <div class="hdr"><span class="bk">←</span><span class="date">Tuesday, 12 August</span></div>
+      <div class="col">
+        <div class="center">
+          <div class="th">cities feel more creative because collisions are free</div>
+          <div class="log">
+            <div class="lbl">notes</div>
+            <ul>
+              <li><div class="nt">Jacobs, ch. 2 — sidewalk contact.</div><span class="when">12 aug</span></li>
+            </ul>
+            <div class="add"><span class="nt">it's not density, it's<span class="caret"></span></span></div>
+          </div>
+        </div>
+        <div class="foot">set down</div>
+      </div>
+    </div>
+  </div>
+  <p class="tradeoff">append-only fights re-jotting, and it is more product: a list, a second table, dates.</p>
+</section>
+
+<!-- ============ 6 ============ -->
+<section>
+  <div class="vnum">06</div>
+  <h2>The continuation</h2>
+  <p class="note">No label, no field: notes are a second, quieter paragraph in the thought’s own centered type.</p>
+  <div class="pair">
+    <div class="mock light">
+      <div class="hdr"><span class="bk">←</span><span class="date">Tuesday, 12 August</span></div>
+      <div class="col">
+        <div class="center">
+          <div class="th">cities feel more creative because collisions are free</div>
+          <div class="cont">Jacobs, ch. 2 — sidewalk contact. The point is not density, it's that the meetings cost nothing to arrange. Compare: remote teams schedule collisions and they die.</div>
+          <div class="rel">
+            <div class="lbl"><span>related thoughts</span><span>2</span></div>
+            <ul>
+              <li><span>remote teams schedule serendipity and it dies</span><span>3 wk</span></li>
+              <li><span>the best ideas at work came from the corridor</span><span>set down</span></li>
+            </ul>
+          </div>
+        </div>
+        <div class="foot">set down</div>
+      </div>
+    </div>
+    <div class="mock dark">
+      <div class="hdr"><span class="bk">←</span><span class="date">Tuesday, 12 August</span></div>
+      <div class="col">
+        <div class="center">
+          <div class="th">cities feel more creative because collisions are free</div>
+          <div class="cont"><span class="caret"></span></div>
+          <div class="rel">
+            <div class="lbl"><span>related thoughts</span><span>2</span></div>
+            <ul>
+              <li><span>remote teams schedule serendipity and it dies</span><span>3 wk</span></li>
+              <li><span>the best ideas at work came from the corridor</span><span>set down</span></li>
+            </ul>
+          </div>
+        </div>
+        <div class="foot">set down</div>
+      </div>
+    </div>
+  </div>
+  <p class="tradeoff">blurs what was caught versus what was added later, and the click target is a secret.</p>
+</section>
+
+<!-- ============ states ============ -->
+<section>
+  <div class="vnum">states</div>
+  <h2>How the field behaves, whichever placement wins</h2>
+    <div class="states">
+    <div class="state light">
+      <div class="cap">empty · not focused</div>
+      <span class="ph">notes</span>
+      <p class="tradeoff" style="margin-top:14px; font-size:11.5px;">One faint word; it is the placeholder.</p>
+    </div>
+    <div class="state light">
+      <div class="cap">focused</div>
+      <span class="ph pt">notes</span><span class="caret" style="margin-left:6px;"></span>
+      <p class="tradeoff" style="margin-top:14px; font-size:11.5px;">No ring, no border — focus is the caret.</p>
+    </div>
+    <div class="state light">
+      <div class="cap">typing</div>
+      <div class="nt">Jacobs, ch. 2 — sidewalk con<span class="caret"></span></div>
+      <p class="tradeoff" style="margin-top:14px; font-size:11.5px;">Saves ~600ms after the last keystroke, on blur, on leave. Silently.</p>
+    </div>
+    <div class="state light">
+      <div class="cap">couldn't save</div>
+      <div class="nt">Jacobs, ch. 2 — sidewalk contact.</div>
+      <div class="st"><span>couldn't save your notes</span><b>retry</b></div>
+      <p class="tradeoff" style="margin-top:14px; font-size:11.5px;">The only status line it ever shows; your text stays put.</p>
+    </div>
+    <div class="state light">
+      <div class="cap">on a resting thought</div>
+      <div class="ph" style="margin-bottom:6px;">set down · 3 wk</div>
+      <div class="nt" style="margin-bottom:12px;">it needs a real example before it's anything</div>
+      <span class="ph">notes</span>
+      <p class="tradeoff" style="margin-top:14px; font-size:11.5px;">Resting note keeps its place; notes sit under it. Separate fields.</p>
+    </div>
+    <div class="state light">
+      <div class="cap">field growth</div>
+      <div class="nt">line one
+line two
+line three</div>
+      <p class="tradeoff" style="margin-top:14px; font-size:11.5px;">Auto-grows; the page scrolls, never the field.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ recommendation ============ -->
+<div class="callout"><strong>Direction: 02, marginalia.</strong> Wide screens (<code>xl</code>+): notes in the right periphery opposite the rail, top-aligned, left-set; the thought never moves. Narrower: the same field folds under the thought as in 01. One component, two placements.</div>
+
+</body>
+</html>
