@@ -1,5 +1,6 @@
 import Foundation
 import Network
+import os
 import UIKit
 
 private struct CaptureQueueItem: Codable, Sendable {
@@ -51,9 +52,10 @@ private struct CaptureQueueItem: Codable, Sendable {
     }
 }
 
-private actor CaptureQueueStore {
+private final class CaptureQueueStore: @unchecked Sendable {
     // The log makes enqueue and acknowledgement constant-time disk appends.
-    // It is compacted occasionally, never while the main actor is blocked.
+    // Enqueue appends synchronously so a kept thought is on disk before its
+    // confirmation plays. Flush-side I/O runs off the main actor.
     private struct Record: Codable {
         enum Operation: String, Codable {
             case put
@@ -82,6 +84,7 @@ private actor CaptureQueueStore {
     private let logURL: URL
     private let legacySnapshotURL: URL
     private let legacyJournalURL: URL
+    private let lock = OSAllocatedUnfairLock()
 
     private var didLoad = false
     private var items: [CaptureQueueItem] = []
@@ -96,47 +99,55 @@ private actor CaptureQueueStore {
     }
 
     func enqueue(text: String, ownerID: String?) {
-        loadIfNeeded()
-        lastSequence += 1
-        let item = CaptureQueueItem(
-            id: UUID(),
-            text: text,
-            createdAt: .now,
-            ownerID: ownerID,
-            sequence: lastSequence
-        )
-        _ = append([.put(item)])
-        items.append(item)
-        compactIfNeeded()
+        lock.withLock {
+            loadIfNeeded()
+            lastSequence += 1
+            let item = CaptureQueueItem(
+                id: UUID(),
+                text: text,
+                createdAt: .now,
+                ownerID: ownerID,
+                sequence: lastSequence
+            )
+            _ = append([.put(item)])
+            items.append(item)
+            compactIfNeeded()
+        }
     }
 
     func adoptOrphanedItems(ownerID: String) -> Bool {
-        loadIfNeeded()
-        let orphanedIDs = Set(items.lazy.filter { $0.ownerID == nil }.map(\.id))
-        guard !orphanedIDs.isEmpty else { return true }
+        lock.withLock {
+            loadIfNeeded()
+            let orphanedIDs = Set(items.lazy.filter { $0.ownerID == nil }.map(\.id))
+            guard !orphanedIDs.isEmpty else { return true }
 
-        let adopted = items.map { item in
-            item.ownerID == nil ? item.owned(by: ownerID) : item
+            let adopted = items.map { item in
+                item.ownerID == nil ? item.owned(by: ownerID) : item
+            }
+            let records = adopted.filter { orphanedIDs.contains($0.id) }.map(Record.put)
+            guard append(records) else { return false }
+            items = adopted
+            compactIfNeeded()
+            return true
         }
-        let records = adopted.filter { orphanedIDs.contains($0.id) }.map(Record.put)
-        guard append(records) else { return false }
-        items = adopted
-        compactIfNeeded()
-        return true
     }
 
     func oldestItem(ownerID: String) -> CaptureQueueItem? {
-        loadIfNeeded()
-        return items.first { $0.ownerID == ownerID }
+        lock.withLock {
+            loadIfNeeded()
+            return items.first { $0.ownerID == ownerID }
+        }
     }
 
     func acknowledge(id: UUID) -> Bool {
-        loadIfNeeded()
-        guard let index = items.firstIndex(where: { $0.id == id }) else { return true }
-        guard append([.remove(id)]) else { return false }
-        items.remove(at: index)
-        compactIfNeeded()
-        return true
+        lock.withLock {
+            loadIfNeeded()
+            guard let index = items.firstIndex(where: { $0.id == id }) else { return true }
+            guard append([.remove(id)]) else { return false }
+            items.remove(at: index)
+            compactIfNeeded()
+            return true
+        }
     }
 
     private func loadIfNeeded() {
@@ -145,26 +156,24 @@ private actor CaptureQueueStore {
         prepareDirectory()
 
         var entriesByID: [UUID: CaptureQueueItem] = [:]
-        // A new log is authoritative. The other formats are only read during
-        // the one-time migration from earlier app versions.
-        let hadLog = fileManager.fileExists(atPath: logURL.path)
+        // The log is authoritative. Legacy formats are read once and deleted only
+        // after their contents are folded into the log.
         replayLog(into: &entriesByID)
-        if !hadLog {
-            if let snapshotItems = decodeItems(at: legacySnapshotURL) {
-                for item in snapshotItems {
-                    merge(item, into: &entriesByID)
-                }
-            }
 
-            for (item, _) in legacyFileItems() {
-                merge(item, into: &entriesByID)
-            }
-            for item in legacyJournalItems() {
+        if let snapshotItems = decodeItems(at: legacySnapshotURL) {
+            for item in snapshotItems {
                 merge(item, into: &entriesByID)
             }
         }
 
         let legacyFiles = legacyFileItems()
+        for (item, _) in legacyFiles {
+            merge(item, into: &entriesByID)
+        }
+        for item in legacyJournalItems() {
+            merge(item, into: &entriesByID)
+        }
+
         items = entriesByID.values.sorted(by: Self.precedes)
         lastSequence = items.map(\.sequence).max() ?? 0
 
@@ -364,10 +373,9 @@ final class CaptureQueue {
     }
 
     func enqueue(text: String, ownerID: String?) {
+        store.enqueue(text: text, ownerID: ownerID)
         Task { [weak self] in
-            guard let self else { return }
-            await store.enqueue(text: text, ownerID: ownerID)
-            await flush()
+            await self?.flush()
         }
     }
 
@@ -399,11 +407,17 @@ final class CaptureQueue {
             flushAgain = false
 
             guard let ownerID = authenticatedUserID else { break }
-            if !(await store.adoptOrphanedItems(ownerID: ownerID)) {
+            if !(await offMain { [store] in
+                store.adoptOrphanedItems(ownerID: ownerID)
+            }) {
                 scheduleRetry()
+                isFlushing = false
+                return
             }
             while authenticatedUserID == ownerID,
-                let item = await store.oldestItem(ownerID: ownerID)
+                let item = await offMain({ [store] in
+                    store.oldestItem(ownerID: ownerID)
+                })
             {
                 do {
                     _ = try await send(item.text)
@@ -411,7 +425,9 @@ final class CaptureQueue {
                         flushAgain = authenticatedUserID != nil
                         break
                     }
-                    guard await store.acknowledge(id: item.id) else {
+                    guard await offMain({ [store] in
+                        store.acknowledge(id: item.id)
+                    }) else {
                         scheduleRetry()
                         isFlushing = false
                         return
@@ -429,6 +445,12 @@ final class CaptureQueue {
 
         isFlushing = false
         retryDelay = 1
+    }
+
+    private func offMain<T: Sendable>(
+        _ work: @escaping @Sendable () -> T
+    ) async -> T {
+        await Task.detached(priority: .utility, operation: work).value
     }
 
     private static func makeDirectoryURL(

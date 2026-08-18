@@ -70,7 +70,7 @@ private final class ShelfModel: ObservableObject {
                     Task {
                         await convexService.cacheCollection(
                             collection,
-                            userID: displayUserID,
+                            userID: authenticatedUserID,
                             date: date
                         )
                     }
@@ -176,16 +176,16 @@ struct ShelfView: View {
                 .overlay(alignment: .bottomTrailing) {
                     catchThoughtAffordance
                 }
+            }
 
-                if let selectedThoughtID {
-                    ThoughtView(
-                        thoughtID: selectedThoughtID,
-                        convexService: convexService,
-                        onBack: closeThought
-                    )
-                    .transition(.move(edge: .trailing).combined(with: .opacity))
-                    .zIndex(1)
-                }
+            if let selectedThoughtID {
+                ThoughtView(
+                    thoughtID: selectedThoughtID,
+                    convexService: convexService,
+                    onBack: closeThought
+                )
+                .transition(.move(edge: .trailing).combined(with: .opacity))
+                .zIndex(1)
             }
         }
         .task(id: subscriptionTaskID) {

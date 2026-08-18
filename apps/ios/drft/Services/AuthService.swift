@@ -13,6 +13,7 @@ final class AuthService: ObservableObject {
     private static let rememberedUserIDKey = "rememberedUserID"
     private let defaults: UserDefaults
     private var eventTask: Task<Void, Never>?
+    private var isSigningOut = false
 
     init() {
         defaults = UserDefaults(suiteName: "group.com.srinivasib.drft") ?? .standard
@@ -34,18 +35,21 @@ final class AuthService: ObservableObject {
     }
 
     func signOut() async {
+        // Ignore Clerk events that arrive before its active session is replaced.
+        isSigningOut = true
         didExplicitlySignOut = true
         captureOwnerID = nil
         rememberedUserID = nil
         defaults.removeObject(forKey: Self.rememberedUserIDKey)
         try? await Clerk.shared.auth.signOut()
+        isSigningOut = false
         refreshState()
     }
 
     private func refreshState() {
         let user = Clerk.shared.user
         isSignedIn = Clerk.shared.session?.status == .active
-        if isSignedIn {
+        if isSignedIn && !isSigningOut {
             didExplicitlySignOut = false
             if let userID = user?.id {
                 captureOwnerID = userID

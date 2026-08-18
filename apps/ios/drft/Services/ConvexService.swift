@@ -66,9 +66,11 @@ final class ConvexService: ObservableObject {
     private var thoughtRecency: [String] = []
     private var prewarmSubscriptions: [String: AnyCancellable] = [:]
     private var prewarmTasks: [String: Task<Void, Never>] = [:]
+    private var isLocalCachingSuspended = false
 
     private static let thoughtCacheLimit = 24
     private static let prewarmDuration: Duration = .seconds(30)
+    private static let prewarmLimit = 8
 
     // Debug builds (Xcode runs) use the dev deployment; Release builds on device use prod.
     #if DEBUG
@@ -92,7 +94,11 @@ final class ConvexService: ObservableObject {
             .sink { [weak self] state in
                 switch state {
                 case .authenticated(let token):
-                    self?.authenticatedUserID = Self.userID(from: token)
+                    let userID = Self.userID(from: token)
+                    if self?.authenticatedUserID == nil, userID != nil {
+                        self?.isLocalCachingSuspended = false
+                    }
+                    self?.authenticatedUserID = userID
                 case .loading, .unauthenticated:
                     self?.authenticatedUserID = nil
                 }
@@ -124,6 +130,7 @@ final class ConvexService: ObservableObject {
     }
 
     func cacheCollection(_ collection: Collection, userID: String, date: String) async {
+        guard !isLocalCachingSuspended else { return }
         await collectionCache.store(collection, userID: userID, date: date)
     }
 
@@ -134,6 +141,7 @@ final class ConvexService: ObservableObject {
     }
 
     func cacheThought(_ thought: Thought) {
+        guard !isLocalCachingSuspended else { return }
         thoughtCache[thought._id] = thought
         touchThought(id: thought._id)
 
@@ -144,7 +152,9 @@ final class ConvexService: ObservableObject {
     }
 
     func prewarmThought(id: String) {
+        guard !isLocalCachingSuspended else { return }
         guard thoughtCache[id] == nil, prewarmSubscriptions[id] == nil else { return }
+        guard prewarmSubscriptions.count < Self.prewarmLimit else { return }
 
         prewarmSubscriptions[id] = thought(id: id)
             .receive(on: DispatchQueue.main)
@@ -166,6 +176,9 @@ final class ConvexService: ObservableObject {
     }
 
     func clearLocalCaches() async {
+        // Sign-out subscriptions remain live briefly, so stop their cache writes
+        // before clearing data and keep them stopped until a fresh sign-in.
+        isLocalCachingSuspended = true
         thoughtCache.removeAll()
         thoughtRecency.removeAll()
         for subscription in prewarmSubscriptions.values {
