@@ -25,8 +25,10 @@ struct SignInView: View {
                     .padding(.top, 20)
 
                 VStack(alignment: .leading, spacing: 12) {
-                    providerButton(.google, label: "google")
-                    providerButton(.github, label: "github")
+                    // Apple first: App Review expects it to be at least as prominent.
+                    providerButton(.apple, label: "continue with apple")
+                    providerButton(.google, label: "continue with google")
+                    providerButton(.github, label: "continue with github")
                 }
                 .padding(.top, 56)
                 .animation(.easeOut(duration: 0.2), value: pending)
@@ -78,6 +80,10 @@ struct SignInView: View {
     private func providerIcon(_ provider: OAuthProvider) -> some View {
         // Optical sizes differ because the marks fill their view boxes differently.
         switch provider {
+        case .apple:
+            Image(systemName: "apple.logo")
+                .font(.system(size: 14))
+                .accessibilityHidden(true)
         case .google:
             GoogleIcon()
                 .frame(width: 13, height: 13)
@@ -96,12 +102,20 @@ struct SignInView: View {
 
         Task { @MainActor in
             do {
-                try await Clerk.shared.auth.signInWithOAuth(provider: provider)
+                if provider == .apple {
+                    // Native sheet; drft only needs the email, not the name.
+                    try await Clerk.shared.auth.signInWithApple(requestedScopes: [.email])
+                } else {
+                    try await Clerk.shared.auth.signInWithOAuth(provider: provider)
+                }
             } catch is CancellationError {
                 // The user dismissed the web auth sheet, which is not a failure.
             } catch let error as ASWebAuthenticationSessionError
                 where error.code == .canceledLogin {
                 // The user dismissed the web auth sheet, which is not a failure.
+            } catch let error as ASAuthorizationError
+                where error.code == .canceled {
+                // The user dismissed the Apple sheet, which is not a failure.
             } catch {
                 failed = true
             }
