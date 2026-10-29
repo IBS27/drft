@@ -297,6 +297,20 @@ final class ConvexService: ObservableObject {
         }
     }
 
+    // Deletes the Clerk user and everything stored for it (account.ts).
+    // Returns once the account is gone; throws if it could not be removed.
+    func deleteAccount(appleAuthorizationCode: String?) async throws {
+        // The argument is optional on the server, which rejects an explicit null.
+        if let appleAuthorizationCode {
+            try await client.action(
+                "account:deleteAccount",
+                with: ["appleAuthorizationCode": appleAuthorizationCode]
+            )
+        } else {
+            try await client.action("account:deleteAccount", with: [:])
+        }
+    }
+
     // `consent:get` also answers null when unauthenticated, so only values
     // from a subscription opened under an authenticated user count.
     private func observeConsent(userID: String?) {

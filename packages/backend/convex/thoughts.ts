@@ -7,6 +7,7 @@ import { mutation, query } from "./_generated/server";
 import type { QueryCtx } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
 import { internal } from "./_generated/api";
+import { isAccountDeleting } from "./account";
 import { allowsAiConnections } from "./consent";
 
 const CONNECTIONS_PER_DIRECTION_LIMIT = 50;
@@ -73,6 +74,8 @@ export const capture = mutation({
   handler: async (ctx, { text }) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error("Not signed in");
+    if (await isAccountDeleting(ctx, identity.subject))
+      throw new Error("Account is being deleted");
     const trimmed = text.trim();
     if (!trimmed) throw new Error("Empty thought");
     const thoughtId = await ctx.db.insert("thoughts", {

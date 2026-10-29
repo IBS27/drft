@@ -4,6 +4,7 @@ import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
 import { useRef, useState } from "react";
 import { clearRememberedSession } from "../features/auth/rememberedSession";
+import { DeleteAccount } from "../features/settings/DeleteAccount";
 import { BackLink } from "../features/ui/BackLink";
 
 export const Route = createFileRoute("/settings")({ component: Settings });
@@ -146,6 +147,10 @@ function Settings() {
               sign out
             </button>
           </SignOutButton>
+        </div>
+
+        <div className="border-b border-line py-4">
+          <DeleteAccount />
         </div>
       </section>
     </main>

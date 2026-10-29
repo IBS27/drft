@@ -7,6 +7,7 @@ import {
 } from "./_generated/server";
 import type { QueryCtx } from "./_generated/server";
 import { internal } from "./_generated/api";
+import { isAccountDeleting } from "./account";
 
 // Connections need each thought's text sent to OpenAI for an embedding.
 // That only happens with the user's explicit permission (App Store
@@ -49,6 +50,10 @@ export const setAiConnections = mutation({
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error("Not signed in");
     const userId = identity.subject;
+    // A deleted account's consent was removed with its settings; nothing
+    // may bring the row back.
+    if (await isAccountDeleting(ctx, userId))
+      throw new Error("Account is being deleted");
     const existing = await ctx.db
       .query("consents")
       .withIndex("by_user", (q) => q.eq("userId", userId))

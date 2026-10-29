@@ -49,6 +49,12 @@ struct RootView: View {
                 convexService.resumeLocalCaching()
             }
         }
+        .onChange(of: authService.deletedAccountID) { _, userID in
+            guard let userID else { return }
+            Task {
+                await captureQueue.discardItems(ownerID: userID)
+            }
+        }
         .onChange(of: convexService.authenticatedUserID, initial: true) { _, userID in
             // Items are enqueued under Clerk's user.id but flushed by matching
             // the Convex JWT's sub claim. The default Clerk `convex` template

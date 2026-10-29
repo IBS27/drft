@@ -105,4 +105,14 @@ export default defineSchema({
     sendTime: v.string(),
     timezone: v.string(),
   }).index("by_user", ["userId"]),
+
+  // An account its owner asked to delete (account.ts). While the row exists
+  // nothing new is written for that user; it is removed once the data is
+  // purged and the Clerk user is gone, so nothing of the account remains.
+  accountDeletions: defineTable({
+    userId: v.string(),
+    requestedAt: v.number(),
+    clerkDeletedAt: v.optional(v.number()),
+    purgedAt: v.optional(v.number()),
+  }).index("by_user", ["userId"]),
 });

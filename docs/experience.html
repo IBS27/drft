@@ -358,6 +358,7 @@
     <li><strong>Capture mutation stays dumb:</strong> insert text + timestamp, schedule enrichment, return. Everything intelligent is async.</li>
     <li><strong>The web capture input for dogfooding</strong> (phase 1) obeys the same capture rules as iOS: one field, keep, no questions asked.</li>
     <li><strong>Settings are nearly empty by design:</strong> the daily email time is the only real preference the product has — and because the server sends it, that preference lives in Convex, not on a device.</li>
+    <li><strong>Deleting the account is one plain question away</strong> in settings, on web and iOS: it removes the Clerk account and every thought, connection, note, resurfacing, and setting. Confirming commits it — the server finishes the purge and the Clerk removal on its own, retrying until both are done, and nothing new can be written for the account meanwhile.</li>
   </ul>
 </section>
 

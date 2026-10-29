@@ -62,6 +62,9 @@ adds the shelf.
 - `settings:get` query with no args → returns the daily email settings or `null`.
 - `settings:save` mutation with `{ sendTime, timezone, email? }` → writes the daily
   email settings.
+- `account:deleteAccount` action with `{ appleAuthorizationCode? }` → deletes the
+  Clerk user and everything stored for it. Once it returns the deletion is final;
+  the server finishes the purge and retries the Clerk removal on its own.
 - `consent:get` query with no args → `null` (never asked) or `{ aiConnections }`;
   live-subscribed only while Convex is authenticated, since it also answers `null`
   signed out.
@@ -266,6 +269,14 @@ Nearly empty by design. A sheet on `surface` with:
   sent to OpenAI to find echoes`.
 - `privacy policy` — muted link to `https://trydrft.app/privacy`.
 - `sign out` — muted text button. Confirmation-free.
+- `delete account` — muted text button. One system alert names what goes (every
+  thought, connection, note, and the daily email) and that it can't be undone.
+  An account signed in with Apple first confirms with Apple once, so the server
+  can revoke the Sign in with Apple grant (best effort: dismissing that sheet, or
+  another Apple ID on the device, skips revocation, never the deletion). On
+  success the device forgets the account (queued captures, cached rows, the
+  remembered user) and signs out; if the request never reached the server the
+  row reads `couldn't finish deleting — try again`.
 - App version, faint, bottom.
 
 No other options. Rows separated by hairlines, no grouped-table chrome.
