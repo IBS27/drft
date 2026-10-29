@@ -1,0 +1,116 @@
+---
+import Footer from "../components/Footer.astro";
+import Layout from "../layouts/Layout.astro";
+
+const contact = "hello@trydrft.app";
+const label = "text-[10px] tracking-[0.28em] uppercase";
+const h2 = "mt-14 text-[1.125rem] leading-snug font-light text-ink";
+const p = "mt-4 text-sm leading-relaxed text-mut";
+const ul = "mt-4 space-y-2 text-sm leading-relaxed text-mut";
+const a = "text-pt underline decoration-line underline-offset-4 transition-colors hover:text-ink";
+---
+
+<Layout
+  title="Privacy · drft"
+  description="What drft collects, why, and who helps run it."
+>
+  <main>
+    <div class="flex items-baseline justify-between px-6 pt-10 sm:px-10">
+      <a href="/" class="text-[13px] tracking-[0.5em] text-pt uppercase">drft</a>
+      <a href="/?signin" class="text-sm text-mut transition-colors hover:text-ink">Sign in</a>
+    </div>
+
+    <article class="mx-auto max-w-[36rem] px-6 pt-24 pb-28 sm:pt-32">
+      <p class:list={["text-pl", label]}>Effective October 28, 2026</p>
+      <h1 class="mt-5 text-[clamp(1.75rem,4vw,2.25rem)] leading-[1.15] font-extralight tracking-tight">
+        Privacy Policy
+      </h1>
+      <p class={p}>
+        drft is a space for unfinished thoughts. This page explains what we collect, why, and the
+        few services that help us run drft. Questions go to <a class={a} href={`mailto:${contact}`}
+          >{contact}</a
+        >.
+      </p>
+
+      <h2 class={h2}>Your account</h2>
+      <p class={p}>
+        You sign in with Apple, Google, or GitHub through Clerk, our authentication provider. We
+        receive your email address and an account identifier. With Apple, we ask only for your email,
+        not your name, and Hide My Email relay addresses work. Google and GitHub may also share your
+        name and profile photo with Clerk; drft doesn't use them.
+      </p>
+
+      <h2 class={h2}>What you create</h2>
+      <ul class={ul}>
+        <li>— The text of your thoughts, and any notes you add to them.</li>
+        <li>— The closing line you write when you set a thought to rest.</li>
+        <li>— When each of these was created, and which connections you dismissed.</li>
+        <li>— Your settings: the daily email's send time, your timezone, and your email address.</li>
+      </ul>
+      <p class={p}>All of this is stored by Convex, which hosts drft's backend and database.</p>
+
+      <h2 class={h2}>Connections and OpenAI</h2>
+      <p class={p}>
+        Only if you allow connections, the text of each thought is sent to OpenAI's API to create an
+        embedding — a set of numbers drft uses to find related thoughts. Nothing else about you is
+        sent. OpenAI does not use API data to train its models, and may retain it for up to 30 days
+        for abuse monitoring.
+      </p>
+      <p class={p}>
+        Thoughts you capture before deciding aren't sent. If you allow connections later, those
+        thoughts are sent then, so they can be connected too.
+      </p>
+      <p class={p}>
+        You can turn connections off anytime in settings. That stops new thoughts from being sent;
+        connections already found stay.
+      </p>
+
+      <h2 class={h2}>The daily email</h2>
+      <p class={p}>
+        Resend delivers the daily email. It receives your email address and that day's thought.
+      </p>
+
+      <h2 class={h2}>The website and web app</h2>
+      <p class={p}>
+        Vercel hosts the website and web app. Vercel Web Analytics collects aggregated, cookieless
+        page-view analytics on them.
+      </p>
+
+      <h2 class={h2}>The iPhone app</h2>
+      <p class={p}>
+        Dictation uses Apple's on-device speech recognition; the audio never leaves your device.
+        Microphone and speech recognition permission is used only for dictation.
+      </p>
+      <p class={p}>
+        The app keeps a queue of captures not yet sent and a cache of your collection on the device.
+        The cache is cleared when you sign out.
+      </p>
+
+      <h2 class={h2}>What we don't do</h2>
+      <ul class={ul}>
+        <li>— No ads.</li>
+        <li>— No tracking across other apps or websites.</li>
+        <li>— No selling or sharing your data for advertising.</li>
+        <li>— No data brokers.</li>
+      </ul>
+
+      <h2 class={h2}>Keeping and deleting your data</h2>
+      <p class={p}>
+        We keep your data while your account exists. You can delete your account and all associated
+        data anytime from settings, in the iPhone app or on the web. To access or export your data,
+        email <a class={a} href={`mailto:${contact}`}>{contact}</a>.
+      </p>
+
+      <h2 class={h2}>Children</h2>
+      <p class={p}>drft is not directed at children under 13.</p>
+
+      <h2 class={h2}>Changes</h2>
+      <p class={p}>
+        If this policy changes, the new version will be posted on this page with a new effective
+        date.
+      </p>
+    </article>
+
+    <Footer />
+  </main>
+</Layout>

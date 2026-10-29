@@ -8,6 +8,7 @@ import type { QueryCtx } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
 import { internal } from "./_generated/api";
 import { isAccountDeleting } from "./account";
+import { allowsAiConnections } from "./consent";
 
 const CONNECTIONS_PER_DIRECTION_LIMIT = 50;
 const CONNECTIONS_PER_GRAPH_THOUGHT_LIMIT = 50;
@@ -65,7 +66,8 @@ async function ownedThought(ctx: QueryCtx, thoughtId: Id<"thoughts">) {
 }
 
 // Capture stays dumb: insert text + timestamp, return. Embedding and linking
-// happen asynchronously in enrichment.ts.
+// happen asynchronously in enrichment.ts, and only with the user's
+// permission to send thought text to OpenAI (consent.ts).
 export const capture = mutation({
   args: { text: v.string() },
   returns: v.id("thoughts"),
@@ -82,7 +84,9 @@ export const capture = mutation({
       createdAt: Date.now(),
       status: "open",
     });
-    await ctx.scheduler.runAfter(0, internal.enrichment.enrich, { thoughtId });
+    if (await allowsAiConnections(ctx, identity.subject)) {
+      await ctx.scheduler.runAfter(0, internal.enrichment.enrich, { thoughtId });
+    }
     return thoughtId;
   },
 });

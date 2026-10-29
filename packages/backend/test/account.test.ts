@@ -14,7 +14,8 @@ const B = "user_b";
 type Setup = ReturnType<typeof convexTest>;
 
 // A user with everything the product stores: open and resting thoughts,
-// connections both ways (one dismissed), a note, resurfacings, settings.
+// connections both ways (one dismissed), a note, resurfacings, settings,
+// consent.
 async function seedUser(t: Setup, userId: string) {
   return await t.run(async (ctx) => {
     const now = Date.now();
@@ -48,6 +49,7 @@ async function seedUser(t: Setup, userId: string) {
       sendTime: "08:00",
       timezone: "UTC",
     });
+    await ctx.db.insert("consents", { userId, aiConnections: true, decidedAt: now });
     return ids;
   });
 }
@@ -59,6 +61,7 @@ async function counts(t: Setup) {
     notes: (await ctx.db.query("notes").collect()).length,
     resurfacings: (await ctx.db.query("resurfacings").collect()).length,
     settings: (await ctx.db.query("settings").collect()).length,
+    consents: (await ctx.db.query("consents").collect()).length,
     accountDeletions: (await ctx.db.query("accountDeletions").collect()).length,
   }));
 }
@@ -110,6 +113,7 @@ describe("account deletion", () => {
       notes: 1,
       resurfacings: 1,
       settings: 1,
+      consents: 1,
       accountDeletions: 0,
     });
     const remaining = await t.run((ctx) => ctx.db.query("thoughts").collect());
@@ -147,6 +151,10 @@ describe("account deletion", () => {
     // The per-load call stays quiet and writes nothing.
     await asA.mutation(api.settings.ensure, { timezone: "UTC" });
     expect((await counts(t)).settings).toBe(0);
+    await expect(
+      asA.mutation(api.consent.setAiConnections, { allowed: true }),
+    ).rejects.toThrow("Account is being deleted");
+    expect((await counts(t)).consents).toBe(0);
   });
 
   it("never links an enrichment result to a thought that is gone", async () => {
@@ -184,6 +192,7 @@ describe("account deletion", () => {
       notes: 0,
       resurfacings: 0,
       settings: 0,
+      consents: 0,
       accountDeletions: 0,
     });
     expect(fetchMock).toHaveBeenCalledTimes(2);

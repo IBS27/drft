@@ -74,6 +74,13 @@ export function SignIn() {
       >
         couldn't sign in — try again
       </p>
+
+      <a
+        href="/privacy"
+        className="fixed bottom-6 text-[10.5px] tracking-[0.22em] text-faint uppercase transition-colors hover:text-ink"
+      >
+        privacy policy
+      </a>
     </main>
   );
 }

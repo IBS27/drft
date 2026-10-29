@@ -12,6 +12,7 @@ import type * as account from "../account.js";
 import type * as ai_limits from "../ai/limits.js";
 import type * as ai_models from "../ai/models.js";
 import type * as appleRevocation from "../appleRevocation.js";
+import type * as consent from "../consent.js";
 import type * as crons from "../crons.js";
 import type * as email from "../email.js";
 import type * as enrichment from "../enrichment.js";
@@ -36,6 +37,7 @@ declare const fullApi: ApiFromModules<{
   "ai/limits": typeof ai_limits;
   "ai/models": typeof ai_models;
   appleRevocation: typeof appleRevocation;
+  consent: typeof consent;
   crons: typeof crons;
   email: typeof email;
   enrichment: typeof enrichment;

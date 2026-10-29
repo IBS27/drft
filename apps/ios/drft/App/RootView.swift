@@ -12,6 +12,7 @@ struct RootView: View {
     @State private var cameFromBackground = false
     @State private var captureIsPresented = true
     @State private var captureDragOffset: CGFloat = 0
+    @State private var captureIsIdle = false
 
     var body: some View {
         Group {
@@ -99,9 +100,10 @@ struct RootView: View {
                     authService: authService,
                     convexService: convexService,
                     focusRequest: captureFocusRequest,
-                    isPresented: captureIsPresented,
+                    isPresented: captureIsPresented && !asksAboutConnections,
                     onShelfDragChanged: updateCaptureDrag,
-                    onRevealShelf: revealShelf
+                    onRevealShelf: revealShelf,
+                    onIdleChanged: { captureIsIdle = $0 }
                 )
                 .offset(
                     y: captureIsPresented
@@ -110,10 +112,27 @@ struct RootView: View {
                 )
                 .allowsHitTesting(captureIsPresented)
                 .zIndex(1)
+
+                if asksAboutConnections {
+                    ConnectionsConsentView(convexService: convexService)
+                        .transition(.opacity)
+                        .zIndex(2)
+                }
             }
+            .animation(.easeInOut(duration: 0.3), value: asksAboutConnections)
             .clipped()
         }
         .background(Stillness.page)
+    }
+
+    // Asked once the server confirms it never has been, and only over idle
+    // capture — never mid-thought, and never while the answer is unknown.
+    // Hiding capture behind it drops the keyboard; deciding brings it back.
+    private var asksAboutConnections: Bool {
+        authService.isSignedIn
+            && convexService.consent == .undecided
+            && captureIsPresented
+            && captureIsIdle
     }
 
     private func updateCaptureDrag(_ offset: CGFloat) {

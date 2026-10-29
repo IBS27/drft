@@ -12,7 +12,7 @@ import { revokeAppleGrant } from "./appleRevocation";
 import { fetchWithTimeout } from "./fetchWithTimeout";
 
 // Account deletion: the Clerk user and everything stored for them —
-// thoughts, connections, notes, resurfacings, settings.
+// thoughts, connections, notes, resurfacings, settings, consent.
 //
 // The user's confirmation commits the deletion. From then on the server
 // drives it to completion on its own: the purge is scheduled in the same
@@ -21,7 +21,7 @@ import { fetchWithTimeout } from "./fetchWithTimeout";
 // account as gone; it only hears an error if the request never committed.
 //
 // The `accountDeletions` row blocks new writes for the user (capture,
-// settings) while this runs — a still-valid session token could otherwise
+// settings, consent) while this runs — a still-valid session token could otherwise
 // add a thought behind the purge. Every other row hangs off a thought, and
 // those paths already refuse a thought that no longer exists. The row is
 // removed a day after both halves finish, long after any token for the
@@ -104,9 +104,10 @@ export const request = internalMutation({
         userId,
         requestedAt: Date.now(),
       });
-    // The daily tick only visits users with settings: no email goes out
-    // from this moment on, even before the purge reaches anything else.
-    await deleteSettings(ctx, userId);
+    // The daily tick only visits users with settings, and enrichment only
+    // sends for users who allowed it: no email and no OpenAI request goes
+    // out from this moment on, even before the purge reaches anything else.
+    await deleteSettingsAndConsent(ctx, userId);
     await ctx.scheduler.runAfter(0, internal.account.purge, { userId });
     // The safety net, in case the caller's own attempt never completes.
     await ctx.scheduler.runAfter(
@@ -186,7 +187,7 @@ export const purge = internalMutation({
       )
     )
       return await continueLater();
-    await deleteSettings(ctx, userId);
+    await deleteSettingsAndConsent(ctx, userId);
 
     const deletion = await deletionOf(ctx, userId);
     if (deletion) await ctx.db.patch(deletion._id, { purgedAt: Date.now() });
@@ -269,11 +270,17 @@ export const forget = internalMutation({
   },
 });
 
-async function deleteSettings(ctx: MutationCtx, userId: string) {
-  const rows = await ctx.db
-    .query("settings")
-    .withIndex("by_user", (q) => q.eq("userId", userId))
-    .collect();
+async function deleteSettingsAndConsent(ctx: MutationCtx, userId: string) {
+  const rows = [
+    ...(await ctx.db
+      .query("settings")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect()),
+    ...(await ctx.db
+      .query("consents")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect()),
+  ];
   for (const row of rows) await ctx.db.delete(row._id);
 }
 

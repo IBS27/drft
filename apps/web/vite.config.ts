@@ -10,8 +10,10 @@ import { defineConfig, type Plugin, type ViteDevServer } from 'vite'
 const landingRoot = fileURLToPath(new URL('../landing', import.meta.url))
 const landingDist = path.join(landingRoot, 'dist')
 
-// Same paths middleware.ts routes to the landing in production.
-const LANDING_PATHS = /^\/(_astro\/|robots\.txt$)/
+// Landing pages and assets served alongside the app in production: the
+// privacy page (vercel.json rewrite) and the build assets build:deploy copies.
+const LANDING_PAGES: Partial<Record<string, string>> = { '/privacy': '/privacy/index.html' }
+const LANDING_ASSETS = /^\/(_astro\/|robots\.txt$)/
 
 const MIME: Record<string, string> = {
   '.html': 'text/html; charset=utf-8',
@@ -29,11 +31,12 @@ const MIME: Record<string, string> = {
   '.woff2': 'font/woff2',
 }
 
-// Dev mirror of middleware.ts: signed-out "/" gets the Astro landing page,
-// "/_astro/*" and "/robots.txt" serve its build assets, and "/?signin"
-// bypasses the landing so its CTA reaches the app's sign-in screen. The
-// landing is served from apps/landing/dist — built when this dev server
-// starts, rebuilt (then page-reloaded) when apps/landing sources change.
+// Dev mirror of middleware.ts and vercel.json: signed-out "/" gets the Astro
+// landing page, "/privacy" its privacy page, "/_astro/*" and "/robots.txt"
+// its build assets, and "/?signin" bypasses the landing so its CTA reaches
+// the app's sign-in screen. The landing is served from apps/landing/dist —
+// built when this dev server starts, rebuilt (then page-reloaded) when
+// apps/landing sources change.
 // Astro's own dev-module URLs (/src/*, /@vite/*) would collide with this
 // server's, so the built output is what production-faithful dev serving
 // requires; for focused landing work with HMR, run `bun dev` in apps/landing.
@@ -78,15 +81,16 @@ function landingSite(): Plugin {
         const url = new URL(req.url ?? '/', 'http://localhost')
         const landingHome =
           url.pathname === '/' && !url.searchParams.has('signin') && !isSignedIn(req.headers.cookie)
-        if (!landingHome && !LANDING_PATHS.test(url.pathname)) return next()
+        const page = landingHome ? '/index.html' : LANDING_PAGES[url.pathname]
+        if (!page && !LANDING_ASSETS.test(url.pathname)) return next()
 
-        const file = path.normalize(path.join(landingDist, decodeURIComponent(landingHome ? '/index.html' : url.pathname)))
+        const file = path.normalize(path.join(landingDist, page ?? decodeURIComponent(url.pathname)))
         if (!file.startsWith(landingDist + path.sep)) return next()
 
         void building.then(async () => {
           try {
             let body = await readFile(file)
-            if (landingHome) {
+            if (page) {
               // Hook the page into this server's HMR socket so landing
               // rebuilds can trigger a full reload.
               body = Buffer.from(
@@ -96,8 +100,8 @@ function landingSite(): Plugin {
             res.setHeader('Content-Type', MIME[path.extname(file)] ?? 'application/octet-stream')
             res.end(body)
           } catch {
-            res.statusCode = landingHome ? 503 : 404
-            res.end(landingHome ? 'landing site not built — check the dev server log' : 'not found')
+            res.statusCode = page ? 503 : 404
+            res.end(page ? 'landing site not built — check the dev server log' : 'not found')
           }
         })
       })

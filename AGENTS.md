@@ -3,7 +3,7 @@
 A space for unfinished thoughts — instant capture on iOS, a quiet collection on the web with automatic connections, rest/wake, and a daily thought returned by email.
 
 - `apps/web` — Vite + React + TypeScript SPA (bun)
-- `apps/landing` — Astro static landing page. Ships inside the web deployment: `build:deploy` (apps/web, the Vercel build command via its `vercel.json`) builds it and copies the output into `dist` (`/landing.html`, `/_astro/`, `/robots.txt`); `apps/web/middleware.ts` (edge) rewrites signed-out `/` to `/landing.html`, and `/?signin` bypasses it so the CTA reaches the app's sign-in screen.
+- `apps/landing` — Astro static landing page. Ships inside the web deployment: `build:deploy` (apps/web, the Vercel build command via its `vercel.json`) builds it and copies the output into `dist` (`/landing.html`, `/privacy.html`, `/_astro/`, `/robots.txt`); `apps/web/middleware.ts` (edge) rewrites signed-out `/` to `/landing.html`, and `/?signin` bypasses it so the CTA reaches the app's sign-in screen. `/privacy` (the privacy policy) is a `vercel.json` rewrite to `/privacy.html` for everyone.
 - `apps/ios` — native Swift/SwiftUI capture app (outside the Bun workspace; see `apps/ios/SPEC.md`)
 - `packages/backend` — Convex backend (schema, capture mutation, enrichment AI, return-loop scheduler + email, Clerk auth config)
 - `docs/overview.html` — product & tech overview
@@ -14,7 +14,7 @@ A space for unfinished thoughts — instant capture on iOS, a quiet collection o
 
 From `apps/web`: `bun dev` · `bun run build` · `bun run lint` · `bun run typecheck`
 From `apps/landing`: `bun dev` · `bun run build` · `bun run typecheck`
-The web dev server mirrors production routing (see `landingSite` in `apps/web/vite.config.ts`): signed-out `/` serves the landing site, `/?signin` bypasses it. It builds `apps/landing` on start and rebuilds + reloads on landing source changes — no second dev server needed; use `bun dev` in `apps/landing` only for focused landing work with HMR.
+The web dev server mirrors production routing (see `landingSite` in `apps/web/vite.config.ts`): signed-out `/` serves the landing site, `/privacy` the privacy policy, `/?signin` bypasses the landing. It builds `apps/landing` on start and rebuilds + reloads on landing source changes — no second dev server needed; use `bun dev` in `apps/landing` only for focused landing work with HMR.
 From `packages/backend`: `bun run dev` (convex dev) · `bun run typecheck`
 Whenever the iOS Simulator is needed, use the iPhone 17 Pro Max simulator. Never build with signing disabled (e.g. `CODE_SIGNING_ALLOWED=NO`) — it strips the entitlements, silently breaking Clerk sign-in and the capture queue.
 

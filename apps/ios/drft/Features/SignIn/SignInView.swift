@@ -45,6 +45,14 @@ struct SignInView: View {
                     .padding(.top, 32)
                     .opacity(failed ? 1 : 0)
                     .accessibilityHidden(!failed)
+
+                Link(destination: .privacyPolicy) {
+                    Text("privacy policy")
+                        .stillnessFaintFootnote()
+                        .frame(minHeight: 44)
+                        .contentShape(Rectangle())
+                }
+                .padding(.top, 8)
             }
             .padding(32)
         }

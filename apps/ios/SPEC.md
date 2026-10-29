@@ -65,6 +65,11 @@ adds the shelf.
 - `account:deleteAccount` action with `{ appleAuthorizationCode? }` → deletes the
   Clerk user and everything stored for it. Once it returns the deletion is final;
   the server finishes the purge and retries the Clerk removal on its own.
+- `consent:get` query with no args → `null` (never asked) or `{ aiConnections }`;
+  live-subscribed only while Convex is authenticated, since it also answers `null`
+  signed out.
+- `consent:setAiConnections` mutation with `{ allowed }` → records the decision.
+  The server sends thought text to OpenAI (connections) only once allowed.
 
 No codegen: results are decoded into hand-written Swift `Decodable` mirrors of the
 Convex validators. Reads use live subscriptions so the shelf updates in real time.
@@ -232,8 +237,19 @@ Same stillness: `page` background, wordmark large-ish center (`drft`, tracked,
 light), one line of muted copy beneath — `a space for unfinished thoughts` —
 and one quiet text button per enabled OAuth provider (`google` / `github`) —
 tracked caps with the provider mark, each starting Clerk's OAuth
-flow directly (do not build username/password UI). No feature list, no
-carousel, no branding beyond the wordmark.
+flow directly (do not build username/password UI). Beneath them, a faint
+`privacy policy` link. No feature list, no carousel, no branding beyond the
+wordmark.
+
+### Connections permission (once)
+
+When signed in and `consent:get` answers `null`, a full-screen `page` view rises
+over idle capture (empty field, not listening, no confirmation playing) — never
+mid-thought, and never while the answer is unknown or offline. A `CONNECTIONS`
+label, the explanation that each thought's text is sent to OpenAI (which doesn't
+train on it), `ALLOW` / `NOT NOW` as equal ink text buttons, a quiet failure line
+on error or an 8-second stall, `you can change this anytime in settings`, and a
+`privacy policy` link. Deciding dismisses it and capture refocuses.
 
 ### Settings (sheet over capture)
 
@@ -248,6 +264,10 @@ Nearly empty by design. A sheet on `surface` with:
   `@AppStorage("dailyThoughtTime")` in the App Group defaults remains the offline
   cache and initial value. Default 8:00 when neither source has a value. One line
   of faint copy: `one thought returns each morning`.
+- `connections` — on/off reflecting the server consent (never asked reads as
+  off), writing through `consent:setAiConnections`. Faint copy: `thought text is
+  sent to OpenAI to find echoes`.
+- `privacy policy` — muted link to `https://trydrft.app/privacy`.
 - `sign out` — muted text button. Confirmation-free.
 - `delete account` — muted text button. One system alert names what goes (every
   thought, connection, note, and the daily email) and that it can't be undone.

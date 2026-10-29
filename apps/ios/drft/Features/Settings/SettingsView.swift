@@ -11,6 +11,7 @@ struct SettingsView: View {
     @State private var deletionIsConfirming = false
     @State private var isDeletingAccount = false
     @State private var deletionFailed = false
+    @State private var pendingConnections: Bool?
 
     init(authService: AuthService, convexService: ConvexService) {
         self.authService = authService
@@ -87,6 +88,31 @@ struct SettingsView: View {
                             Text("one thought returns each morning")
                                 .stillnessFaintFootnote()
                                 .fixedSize(horizontal: false, vertical: true)
+                        }
+                        .padding(.vertical, 24)
+
+                        Hairline()
+
+                        VStack(alignment: .leading, spacing: 14) {
+                            Toggle("connections", isOn: connections)
+                                .toggleStyle(StillnessToggleStyle())
+                                .disabled(convexService.consent == .unknown)
+
+                            Text("thought text is sent to OpenAI to find echoes")
+                                .stillnessFaintFootnote()
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        .padding(.vertical, 24)
+
+                        Hairline()
+
+                        Link(destination: .privacyPolicy) {
+                            Text("privacy policy")
+                                .font(StillnessType.action)
+                                .tracking(1.2)
+                                .foregroundStyle(Stillness.muted)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .contentShape(Rectangle())
                         }
                         .padding(.vertical, 24)
 
@@ -214,6 +240,26 @@ struct SettingsView: View {
         }
     }
 
+    // Reflects the server (never asked reads as off); a change shows at once
+    // and falls back to the server value if the write fails.
+    private var connections: Binding<Bool> {
+        Binding(
+            get: {
+                pendingConnections
+                    ?? (convexService.consent == .decided(aiConnections: true))
+            },
+            set: { allowed in
+                pendingConnections = allowed
+                Task { @MainActor in
+                    try? await convexService.setAiConnections(allowed)
+                    if pendingConnections == allowed {
+                        pendingConnections = nil
+                    }
+                }
+            }
+        )
+    }
+
     private var dailyThoughtTimeText: String {
         dailyThoughtTime
             .formatted(date: .omitted, time: .shortened)
@@ -267,5 +313,36 @@ struct SettingsView: View {
             forInfoDictionaryKey: "CFBundleVersion"
         ) as? String ?? "1"
         return "drft \(version) · \(build)"
+    }
+}
+
+private struct StillnessToggleStyle: ToggleStyle {
+    @Environment(\.isEnabled) private var isEnabled
+
+    func makeBody(configuration: Configuration) -> some View {
+        Button {
+            configuration.isOn.toggle()
+        } label: {
+            HStack(spacing: 18) {
+                configuration.label
+                    .font(StillnessType.action)
+                    .tracking(1.2)
+                    .foregroundStyle(Stillness.ink)
+
+                Spacer(minLength: 12)
+
+                Text(configuration.isOn ? "on" : "off")
+                    .font(StillnessType.action)
+                    .tracking(1.2)
+                    .foregroundStyle(configuration.isOn ? Stillness.ink : Stillness.muted)
+                    .opacity(isEnabled ? 1 : 0.35)
+                    .accessibilityHidden(true)
+            }
+            .frame(minHeight: 44)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityValue(configuration.isOn ? "on" : "off")
+        .accessibilityAddTraits(.isToggle)
     }
 }

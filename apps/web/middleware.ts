@@ -4,7 +4,8 @@ import { next, rewrite } from "@vercel/edge";
 // where vite.config.ts mirrors this): signed-out visitors on "/" get the Astro
 // landing page, which build:deploy bundles into this deployment as
 // /landing.html (assets under /_astro/, plus /robots.txt). "/?signin" bypasses
-// the landing so its CTA can reach the app's sign-in screen.
+// the landing so its CTA can reach the app's sign-in screen. The landing's
+// /privacy page is served for everyone by a plain rewrite in vercel.json.
 export const config = {
   matcher: ["/"],
 };
