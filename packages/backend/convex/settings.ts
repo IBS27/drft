@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import type { MutationCtx } from "./_generated/server";
+import { isAccountDeleting } from "./account";
 
 // The product's one real preference: when the daily email arrives. Both
 // clients (web settings, iOS settings sheet) read and write the same row;
@@ -25,6 +26,10 @@ async function upsert(
 ) {
   const identity = await ctx.auth.getUserIdentity();
   if (!identity) throw new Error("Not signed in");
+  // A deleted account's settings were removed first so its emails stop;
+  // nothing may bring the row back.
+  if (await isAccountDeleting(ctx, identity.subject))
+    throw new Error("Account is being deleted");
   if (args.sendTime !== undefined && !SEND_TIME.test(args.sendTime))
     throw new Error("sendTime must be HH:MM (24h)");
   if (!validTimezone(args.timezone)) throw new Error("Unknown timezone");
@@ -77,6 +82,10 @@ export const get = query({
 export const ensure = mutation({
   args: { timezone: v.string(), email: v.optional(v.string()) },
   handler: async (ctx, args) => {
+    // Runs on every load; a session that outlives its deleted account
+    // simply has nothing to ensure.
+    const identity = await ctx.auth.getUserIdentity();
+    if (identity && (await isAccountDeleting(ctx, identity.subject))) return;
     await upsert(ctx, args);
   },
 });

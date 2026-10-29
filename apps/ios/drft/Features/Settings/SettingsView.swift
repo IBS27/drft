@@ -8,6 +8,9 @@ struct SettingsView: View {
     @State private var hasEditedDailyThoughtTime = false
     @State private var lastSyncedSendTime: String?
     @State private var saveTask: Task<Void, Never>?
+    @State private var deletionIsConfirming = false
+    @State private var isDeletingAccount = false
+    @State private var deletionFailed = false
 
     init(authService: AuthService, convexService: ConvexService) {
         self.authService = authService
@@ -103,7 +106,31 @@ struct SettingsView: View {
                                 .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
+                        .disabled(isDeletingAccount)
                         .padding(.vertical, 24)
+
+                        Hairline()
+
+                        Button {
+                            deletionIsConfirming = true
+                        } label: {
+                            Text(isDeletingAccount ? "deleting…" : "delete account")
+                                .font(StillnessType.action)
+                                .tracking(1.2)
+                                .foregroundStyle(Stillness.muted)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(isDeletingAccount)
+                        .padding(.top, 24)
+                        .padding(.bottom, deletionFailed ? 10 : 24)
+
+                        if deletionFailed {
+                            Text("couldn't finish deleting — try again")
+                                .stillnessFaintFootnote()
+                                .padding(.bottom, 24)
+                        }
 
                         Hairline()
                     }
@@ -123,6 +150,16 @@ struct SettingsView: View {
                     .padding(.horizontal, 28)
                     .padding(.bottom, 18)
             }
+        }
+        .interactiveDismissDisabled(isDeletingAccount)
+        // The one irreversible act in the product: asked once, plainly.
+        .alert("Delete your account?", isPresented: $deletionIsConfirming) {
+            Button("Delete Everything", role: .destructive) {
+                deleteAccount()
+            }
+            Button("Keep It", role: .cancel) {}
+        } message: {
+            Text("Your account and everything in it — every thought, its connections and notes, and the daily email — will be deleted. This can't be undone.")
         }
         .task(id: convexService.authenticatedUserID) {
             guard authService.isSignedIn,
@@ -158,6 +195,21 @@ struct SettingsView: View {
                 } catch {
                     // Settings are cached locally; syncing stays quiet offline.
                 }
+            }
+        }
+    }
+
+    private func deleteAccount() {
+        deletionFailed = false
+        isDeletingAccount = true
+        saveTask?.cancel()
+        Task { @MainActor in
+            do {
+                try await authService.deleteAccount(using: convexService)
+                dismiss()
+            } catch {
+                isDeletingAccount = false
+                deletionFailed = true
             }
         }
     }

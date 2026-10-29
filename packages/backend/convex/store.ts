@@ -50,6 +50,9 @@ export const insertConnection = internalMutation({
   },
   handler: async (ctx, { fromId, toId, score }) => {
     if (fromId === toId) return;
+    // Either end may have been deleted (account deletion) while the
+    // enrichment action was out at the API; never link to nothing.
+    if (!(await ctx.db.get(fromId)) || !(await ctx.db.get(toId))) return;
     const around = [
       ...(await ctx.db
         .query("connections")

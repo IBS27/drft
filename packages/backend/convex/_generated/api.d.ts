@@ -8,11 +8,14 @@
  * @module
  */
 
+import type * as account from "../account.js";
 import type * as ai_limits from "../ai/limits.js";
 import type * as ai_models from "../ai/models.js";
+import type * as appleRevocation from "../appleRevocation.js";
 import type * as crons from "../crons.js";
 import type * as email from "../email.js";
 import type * as enrichment from "../enrichment.js";
+import type * as fetchWithTimeout from "../fetchWithTimeout.js";
 import type * as migrations from "../migrations.js";
 import type * as resurfacing from "../resurfacing.js";
 import type * as search from "../search.js";
@@ -29,11 +32,14 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  account: typeof account;
   "ai/limits": typeof ai_limits;
   "ai/models": typeof ai_models;
+  appleRevocation: typeof appleRevocation;
   crons: typeof crons;
   email: typeof email;
   enrichment: typeof enrichment;
+  fetchWithTimeout: typeof fetchWithTimeout;
   migrations: typeof migrations;
   resurfacing: typeof resurfacing;
   search: typeof search;
