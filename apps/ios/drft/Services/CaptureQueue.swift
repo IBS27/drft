@@ -132,6 +132,21 @@ private final class CaptureQueueStore: @unchecked Sendable {
         }
     }
 
+    // Account deletion. Ownerless items could only have been that person's.
+    // Memory changes only once the log on disk agrees.
+    func discard(ownerID: String) -> Bool {
+        lock.withLock {
+            loadIfNeeded()
+            let discarded = items.filter { $0.ownerID == nil || $0.ownerID == ownerID }
+            guard !discarded.isEmpty else { return true }
+            guard append(discarded.map { .remove($0.id) }) else { return false }
+            let ids = Set(discarded.map(\.id))
+            items.removeAll { ids.contains($0.id) }
+            compactIfNeeded()
+            return true
+        }
+    }
+
     func oldestItem(ownerID: String) -> CaptureQueueItem? {
         lock.withLock {
             loadIfNeeded()
@@ -378,6 +393,14 @@ final class CaptureQueue {
         store.enqueue(text: text, ownerID: ownerID)
         Task { [weak self] in
             await self?.flush()
+        }
+    }
+
+    /// Drops every unsent capture of a deleted account.
+    func discardItems(ownerID: String) async {
+        for attempt in 0..<5 {
+            if await offMain({ [store] in store.discard(ownerID: ownerID) }) { return }
+            try? await Task.sleep(for: .seconds(1 << attempt))
         }
     }
 
