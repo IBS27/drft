@@ -61,7 +61,8 @@ export const run = internalMutation({
         createdAt: Date.now() - daysAgo * DAY - 3_600_000,
         status: "open",
       });
-      // Real enrichment, same as a capture (needs OPENAI_API_KEY set).
+      // Real enrichment, same as a capture (needs OPENAI_API_KEY set, and
+      // connections allowed for this user — enrich no-ops otherwise).
       await ctx.scheduler.runAfter(0, internal.enrichment.enrich, { thoughtId });
       planted.push(text);
     }

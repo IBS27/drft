@@ -17,11 +17,18 @@ const BACKFILL_PAGE_SIZE = 100;
 
 // The silent work after every capture: embed, search for resonant older
 // thinking, and link related thoughts. Nothing here notifies anyone.
+// Permission is re-checked here, right before the text leaves for OpenAI,
+// so a capture scheduled before the user turned connections off never
+// sends.
 export const enrich = internalAction({
   args: { thoughtId: v.id("thoughts") },
   handler: async (ctx, { thoughtId }) => {
     const thought = await ctx.runQuery(internal.store.getThought, { thoughtId });
     if (!thought) return;
+    const allowed = await ctx.runQuery(internal.consent.allowed, {
+      userId: thought.userId,
+    });
+    if (!allowed) return;
     const openai = openaiProvider();
 
     const { embedding } = await embed({
@@ -65,6 +72,7 @@ export const enrich = internalAction({
 });
 
 // One-time catch-up for thoughts captured before embeddings were introduced.
+// Only thoughts whose owner allowed connections are sent (store.unembedded).
 // Run with: bunx convex run enrichment:backfillEmbeddings
 export const backfillEmbeddings = internalAction({
   args: {

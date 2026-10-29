@@ -7,6 +7,16 @@ import Foundation
 @MainActor
 final class ConvexService: ObservableObject {
     @Published private(set) var authenticatedUserID: String?
+    @Published private(set) var consent: Consent = .unknown
+
+    /// Permission to send thought text to OpenAI for connections.
+    enum Consent: Equatable {
+        /// Signed out, offline, or the server hasn't answered yet.
+        case unknown
+        /// Signed in and never asked.
+        case undecided
+        case decided(aiConnections: Bool)
+    }
 
     struct Collection: Codable, Equatable, Sendable {
         let thoughts: [CollectionThought]
@@ -50,6 +60,10 @@ final class ConvexService: ObservableObject {
         let otherStatus: ThoughtStatus
     }
 
+    private struct ConsentRecord: Decodable {
+        let aiConnections: Bool
+    }
+
     private struct DailyThoughtSettings: Decodable {
         let sendTime: String
     }
@@ -62,6 +76,8 @@ final class ConvexService: ObservableObject {
     private let client: ConvexClientWithAuth<String>
     private let collectionCache: CollectionCache
     private var authStateCancellable: AnyCancellable?
+    private var consentSubscription: AnyCancellable?
+    private var consentUserID: String?
     private var thoughtCache: [String: Thought] = [:]
     private var thoughtRecency: [String] = []
     private var prewarmSubscriptions: [String: AnyCancellable] = [:]
@@ -99,8 +115,10 @@ final class ConvexService: ObservableObject {
                         self?.isLocalCachingSuspended = false
                     }
                     self?.authenticatedUserID = userID
+                    self?.observeConsent(userID: userID)
                 case .loading, .unauthenticated:
                     self?.authenticatedUserID = nil
+                    self?.observeConsent(userID: nil)
                 }
             }
     }
@@ -242,6 +260,18 @@ final class ConvexService: ObservableObject {
         return nil
     }
 
+    func setAiConnections(_ allowed: Bool) async throws {
+        let userID = consentUserID
+        try await client.mutation(
+            "consent:setAiConnections",
+            with: ["allowed": allowed]
+        )
+        // Settle now rather than wait for the subscription's echo.
+        if let userID, userID == consentUserID {
+            consent = .decided(aiConnections: allowed)
+        }
+    }
+
     func saveDailyThoughtSettings(
         sendTime: String,
         timezone: String,
@@ -265,6 +295,31 @@ final class ConvexService: ObservableObject {
                 ]
             )
         }
+    }
+
+    // `consent:get` also answers null when unauthenticated, so only values
+    // from a subscription opened under an authenticated user count.
+    private func observeConsent(userID: String?) {
+        guard userID != consentUserID else { return }
+        consentUserID = userID
+        consent = .unknown
+        consentSubscription?.cancel()
+        consentSubscription = nil
+        guard userID != nil else { return }
+
+        consentSubscription = client.subscribe(
+            to: "consent:get",
+            yielding: ConsentRecord?.self
+        )
+        .receive(on: DispatchQueue.main)
+        .sink(
+            receiveCompletion: { _ in },
+            receiveValue: { [weak self] record in
+                self?.consent = record.map {
+                    .decided(aiConnections: $0.aiConnections)
+                } ?? .undecided
+            }
+        )
     }
 
     private static func userID(from token: String) -> String? {

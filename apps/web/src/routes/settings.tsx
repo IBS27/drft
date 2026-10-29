@@ -11,6 +11,7 @@ export const Route = createFileRoute("/settings")({ component: Settings });
 // Nearly empty by design: the daily email time is the only real
 // preference the product has. The server sends the email, so the time
 // lives in Convex (docs/experience.html §07) — this page writes through.
+// Alongside it, the permission connections need (consent.ts).
 function Settings() {
   const { user } = useUser();
   const { isAuthenticated } = useConvexAuth();
@@ -20,6 +21,15 @@ function Settings() {
   const [time, setTime] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
   const timer = useRef<number | undefined>(undefined);
+  const consent = useQuery(api.consent.get, isAuthenticated ? {} : "skip");
+  const setConnections = useMutation(
+    api.consent.setAiConnections,
+  ).withOptimisticUpdate((store, { allowed }) =>
+    store.setQuery(api.consent.get, {}, { aiConnections: allowed }),
+  );
+  const [connectionsFailed, setConnectionsFailed] = useState(false);
+  // Never asked reads as off — nothing is sent until allowed.
+  const connections = consent?.aiConnections ?? false;
 
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   // `undefined` is "not answered yet"; `null` is "no row — use the
@@ -43,6 +53,12 @@ function Settings() {
         .then(() => setFailed(false))
         .catch(() => setFailed(true));
     }, 400);
+  };
+
+  const toggleConnections = () => {
+    void setConnections({ allowed: !connections })
+      .then(() => setConnectionsFailed(false))
+      .catch(() => setConnectionsFailed(true));
   };
 
   return (
@@ -80,6 +96,44 @@ function Settings() {
               couldn't save — change it again to retry
             </div>
           )}
+        </div>
+
+        <div className="border-b border-line py-4">
+          <div className="flex items-center justify-between gap-4">
+            <span className="text-[16px] text-pt">connections</span>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={connections}
+              aria-label="connections"
+              disabled={consent === undefined}
+              onClick={toggleConnections}
+              className={`text-[16px] transition-colors hover:text-ink ${
+                consent === undefined ? "invisible" : connections ? "text-pt" : "text-faint"
+              }`}
+            >
+              {connections ? "on" : "off"}
+            </button>
+          </div>
+          <div className="mt-1 text-[12px] text-faint">
+            thought text is sent to OpenAI to find echoes
+          </div>
+          {connectionsFailed && (
+            <div className="mt-1 text-[12px] text-mut">
+              couldn't save — change it again to retry
+            </div>
+          )}
+        </div>
+
+        <div className="border-b border-line py-4">
+          <a
+            href="/privacy"
+            target="_blank"
+            rel="noreferrer"
+            className="text-[14px] text-mut transition-colors hover:text-ink"
+          >
+            privacy policy
+          </a>
         </div>
 
         <div className="border-b border-line py-4">

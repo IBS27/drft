@@ -43,6 +43,12 @@ final class CaptureModel: ObservableObject {
         phase == .editing && !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
+    /// Nothing in progress: an empty field, not listening, no confirmation playing.
+    var isIdle: Bool {
+        phase == .editing && !isListening
+            && text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
     var isCaptureVisible: Bool {
         phase == .editing
     }

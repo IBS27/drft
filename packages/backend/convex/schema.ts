@@ -86,6 +86,15 @@ export default defineSchema({
     updatedAt: v.number(),
   }).index("by_thought", ["thoughtId"]),
 
+  // Explicit permission to send thought text to OpenAI for embeddings
+  // (connections). No row = not asked yet, which sends nothing — see
+  // consent.ts.
+  consents: defineTable({
+    userId: v.string(),
+    aiConnections: v.boolean(),
+    decidedAt: v.number(),
+  }).index("by_user", ["userId"]),
+
   // The product's one real preference: when the daily email arrives.
   // Server-owned (the server sends the email), so it lives here, not on a
   // device. sendTime is "HH:MM" 24h in the user's IANA timezone; email is

@@ -1,10 +1,12 @@
 import { useAuth } from "@clerk/clerk-react";
 import { createRootRoute, Outlet, useRouterState } from "@tanstack/react-router";
-import { useConvexAuth } from "convex/react";
+import { api } from "@drft/backend/convex/_generated/api";
+import { useConvexAuth, useQuery } from "convex/react";
 import { useEffect, useState } from "react";
 import { clearRememberedSession } from "../features/auth/rememberedSession";
 import { readSeenUser, writeSeenUser } from "../features/auth/seenUser";
 import { SignIn } from "../features/auth/SignIn";
+import { ConnectionsPrompt } from "../features/consent/ConnectionsPrompt";
 import { FindSheet } from "../features/search/FindSheet";
 import { useEnsureSettings } from "../features/settings/useEnsureSettings";
 import { OfflineNote } from "../features/ui/OfflineNote";
@@ -32,6 +34,8 @@ function Root() {
   // shell must not change its mind mid-handshake.
   const [seen] = useState(() => readSeenUser() !== null);
   useEnsureSettings();
+  // null = never asked. Still loading (undefined) doesn't hold the room.
+  const consent = useQuery(api.consent.get, isAuthenticated ? {} : "skip");
 
   useEffect(() => {
     if (isLoading) return;
@@ -45,6 +49,7 @@ function Root() {
   // only for a browser that has never been signed in here.
   const open = isAuthenticated || (isLoading && seen);
   if (!open) return isLoading ? <Waiting /> : <SignIn />;
+  if (isAuthenticated && consent === null) return <ConnectionsPrompt />;
 
   return (
     <>

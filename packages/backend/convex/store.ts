@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { internalMutation, internalQuery } from "./_generated/server";
+import { allowsAiConnections } from "./consent";
 
 const BACKFILL_PAGE_SIZE = 100;
 const BACKFILL_MAXIMUM_BYTES_READ = 4_000_000;
@@ -66,6 +67,8 @@ export const insertConnection = internalMutation({
 });
 
 // Backfill support for thoughts captured before embeddings were introduced.
+// The page advances over every thought, but only those whose owner allowed
+// connections are returned for embedding.
 export const unembedded = internalQuery({
   args: {
     cursor: v.union(v.string(), v.null()),
@@ -85,9 +88,16 @@ export const unembedded = internalQuery({
         maximumRowsRead: boundedPageSize,
         maximumBytesRead: BACKFILL_MAXIMUM_BYTES_READ,
       });
-    return {
-      ...result,
-      page: result.page.map((t) => ({ _id: t._id, text: t.text })),
-    };
+    const allowedByUser = new Map<string, boolean>();
+    const page = [];
+    for (const t of result.page) {
+      let allowed = allowedByUser.get(t.userId);
+      if (allowed === undefined) {
+        allowed = await allowsAiConnections(ctx, t.userId);
+        allowedByUser.set(t.userId, allowed);
+      }
+      if (allowed) page.push({ _id: t._id, text: t.text });
+    }
+    return { ...result, page };
   },
 });
