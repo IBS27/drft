@@ -319,8 +319,8 @@ export function ConnectionsGraph({
   return (
     <div ref={frameRef} className="relative min-h-0 flex-1 overflow-hidden">
       {thoughts.length === 0 ? (
-        <div className="flex h-full items-center justify-center pb-20 text-[10.5px] tracking-[0.3em] text-pl uppercase">
-          {loading ? <span className="caret h-3 w-px bg-ink" /> : "no thoughts yet"}
+        <div className="flex h-full items-center justify-center pb-20 text-[14px] text-pl">
+          {loading ? <span className="caret h-5 w-0.5 rounded-full bg-dot" /> : "No thoughts yet"}
         </div>
       ) : (
         <>
@@ -412,7 +412,7 @@ export function ConnectionsGraph({
                         x={labelOnLeft ? -13 : 13}
                         y={-5}
                         textAnchor={labelOnLeft ? "end" : "start"}
-                        className="pointer-events-none fill-pt text-[11px] font-light"
+                        className="pointer-events-none fill-pt text-[12px]"
                       >
                         {label(node.thought.text)}
                       </text>
@@ -428,16 +428,16 @@ export function ConnectionsGraph({
               aria-live="polite"
               className="pointer-events-none absolute bottom-7 left-1/2 w-[min(640px,70%)] -translate-x-1/2 text-center"
             >
-              <div className="text-[9px] tracking-[0.28em] text-pl uppercase">
+              <div className="text-[13px] text-pl first-letter:uppercase">
                 {dateLine(active.createdAt, Date.now())}
-                {active.status === "resting" && " · set down"}
+                {active.status === "resting" && ", set down"}
               </div>
-              <div className="mt-2 max-h-24 overflow-hidden whitespace-pre-wrap text-[17px] leading-relaxed font-light text-ink">
+              <div className="mt-2 max-h-24 overflow-hidden whitespace-pre-wrap text-[18px] leading-relaxed tracking-[-0.01em] text-ink">
                 {active.text}
               </div>
-              <div className="mt-2 text-[8px] tracking-[0.22em] text-pl uppercase">
+              <div className="mt-2 text-[12.5px] text-pl">
                 {degree.get(active._id) ?? 0} connection
-                {(degree.get(active._id) ?? 0) === 1 ? "" : "s"} · click to open
+                {(degree.get(active._id) ?? 0) === 1 ? "" : "s"}. Click to open.
               </div>
             </div>
           )}

@@ -1,4 +1,5 @@
 import { api } from "@drft/backend/convex/_generated/api";
+import { Graph } from "@phosphor-icons/react";
 import { useMutation } from "convex/react";
 import { useState } from "react";
 
@@ -22,52 +23,61 @@ export function ConnectionsPrompt() {
     });
   };
 
-  const button = "w-28 border py-2.5 text-[14px] transition-colors disabled:opacity-40";
+  const button =
+    "inline-flex h-11 items-center justify-center rounded-full px-6 text-[15px] font-semibold transition-[background-color,box-shadow,filter,scale] active:scale-[0.98] disabled:opacity-40";
 
   return (
-    <main className="flex min-h-dvh items-center justify-center px-6">
-      <div className="w-full max-w-sm">
-        <p className="text-[10.5px] tracking-[0.32em] text-pl uppercase">connections</p>
-        <p className="mt-6 text-[16px] leading-relaxed text-pt">
+    <main className="flex min-h-dvh items-center justify-center px-5 py-10">
+      <div className="w-full max-w-md rounded-card bg-scr p-7 ring-1 ring-line ring-inset">
+        <span className="flex size-10 items-center justify-center rounded-full bg-tint text-[20px] text-dot-ink">
+          <Graph aria-hidden="true" />
+        </span>
+        <h1 className="mt-5 text-[22px] font-semibold tracking-[-0.02em] text-ink">
+          Connections
+        </h1>
+        <p className="mt-3 text-[16px] leading-relaxed text-pt">
           drft can link a new thought to the older ones it echoes.
         </p>
-        <p className="mt-4 text-[14px] leading-relaxed text-mut">
-          to do that, the text of each thought is sent to OpenAI, which turns it into
+        <p className="mt-3 text-[14px] leading-relaxed text-pl">
+          To do that, the text of each thought is sent to OpenAI, which turns it into
           numbers drft can compare. OpenAI doesn't train on it, and nothing else about
           you is sent.
         </p>
 
-        <div className="mt-10 flex gap-3">
+        <div className="mt-8 flex gap-3">
           <button
             type="button"
             disabled={pending}
             onClick={() => choose(true)}
-            className={`${button} border-ink text-ink hover:bg-ink hover:text-pg`}
+            className={`${button} bg-dot text-on-dot hover:brightness-105`}
           >
-            allow
+            Allow
           </button>
           <button
             type="button"
             disabled={pending}
             onClick={() => choose(false)}
-            className={`${button} border-line text-mut hover:text-ink`}
+            className={`${button} text-pt ring-1 ring-line ring-inset hover:bg-tint hover:text-ink`}
           >
-            not now
+            Not now
           </button>
         </div>
-        <p className={`mt-3 text-[12px] text-mut ${failed ? "" : "invisible"}`}>
-          couldn't save — try again
+        <p
+          role="status"
+          className={`mt-3 text-[13px] text-dot-ink ${failed ? "" : "invisible"}`}
+        >
+          Couldn't save. Try again.
         </p>
 
-        <p className="mt-8 text-[12px] text-faint">
-          you can change this anytime in settings ·{" "}
+        <p className="mt-5 text-[13px] text-pl">
+          You can change this anytime in settings.{" "}
           <a
             href="/privacy"
             target="_blank"
             rel="noreferrer"
             className="underline decoration-line underline-offset-4 transition-colors hover:text-ink"
           >
-            privacy policy
+            Privacy policy
           </a>
         </p>
       </div>

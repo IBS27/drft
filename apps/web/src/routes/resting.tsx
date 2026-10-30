@@ -5,7 +5,7 @@ import { useState } from "react";
 import { ageLabel } from "../features/thoughts/format";
 import { useCachedQuery } from "../features/thoughts/useCachedQuery";
 import { useThoughtPrewarm } from "../features/thoughts/useThoughtPrewarm";
-import { BackLink } from "../features/ui/BackLink";
+import { PageHeader } from "../features/ui/PageHeader";
 import { SkeletonRows } from "../features/ui/Skeleton";
 
 export const Route = createFileRoute("/resting")({ component: Resting });
@@ -24,15 +24,9 @@ function Resting() {
 
   return (
     <main className="flex min-h-dvh flex-col">
-      <header className="grid grid-cols-3 items-center px-5 pt-4 md:px-8">
-        <BackLink />
-        <span className="justify-self-center text-[11.5px] tracking-[0.4em] text-pl uppercase">
-          resting
-        </span>
-        <span />
-      </header>
+      <PageHeader title="Resting" />
 
-      <section className="mx-auto w-full max-w-2xl flex-1 px-6 pt-16 pb-16">
+      <section className="mx-auto w-full max-w-2xl flex-1 px-4 pt-8 pb-16 md:px-6">
         {rows === undefined ? (
           <SkeletonRows count={4} />
         ) : (
@@ -44,18 +38,18 @@ function Resting() {
               onPointerEnter={() => prewarm(t._id)}
               onPointerDown={() => prewarm(t._id)}
               onFocus={() => prewarm(t._id)}
-              className="group block border-b border-line py-4"
+              className="block rounded-card px-2.5 py-3.5 transition-colors hover:bg-tint [a+&]:shadow-[0_-1px_0_var(--line)] hover:shadow-none! [a:hover+&]:shadow-none!"
             >
-              <div className="flex items-center gap-3.5">
-                <span className="flex-1 truncate text-[16px] font-normal text-pt transition-colors group-hover:text-ink">
+              <div className="flex items-baseline gap-3">
+                <span className="min-w-0 flex-1 truncate text-[16px] text-ink">
                   {t.preview}
                 </span>
-                <span className="flex-none text-[12px] tracking-[0.08em] text-pl tabular-nums">
+                <span className="flex-none text-[13px] text-pl tabular-nums">
                   {t.restedAt ? ageLabel(t.restedAt, now) : ""}
                 </span>
               </div>
               {t.restingNote && (
-                <div className="mt-1 truncate text-[13.5px] font-normal text-mut">
+                <div className="mt-1 truncate text-[13.5px] text-pl">
                   {t.restingNote}
                 </div>
               )}

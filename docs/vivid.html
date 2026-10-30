@@ -1,0 +1,1772 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>drft, more vivid: four directions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+/* Fontshare faces, inlined with https URLs so the doc also works from file:// */
+@font-face {
+  font-family: 'Satoshi';
+  src: url('https://cdn.fontshare.com/wf/TTX2Z3BF3P6Y5BQT3IV2VNOK6FL22KUT/7QYRJOI3JIMYHGY6CH7SOIFRQLZOLNJ6/KFIAZD4RUMEZIYV6FQ3T3GP5PDBDB6JY.woff2') format('woff2'),
+       url('https://cdn.fontshare.com/wf/TTX2Z3BF3P6Y5BQT3IV2VNOK6FL22KUT/7QYRJOI3JIMYHGY6CH7SOIFRQLZOLNJ6/KFIAZD4RUMEZIYV6FQ3T3GP5PDBDB6JY.woff') format('woff'),
+       url('https://cdn.fontshare.com/wf/TTX2Z3BF3P6Y5BQT3IV2VNOK6FL22KUT/7QYRJOI3JIMYHGY6CH7SOIFRQLZOLNJ6/KFIAZD4RUMEZIYV6FQ3T3GP5PDBDB6JY.ttf') format('truetype');
+  font-weight: 400;
+  font-display: swap;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Satoshi';
+  src: url('https://cdn.fontshare.com/wf/P2LQKHE6KA6ZP4AAGN72KDWMHH6ZH3TA/ZC32TK2P7FPS5GFTL46EU6KQJA24ZYDB/7AHDUZ4A7LFLVFUIFSARGIWCRQJHISQP.woff2') format('woff2'),
+       url('https://cdn.fontshare.com/wf/P2LQKHE6KA6ZP4AAGN72KDWMHH6ZH3TA/ZC32TK2P7FPS5GFTL46EU6KQJA24ZYDB/7AHDUZ4A7LFLVFUIFSARGIWCRQJHISQP.woff') format('woff'),
+       url('https://cdn.fontshare.com/wf/P2LQKHE6KA6ZP4AAGN72KDWMHH6ZH3TA/ZC32TK2P7FPS5GFTL46EU6KQJA24ZYDB/7AHDUZ4A7LFLVFUIFSARGIWCRQJHISQP.ttf') format('truetype');
+  font-weight: 500;
+  font-display: swap;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Satoshi';
+  src: url('https://cdn.fontshare.com/wf/LAFFD4SDUCDVQEXFPDC7C53EQ4ZELWQI/PXCT3G6LO6ICM5I3NTYENYPWJAECAWDD/GHM6WVH6MILNYOOCXHXB5GTSGNTMGXZR.woff2') format('woff2'),
+       url('https://cdn.fontshare.com/wf/LAFFD4SDUCDVQEXFPDC7C53EQ4ZELWQI/PXCT3G6LO6ICM5I3NTYENYPWJAECAWDD/GHM6WVH6MILNYOOCXHXB5GTSGNTMGXZR.woff') format('woff'),
+       url('https://cdn.fontshare.com/wf/LAFFD4SDUCDVQEXFPDC7C53EQ4ZELWQI/PXCT3G6LO6ICM5I3NTYENYPWJAECAWDD/GHM6WVH6MILNYOOCXHXB5GTSGNTMGXZR.ttf') format('truetype');
+  font-weight: 700;
+  font-display: swap;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Cabinet Grotesk';
+  src: url('https://cdn.fontshare.com/wf/CKQBK2QBTCDREE7L3MXZ3PPW7LDNJCWU/OTOY7FQFSFOJVZKJWKO2EHUJLOGBDN4Q/4CO2ETY7NITKLUDKMYJ75RHJSPHOJ7XT.woff2') format('woff2'),
+       url('https://cdn.fontshare.com/wf/CKQBK2QBTCDREE7L3MXZ3PPW7LDNJCWU/OTOY7FQFSFOJVZKJWKO2EHUJLOGBDN4Q/4CO2ETY7NITKLUDKMYJ75RHJSPHOJ7XT.woff') format('woff'),
+       url('https://cdn.fontshare.com/wf/CKQBK2QBTCDREE7L3MXZ3PPW7LDNJCWU/OTOY7FQFSFOJVZKJWKO2EHUJLOGBDN4Q/4CO2ETY7NITKLUDKMYJ75RHJSPHOJ7XT.ttf') format('truetype');
+  font-weight: 500;
+  font-display: swap;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Cabinet Grotesk';
+  src: url('https://cdn.fontshare.com/wf/XMXWOHABYLQDJ42L65EFRYNVRY37HQCB/B2O4O6V3JMFM2WDCYQI3A47L5U4THDUL/WN5274VQ3AUBDFP74GB4EC4XYJ3EKVNE.woff2') format('woff2'),
+       url('https://cdn.fontshare.com/wf/XMXWOHABYLQDJ42L65EFRYNVRY37HQCB/B2O4O6V3JMFM2WDCYQI3A47L5U4THDUL/WN5274VQ3AUBDFP74GB4EC4XYJ3EKVNE.woff') format('woff'),
+       url('https://cdn.fontshare.com/wf/XMXWOHABYLQDJ42L65EFRYNVRY37HQCB/B2O4O6V3JMFM2WDCYQI3A47L5U4THDUL/WN5274VQ3AUBDFP74GB4EC4XYJ3EKVNE.ttf') format('truetype');
+  font-weight: 700;
+  font-display: swap;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Cabinet Grotesk';
+  src: url('https://cdn.fontshare.com/wf/ZX6AQLSFYVDPN2URWO2MQFGTYYOHIS64/TPYPKOYWFQVNJHLLRXD4KFYX4LUOUW4Z/6QH2ALVTTK7IRVO5MYOQQ3OZNXW5SSS3.woff2') format('woff2'),
+       url('https://cdn.fontshare.com/wf/ZX6AQLSFYVDPN2URWO2MQFGTYYOHIS64/TPYPKOYWFQVNJHLLRXD4KFYX4LUOUW4Z/6QH2ALVTTK7IRVO5MYOQQ3OZNXW5SSS3.woff') format('woff'),
+       url('https://cdn.fontshare.com/wf/ZX6AQLSFYVDPN2URWO2MQFGTYYOHIS64/TPYPKOYWFQVNJHLLRXD4KFYX4LUOUW4Z/6QH2ALVTTK7IRVO5MYOQQ3OZNXW5SSS3.ttf') format('truetype');
+  font-weight: 800;
+  font-display: swap;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'General Sans';
+  src: url('https://cdn.fontshare.com/wf/MFQT7HFGCR2L5ULQTW6YXYZXXHMPKLJ3/YWQ244D6TACUX5JBKATPOW5I5MGJ3G73/7YY3ZAAE3TRV2LANYOLXNHTPHLXVWTKH.woff2') format('woff2'),
+       url('https://cdn.fontshare.com/wf/MFQT7HFGCR2L5ULQTW6YXYZXXHMPKLJ3/YWQ244D6TACUX5JBKATPOW5I5MGJ3G73/7YY3ZAAE3TRV2LANYOLXNHTPHLXVWTKH.woff') format('woff'),
+       url('https://cdn.fontshare.com/wf/MFQT7HFGCR2L5ULQTW6YXYZXXHMPKLJ3/YWQ244D6TACUX5JBKATPOW5I5MGJ3G73/7YY3ZAAE3TRV2LANYOLXNHTPHLXVWTKH.ttf') format('truetype');
+  font-weight: 400;
+  font-display: swap;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'General Sans';
+  src: url('https://cdn.fontshare.com/wf/3RZHWSNONLLWJK3RLPEKUZOMM56GO4LJ/BPDRY7AHVI3MCDXXVXTQQ76H3UXA63S3/SB2OEB6IKZPRR6JT4GFJ2TFT6HBB6AZN.woff2') format('woff2'),
+       url('https://cdn.fontshare.com/wf/3RZHWSNONLLWJK3RLPEKUZOMM56GO4LJ/BPDRY7AHVI3MCDXXVXTQQ76H3UXA63S3/SB2OEB6IKZPRR6JT4GFJ2TFT6HBB6AZN.woff') format('woff'),
+       url('https://cdn.fontshare.com/wf/3RZHWSNONLLWJK3RLPEKUZOMM56GO4LJ/BPDRY7AHVI3MCDXXVXTQQ76H3UXA63S3/SB2OEB6IKZPRR6JT4GFJ2TFT6HBB6AZN.ttf') format('truetype');
+  font-weight: 500;
+  font-display: swap;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'General Sans';
+  src: url('https://cdn.fontshare.com/wf/K46YRH762FH3QJ25IQM3VAXAKCHEXXW4/ISLWQPUZHZF33LRIOTBMFOJL57GBGQ4B/3ZLMEXZEQPLTEPMHTQDAUXP5ZZXCZAEN.woff2') format('woff2'),
+       url('https://cdn.fontshare.com/wf/K46YRH762FH3QJ25IQM3VAXAKCHEXXW4/ISLWQPUZHZF33LRIOTBMFOJL57GBGQ4B/3ZLMEXZEQPLTEPMHTQDAUXP5ZZXCZAEN.woff') format('woff'),
+       url('https://cdn.fontshare.com/wf/K46YRH762FH3QJ25IQM3VAXAKCHEXXW4/ISLWQPUZHZF33LRIOTBMFOJL57GBGQ4B/3ZLMEXZEQPLTEPMHTQDAUXP5ZZXCZAEN.ttf') format('truetype');
+  font-weight: 600;
+  font-display: swap;
+  font-style: normal;
+}
+</style>
+<script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+<script>
+  // Follow the system until the reader picks a side.
+  (function () {
+    var saved = localStorage.getItem("vivid-theme");
+    var dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    document.documentElement.dataset.theme = saved || (dark ? "dark" : "light");
+  })();
+</script>
+<style>
+/* ============================================================
+   Stillness tokens, unchanged. Every direction below keeps this
+   palette and only changes how much work each color does.
+   ============================================================ */
+[data-theme="light"] {
+  --pg: #fafaf8; --scr: #fcfcfb; --ink: #2b2b28; --mut: #75756f; --faint: #9e9e98;
+  --line: #e8e8e4; --dot: #c73e1d; --pt: #45453f; --pl: #6b6b65;
+  /* doc chrome only (not part of the app) */
+  --doc-bg: #efefeb; --doc-ink: #2b2b28; --doc-mut: #66665f; --doc-line: #dcdcd6;
+  --doc-card: #f7f7f4; --frame-shadow: 0 30px 70px -30px rgba(43, 43, 40, .35);
+  --phone-bezel: #d9d9d4;
+  color-scheme: light;
+}
+[data-theme="dark"] {
+  --pg: #131311; --scr: #181816; --ink: #eaeae5; --mut: #a0a099; --faint: #74746d;
+  --line: #2b2b28; --dot: #d9502a; --pt: #c9c9c2; --pl: #97978f;
+  --doc-bg: #0c0c0b; --doc-ink: #eaeae5; --doc-mut: #9a9a93; --doc-line: #262624;
+  --doc-card: #151513; --frame-shadow: 0 30px 70px -30px rgba(0, 0, 0, .8);
+  --phone-bezel: #2a2a27;
+  color-scheme: dark;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; scroll-behavior: smooth; scroll-padding-top: 88px; }
+body { background: var(--doc-bg); color: var(--doc-ink); font-family: "Geist", ui-sans-serif, system-ui, sans-serif; font-size: 15px; line-height: 1.55; }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+a { color: inherit; text-decoration: none; }
+ul { list-style: none; }
+
+/* ---------- doc chrome ---------- */
+.topbar {
+  position: sticky; top: 0; z-index: 20; height: 64px;
+  display: flex; align-items: center; justify-content: space-between; gap: 24px;
+  padding: 0 clamp(16px, 4vw, 40px);
+  background: color-mix(in oklab, var(--doc-bg) 86%, transparent);
+  backdrop-filter: blur(14px) saturate(140%); -webkit-backdrop-filter: blur(14px) saturate(140%);
+  border-bottom: 1px solid var(--doc-line);
+}
+.brand { font-weight: 600; letter-spacing: -.01em; display: flex; align-items: center; gap: 10px; white-space: nowrap; }
+.brand i { width: 9px; height: 9px; border-radius: 50%; background: var(--dot); display: block; }
+.tabs { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+.tabs a { padding: 7px 13px; border-radius: 999px; font-size: 14px; font-weight: 500; color: var(--doc-mut); white-space: nowrap; transition: background .2s, color .2s; }
+.tabs a:hover { color: var(--doc-ink); background: var(--doc-card); }
+.tabs a.on { color: var(--doc-ink); background: var(--doc-card); box-shadow: inset 0 0 0 1px var(--doc-line); }
+.theme { display: flex; padding: 3px; border-radius: 999px; background: var(--doc-card); box-shadow: inset 0 0 0 1px var(--doc-line); }
+.theme button { padding: 5px 12px; border-radius: 999px; font-size: 13px; font-weight: 500; color: var(--doc-mut); display: flex; align-items: center; gap: 6px; }
+.theme button[aria-pressed="true"] { background: var(--doc-ink); color: var(--doc-bg); }
+
+.wrap { max-width: 1240px; margin: 0 auto; padding: 0 clamp(16px, 4vw, 40px); }
+
+.intro { padding: 72px 0 40px; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 56px; align-items: start; }
+.intro h1 { font-size: clamp(34px, 4.6vw, 54px); line-height: 1.04; letter-spacing: -.035em; font-weight: 600; }
+.intro h1 em { font-style: normal; color: var(--dot); }
+.intro p.lede { margin-top: 18px; font-size: 18px; line-height: 1.55; color: var(--doc-mut); max-width: 46ch; }
+.diag { background: var(--doc-card); border-radius: 18px; padding: 26px 28px; box-shadow: inset 0 0 0 1px var(--doc-line); }
+.diag h2 { font-size: 15px; font-weight: 600; margin-bottom: 14px; }
+.diag li { display: grid; grid-template-columns: 22px 1fr; gap: 8px; padding: 9px 0; font-size: 14.5px; color: var(--doc-mut); }
+.diag li + li { border-top: 1px solid var(--doc-line); }
+.diag li i { color: var(--dot); font-size: 17px; margin-top: 2px; }
+.diag li b { color: var(--doc-ink); font-weight: 500; }
+
+.lineup { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; padding-bottom: 32px; }
+.lineup a { display: flex; flex-direction: column; gap: 6px; padding: 18px 20px; border-radius: 16px; background: var(--doc-card); box-shadow: inset 0 0 0 1px var(--doc-line); transition: transform .3s cubic-bezier(.16, 1, .3, 1), box-shadow .3s; }
+.lineup a:hover { transform: translateY(-2px); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--dot) 45%, var(--doc-line)); }
+.lineup b { font-size: 17px; font-weight: 600; letter-spacing: -.01em; }
+.lineup span { font-size: 13.5px; color: var(--doc-mut); line-height: 1.45; }
+.level { display: flex; gap: 3px; margin-top: 4px; }
+.level i { width: 18px; height: 4px; border-radius: 2px; background: var(--doc-line); }
+.level i.f { background: var(--dot); }
+
+/* ---------- direction sections ---------- */
+.dir { padding: 88px 0 24px; border-top: 1px solid var(--doc-line); }
+.dir-head { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; max-width: 760px; margin-bottom: 36px; }
+.dir-head h2 { font-size: clamp(30px, 3.6vw, 42px); line-height: 1.05; letter-spacing: -.03em; font-weight: 600; }
+.dir-head p { font-size: 17px; color: var(--doc-mut); max-width: 60ch; }
+.moves { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.moves li { font-size: 13px; font-weight: 500; padding: 6px 12px; border-radius: 999px; background: var(--doc-card); box-shadow: inset 0 0 0 1px var(--doc-line); }
+
+.mock { margin: 0 0 40px; }
+.mock figcaption { margin-top: 12px; font-size: 13.5px; color: var(--doc-mut); }
+.frame { position: relative; overflow: hidden; background: var(--pg); color: var(--ink); box-shadow: var(--frame-shadow), 0 0 0 1px var(--doc-line); isolation: isolate; }
+.frame.desk { width: 100%; height: 720px; border-radius: 14px; }
+.frame.phone { width: 360px; height: 760px; border-radius: 46px; box-shadow: var(--frame-shadow), 0 0 0 9px var(--phone-bezel), 0 0 0 10px var(--doc-line); }
+.phones { display: flex; flex-wrap: wrap; gap: 48px 56px; align-items: flex-start; padding: 10px 10px 0; }
+.phones .mock { flex: none; }
+.verdict { flex: 1 1 280px; min-width: 260px; align-self: flex-start; display: flex; flex-direction: column; gap: 16px; padding: 26px 28px; border-radius: 18px; background: var(--doc-card); box-shadow: inset 0 0 0 1px var(--doc-line); }
+.verdict h3 { font-size: 15px; font-weight: 600; }
+.verdict dl { display: grid; grid-template-columns: 96px 1fr; gap: 10px 14px; font-size: 14px; }
+.verdict dt { color: var(--doc-mut); }
+.verdict p { font-size: 14px; color: var(--doc-mut); }
+.verdict p b { color: var(--doc-ink); font-weight: 500; }
+
+footer.end { padding: 64px 0 96px; color: var(--doc-mut); font-size: 14px; border-top: 1px solid var(--doc-line); }
+
+/* shared: the capture caret, as in the app */
+@keyframes vivid-caret { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+.caret { display: inline-block; width: 1.5px; height: 1.1em; vertical-align: -0.15em; margin-left: 1px; background: currentColor; animation: vivid-caret 1.1s steps(1) infinite; }
+
+@media (max-width: 900px) {
+  .intro { grid-template-columns: 1fr; gap: 32px; }
+  .lineup { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .frame.desk { height: auto; min-height: 640px; }
+  .phones { justify-content: center; }
+}
+@media (max-width: 560px) {
+  .lineup { grid-template-columns: 1fr; }
+  .frame.phone { transform: scale(.9); transform-origin: top center; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  html { scroll-behavior: auto; }
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="brand" href="#top"><i></i>drft, more vivid</a>
+  <nav class="tabs" aria-label="directions">
+    <a href="#now">Today</a>
+    <a href="#ember">Ember</a>
+    <a href="#cards">Cards</a>
+    <a href="#poster">Poster</a>
+    <a href="#glow">Glow</a>
+  </nav>
+  <div class="theme" role="group" aria-label="theme">
+    <button type="button" data-set="light"><i class="ph ph-sun"></i>Light</button>
+    <button type="button" data-set="dark"><i class="ph ph-moon"></i>Dark</button>
+  </div>
+</header>
+
+<main id="top" class="wrap">
+  <section class="intro">
+    <div>
+      <h1>Same room, <em>more color</em> in it.</h1>
+      <p class="lede">Four directions for the web app. Each keeps the Stillness palette and today's layouts, and changes the type, how much the vermilion does, and how surfaces feel.</p>
+    </div>
+    <div class="diag">
+      <h2>Why today reads as faint</h2>
+      <ul>
+        <li><i class="ph ph-text-aa"></i><span><b>Tiny spaced capitals.</b> Most labels are 10 to 11px uppercase with 0.3em tracking. Hard to scan, easy to miss.</span></li>
+        <li><i class="ph ph-feather"></i><span><b>Light weight everywhere.</b> Helvetica at 300 on off-white thins every word.</span></li>
+        <li><i class="ph ph-circle-half"></i><span><b>Gray on gray.</b> Rows and links sit in mid grays until hovered, so nothing feels clickable.</span></li>
+        <li><i class="ph ph-dot-outline"></i><span><b>The accent is one 6px dot.</b> The vermilion is the brand and it barely shows up.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <nav class="lineup" aria-label="direction overview">
+    <a href="#ember"><b>Ember</b><span>Readable type, and the vermilion becomes a real accent.</span><span class="level" aria-label="change level 1 of 4"><i class="f"></i><i></i><i></i><i></i></span></a>
+    <a href="#cards"><b>Cards</b><span>Thoughts become objects you can pick up.</span><span class="level" aria-label="change level 2 of 4"><i class="f"></i><i class="f"></i><i></i><i></i></span></a>
+    <a href="#poster"><b>Poster</b><span>Big confident type and blocks of solid color.</span><span class="level" aria-label="change level 3 of 4"><i class="f"></i><i class="f"></i><i class="f"></i><i></i></span></a>
+    <a href="#glow"><b>Glow</b><span>New thoughts run warm and cool as they age.</span><span class="level" aria-label="change level 3 of 4"><i class="f"></i><i class="f"></i><i class="f"></i><i></i></span></a>
+  </nav>
+
+  <!-- ============================================================
+       TODAY: a faithful copy of the current web UI, for comparison.
+       ============================================================ -->
+  <style>
+    #now .app { font-family: "Helvetica Neue", ui-sans-serif, system-ui, sans-serif; font-weight: 300; height: 100%; display: grid; grid-template-columns: 288px minmax(0, 1fr); }
+    #now .app.with-notes { grid-template-columns: 288px minmax(0, 1fr) 288px; }
+    #now .cap-s { font-size: 10.5px; letter-spacing: .34em; text-transform: uppercase; color: var(--pl); }
+    #now .rail { background: var(--scr); border-right: 1px solid var(--line); padding-top: 96px; display: flex; flex-direction: column; min-height: 0; }
+    #now .find { margin: 0 20px; padding: 10px 12px; display: flex; justify-content: space-between; font-size: 10.5px; letter-spacing: .3em; text-transform: uppercase; color: var(--pl); }
+    #now .find span { font-size: 9.5px; letter-spacing: .16em; }
+    #now .list { flex: 1; overflow: hidden; padding: 16px 20px 0 32px; }
+    #now .grp { padding-top: 28px; }
+    #now .grp .cap-s { padding-bottom: 8px; }
+    #now .row { margin: 0 -12px; padding: 10px 12px; display: flex; align-items: center; gap: 12px; border-radius: 2px; font-size: 15px; font-weight: 400; color: var(--pl); }
+    #now .row span:last-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #now .row i { width: 6px; height: 6px; border-radius: 50%; flex: none; }
+    #now .row i.on { background: var(--dot); }
+    #now .row.active { background: var(--pg); color: var(--ink); }
+    #now .rail-foot { border-top: 1px solid var(--line); padding: 20px 32px 28px; display: flex; flex-direction: column; gap: 16px; font-size: 10.5px; letter-spacing: .3em; text-transform: uppercase; color: var(--pl); }
+    #now .main { position: relative; display: flex; flex-direction: column; min-width: 0; }
+    #now .head { display: flex; justify-content: space-between; align-items: baseline; padding: 28px 32px 0; }
+    #now .wordmark { position: absolute; left: 0; right: 0; top: 28px; text-align: center; font-size: 12px; letter-spacing: .5em; color: var(--pt); }
+    #now .count { font-size: 12px; letter-spacing: .1em; color: var(--pl); margin-left: auto; }
+    #now .capture { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 24px 96px; text-align: center; }
+    #now .capture p { max-width: 36ch; font-size: 22px; line-height: 1.65; }
+    #now .keep { margin-top: 20px; display: flex; align-items: center; gap: 10px; font-size: 12px; letter-spacing: .3em; text-transform: uppercase; }
+    #now .keep i { width: 8px; height: 8px; border-radius: 50%; background: var(--dot); }
+    #now .thought { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 0 24px; }
+    #now .thought-body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; padding: 40px 0; }
+    #now h1.t { max-width: 32ch; text-align: center; font-size: 30px; line-height: 1.55; font-weight: 300; }
+    #now .returned { margin-top: 24px; font-size: 10px; letter-spacing: .3em; text-transform: uppercase; color: var(--faint); }
+    #now .related { margin-top: 48px; width: 100%; max-width: 52ch; }
+    #now .related-h { display: flex; justify-content: space-between; padding-bottom: 12px; font-size: 10px; letter-spacing: .28em; text-transform: uppercase; color: var(--pl); }
+    #now .related-h span:last-child { letter-spacing: 0; color: var(--faint); }
+    #now .rel { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 20px; align-items: center; padding: 16px 44px 16px 0; border-bottom: 1px solid var(--line); font-size: 14.5px; font-weight: 400; color: var(--pt); }
+    #now .rel:first-of-type { border-top: 1px solid var(--line); }
+    #now .rel small { font-size: 9px; letter-spacing: .18em; text-transform: uppercase; color: var(--faint); text-align: right; }
+    #now .rest { padding-bottom: 56px; font-size: 11px; letter-spacing: .3em; text-transform: uppercase; color: var(--pl); }
+    #now .notes { padding: 96px 32px 40px; display: flex; flex-direction: column; gap: 10px; }
+    #now .notes .cap-s { color: var(--faint); }
+    #now .notes p { font-size: 15px; line-height: 1.7; font-weight: 400; color: var(--mut); }
+    #now .back { position: absolute; top: 16px; left: 20px; font-size: 22px; color: var(--pl); }
+    #now .dateline { position: absolute; top: 28px; left: 0; right: 0; text-align: center; font-size: 11.5px; letter-spacing: .4em; text-transform: uppercase; color: var(--pl); }
+
+    /* phone */
+    #now .pv { font-family: "Helvetica Neue", ui-sans-serif, system-ui, sans-serif; font-weight: 300; height: 100%; display: flex; flex-direction: column; padding-top: 44px; }
+    #now .ph-head { display: flex; justify-content: space-between; align-items: baseline; padding: 20px 26px 0; position: relative; font-size: 11px; letter-spacing: .26em; text-transform: uppercase; color: var(--pl); }
+    #now .ph-head .wm { position: absolute; left: 0; right: 0; text-align: center; font-size: 12px; letter-spacing: .5em; text-transform: none; color: var(--pt); }
+    #now .ph-head .r { display: flex; gap: 18px; }
+    #now .ph-head .r b { font-weight: 300; letter-spacing: .1em; }
+    #now .ph-cap { padding: 64px 24px 8px; text-align: center; }
+    #now .ph-cap .clock { display: block; margin-top: 20px; font-size: 11px; letter-spacing: .3em; text-transform: uppercase; color: var(--pl); }
+    #now .ph-list { padding: 40px 24px 0; }
+    #now .ph-row { display: flex; align-items: center; gap: 14px; padding: 15px 0; border-bottom: 1px solid var(--line); }
+    #now .ph-row span:first-of-type { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 16px; font-weight: 400; color: var(--pt); }
+    #now .ph-row small { font-size: 12px; letter-spacing: .08em; color: var(--pl); }
+    #now .ph-row i { width: 8px; height: 8px; border-radius: 50%; background: var(--dot); flex: none; }
+    #now .ph-grp { padding: 40px 0 8px; font-size: 10.5px; letter-spacing: .34em; text-transform: uppercase; color: var(--pl); }
+    #now .ph-thought { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 0 26px; text-align: center; }
+    #now .ph-thought h1 { margin-top: 84px; font-size: 26px; line-height: 1.55; font-weight: 300; }
+    #now .ph-thought .notes-m { margin-top: 36px; display: flex; flex-direction: column; gap: 10px; }
+    #now .ph-thought .notes-m p { font-size: 15px; line-height: 1.7; font-weight: 400; color: var(--mut); }
+  </style>
+
+  <section class="dir" id="now">
+    <div class="dir-head">
+      <h2>Today</h2>
+      <p>The current web app, rebuilt here so the four directions have something to be compared against.</p>
+    </div>
+
+    <figure class="mock">
+      <div class="frame desk">
+        <div class="app">
+          <nav class="rail">
+            <div class="find">find <span>⌘K</span></div>
+            <div class="list">
+              <div class="row"><i class="on"></i><span>maybe the garden should be mostly wild, with one tended corner</span></div>
+              <div class="grp">
+                <div class="cap-s">today</div>
+                <div class="row"><i></i><span>I keep rewriting the first paragraph because I don't know the last one yet</span></div>
+                <div class="row"><i></i><span>you only notice the fridge hum when it stops</span></div>
+              </div>
+              <div class="grp">
+                <div class="cap-s">this week</div>
+                <div class="row"><i></i><span>a podcast that only interviews people's grandparents</span></div>
+                <div class="row"><i></i><span>call Meera about the cabin dates before friday</span></div>
+                <div class="row"><i></i><span>teaching is mostly noticing things out loud</span></div>
+                <div class="row"><i></i><span>a font that gets heavier the longer you stare at it</span></div>
+              </div>
+              <div class="grp">
+                <div class="cap-s">earlier</div>
+                <div class="row"><i></i><span>start the year in March, like the Romans did</span></div>
+                <div class="row"><i></i><span>the bus driver waved at every single kid. every one.</span></div>
+              </div>
+            </div>
+            <div class="rail-foot"><span>connections</span><span>settings</span></div>
+          </nav>
+          <div class="main">
+            <div class="head"><span class="wordmark">drft</span><span class="count">11</span></div>
+            <div class="capture">
+              <p>write the ending first and walk backwards from it<span class="caret"></span></p>
+              <div class="keep"><i></i>keep</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <figcaption>Home on desktop: capture alone at the center, the collection in the rail.</figcaption>
+    </figure>
+
+    <figure class="mock">
+      <div class="frame desk">
+        <div class="app with-notes">
+          <nav class="rail">
+            <div class="find">find <span>⌘K</span></div>
+            <div class="list">
+              <div class="row"><i class="on"></i><span>maybe the garden should be mostly wild, with one tended corner</span></div>
+              <div class="grp">
+                <div class="cap-s">today</div>
+                <div class="row active"><i></i><span>I keep rewriting the first paragraph because I don't know the last one yet</span></div>
+                <div class="row"><i></i><span>you only notice the fridge hum when it stops</span></div>
+              </div>
+              <div class="grp">
+                <div class="cap-s">this week</div>
+                <div class="row"><i></i><span>a podcast that only interviews people's grandparents</span></div>
+                <div class="row"><i></i><span>call Meera about the cabin dates before friday</span></div>
+                <div class="row"><i></i><span>teaching is mostly noticing things out loud</span></div>
+              </div>
+            </div>
+            <div class="rail-foot"><span>connections</span><span>settings</span></div>
+          </nav>
+          <div class="main">
+            <span class="dateline">friday · 9:12 am</span>
+            <div class="thought">
+              <div class="thought-body">
+                <h1 class="t">I keep rewriting the first paragraph because I don't know the last one yet</h1>
+                <span class="returned">returned · today</span>
+                <div class="related">
+                  <div class="related-h"><span>related thoughts</span><span>3</span></div>
+                  <div class="rel"><span>teaching is mostly noticing things out loud</span><small>tue</small></div>
+                  <div class="rel"><span>the essay wants a door, not an introduction</span><small>21 oct</small></div>
+                  <div class="rel"><span>a story told backwards, one scene per chapter</span><small>set down</small></div>
+                </div>
+              </div>
+              <div class="rest">let it rest</div>
+            </div>
+          </div>
+          <aside class="notes">
+            <span class="cap-s">notes</span>
+            <p>Same thing happened with the talk in May. Wrote the closing slide first and the rest fell into place.</p>
+          </aside>
+        </div>
+      </div>
+      <figcaption>A thought on a wide screen: rail on the left, notes on the right, related thoughts below.</figcaption>
+    </figure>
+
+    <div class="phones">
+      <figure class="mock">
+        <div class="frame phone">
+          <div class="pv">
+            <div class="ph-head"><span>settings</span><span class="wm">drft</span><span class="r"><span>find</span><b>11</b></span></div>
+            <div class="ph-cap"><span class="caret" style="height:26px"></span><span class="clock">10:24 am · unfiled</span></div>
+            <div class="ph-list">
+              <div class="ph-row"><i></i><span>maybe the garden should be mostly wild, with one tended corner</span><small>2 oct</small></div>
+              <div class="ph-grp">today</div>
+              <div class="ph-row"><span>I keep rewriting the first paragraph because I don't know the last one yet</span><small>9:12 am</small></div>
+              <div class="ph-row"><span>you only notice the fridge hum when it stops</span><small>8:03 am</small></div>
+              <div class="ph-grp">this week</div>
+              <div class="ph-row"><span>a podcast that only interviews people's grandparents</span><small>thu</small></div>
+              <div class="ph-row"><span>call Meera about the cabin dates before friday</span><small>wed</small></div>
+            </div>
+          </div>
+        </div>
+        <figcaption>Home on a phone.</figcaption>
+      </figure>
+      <figure class="mock">
+        <div class="frame phone">
+          <div class="pv">
+            <div class="ph-head"><span style="font-size:20px;letter-spacing:0">&larr;</span><span class="wm" style="font-size:11px;letter-spacing:.4em;text-transform:uppercase;color:var(--pl)">friday · 9:12 am</span><span></span></div>
+            <div class="ph-thought">
+              <h1>I keep rewriting the first paragraph because I don't know the last one yet</h1>
+              <div class="notes-m"><span class="cap-s" style="color:var(--faint)">notes</span><p>Same thing happened with the talk in May. Wrote the closing slide first and the rest fell into place.</p></div>
+            </div>
+          </div>
+        </div>
+        <figcaption>A thought on a phone.</figcaption>
+      </figure>
+      <div class="verdict">
+        <h3>What works, what doesn't</h3>
+        <p><b>Keep:</b> the calm layout, the single field, the warm grays, the vermilion as "now".</p>
+        <p><b>Change:</b> almost every label is a 10px spaced capital in mid gray, the body is set at weight 300, and nothing has a surface. The page is quiet to the point of being hard to read, and nothing about it is memorable at a glance.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       EMBER: readable type, and the vermilion does real work.
+       ============================================================ -->
+  <style>
+    #ember {
+      --tint: color-mix(in oklab, var(--dot) 8%, var(--pg));
+      --tint-2: color-mix(in oklab, var(--dot) 14%, var(--pg));
+      --dot-ink: color-mix(in oklab, var(--dot) 78%, var(--ink));
+      --dot-edge: color-mix(in oklab, var(--dot) 45%, var(--line));
+      --on-dot: var(--pg);
+      --r: 10px;
+    }
+    [data-theme="dark"] #ember {
+      --tint: color-mix(in oklab, var(--dot) 12%, var(--pg));
+      --tint-2: color-mix(in oklab, var(--dot) 22%, var(--pg));
+      --dot-ink: color-mix(in oklab, var(--dot) 70%, var(--ink));
+      --dot-edge: color-mix(in oklab, var(--dot) 50%, var(--line));
+    }
+    #ember .app, #ember .pv { font-family: "Geist", ui-sans-serif, system-ui, sans-serif; font-weight: 400; color: var(--ink); }
+    #ember .app { height: 100%; display: grid; grid-template-columns: 288px minmax(0, 1fr); }
+    #ember .app.with-notes { grid-template-columns: 288px minmax(0, 1fr) 300px; }
+
+    /* shared bits */
+    #ember .badge { display: inline-flex; align-items: center; height: 20px; padding: 0 8px; border-radius: 999px; background: var(--tint-2); color: var(--dot-ink); font-size: 12px; font-weight: 500; font-variant-numeric: tabular-nums; }
+    #ember .wm { display: inline-flex; align-items: center; gap: 8px; font-size: 17px; font-weight: 600; letter-spacing: -.02em; color: var(--ink); }
+    #ember .wm i { width: 8px; height: 8px; border-radius: 50%; background: var(--dot); }
+    #ember .kbd { display: inline-flex; align-items: center; justify-content: center; min-width: 22px; height: 20px; padding: 0 5px; border-radius: 6px; font-family: "Geist Mono", ui-monospace, monospace; font-size: 11.5px; }
+    #ember .icon-btn { width: 36px; height: 36px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; font-size: 18px; color: var(--pt); transition: background .2s, color .2s; }
+    #ember .icon-btn:hover { background: var(--tint); color: var(--ink); }
+
+    /* rail */
+    #ember .rail { background: var(--scr); border-right: 1px solid var(--line); display: flex; flex-direction: column; min-height: 0; }
+    #ember .rail-top { padding: 24px 20px 16px; display: flex; flex-direction: column; gap: 18px; }
+    #ember .find { display: flex; align-items: center; gap: 10px; height: 40px; padding: 0 8px 0 12px; border-radius: var(--r); background: var(--pg); box-shadow: inset 0 0 0 1px var(--line); font-size: 14px; color: var(--mut); transition: box-shadow .2s; }
+    #ember .find:hover { box-shadow: inset 0 0 0 1px var(--dot-edge); }
+    #ember .find i { font-size: 16px; color: var(--pt); }
+    #ember .find .kbd { margin-left: auto; background: var(--scr); color: var(--pt); box-shadow: inset 0 0 0 1px var(--line); }
+    #ember .list { flex: 1; overflow: hidden; padding: 4px 12px 0; }
+    #ember .back { margin: 0 0 6px; padding: 12px 14px; border-radius: var(--r); background: var(--tint); display: flex; flex-direction: column; gap: 5px; }
+    #ember .back-l { display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 500; color: var(--dot-ink); }
+    #ember .back-l i { font-size: 14px; }
+    #ember .back p { font-size: 14.5px; line-height: 1.45; color: var(--ink); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    #ember .grp-h { display: flex; align-items: center; gap: 8px; padding: 18px 12px 6px; font-size: 13px; font-weight: 500; color: var(--pt); }
+    #ember .grp-h .badge { height: 18px; font-size: 11.5px; padding: 0 7px; }
+    #ember .row { position: relative; display: flex; align-items: baseline; gap: 10px; padding: 8px 12px; border-radius: var(--r); font-size: 14.5px; color: var(--ink); transition: background .2s; }
+    #ember .row:hover { background: var(--tint); }
+    #ember .row span { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #ember .row small { flex: none; font-size: 12.5px; color: var(--mut); font-variant-numeric: tabular-nums; }
+    #ember .row.active { background: var(--tint-2); }
+    #ember .row.active::before { content: ""; position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px; border-radius: 3px; background: var(--dot); }
+    #ember .row.active small { color: var(--dot-ink); }
+    #ember .rail-foot { border-top: 1px solid var(--line); padding: 10px 12px 14px; display: flex; flex-direction: column; gap: 2px; }
+    #ember .rail-foot a { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: var(--r); font-size: 14px; color: var(--pt); transition: background .2s, color .2s; }
+    #ember .rail-foot a:hover { background: var(--tint); color: var(--ink); }
+    #ember .rail-foot i { font-size: 17px; }
+
+    /* home main */
+    #ember .main { position: relative; display: flex; flex-direction: column; min-width: 0; }
+    #ember .head { display: flex; align-items: center; justify-content: flex-end; gap: 8px; height: 72px; padding: 0 28px; }
+    #ember .head .badge { height: 26px; padding: 0 11px; font-size: 13px; }
+    #ember .capture { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; padding: 0 40px 96px; text-align: center; }
+    #ember .capture .meta { font-size: 13.5px; color: var(--mut); font-variant-numeric: tabular-nums; }
+    #ember .capture p { max-width: 30ch; font-size: 28px; line-height: 1.45; letter-spacing: -.012em; color: var(--ink); }
+    #ember .caret { background: var(--dot); width: 2px; }
+    #ember .act { display: flex; align-items: center; gap: 16px; }
+    #ember .keep { display: inline-flex; align-items: center; gap: 10px; height: 42px; padding: 0 8px 0 20px; border-radius: 999px; background: var(--dot); color: var(--on-dot); font-size: 15px; font-weight: 600; box-shadow: 0 10px 24px -12px color-mix(in oklab, var(--dot) 70%, transparent); transition: transform .2s cubic-bezier(.16, 1, .3, 1), filter .2s; }
+    #ember .keep:hover { filter: brightness(1.05); }
+    #ember .keep:active { transform: scale(.98); }
+    #ember .keep .kbd { background: color-mix(in oklab, var(--on-dot) 20%, transparent); color: var(--on-dot); border-radius: 999px; min-width: 26px; height: 26px; font-size: 13px; }
+    #ember .act .hint { font-size: 13px; color: var(--mut); }
+
+    /* thought view */
+    #ember .t-head { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; height: 72px; padding: 0 20px; }
+    #ember .t-head .date { text-align: center; font-size: 14px; font-weight: 500; color: var(--pt); }
+    #ember .thought { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 0 40px; min-height: 0; }
+    #ember .t-body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; padding: 8px 0 24px; }
+    #ember h1.t { max-width: 26ch; text-align: center; font-size: 32px; line-height: 1.38; font-weight: 450; letter-spacing: -.02em; }
+    #ember .chip { margin-top: 18px; display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 12px; border-radius: 999px; background: var(--tint); color: var(--dot-ink); font-size: 13px; font-weight: 500; }
+    #ember .chip i { font-size: 14px; }
+    #ember .related { margin-top: 40px; width: 100%; max-width: 520px; }
+    #ember .related-h { display: flex; align-items: center; gap: 8px; padding: 0 12px 10px; font-size: 15px; font-weight: 500; color: var(--ink); }
+    #ember .rel { display: grid; grid-template-columns: minmax(0, 1fr) auto 18px; gap: 14px; align-items: center; padding: 13px 12px; border-radius: var(--r); font-size: 15px; line-height: 1.45; color: var(--ink); transition: background .2s; }
+    #ember .rel + .rel { box-shadow: 0 -1px 0 var(--line); }
+    #ember .rel:hover { background: var(--tint); box-shadow: none; }
+    #ember .rel small { font-size: 13px; color: var(--mut); font-variant-numeric: tabular-nums; }
+    #ember .rel .tag { display: inline-flex; align-items: center; height: 22px; padding: 0 9px; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--line); font-size: 12px; color: var(--pt); }
+    #ember .rel > i { color: var(--mut); font-size: 15px; }
+    #ember .rel:hover > i { color: var(--dot-ink); }
+    #ember .rest-wrap { padding-bottom: 36px; }
+    #ember .rest { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 18px; border-radius: 999px; box-shadow: inset 0 0 0 1.5px var(--dot-edge); color: var(--dot-ink); font-size: 14.5px; font-weight: 500; transition: background .2s, transform .2s; }
+    #ember .rest:hover { background: var(--tint); }
+    #ember .rest:active { transform: scale(.98); }
+    #ember .notes-col { background: var(--scr); border-left: 1px solid var(--line); padding: 24px 22px; display: flex; flex-direction: column; gap: 12px; }
+    #ember .notes-h { display: flex; align-items: center; justify-content: space-between; height: 24px; margin-top: 24px; font-size: 14px; font-weight: 500; color: var(--pt); }
+    #ember .notes-h span:last-child { font-size: 12.5px; font-weight: 400; color: var(--mut); display: inline-flex; align-items: center; gap: 4px; }
+    /* Notes are written onto the page, not placed in a box: ruled lines
+       in the hairline color, and a vermilion margin rule like a notebook's. */
+    #ember .note { --lh: 28px; --rows: 9; position: relative; padding: 0 2px 0 18px; min-height: calc(var(--lh) * var(--rows)); font-size: 15.5px; line-height: var(--lh); color: var(--ink); background-image: linear-gradient(to bottom, transparent calc(var(--lh) - 1px), var(--line) calc(var(--lh) - 1px)); background-size: 100% var(--lh); -webkit-mask-image: linear-gradient(#000 60%, transparent); mask-image: linear-gradient(#000 60%, transparent); }
+    #ember .note::before { content: ""; position: absolute; left: 0; top: 2px; bottom: 0; width: 2px; border-radius: 2px; background: var(--dot); opacity: .75; }
+    #ember .note .caret { color: var(--dot); height: 18px; vertical-align: -3px; }
+    #ember .note-meta { display: flex; align-items: center; gap: 6px; padding-left: 18px; font-size: 13px; color: var(--mut); }
+    #ember .notes-col .notes-h { margin-bottom: 8px; }
+
+    /* phone */
+    #ember .pv { height: 100%; display: flex; flex-direction: column; padding-top: 44px; background: var(--pg); }
+    #ember .ph-head { display: flex; align-items: center; justify-content: space-between; height: 56px; padding: 0 14px 0 22px; }
+    #ember .ph-head .r { display: flex; align-items: center; gap: 2px; }
+    #ember .ph-cap { padding: 36px 26px 26px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+    #ember .ph-cap .field { height: 36px; display: flex; align-items: center; }
+    #ember .ph-cap .field .caret { height: 26px; }
+    #ember .ph-cap .meta { font-size: 13px; color: var(--mut); }
+    #ember .ph-list { padding: 4px 14px 0; }
+    #ember .ph-list .back { margin: 0 0 4px; }
+    #ember .ph-list .grp-h { padding: 18px 10px 4px; }
+    #ember .ph-row { display: flex; align-items: baseline; gap: 12px; padding: 14px 10px; font-size: 16px; color: var(--ink); }
+    #ember .ph-row + .ph-row { box-shadow: 0 -1px 0 var(--line); }
+    #ember .ph-row span { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #ember .ph-row small { font-size: 13px; color: var(--mut); font-variant-numeric: tabular-nums; }
+    #ember .ph-t-head { display: grid; grid-template-columns: 40px 1fr 40px; align-items: center; height: 56px; padding: 0 12px; }
+    #ember .ph-t-head .date { text-align: center; font-size: 14px; font-weight: 500; color: var(--pt); }
+    #ember .ph-thought { flex: 1; display: flex; flex-direction: column; padding: 28px 22px 0; min-height: 0; }
+    #ember .ph-thought h1 { font-size: 25px; line-height: 1.38; font-weight: 450; letter-spacing: -.015em; }
+    #ember .ph-thought .chip { align-self: flex-start; }
+    #ember .ph-thought .notes-h { margin-top: 28px; }
+    #ember .ph-thought .note { -webkit-mask-image: none; mask-image: none; }
+    #ember .ph-thought .related { margin-top: 26px; }
+    #ember .ph-thought .related-h { padding: 0 0 6px; }
+    #ember .ph-thought .rel { padding: 12px 0; grid-template-columns: minmax(0, 1fr) auto; }
+    #ember .ph-foot { padding: 14px 22px 30px; display: flex; justify-content: center; background: linear-gradient(transparent, var(--pg) 30%); }
+  </style>
+
+  <section class="dir" id="ember">
+    <div class="dir-head">
+      <h2>Ember</h2>
+      <p>The smallest step. Readable type, real contrast, and the vermilion grows from a single dot into the accent that marks "now", "back today" and "keep".</p>
+      <ul class="moves">
+        <li>Geist at 400, sentence case</li>
+        <li>Rows in ink, not gray</li>
+        <li>Solid vermilion Keep</li>
+        <li>Tinted "Back today" strip</li>
+        <li>Soft 10px surfaces</li>
+      </ul>
+    </div>
+
+    <figure class="mock">
+      <div class="frame desk">
+        <div class="app">
+          <nav class="rail">
+            <div class="rail-top">
+              <span class="wm"><i></i>drft</span>
+              <div class="find"><i class="ph ph-magnifying-glass"></i>Find a thought<span class="kbd">⌘K</span></div>
+            </div>
+            <div class="list">
+              <div class="back">
+                <span class="back-l"><i class="ph ph-arrow-bend-up-left"></i>Back today</span>
+                <p>maybe the garden should be mostly wild, with one tended corner</p>
+              </div>
+              <div class="grp-h">Today <span class="badge">2</span></div>
+              <div class="row"><span>I keep rewriting the first paragraph because I don't know the last one yet</span><small>9:12</small></div>
+              <div class="row"><span>you only notice the fridge hum when it stops</span><small>8:03</small></div>
+              <div class="grp-h">This week <span class="badge">4</span></div>
+              <div class="row"><span>a podcast that only interviews people's grandparents</span><small>thu</small></div>
+              <div class="row"><span>call Meera about the cabin dates before friday</span><small>wed</small></div>
+              <div class="row"><span>teaching is mostly noticing things out loud</span><small>tue</small></div>
+              <div class="row"><span>a font that gets heavier the longer you stare at it</span><small>mon</small></div>
+              <div class="grp-h">Earlier</div>
+              <div class="row"><span>start the year in March, like the Romans did</span><small>18 oct</small></div>
+              <div class="row"><span>the bus driver waved at every single kid. every one.</span><small>11 oct</small></div>
+            </div>
+            <div class="rail-foot">
+              <a href="#ember"><i class="ph ph-graph"></i>Connections</a>
+              <a href="#ember"><i class="ph ph-gear-six"></i>Settings</a>
+            </div>
+          </nav>
+          <div class="main">
+            <div class="head"><span class="badge">11 thoughts</span></div>
+            <div class="capture">
+              <span class="meta">10:24 am, unfiled</span>
+              <p>write the ending first and walk backwards from it<span class="caret"></span></p>
+              <div class="act">
+                <button type="button" class="keep">Keep <span class="kbd">↵</span></button>
+                <span class="hint">Shift ↵ for a new line</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <figcaption>Home: the field is still alone at the center, but Keep is now a button you can see from across the room.</figcaption>
+    </figure>
+
+    <figure class="mock">
+      <div class="frame desk">
+        <div class="app with-notes">
+          <nav class="rail">
+            <div class="rail-top">
+              <span class="wm"><i></i>drft</span>
+              <div class="find"><i class="ph ph-magnifying-glass"></i>Find a thought<span class="kbd">⌘K</span></div>
+            </div>
+            <div class="list">
+              <div class="back">
+                <span class="back-l"><i class="ph ph-arrow-bend-up-left"></i>Back today</span>
+                <p>maybe the garden should be mostly wild, with one tended corner</p>
+              </div>
+              <div class="grp-h">Today <span class="badge">2</span></div>
+              <div class="row active"><span>I keep rewriting the first paragraph because I don't know the last one yet</span><small>9:12</small></div>
+              <div class="row"><span>you only notice the fridge hum when it stops</span><small>8:03</small></div>
+              <div class="grp-h">This week <span class="badge">4</span></div>
+              <div class="row"><span>a podcast that only interviews people's grandparents</span><small>thu</small></div>
+              <div class="row"><span>call Meera about the cabin dates before friday</span><small>wed</small></div>
+              <div class="row"><span>teaching is mostly noticing things out loud</span><small>tue</small></div>
+            </div>
+            <div class="rail-foot">
+              <a href="#ember"><i class="ph ph-graph"></i>Connections</a>
+              <a href="#ember"><i class="ph ph-gear-six"></i>Settings</a>
+            </div>
+          </nav>
+          <div class="main">
+            <div class="t-head">
+              <button type="button" class="icon-btn" aria-label="back"><i class="ph ph-arrow-left"></i></button>
+              <span class="date">Friday, 9:12 am</span>
+              <span></span>
+            </div>
+            <div class="thought">
+              <div class="t-body">
+                <h1 class="t">I keep rewriting the first paragraph because I don't know the last one yet</h1>
+                <span class="chip"><i class="ph ph-arrow-bend-up-left"></i>Returned today</span>
+                <div class="related">
+                  <div class="related-h">Related thoughts <span class="badge">3</span></div>
+                  <div class="rel"><span>teaching is mostly noticing things out loud</span><small>tue</small><i class="ph ph-arrow-up-right"></i></div>
+                  <div class="rel"><span>the essay wants a door, not an introduction</span><small>21 oct</small><i class="ph ph-arrow-up-right"></i></div>
+                  <div class="rel"><span>a story told backwards, one scene per chapter</span><span class="tag">Set down</span><i class="ph ph-arrow-up-right"></i></div>
+                </div>
+              </div>
+              <div class="rest-wrap"><button type="button" class="rest"><i class="ph ph-moon"></i>Let it rest</button></div>
+            </div>
+          </div>
+          <aside class="notes-col">
+            <div class="notes-h"><span>Notes</span><span><i class="ph ph-check"></i>Saved</span></div>
+            <div class="note">Same thing happened with the talk in May. Wrote the closing slide first and the rest fell into place.<span class="caret"></span></div>
+            <div class="note-meta">Just keep writing. It saves as you go.</div>
+          </aside>
+        </div>
+      </div>
+      <figcaption>A thought: the open row carries a vermilion bar, notes are written straight onto a ruled margin, related thoughts read as links.</figcaption>
+    </figure>
+
+    <div class="phones">
+      <figure class="mock">
+        <div class="frame phone">
+          <div class="pv">
+            <div class="ph-head">
+              <span class="wm"><i></i>drft</span>
+              <span class="r">
+                <button type="button" class="icon-btn" aria-label="find"><i class="ph ph-magnifying-glass"></i></button>
+                <button type="button" class="icon-btn" aria-label="settings"><i class="ph ph-gear-six"></i></button>
+              </span>
+            </div>
+            <div class="ph-cap">
+              <div class="field"><span class="caret"></span></div>
+              <span class="meta">10:24 am, unfiled</span>
+            </div>
+            <div class="ph-list">
+              <div class="back">
+                <span class="back-l"><i class="ph ph-arrow-bend-up-left"></i>Back today</span>
+                <p>maybe the garden should be mostly wild, with one tended corner</p>
+              </div>
+              <div class="grp-h">Today <span class="badge">2</span></div>
+              <div class="ph-row"><span>I keep rewriting the first paragraph because I don't know the last one yet</span><small>9:12 am</small></div>
+              <div class="ph-row"><span>you only notice the fridge hum when it stops</span><small>8:03 am</small></div>
+              <div class="grp-h">This week <span class="badge">4</span></div>
+              <div class="ph-row"><span>a podcast that only interviews people's grandparents</span><small>thu</small></div>
+              <div class="ph-row"><span>call Meera about the cabin dates before friday</span><small>wed</small></div>
+            </div>
+          </div>
+        </div>
+        <figcaption>Home on a phone.</figcaption>
+      </figure>
+      <figure class="mock">
+        <div class="frame phone">
+          <div class="pv">
+            <div class="ph-t-head">
+              <button type="button" class="icon-btn" aria-label="back"><i class="ph ph-arrow-left"></i></button>
+              <span class="date">Friday, 9:12 am</span>
+              <span></span>
+            </div>
+            <div class="ph-thought">
+              <h1>I keep rewriting the first paragraph because I don't know the last one yet</h1>
+              <span class="chip"><i class="ph ph-arrow-bend-up-left"></i>Returned today</span>
+              <div class="notes-h"><span>Notes</span><span><i class="ph ph-check"></i>Saved</span></div>
+              <div class="note" style="--rows: 4">Same thing happened with the talk in May. Wrote the closing slide first and the rest fell into place.</div>
+              <div class="related">
+                <div class="related-h">Related thoughts <span class="badge">3</span></div>
+                <div class="rel"><span>teaching is mostly noticing things out loud</span><small>tue</small></div>
+                <div class="rel"><span>the essay wants a door, not an introduction</span><small>21 oct</small></div>
+              </div>
+            </div>
+            <div class="ph-foot"><button type="button" class="rest"><i class="ph ph-moon"></i>Let it rest</button></div>
+          </div>
+        </div>
+        <figcaption>A thought on a phone.</figcaption>
+      </figure>
+      <div class="verdict">
+        <h3>Ember at a glance</h3>
+        <dl>
+          <dt>Type</dt><dd>Geist, 400 body, 500 to 600 headings, sentence case, 13px minimum</dd>
+          <dt>Accent</dt><dd>Vermilion fills Keep, marks the open row, tints "Back today" and counts</dd>
+          <dt>Surfaces</dt><dd>Flat page, soft warm tints for anything that is "now". Notes sit on ruled lines with a vermilion margin, no box.</dd>
+          <dt>Radius</dt><dd>10px surfaces, full pill for buttons and chips</dd>
+        </dl>
+        <p><b>Tradeoff:</b> the safest change and the easiest to ship, but it fixes readability more than it makes drft memorable. It still looks like a calm notes app.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       CARDS: thoughts become objects you can pick up.
+       Radius rule: surfaces 16px, mini cards 12px, controls full pill.
+       ============================================================ -->
+  <style>
+    #cards {
+      --cv: color-mix(in oklab, var(--pg) 95%, var(--ink));
+      --card: var(--scr);
+      --card-edge: color-mix(in oklab, var(--line) 70%, var(--ink) 6%);
+      --sh: 0 1px 2px rgba(60, 56, 48, .06), 0 10px 24px -12px rgba(60, 56, 48, .22);
+      --sh-hi: 0 2px 4px rgba(60, 56, 48, .07), 0 18px 36px -14px rgba(60, 56, 48, .30);
+      --tint: color-mix(in oklab, var(--dot) 8%, var(--card));
+      --dot-text: var(--dot);
+      --btn: var(--dot);
+      --on-btn: var(--pg);
+      --chip: color-mix(in oklab, var(--cv) 60%, var(--card));
+    }
+    [data-theme="dark"] #cards {
+      --cv: var(--pg);
+      --card: color-mix(in oklab, var(--pg) 90%, var(--ink));
+      --card-edge: color-mix(in oklab, var(--pg) 82%, var(--ink));
+      --sh: 0 1px 0 rgba(255, 255, 255, .04) inset, 0 12px 28px -12px rgba(0, 0, 0, .7);
+      --sh-hi: 0 1px 0 rgba(255, 255, 255, .05) inset, 0 20px 40px -14px rgba(0, 0, 0, .8);
+      --tint: color-mix(in oklab, var(--dot) 12%, var(--card));
+      --dot-text: color-mix(in oklab, var(--dot) 68%, var(--ink));
+      --btn: color-mix(in oklab, var(--dot) 76%, var(--pg));
+      --on-btn: color-mix(in oklab, var(--ink) 55%, #fff);
+      --chip: color-mix(in oklab, var(--pg) 84%, var(--ink));
+    }
+
+    #cards .frame { background: var(--cv); }
+    #cards .app, #cards .pv { font-family: "Satoshi", ui-sans-serif, system-ui, sans-serif; font-weight: 400; color: var(--ink); }
+    #cards .app { height: 100%; display: grid; grid-template-columns: 300px minmax(0, 1fr); }
+
+    /* shared surfaces */
+    #cards .card { background: var(--card); border-radius: 16px; box-shadow: var(--sh), 0 0 0 1px var(--card-edge); transition: transform .3s cubic-bezier(.16, 1, .3, 1), box-shadow .3s cubic-bezier(.16, 1, .3, 1); }
+    #cards .mini { background: var(--card); border-radius: 12px; box-shadow: var(--sh), 0 0 0 1px var(--card-edge); transition: transform .3s cubic-bezier(.16, 1, .3, 1), box-shadow .3s cubic-bezier(.16, 1, .3, 1); cursor: pointer; }
+    #cards .mini:hover, #cards .lift:hover { transform: translateY(-2px); box-shadow: var(--sh-hi), 0 0 0 1px var(--card-edge); }
+    #cards .mini:active, #cards .lift:active { transform: translateY(0) scale(.99); }
+    #cards .pill { display: inline-flex; align-items: center; gap: 7px; border-radius: 999px; font-weight: 500; white-space: nowrap; transition: background .2s, transform .2s; }
+    #cards .pill:active { transform: scale(.97); }
+    #cards .ghost { padding: 9px 15px; font-size: 14px; color: var(--pt); background: var(--card); box-shadow: 0 0 0 1px var(--card-edge); }
+    #cards .ghost:hover { color: var(--ink); }
+    #cards .keep { padding: 10px 18px 10px 16px; font-size: 15px; font-weight: 700; background: var(--btn); color: var(--on-btn); box-shadow: 0 8px 18px -8px color-mix(in oklab, var(--dot) 70%, transparent); }
+    #cards .keep kbd { font-family: "Geist Mono", ui-monospace, monospace; font-size: 12px; font-weight: 500; padding: 1px 6px; border-radius: 999px; background: color-mix(in oklab, var(--on-btn) 18%, transparent); }
+    #cards .icon-btn { width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; background: var(--card); box-shadow: 0 0 0 1px var(--card-edge); color: var(--pt); font-size: 18px; }
+    #cards .chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; font-size: 13px; font-weight: 500; background: var(--chip); color: var(--pt); white-space: nowrap; }
+    #cards .chip.hot { background: color-mix(in oklab, var(--dot) 13%, var(--card)); color: var(--dot-text); font-weight: 700; }
+    #cards .label { font-size: 13.5px; font-weight: 700; color: var(--pt); }
+    #cards .meta { font-size: 13px; color: var(--pl); white-space: nowrap; }
+
+    /* rail */
+    #cards .rail { display: flex; flex-direction: column; min-height: 0; padding: 22px 16px 18px 18px; border-right: 1px solid var(--card-edge); }
+    #cards .rail-top { display: flex; align-items: center; justify-content: space-between; padding: 0 4px 18px; }
+    #cards .wm { display: flex; align-items: center; gap: 8px; font-size: 19px; font-weight: 700; letter-spacing: -.02em; }
+    #cards .wm i { width: 8px; height: 8px; border-radius: 50%; background: var(--dot); display: block; }
+    #cards .find { display: flex; align-items: center; gap: 10px; padding: 10px 12px 10px 14px; border-radius: 999px; background: var(--card); box-shadow: 0 0 0 1px var(--card-edge); color: var(--pl); font-size: 14px; }
+    #cards .find i { font-size: 16px; }
+    #cards .find kbd { margin-left: auto; font-family: "Geist Mono", ui-monospace, monospace; font-size: 11.5px; padding: 2px 7px; border-radius: 999px; background: var(--chip); color: var(--pl); }
+    #cards .list { flex: 1; overflow: hidden; padding: 18px 2px 0; display: flex; flex-direction: column; gap: 8px; mask-image: linear-gradient(to bottom, #000 88%, transparent); -webkit-mask-image: linear-gradient(to bottom, #000 88%, transparent); }
+    #cards .list > * { flex-shrink: 0; }
+    #cards .list .label { padding: 12px 4px 2px; }
+    #cards .mini { padding: 11px 13px; display: flex; flex-direction: column; gap: 5px; }
+    #cards .mini p { font-size: 14.5px; line-height: 1.38; font-weight: 500; color: var(--ink); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    #cards .mini.one p { -webkit-line-clamp: 1; }
+    #cards .mini.ret { position: relative; overflow: hidden; background: var(--tint); padding-top: 14px; }
+    #cards .mini.ret::before { content: ""; position: absolute; inset: 0 0 auto; height: 3px; background: var(--dot); }
+    #cards .ret-label { display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 700; color: var(--dot-text); }
+    #cards .mini.active { box-shadow: var(--sh-hi), 0 0 0 1.5px color-mix(in oklab, var(--ink) 75%, transparent); }
+    #cards .rail-foot { display: flex; gap: 8px; padding-top: 14px; }
+
+    /* home main */
+    #cards .main { position: relative; display: flex; flex-direction: column; min-width: 0; }
+    #cards .head { display: flex; justify-content: flex-end; align-items: center; gap: 10px; padding: 22px 28px 0; }
+    #cards .center { flex: 1; display: flex; align-items: center; justify-content: center; padding: 0 32px 64px; }
+    #cards .pile { position: relative; isolation: isolate; width: min(580px, 100%); }
+    #cards .pile::before, #cards .pile::after { content: ""; position: absolute; left: 0; right: 0; height: 100%; border-radius: 16px; background: var(--card); box-shadow: var(--sh), 0 0 0 1px var(--card-edge); }
+    #cards .pile::before { top: 10px; transform: scale(.965); opacity: .75; }
+    #cards .pile::after { top: 20px; transform: scale(.93); opacity: .45; z-index: -1; }
+    #cards .pile::before { z-index: 0; }
+    #cards .composer { position: relative; z-index: 1; padding: 30px 30px 18px; }
+    #cards .composer p { font-size: 26px; line-height: 1.45; font-weight: 500; letter-spacing: -.012em; min-height: 76px; }
+    #cards .composer-foot { margin-top: 22px; padding-top: 16px; border-top: 1px solid var(--card-edge); display: flex; align-items: center; justify-content: space-between; }
+    #cards .composer-foot .meta { display: flex; align-items: center; gap: 7px; font-size: 13.5px; }
+
+    /* thought view */
+    #cards .app.thought { grid-template-columns: 300px minmax(0, 1fr); }
+    #cards .t-wrap { flex: 1; overflow: hidden; display: flex; flex-direction: column; align-items: center; padding: 18px 40px 22px; }
+    #cards .t-col { width: min(660px, 100%); display: flex; flex-direction: column; }
+    #cards .topline { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    #cards .sheet { position: relative; z-index: 2; padding: 30px 36px 32px; }
+    #cards .sheet-meta { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+    #cards .sheet h1 { font-size: 30px; line-height: 1.32; font-weight: 500; letter-spacing: -.02em; max-width: 26ch; }
+    #cards .notes { position: relative; z-index: 1; margin: -14px 22px 0; padding: 28px 24px 18px; border-radius: 0 0 16px 16px; background: var(--tint); box-shadow: var(--sh), 0 0 0 1px var(--card-edge); }
+    #cards .notes .label { display: flex; align-items: center; gap: 7px; margin-bottom: 6px; }
+    #cards .notes .label i { color: var(--dot-text); font-size: 15px; }
+    #cards .notes p { font-size: 15.5px; line-height: 1.6; color: var(--pt); }
+    #cards .rel-head { display: flex; align-items: center; gap: 10px; margin: 26px 2px 12px; }
+    #cards .rel-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    #cards .rel { position: relative; padding: 14px 14px 12px; min-height: 112px; display: flex; flex-direction: column; justify-content: space-between; gap: 12px; }
+    #cards .rel p { font-size: 14.5px; line-height: 1.4; font-weight: 500; padding-right: 26px; }
+    #cards .rel .x { position: absolute; top: 9px; right: 9px; width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; color: var(--pl); font-size: 14px; transition: background .2s, color .2s; }
+    #cards .rel .x:hover { background: var(--chip); color: var(--dot-text); }
+    #cards .rest-row { display: flex; justify-content: center; margin-top: 22px; }
+
+    /* phone */
+    #cards .pv { height: 100%; display: flex; flex-direction: column; padding-top: 44px; position: relative; }
+    #cards .ph-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 18px 0 22px; }
+    #cards .ph-head .r { display: flex; gap: 8px; }
+    #cards .ph-body { flex: 1; overflow: hidden; padding: 16px 16px 0; display: flex; flex-direction: column; gap: 8px; mask-image: linear-gradient(to bottom, #000 85%, transparent); -webkit-mask-image: linear-gradient(to bottom, #000 85%, transparent); }
+    #cards .ph-composer { padding: 20px 20px 14px; margin-bottom: 10px; }
+    #cards .ph-composer .caret { height: 26px; }
+    #cards .ph-composer .composer-foot { margin-top: 18px; padding-top: 12px; }
+    #cards .ph-body .label { padding: 10px 4px 2px; }
+    #cards .ph-body .mini { flex-direction: row; align-items: center; gap: 12px; }
+    #cards .ph-body .mini p { flex: 1; -webkit-line-clamp: 1; }
+    #cards .ph-body .mini.ret { flex-direction: column; align-items: stretch; }
+    #cards .ph-body .mini.ret p { -webkit-line-clamp: 2; }
+    #cards .ph-t { flex: 1; overflow: hidden; padding: 14px 16px 0; display: flex; flex-direction: column; }
+    #cards .ph-t .sheet { padding: 22px 22px 24px; }
+    #cards .ph-t .sheet h1 { font-size: 24px; }
+    #cards .ph-t .notes { margin: -14px 14px 0; padding: 26px 18px 16px; }
+    #cards .ph-t .notes p { font-size: 15px; }
+    #cards .ph-t .rel-head { margin: 22px 4px 10px; }
+    #cards .ph-t .rel { min-height: 0; flex-direction: row; align-items: center; margin-bottom: 8px; padding: 12px 12px 12px 14px; }
+    #cards .ph-t .rel p { flex: 1; padding-right: 0; }
+    #cards .ph-t .rel .x { position: static; flex: none; }
+    #cards .ph-dock { position: absolute; left: 0; right: 0; bottom: 0; padding: 30px 16px 26px; display: flex; justify-content: center; background: linear-gradient(to top, var(--cv) 62%, transparent); }
+  </style>
+
+  <section class="dir" id="cards">
+    <div class="dir-head">
+      <h2>Cards</h2>
+      <p>Every thought gets a surface. They sit on a slightly deeper canvas, lift when you touch them, and capture becomes a card you're about to add to the pile.</p>
+      <ul class="moves">
+        <li>Satoshi at 400 to 700</li>
+        <li>Raised cards, warm shadows</li>
+        <li>Vermilion Keep button</li>
+        <li>Returned thought gets a red edge</li>
+        <li>Sentence-case labels</li>
+      </ul>
+    </div>
+
+    <figure class="mock">
+      <div class="frame desk">
+        <div class="app">
+          <nav class="rail">
+            <div class="rail-top">
+              <span class="wm"><i></i>drft</span>
+              <span class="chip">11 thoughts</span>
+            </div>
+            <div class="find"><i class="ph ph-magnifying-glass"></i>Find a thought<kbd>⌘K</kbd></div>
+            <div class="list">
+              <div class="mini ret">
+                <span class="ret-label"><i class="ph-bold ph-arrow-u-up-left"></i>Back today</span>
+                <p>maybe the garden should be mostly wild, with one tended corner</p>
+                <span class="meta">2 oct</span>
+              </div>
+              <div class="label">Today</div>
+              <div class="mini"><p>I keep rewriting the first paragraph because I don't know the last one yet</p><span class="meta">9:12 am</span></div>
+              <div class="mini one"><p>you only notice the fridge hum when it stops</p><span class="meta">8:03 am</span></div>
+              <div class="label">This week</div>
+              <div class="mini one"><p>a podcast that only interviews people's grandparents</p><span class="meta">thu</span></div>
+              <div class="mini one"><p>call Meera about the cabin dates before friday</p><span class="meta">wed</span></div>
+              <div class="mini one"><p>teaching is mostly noticing things out loud</p><span class="meta">tue</span></div>
+            </div>
+            <div class="rail-foot">
+              <span class="pill ghost"><i class="ph ph-graph"></i>Connections</span>
+              <span class="pill ghost"><i class="ph ph-gear-six"></i>Settings</span>
+            </div>
+          </nav>
+          <div class="main">
+            <div class="head"></div>
+            <div class="center">
+              <div class="pile">
+                <div class="card composer">
+                  <p>write the ending first and walk backwards from it<span class="caret"></span></p>
+                  <div class="composer-foot">
+                    <span class="meta"><i class="ph ph-clock"></i>10:24 am, unfiled</span>
+                    <span class="pill keep"><i class="ph-bold ph-plus"></i>Keep<kbd>↵</kbd></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <figcaption>Home on desktop. The composer sits on top of a pile; everything in the rail is a card you can pick up.</figcaption>
+    </figure>
+
+    <figure class="mock">
+      <div class="frame desk">
+        <div class="app thought">
+          <nav class="rail">
+            <div class="rail-top">
+              <span class="wm"><i></i>drft</span>
+              <span class="chip">11 thoughts</span>
+            </div>
+            <div class="find"><i class="ph ph-magnifying-glass"></i>Find a thought<kbd>⌘K</kbd></div>
+            <div class="list">
+              <div class="mini ret">
+                <span class="ret-label"><i class="ph-bold ph-arrow-u-up-left"></i>Back today</span>
+                <p>maybe the garden should be mostly wild, with one tended corner</p>
+                <span class="meta">2 oct</span>
+              </div>
+              <div class="label">Today</div>
+              <div class="mini active"><p>I keep rewriting the first paragraph because I don't know the last one yet</p><span class="meta">9:12 am</span></div>
+              <div class="mini one"><p>you only notice the fridge hum when it stops</p><span class="meta">8:03 am</span></div>
+              <div class="label">This week</div>
+              <div class="mini one"><p>a podcast that only interviews people's grandparents</p><span class="meta">thu</span></div>
+              <div class="mini one"><p>call Meera about the cabin dates before friday</p><span class="meta">wed</span></div>
+            </div>
+            <div class="rail-foot">
+              <span class="pill ghost"><i class="ph ph-graph"></i>Connections</span>
+              <span class="pill ghost"><i class="ph ph-gear-six"></i>Settings</span>
+            </div>
+          </nav>
+          <div class="main">
+            <div class="t-wrap">
+              <div class="t-col">
+                <div class="topline">
+                  <span class="pill ghost"><i class="ph ph-arrow-left"></i>Home</span>
+                  <span class="meta">Friday, 9:12 am</span>
+                </div>
+                <div class="card sheet">
+                  <div class="sheet-meta">
+                    <span class="chip hot"><i class="ph-bold ph-arrow-u-up-left"></i>Returned today</span>
+                  </div>
+                  <h1>I keep rewriting the first paragraph because I don't know the last one yet</h1>
+                </div>
+                <div class="notes">
+                  <div class="label"><i class="ph-bold ph-note-pencil"></i>Notes</div>
+                  <p>Same thing happened with the talk in May. Wrote the closing slide first and the rest fell into place.</p>
+                </div>
+                <div class="rel-head"><span class="label">Related thoughts</span><span class="chip">3</span></div>
+                <div class="rel-grid">
+                  <div class="mini rel lift"><p>teaching is mostly noticing things out loud</p><span class="meta">tue</span><span class="x" aria-label="set related thought aside"><i class="ph ph-x"></i></span></div>
+                  <div class="mini rel lift"><p>the essay wants a door, not an introduction</p><span class="meta">21 oct</span><span class="x" aria-label="set related thought aside"><i class="ph ph-x"></i></span></div>
+                  <div class="mini rel lift"><p>a story told backwards, one scene per chapter</p><span><span class="chip"><i class="ph ph-moon"></i>Set down</span></span><span class="x" aria-label="set related thought aside"><i class="ph ph-x"></i></span></div>
+                </div>
+                <div class="rest-row"><span class="pill ghost"><i class="ph ph-moon"></i>Let it rest</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <figcaption>A thought on desktop. The thought is a sheet, notes are clipped underneath it, related thoughts are cards you can pick up or set aside.</figcaption>
+    </figure>
+
+    <div class="phones">
+      <figure class="mock">
+        <div class="frame phone">
+          <div class="pv">
+            <div class="ph-head">
+              <span class="wm"><i></i>drft</span>
+              <span class="r"><span class="icon-btn" aria-label="find"><i class="ph ph-magnifying-glass"></i></span><span class="icon-btn" aria-label="settings"><i class="ph ph-gear-six"></i></span></span>
+            </div>
+            <div class="ph-body">
+              <div class="card ph-composer">
+                <span class="caret"></span>
+                <div class="composer-foot">
+                  <span class="meta"><i class="ph ph-clock"></i>10:24 am, unfiled</span>
+                  <span class="chip">11 thoughts</span>
+                </div>
+              </div>
+              <div class="mini ret">
+                <span class="ret-label"><i class="ph-bold ph-arrow-u-up-left"></i>Back today</span>
+                <p>maybe the garden should be mostly wild, with one tended corner</p>
+                <span class="meta">2 oct</span>
+              </div>
+              <div class="label">Today</div>
+              <div class="mini"><p>I keep rewriting the first paragraph because I don't know the last one yet</p><span class="meta">9:12 am</span></div>
+              <div class="mini"><p>you only notice the fridge hum when it stops</p><span class="meta">8:03 am</span></div>
+              <div class="label">This week</div>
+              <div class="mini"><p>a podcast that only interviews people's grandparents</p><span class="meta">thu</span></div>
+              <div class="mini"><p>call Meera about the cabin dates before friday</p><span class="meta">wed</span></div>
+            </div>
+          </div>
+        </div>
+        <figcaption>Home on a phone.</figcaption>
+      </figure>
+      <figure class="mock">
+        <div class="frame phone">
+          <div class="pv">
+            <div class="ph-head">
+              <span class="icon-btn" aria-label="back"><i class="ph ph-arrow-left"></i></span>
+              <span class="meta">Friday, 9:12 am</span>
+            </div>
+            <div class="ph-t">
+              <div class="card sheet">
+                <div class="sheet-meta"><span class="chip hot"><i class="ph-bold ph-arrow-u-up-left"></i>Returned today</span></div>
+                <h1>I keep rewriting the first paragraph because I don't know the last one yet</h1>
+              </div>
+              <div class="notes">
+                <div class="label"><i class="ph-bold ph-note-pencil"></i>Notes</div>
+                <p>Same thing happened with the talk in May. Wrote the closing slide first and the rest fell into place.</p>
+              </div>
+              <div class="rel-head"><span class="label">Related thoughts</span><span class="chip">3</span></div>
+              <div class="mini rel"><p>teaching is mostly noticing things out loud</p><span class="meta">tue</span><span class="x" aria-label="set related thought aside"><i class="ph ph-x"></i></span></div>
+              <div class="mini rel"><p>the essay wants a door, not an introduction</p><span class="meta">21 oct</span><span class="x" aria-label="set related thought aside"><i class="ph ph-x"></i></span></div>
+            </div>
+            <div class="ph-dock"><span class="pill ghost"><i class="ph ph-moon"></i>Let it rest</span></div>
+          </div>
+        </div>
+        <figcaption>A thought on a phone. Related thoughts stack; "Let it rest" stays docked at the bottom.</figcaption>
+      </figure>
+      <div class="verdict">
+        <h3>Cards at a glance</h3>
+        <dl>
+          <dt>Type</dt><dd>Satoshi, 400 body, 500 thoughts, 700 labels. Nothing under 13px.</dd>
+          <dt>Accent</dt><dd>Vermilion on the Keep button, the returned thought's edge, and notes.</dd>
+          <dt>Surfaces</dt><dd>Canvas one step deeper than today; cards raised with warm-tinted shadows.</dd>
+          <dt>Radius</dt><dd>Surfaces 16px, mini cards 12px, every control a full pill.</dd>
+        </dl>
+        <p><b>Tradeoff:</b> the most physical and friendly of the four, but more boxes on screen. The collection reads busier than today, and the rail shows fewer thoughts per screen because each one is a card.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       POSTER: big confident type, sharp edges, blocks of solid color.
+       ============================================================ -->
+  <style>
+    #poster { --on-dot: var(--pg); --blk: var(--dot); --rule: 2px solid var(--ink); }
+    [data-theme="dark"] #poster { --on-dot: var(--ink); --blk: color-mix(in oklab, var(--dot) 84%, #000); }
+
+    #poster .app, #poster .pp { font-family: "Satoshi", "Geist", ui-sans-serif, system-ui, sans-serif; font-weight: 500; }
+    #poster .disp { font-family: "Cabinet Grotesk", "Satoshi", ui-sans-serif, sans-serif; letter-spacing: -.03em; }
+    #poster .mono { font-family: "Geist Mono", ui-monospace, monospace; font-size: 12px; font-weight: 400; color: var(--pl); letter-spacing: 0; }
+
+    /* ---------- desktop shell ---------- */
+    #poster .app { height: 100%; display: grid; grid-template-columns: 300px minmax(0, 1fr); }
+    #poster .app.with-notes { grid-template-columns: 300px minmax(0, 1fr) 300px; }
+    #poster .rail { background: var(--scr); border-right: var(--rule); display: flex; flex-direction: column; min-height: 0; }
+    #poster .rail-top { display: flex; align-items: flex-end; justify-content: space-between; padding: 26px 24px 20px; border-bottom: var(--rule); }
+    #poster .wm { font-size: 30px; font-weight: 800; line-height: 1; }
+    #poster .wm-count { display: flex; flex-direction: column; align-items: flex-end; line-height: 1; }
+    #poster .wm-count b { font-family: "Cabinet Grotesk", sans-serif; font-size: 30px; font-weight: 800; letter-spacing: -.03em; }
+    #poster .wm-count span { margin-top: 4px; font-size: 12px; font-weight: 500; color: var(--pl); }
+    #poster .find { margin: 18px 24px 4px; height: 42px; padding: 0 12px; display: flex; align-items: center; gap: 10px; border: var(--rule); font-size: 15px; font-weight: 500; color: var(--pt); transition: background .2s; }
+    #poster .find:hover { background: var(--pg); }
+    #poster .find i { font-size: 17px; }
+    #poster .find kbd { margin-left: auto; font-family: "Geist Mono", monospace; font-size: 12px; color: var(--pl); }
+    #poster .list { flex: 1; overflow: hidden; padding: 16px 24px 0; }
+
+    #poster .back-today { display: block; background: var(--blk); color: var(--on-dot); padding: 14px 16px 16px; margin-bottom: 8px; transition: transform .25s cubic-bezier(.16, 1, .3, 1); }
+    #poster .back-today:hover { transform: translateY(-2px); }
+    #poster .back-today small { display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 700; }
+    #poster .back-today p { margin-top: 6px; font-family: "Cabinet Grotesk", sans-serif; font-size: 19px; font-weight: 700; line-height: 1.15; letter-spacing: -.02em; }
+
+    #poster .grp-h { display: flex; align-items: baseline; justify-content: space-between; padding: 20px 0 8px; border-bottom: var(--rule); }
+    #poster .grp-h b { font-family: "Cabinet Grotesk", sans-serif; font-size: 21px; font-weight: 800; letter-spacing: -.025em; line-height: 1; }
+    #poster .row { display: flex; align-items: center; gap: 12px; padding: 10px 8px; margin: 0 -8px; font-size: 15px; color: var(--pt); transition: background .2s, color .2s; }
+    #poster .row:hover { background: var(--pg); color: var(--ink); }
+    #poster .row span { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #poster .row .mono { flex: none; }
+    #poster .row.active { background: var(--ink); color: var(--pg); }
+    #poster .row.active .mono { color: color-mix(in oklab, var(--pg) 78%, var(--ink)); }
+    #poster .rail-foot { border-top: var(--rule); display: grid; grid-template-columns: 1fr 1fr; }
+    #poster .rail-foot a { display: flex; align-items: center; gap: 8px; padding: 16px 24px; font-size: 15px; font-weight: 700; color: var(--ink); transition: background .2s; }
+    #poster .rail-foot a + a { border-left: var(--rule); }
+    #poster .rail-foot a:hover { background: var(--pg); }
+    #poster .rail-foot i { font-size: 17px; }
+
+    /* ---------- desktop home ---------- */
+    #poster .main { position: relative; display: flex; flex-direction: column; min-width: 0; }
+    #poster .capture { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 0 clamp(40px, 7vw, 96px) 72px; }
+    #poster .stamp-line { display: flex; align-items: baseline; gap: 14px; margin-bottom: 26px; }
+    #poster .stamp-line b { font-size: 22px; font-weight: 800; }
+    #poster .stamp-line span { font-size: 15px; color: var(--pl); }
+    #poster .capture p { max-width: 16ch; font-size: clamp(40px, 4.6vw, 58px); font-weight: 700; line-height: 1.04; }
+    #poster .capture-bar { margin-top: 36px; display: flex; align-items: center; gap: 18px; padding-top: 18px; border-top: var(--rule); max-width: 640px; }
+    #poster .btn { display: inline-flex; align-items: center; gap: 10px; height: 46px; padding: 0 22px; font-size: 16px; font-weight: 700; background: var(--ink); color: var(--pg); transition: transform .15s, background .2s; }
+    #poster .btn:hover { background: color-mix(in oklab, var(--ink) 86%, var(--dot)); }
+    #poster .btn:active { transform: translateY(1px); }
+    #poster .btn i { font-size: 18px; }
+    #poster .hint { font-size: 14px; color: var(--pl); display: flex; align-items: center; gap: 8px; }
+    #poster .hint kbd { font-family: "Geist Mono", monospace; font-size: 12px; padding: 2px 6px; border: 1.5px solid var(--pl); color: var(--pt); }
+
+    /* ---------- desktop thought ---------- */
+    #poster .t-head { display: flex; align-items: center; justify-content: space-between; padding: 22px 40px 0; }
+    #poster .back { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 700; }
+    #poster .back i { font-size: 18px; }
+    #poster .t-body { flex: 1; display: flex; flex-direction: column; padding: 18px clamp(32px, 4.5vw, 64px) 28px; min-height: 0; }
+    #poster .date { display: flex; align-items: stretch; gap: 0; align-self: flex-start; border: var(--rule); }
+    #poster .date .num { padding: 6px 12px 4px; font-family: "Cabinet Grotesk", sans-serif; font-size: 38px; font-weight: 800; line-height: 1; letter-spacing: -.03em; border-right: var(--rule); }
+    #poster .date .lbl { padding: 6px 12px; display: flex; flex-direction: column; justify-content: center; font-size: 13px; font-weight: 700; line-height: 1.3; }
+    #poster .date .lbl span { font-weight: 500; color: var(--pl); }
+    #poster .returned { align-self: flex-start; margin-left: 10px; display: inline-flex; align-items: center; gap: 8px; padding: 0 12px; font-size: 14px; font-weight: 700; background: var(--blk); color: var(--on-dot); }
+    #poster .t-title { margin-top: 22px; max-width: 22ch; font-size: clamp(32px, 3.2vw, 42px); font-weight: 700; line-height: 1.06; }
+    #poster .rel-wrap { margin-top: auto; padding-top: 24px; max-width: 680px; }
+    #poster .rel-h { display: flex; align-items: baseline; gap: 10px; padding-bottom: 8px; border-bottom: var(--rule); }
+    #poster .rel-h b { font-family: "Cabinet Grotesk", sans-serif; font-size: 21px; font-weight: 800; letter-spacing: -.025em; }
+    #poster .rel-h span { font-size: 15px; color: var(--pl); }
+    #poster .rel { display: grid; grid-template-columns: minmax(0, 1fr) auto 20px; gap: 16px; align-items: center; padding: 12px 0; border-bottom: 2px solid var(--line); transition: padding .25s cubic-bezier(.16, 1, .3, 1); }
+    #poster .rel:hover { padding-left: 8px; }
+    #poster .rel span { font-family: "Cabinet Grotesk", sans-serif; font-size: 17px; font-weight: 700; letter-spacing: -.015em; line-height: 1.2; }
+    #poster .rel i { font-size: 18px; color: var(--pl); }
+    #poster .rel:hover i { color: var(--dot); }
+    #poster .rel .down { color: var(--pl); }
+    #poster .t-foot { margin-top: 22px; display: flex; align-items: center; gap: 18px; }
+
+    #poster .notes { border-left: var(--rule); background: var(--scr); padding: 84px 28px 32px; display: flex; flex-direction: column; gap: 12px; }
+    #poster .notes-h { display: flex; align-items: baseline; justify-content: space-between; padding-bottom: 8px; border-bottom: var(--rule); }
+    #poster .notes-h b { font-family: "Cabinet Grotesk", sans-serif; font-size: 21px; font-weight: 800; letter-spacing: -.025em; }
+    #poster .notes-h span { font-size: 13px; color: var(--pl); }
+    #poster .notes p { font-size: 16.5px; line-height: 1.6; color: var(--pt); }
+
+    /* ---------- phone ---------- */
+    #poster .pp { height: 100%; display: flex; flex-direction: column; padding-top: 44px; }
+    #poster .ph-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 22px 14px; border-bottom: var(--rule); }
+    #poster .ph-head .wm { font-size: 28px; }
+    #poster .ph-head .r { display: flex; align-items: center; gap: 16px; }
+    #poster .ph-head .r i { font-size: 22px; }
+    #poster .ph-head .r b { font-family: "Cabinet Grotesk", sans-serif; font-size: 28px; font-weight: 800; letter-spacing: -.03em; line-height: 1; }
+    #poster .ph-cap { padding: 26px 22px 22px; border-bottom: var(--rule); }
+    #poster .ph-cap .field { font-family: "Cabinet Grotesk", sans-serif; font-size: 30px; font-weight: 700; line-height: 1.1; color: var(--pl); letter-spacing: -.02em; }
+    #poster .ph-cap .field .caret { height: 30px; color: var(--ink); vertical-align: -5px; margin: 0 4px 0 0; }
+    #poster .ph-cap small { display: block; margin-top: 14px; font-size: 14px; color: var(--pl); }
+    #poster .ph-list { padding: 16px 22px 0; overflow: hidden; }
+    #poster .ph-list .row { font-size: 16px; padding: 12px 8px; }
+    #poster .ph-t { flex: 1; display: flex; flex-direction: column; padding: 22px 22px 0; min-height: 0; }
+    #poster .ph-t .date .num { font-size: 32px; }
+    #poster .ph-t .t-title { margin-top: 22px; font-size: 34px; }
+    #poster .ph-t .returned { margin: 14px 0 0; height: 34px; }
+    #poster .ph-notes { margin-top: 26px; }
+    #poster .ph-notes p { margin-top: 10px; font-size: 16px; line-height: 1.6; color: var(--pt); }
+    #poster .ph-foot { margin-top: auto; padding: 0 0 26px; }
+    #poster .ph-foot .btn { width: 100%; justify-content: center; height: 52px; }
+  </style>
+
+  <section class="dir" id="poster">
+    <div class="dir-head">
+      <h2>Poster</h2>
+      <p>Your thoughts set like headlines. Big confident type, sharp edges, thick rules, and the returned thought as a solid block of vermilion.</p>
+      <ul class="moves">
+        <li>Cabinet Grotesk at 700 to 800</li>
+        <li>Big bold group words, no micro caps</li>
+        <li>Returned thought as a vermilion block</li>
+        <li>2px ink rules, square corners</li>
+        <li>Solid ink buttons</li>
+      </ul>
+    </div>
+
+    <figure class="mock">
+      <div class="frame desk">
+        <div class="app">
+          <nav class="rail">
+            <div class="rail-top">
+              <span class="wm disp">drft</span>
+              <span class="wm-count"><b>11</b><span>thoughts</span></span>
+            </div>
+            <div class="find"><i class="ph ph-magnifying-glass"></i>Find a thought<kbd>⌘K</kbd></div>
+            <div class="list">
+              <a class="back-today" href="#poster">
+                <small><i class="ph-bold ph-arrow-bend-down-left"></i>Back today</small>
+                <p>maybe the garden should be mostly wild, with one tended corner</p>
+              </a>
+              <div class="grp-h"><b>Today</b><span class="mono">2</span></div>
+              <div class="row"><span>I keep rewriting the first paragraph because I don't know the last one yet</span><span class="mono">9:12</span></div>
+              <div class="row"><span>you only notice the fridge hum when it stops</span><span class="mono">8:03</span></div>
+              <div class="grp-h"><b>This week</b><span class="mono">4</span></div>
+              <div class="row"><span>a podcast that only interviews people's grandparents</span><span class="mono">thu</span></div>
+              <div class="row"><span>call Meera about the cabin dates before friday</span><span class="mono">wed</span></div>
+              <div class="row"><span>teaching is mostly noticing things out loud</span><span class="mono">tue</span></div>
+              <div class="row"><span>a font that gets heavier the longer you stare at it</span><span class="mono">mon</span></div>
+              <div class="grp-h"><b>Earlier</b><span class="mono">4</span></div>
+              <div class="row"><span>start the year in March, like the Romans did</span><span class="mono">18 oct</span></div>
+            </div>
+            <div class="rail-foot">
+              <a href="#poster"><i class="ph-bold ph-graph"></i>Connections</a>
+              <a href="#poster"><i class="ph-bold ph-gear-six"></i>Settings</a>
+            </div>
+          </nav>
+          <div class="main">
+            <div class="capture">
+              <div class="stamp-line disp"><b>Friday</b><span>10:24 am, unfiled</span></div>
+              <p class="disp">write the ending first and walk backwards from it<span class="caret"></span></p>
+              <div class="capture-bar">
+                <span class="btn"><i class="ph-bold ph-arrow-down"></i>Keep</span>
+                <span class="hint"><kbd>Enter</kbd>to keep, <kbd>Shift Enter</kbd>for a new line</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <figcaption>Home on desktop: the thought you're typing is the headline. The returned thought sits on top of the rail as a solid block.</figcaption>
+    </figure>
+
+    <figure class="mock">
+      <div class="frame desk">
+        <div class="app with-notes">
+          <nav class="rail">
+            <div class="rail-top">
+              <span class="wm disp">drft</span>
+              <span class="wm-count"><b>11</b><span>thoughts</span></span>
+            </div>
+            <div class="find"><i class="ph ph-magnifying-glass"></i>Find a thought<kbd>⌘K</kbd></div>
+            <div class="list">
+              <a class="back-today" href="#poster">
+                <small><i class="ph-bold ph-arrow-bend-down-left"></i>Back today</small>
+                <p>maybe the garden should be mostly wild, with one tended corner</p>
+              </a>
+              <div class="grp-h"><b>Today</b><span class="mono">2</span></div>
+              <div class="row active"><span>I keep rewriting the first paragraph because I don't know the last one yet</span><span class="mono">9:12</span></div>
+              <div class="row"><span>you only notice the fridge hum when it stops</span><span class="mono">8:03</span></div>
+              <div class="grp-h"><b>This week</b><span class="mono">4</span></div>
+              <div class="row"><span>a podcast that only interviews people's grandparents</span><span class="mono">thu</span></div>
+              <div class="row"><span>call Meera about the cabin dates before friday</span><span class="mono">wed</span></div>
+              <div class="row"><span>teaching is mostly noticing things out loud</span><span class="mono">tue</span></div>
+            </div>
+            <div class="rail-foot">
+              <a href="#poster"><i class="ph-bold ph-graph"></i>Connections</a>
+              <a href="#poster"><i class="ph-bold ph-gear-six"></i>Settings</a>
+            </div>
+          </nav>
+          <div class="main">
+            <div class="t-head">
+              <span class="back"><i class="ph-bold ph-arrow-left"></i>Back</span>
+              <span class="mono">j / k to move</span>
+            </div>
+            <div class="t-body">
+              <div style="display:flex">
+                <div class="date"><span class="num">9:12</span><span class="lbl">Friday<span>30 Oct</span></span></div>
+                <span class="returned"><i class="ph-bold ph-arrow-bend-down-left"></i>Returned today</span>
+              </div>
+              <h1 class="t-title disp">I keep rewriting the first paragraph because I don't know the last one yet</h1>
+              <div class="rel-wrap">
+                <div class="rel-h"><b>Related</b><span>3 thoughts</span></div>
+                <div class="rel"><span>teaching is mostly noticing things out loud</span><span class="mono">tue</span><i class="ph-bold ph-arrow-right"></i></div>
+                <div class="rel"><span>the essay wants a door, not an introduction</span><span class="mono">21 oct</span><i class="ph-bold ph-arrow-right"></i></div>
+                <div class="rel"><span class="down">a story told backwards, one scene per chapter</span><span class="mono">set down</span><i class="ph-bold ph-arrow-right"></i></div>
+                <div class="t-foot">
+                  <span class="btn"><i class="ph-bold ph-moon"></i>Let it rest</span>
+                  <span class="hint">Sets it down until you wake it</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <aside class="notes">
+            <div class="notes-h"><b>Notes</b><span>yours</span></div>
+            <p>Same thing happened with the talk in May. Wrote the closing slide first and the rest fell into place.</p>
+          </aside>
+        </div>
+      </div>
+      <figcaption>A thought on a wide screen: set large and left aligned, with the time as a stamp and related thoughts in bold under a thick rule.</figcaption>
+    </figure>
+
+    <div class="phones">
+      <figure class="mock">
+        <div class="frame phone">
+          <div class="pp">
+            <div class="ph-head">
+              <span class="wm disp">drft</span>
+              <span class="r"><i class="ph-bold ph-magnifying-glass"></i><i class="ph-bold ph-gear-six"></i><b>11</b></span>
+            </div>
+            <div class="ph-cap">
+              <div class="field"><span class="caret"></span>a thought</div>
+              <small>10:24 am, unfiled</small>
+            </div>
+            <div class="ph-list">
+              <a class="back-today" href="#poster">
+                <small><i class="ph-bold ph-arrow-bend-down-left"></i>Back today</small>
+                <p>maybe the garden should be mostly wild, with one tended corner</p>
+              </a>
+              <div class="grp-h"><b>Today</b><span class="mono">2</span></div>
+              <div class="row"><span>I keep rewriting the first paragraph because I don't know the last one yet</span><span class="mono">9:12</span></div>
+              <div class="row"><span>you only notice the fridge hum when it stops</span><span class="mono">8:03</span></div>
+              <div class="grp-h"><b>This week</b><span class="mono">4</span></div>
+              <div class="row"><span>a podcast that only interviews people's grandparents</span><span class="mono">thu</span></div>
+              <div class="row"><span>call Meera about the cabin dates before friday</span><span class="mono">wed</span></div>
+            </div>
+          </div>
+        </div>
+        <figcaption>Home on a phone.</figcaption>
+      </figure>
+      <figure class="mock">
+        <div class="frame phone">
+          <div class="pp">
+            <div class="ph-head">
+              <span class="back"><i class="ph-bold ph-arrow-left"></i>Back</span>
+              <span class="mono">friday</span>
+            </div>
+            <div class="ph-t">
+              <div class="date"><span class="num">9:12</span><span class="lbl">Friday<span>30 Oct</span></span></div>
+              <h1 class="t-title disp">I keep rewriting the first paragraph because I don't know the last one yet</h1>
+              <span class="returned"><i class="ph-bold ph-arrow-bend-down-left"></i>Returned today</span>
+              <div class="ph-notes">
+                <div class="notes-h"><b>Notes</b><span>yours</span></div>
+                <p>Same thing happened with the talk in May. Wrote the closing slide first and the rest fell into place.</p>
+              </div>
+              <div class="ph-foot"><span class="btn"><i class="ph-bold ph-moon"></i>Let it rest</span></div>
+            </div>
+          </div>
+        </div>
+        <figcaption>A thought on a phone.</figcaption>
+      </figure>
+      <div class="verdict">
+        <h3>Poster at a glance</h3>
+        <dl>
+          <dt>Type</dt><dd>Cabinet Grotesk 700 to 800 for thoughts and headings, Satoshi 500 for everything small.</dd>
+          <dt>Accent</dt><dd>Vermilion only as a solid block: the returned thought and its tag.</dd>
+          <dt>Surfaces</dt><dd>Flat. Structure comes from 2px ink rules and solid ink fills.</dd>
+          <dt>Radius</dt><dd>0 everywhere.</dd>
+        </dl>
+        <p><b>Tradeoff:</b> the most memorable of the four and the easiest to read, but it trades the quiet, private feeling for confidence. A long thought set at 48px takes over the screen.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       GLOW: now is warm. The vermilion becomes light, and thoughts
+       cool as they age.
+       ============================================================ -->
+  <style>
+    #glow {
+      /* warmth scale, light room */
+      --ember-ink: color-mix(in oklab, var(--dot) 78%, var(--ink));
+      --wash3: 6%; --pill3: 16%; --wash2: 2.5%; --pill2: 8%;
+      --rel3: 11%; --rel2: 5%;
+      --halo-core: 20%; --halo-wide: 10%;
+      --btn: var(--dot);
+      --frost: color-mix(in oklab, var(--scr) 70%, transparent);
+      --soft: color-mix(in oklab, var(--ink) 5%, transparent);
+    }
+    [data-theme="dark"] #glow {
+      /* embers on a dark room: a little more heat, lighter ember text */
+      --ember-ink: color-mix(in oklab, var(--dot) 62%, var(--ink));
+      --wash3: 9%; --pill3: 22%; --wash2: 4%; --pill2: 11%;
+      --rel3: 16%; --rel2: 8%;
+      --halo-core: 30%; --halo-wide: 13%;
+      --btn: color-mix(in oklab, var(--dot) 88%, var(--ink));
+      --frost: color-mix(in oklab, var(--scr) 62%, transparent);
+      --soft: color-mix(in oklab, var(--ink) 7%, transparent);
+    }
+
+    #glow .app, #glow .pv { font-family: "General Sans", ui-sans-serif, system-ui, sans-serif; font-weight: 400; color: var(--ink); }
+    #glow .app {
+      height: 100%; display: grid; grid-template-columns: 288px minmax(0, 1fr);
+      background:
+        radial-gradient(520px 420px at 0% 0%, color-mix(in oklab, var(--dot) var(--pill2), transparent), transparent 70%),
+        var(--pg);
+    }
+    #glow .app.with-notes { grid-template-columns: 288px minmax(0, 1fr) 300px; }
+
+    /* ---------- the frosted rail ---------- */
+    #glow .rail {
+      position: relative; display: flex; flex-direction: column; min-height: 0;
+      padding: 24px 16px 0 20px; background: var(--frost);
+      backdrop-filter: blur(22px) saturate(150%); -webkit-backdrop-filter: blur(22px) saturate(150%);
+      border-right: 1px solid var(--line);
+    }
+    @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+      #glow .rail { background: var(--scr); }
+    }
+    /* The heat strip: hottest at the top (today), cooling downward. */
+    #glow .rail::before {
+      content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+      background: linear-gradient(to bottom, var(--dot), color-mix(in oklab, var(--dot) 40%, transparent) 32%, transparent 72%);
+    }
+    #glow .brand { display: flex; align-items: center; gap: 9px; padding: 0 8px; font-size: 17px; font-weight: 600; letter-spacing: -.01em; }
+    #glow .brand i { width: 9px; height: 9px; border-radius: 50%; background: var(--dot); box-shadow: 0 0 0 4px color-mix(in oklab, var(--dot) 18%, transparent); }
+    #glow .find { margin-top: 20px; height: 40px; display: flex; align-items: center; gap: 10px; padding: 0 8px 0 14px; border-radius: 999px; background: var(--soft); color: var(--pl); font-size: 14px; }
+    #glow .find .ph { font-size: 16px; }
+    #glow .find span { flex: 1; }
+    #glow kbd { font-family: "Geist Mono", ui-monospace, monospace; font-size: 12px; color: var(--pt); padding: 2px 8px; border-radius: 999px; background: var(--pg); box-shadow: inset 0 0 0 1px var(--line); }
+
+    #glow .list { flex: 1; min-height: 0; overflow: hidden; margin-top: 18px; }
+    #glow .back { padding: 13px 16px 14px; border-radius: 20px; background: color-mix(in oklab, var(--dot) var(--pill2), var(--scr)); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--dot) 24%, transparent); }
+    #glow .back-l { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; color: var(--ember-ink); }
+    #glow .back p { margin-top: 4px; font-size: 15px; line-height: 1.4; color: var(--ink); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    #glow .gl { padding: 18px 12px 6px; font-size: 13px; font-weight: 500; color: var(--pt); }
+
+    /* Rows carry their age as warmth. */
+    #glow .row { display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 12px; border-radius: 999px; font-size: 14.5px; transition: background .25s cubic-bezier(.16, 1, .3, 1); }
+    #glow .row + .row { margin-top: 2px; }
+    #glow .row > span:first-child { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #glow .t { flex: none; font-size: 13px; font-weight: 500; font-variant-numeric: tabular-nums; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+    #glow .h3 { color: var(--ink); background: color-mix(in oklab, var(--dot) var(--wash3), transparent); }
+    #glow .h3 .t { color: var(--ember-ink); background: color-mix(in oklab, var(--dot) var(--pill3), transparent); }
+    #glow .h2 { color: var(--pt); background: color-mix(in oklab, var(--dot) var(--wash2), transparent); }
+    #glow .h2 .t { color: color-mix(in oklab, var(--dot) 30%, var(--pt)); background: color-mix(in oklab, var(--dot) var(--pill2), transparent); }
+    #glow .h1 { color: var(--pl); }
+    #glow .h1 .t { color: var(--pl); box-shadow: inset 0 0 0 1px var(--line); }
+    #glow .row:hover { background: color-mix(in oklab, var(--dot) var(--pill3), transparent); color: var(--ink); }
+    #glow .row.active { color: var(--ink); font-weight: 500; background: color-mix(in oklab, var(--dot) var(--pill3), transparent); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--dot) 40%, transparent); }
+
+    #glow .rail-foot { display: flex; flex-direction: column; gap: 2px; padding: 12px 0 18px; border-top: 1px solid var(--line); }
+    #glow .rail-foot span { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 999px; font-size: 14px; font-weight: 500; color: var(--pt); }
+    #glow .rail-foot span:hover { background: var(--soft); color: var(--ink); }
+    #glow .rail-foot .ph { font-size: 17px; }
+
+    /* ---------- the lit center ---------- */
+    #glow .main { position: relative; display: flex; flex-direction: column; min-width: 0; overflow: hidden; }
+    #glow .head { position: relative; z-index: 1; display: flex; justify-content: flex-end; align-items: center; padding: 22px 28px 0; }
+    #glow .count { font-size: 13px; font-weight: 500; color: var(--pt); padding: 6px 13px; border-radius: 999px; background: var(--soft); }
+    #glow .halo {
+      position: absolute; left: 50%; top: 50%; width: 760px; height: 760px; border-radius: 50%;
+      pointer-events: none; z-index: 0; transform: translate(-50%, -50%);
+      background:
+        radial-gradient(closest-side, color-mix(in oklab, var(--dot) var(--halo-core), transparent), transparent 42%),
+        radial-gradient(closest-side, color-mix(in oklab, var(--dot) var(--halo-wide), transparent), transparent 100%);
+      animation: glow-breathe 7s ease-in-out infinite alternate;
+    }
+    #glow .halo.soft { width: 600px; height: 600px; opacity: .7; animation: none; }
+    @keyframes glow-breathe {
+      from { transform: translate(-50%, -50%) scale(.94); opacity: .82; }
+      to { transform: translate(-50%, -50%) scale(1.04); opacity: 1; }
+    }
+    #glow .capture { position: relative; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 40px 72px; text-align: center; }
+    #glow .capture .halo { top: calc(50% - 36px); }
+    #glow .say { position: relative; z-index: 1; max-width: 22ch; font-size: 30px; line-height: 1.42; letter-spacing: -.012em; }
+    #glow .actions { position: relative; z-index: 1; margin-top: 30px; display: flex; align-items: center; gap: 16px; }
+    #glow .keep {
+      height: 44px; display: inline-flex; align-items: center; gap: 8px; padding: 0 22px 0 18px; border-radius: 999px;
+      background: var(--btn); color: var(--pg); font-size: 15px; font-weight: 500;
+      box-shadow: inset 0 1px 0 color-mix(in oklab, var(--pg) 22%, transparent), 0 12px 24px -14px color-mix(in oklab, var(--dot) 70%, transparent);
+      transition: transform .2s cubic-bezier(.16, 1, .3, 1);
+    }
+    #glow .keep:hover { transform: translateY(-1px); }
+    #glow .keep:active { transform: scale(.98); }
+    #glow .hint { font-size: 13px; color: var(--pl); }
+
+    /* ---------- a thought ---------- */
+    #glow .topline { position: relative; z-index: 1; display: flex; align-items: center; padding: 18px 24px 0; }
+    #glow .iconbtn { width: 40px; height: 40px; flex: none; display: grid; place-items: center; border-radius: 999px; background: var(--soft); color: var(--pt); font-size: 18px; }
+    #glow .dateline { position: absolute; left: 0; right: 0; top: 28px; text-align: center; font-size: 13px; font-weight: 500; color: var(--pt); pointer-events: none; }
+    #glow .thought { position: relative; flex: 1; display: flex; flex-direction: column; align-items: center; padding: 0 40px; min-height: 0; }
+    #glow .thought .halo { top: 33%; }
+    #glow .thought-body { position: relative; z-index: 1; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; padding: 20px 0; }
+    #glow h1.t1 { max-width: 25ch; text-align: center; font-size: 31px; line-height: 1.4; font-weight: 400; letter-spacing: -.012em; }
+    #glow .returned { margin-top: 20px; display: inline-flex; align-items: center; gap: 6px; padding: 5px 13px 5px 10px; border-radius: 999px; font-size: 13px; font-weight: 500; color: var(--ember-ink); background: color-mix(in oklab, var(--dot) var(--pill3), transparent); }
+    #glow .returned .ph { font-size: 15px; }
+    #glow .related { margin-top: 40px; width: 100%; max-width: 520px; }
+    #glow .related-h { display: flex; align-items: center; gap: 8px; padding: 0 4px 10px; font-size: 13px; font-weight: 500; color: var(--pt); }
+    #glow .related-h b { font-weight: 500; font-size: 12.5px; padding: 1px 8px; border-radius: 999px; background: var(--soft); }
+    #glow .rel { display: grid; grid-template-columns: 12px minmax(0, 1fr) auto; align-items: center; gap: 14px; padding: 14px 18px 14px 16px; border-radius: 20px; font-size: 15px; line-height: 1.45; transition: transform .25s cubic-bezier(.16, 1, .3, 1); }
+    #glow .rel + .rel { margin-top: 8px; }
+    #glow .rel:hover { transform: translateX(3px); }
+    #glow .rel > i { width: 10px; height: 10px; border-radius: 50%; }
+    #glow .rel small { font-size: 13px; font-weight: 500; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+    #glow .rel.s3 { color: var(--ink); background: color-mix(in oklab, var(--dot) var(--rel3), var(--scr)); }
+    #glow .rel.s3 > i { background: var(--dot); box-shadow: 0 0 0 4px color-mix(in oklab, var(--dot) 20%, transparent); }
+    #glow .rel.s3 small { color: var(--ember-ink); }
+    #glow .rel.s2 { color: var(--pt); background: color-mix(in oklab, var(--dot) var(--rel2), var(--scr)); }
+    #glow .rel.s2 > i { background: color-mix(in oklab, var(--dot) 50%, transparent); }
+    #glow .rel.s2 small { color: var(--pt); }
+    #glow .rel.s1 { color: var(--pl); box-shadow: inset 0 0 0 1px var(--line); }
+    #glow .rel.s1 > i { box-shadow: inset 0 0 0 1.5px var(--line); }
+    #glow .rel.s1 small { color: var(--pl); }
+
+    /* Setting a thought down cools it: the warm edge slides away on hover. */
+    #glow .rest {
+      position: relative; z-index: 1; margin-bottom: 36px; height: 44px; display: inline-flex; align-items: center; gap: 8px;
+      padding: 0 22px 0 18px; border-radius: 999px; font-size: 15px; font-weight: 500; color: var(--pt);
+      background: linear-gradient(90deg, color-mix(in oklab, var(--dot) var(--pill3), var(--scr)), var(--scr) 50%, var(--scr));
+      background-size: 220% 100%; background-position: 0 0;
+      box-shadow: inset 0 0 0 1px var(--line);
+      transition: background-position .6s cubic-bezier(.16, 1, .3, 1), color .3s;
+    }
+    #glow .rest:hover { background-position: 100% 0; color: var(--ink); }
+
+    #glow .notes { position: relative; z-index: 1; padding: 78px 24px 24px 4px; display: flex; flex-direction: column; gap: 10px; }
+    #glow .notes-l { display: flex; align-items: center; gap: 7px; padding-left: 4px; font-size: 13px; font-weight: 500; color: var(--pt); }
+    #glow .notes-card { padding: 16px 18px 18px; border-radius: 20px; background: var(--scr); box-shadow: inset 0 0 0 1px var(--line); font-size: 15px; line-height: 1.65; color: var(--pt); }
+
+    /* ---------- phone ---------- */
+    #glow .pv { position: relative; height: 100%; display: flex; flex-direction: column; padding-top: 44px; overflow: hidden; background: var(--pg); }
+    #glow .ph-head { position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; padding: 6px 16px 0; }
+    #glow .ph-head .brand { position: absolute; left: 0; right: 0; justify-content: center; pointer-events: none; }
+    #glow .ph-head .r { display: flex; align-items: center; gap: 6px; }
+    #glow .ph-head .count { padding: 5px 11px; }
+    #glow .ph-cap { position: relative; padding: 50px 28px 40px; text-align: center; }
+    #glow .ph-cap .halo { width: 440px; height: 440px; top: 50%; }
+    #glow .ph-cap .caret { position: relative; z-index: 1; height: 28px; }
+    #glow .ph-cap .hint { position: relative; z-index: 1; display: block; margin-top: 16px; }
+    #glow .ph-list { position: relative; z-index: 1; padding: 0 14px; }
+    #glow .ph-list .row { font-size: 15.5px; padding: 11px 10px 11px 14px; }
+    #glow .ph-list .gl { padding: 20px 14px 6px; }
+    #glow .ph-thought { position: relative; flex: 1; display: flex; flex-direction: column; align-items: center; padding: 0 18px; text-align: center; min-height: 0;
+      -webkit-mask-image: linear-gradient(to bottom, #000 78%, transparent 92%); mask-image: linear-gradient(to bottom, #000 78%, transparent 92%); }
+    #glow .ph-thought .halo { width: 460px; height: 460px; top: 150px; }
+    #glow .ph-thought h1 { position: relative; z-index: 1; margin-top: 52px; font-size: 25px; line-height: 1.4; font-weight: 400; letter-spacing: -.01em; max-width: 19ch; }
+    #glow .ph-thought .returned { position: relative; z-index: 1; }
+    #glow .ph-thought .notes-m { position: relative; z-index: 1; margin-top: 28px; width: 100%; text-align: left; display: flex; flex-direction: column; gap: 8px; }
+    #glow .ph-thought .related { margin-top: 22px; text-align: left; }
+    #glow .ph-thought .rel { font-size: 14.5px; }
+    #glow .ph-rest { position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; display: flex; justify-content: center; padding: 44px 0 30px; background: linear-gradient(to top, var(--pg) 58%, transparent); }
+    #glow .ph-rest .rest { margin: 0; }
+  </style>
+
+  <section class="dir" id="glow">
+    <div class="dir-head">
+      <h2>Glow</h2>
+      <p>Now is warm. The vermilion turns into light: it glows behind what you're writing, and thoughts cool as they get older.</p>
+      <ul class="moves">
+        <li>General Sans, nothing under 13px</li>
+        <li>A halo behind capture</li>
+        <li>Rows warm by age</li>
+        <li>Frosted rail</li>
+        <li>Warmth shows how close a link is</li>
+      </ul>
+    </div>
+
+    <figure class="mock">
+      <div class="frame desk">
+        <div class="app">
+          <nav class="rail">
+            <div class="brand"><i></i>drft</div>
+            <div class="find"><i class="ph ph-magnifying-glass"></i><span>Find a thought</span><kbd>⌘K</kbd></div>
+            <div class="list">
+              <div class="back">
+                <div class="back-l"><i class="ph ph-sun-horizon"></i>Back today</div>
+                <p>maybe the garden should be mostly wild, with one tended corner</p>
+              </div>
+              <div class="gl">Today</div>
+              <div class="row h3"><span>I keep rewriting the first paragraph because I don't know the last one yet</span><span class="t">9:12 am</span></div>
+              <div class="row h3"><span>you only notice the fridge hum when it stops</span><span class="t">8:03 am</span></div>
+              <div class="gl">This week</div>
+              <div class="row h2"><span>a podcast that only interviews people's grandparents</span><span class="t">thu</span></div>
+              <div class="row h2"><span>call Meera about the cabin dates before friday</span><span class="t">wed</span></div>
+              <div class="row h2"><span>teaching is mostly noticing things out loud</span><span class="t">tue</span></div>
+              <div class="row h2"><span>a font that gets heavier the longer you stare at it</span><span class="t">mon</span></div>
+              <div class="gl">Earlier</div>
+              <div class="row h1"><span>start the year in March, like the Romans did</span><span class="t">18 oct</span></div>
+              <div class="row h1"><span>the bus driver waved at every single kid. every one.</span><span class="t">11 oct</span></div>
+            </div>
+            <div class="rail-foot">
+              <span><i class="ph ph-graph"></i>Connections</span>
+              <span><i class="ph ph-gear-six"></i>Settings</span>
+            </div>
+          </nav>
+          <div class="main">
+            <div class="head"><span class="count">11 thoughts</span></div>
+            <div class="capture">
+              <div class="halo" aria-hidden="true"></div>
+              <p class="say">write the ending first and walk backwards from it<span class="caret"></span></p>
+              <div class="actions">
+                <span class="keep"><i class="ph ph-arrow-elbow-down-left"></i>Keep</span>
+                <span class="hint">or press Enter</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <figcaption>Home on desktop: the center of the room is lit, and the rail cools from today down to earlier.</figcaption>
+    </figure>
+
+    <figure class="mock">
+      <div class="frame desk">
+        <div class="app with-notes">
+          <nav class="rail">
+            <div class="brand"><i></i>drft</div>
+            <div class="find"><i class="ph ph-magnifying-glass"></i><span>Find a thought</span><kbd>⌘K</kbd></div>
+            <div class="list">
+              <div class="back">
+                <div class="back-l"><i class="ph ph-sun-horizon"></i>Back today</div>
+                <p>maybe the garden should be mostly wild, with one tended corner</p>
+              </div>
+              <div class="gl">Today</div>
+              <div class="row h3 active"><span>I keep rewriting the first paragraph because I don't know the last one yet</span><span class="t">9:12 am</span></div>
+              <div class="row h3"><span>you only notice the fridge hum when it stops</span><span class="t">8:03 am</span></div>
+              <div class="gl">This week</div>
+              <div class="row h2"><span>a podcast that only interviews people's grandparents</span><span class="t">thu</span></div>
+              <div class="row h2"><span>call Meera about the cabin dates before friday</span><span class="t">wed</span></div>
+              <div class="row h2"><span>teaching is mostly noticing things out loud</span><span class="t">tue</span></div>
+            </div>
+            <div class="rail-foot">
+              <span><i class="ph ph-graph"></i>Connections</span>
+              <span><i class="ph ph-gear-six"></i>Settings</span>
+            </div>
+          </nav>
+          <div class="main">
+            <div class="topline">
+              <span class="iconbtn"><i class="ph ph-arrow-left"></i></span>
+              <span class="dateline">Friday · 9:12 am</span>
+            </div>
+            <div class="thought">
+              <div class="halo soft" aria-hidden="true"></div>
+              <div class="thought-body">
+                <h1 class="t1">I keep rewriting the first paragraph because I don't know the last one yet</h1>
+                <span class="returned"><i class="ph ph-sun-horizon"></i>Returned today</span>
+                <div class="related">
+                  <div class="related-h">Related thoughts <b>3</b></div>
+                  <div class="rel s3"><i></i><span>teaching is mostly noticing things out loud</span><small>tue</small></div>
+                  <div class="rel s2"><i></i><span>the essay wants a door, not an introduction</span><small>21 oct</small></div>
+                  <div class="rel s1"><i></i><span>a story told backwards, one scene per chapter</span><small><i class="ph ph-moon"></i>Set down</small></div>
+                </div>
+              </div>
+              <span class="rest"><i class="ph ph-moon"></i>Let it rest</span>
+            </div>
+          </div>
+          <aside class="notes">
+            <span class="notes-l"><i class="ph ph-note-pencil"></i>Notes</span>
+            <div class="notes-card">Same thing happened with the talk in May. Wrote the closing slide first and the rest fell into place.</div>
+          </aside>
+        </div>
+      </div>
+      <figcaption>A thought: a gentler halo behind your words. Related thoughts are warmer the closer they are; "Let it rest" cools as you reach for it.</figcaption>
+    </figure>
+
+    <div class="phones">
+      <figure class="mock">
+        <div class="frame phone">
+          <div class="pv">
+            <div class="ph-head">
+              <span class="iconbtn"><i class="ph ph-gear-six"></i></span>
+              <span class="brand"><i></i>drft</span>
+              <span class="r"><span class="iconbtn"><i class="ph ph-magnifying-glass"></i></span><span class="count">11</span></span>
+            </div>
+            <div class="ph-cap">
+              <div class="halo" aria-hidden="true"></div>
+              <span class="caret"></span>
+              <span class="hint">10:24 am · unfiled</span>
+            </div>
+            <div class="ph-list">
+              <div class="back">
+                <div class="back-l"><i class="ph ph-sun-horizon"></i>Back today</div>
+                <p>maybe the garden should be mostly wild, with one tended corner</p>
+              </div>
+              <div class="gl">Today</div>
+              <div class="row h3"><span>I keep rewriting the first paragraph because I don't know the last one yet</span><span class="t">9:12 am</span></div>
+              <div class="row h3"><span>you only notice the fridge hum when it stops</span><span class="t">8:03 am</span></div>
+              <div class="gl">This week</div>
+              <div class="row h2"><span>a podcast that only interviews people's grandparents</span><span class="t">thu</span></div>
+              <div class="row h2"><span>call Meera about the cabin dates before friday</span><span class="t">wed</span></div>
+            </div>
+          </div>
+        </div>
+        <figcaption>Home on a phone.</figcaption>
+      </figure>
+      <figure class="mock">
+        <div class="frame phone">
+          <div class="pv">
+            <div class="ph-head">
+              <span class="iconbtn"><i class="ph ph-arrow-left"></i></span>
+              <span class="brand" style="font-size:13px;font-weight:500;color:var(--pt)">Friday · 9:12 am</span>
+              <span style="width:40px"></span>
+            </div>
+            <div class="ph-thought">
+              <div class="halo soft" aria-hidden="true"></div>
+              <h1>I keep rewriting the first paragraph because I don't know the last one yet</h1>
+              <span class="returned"><i class="ph ph-sun-horizon"></i>Returned today</span>
+              <div class="notes-m">
+                <span class="notes-l"><i class="ph ph-note-pencil"></i>Notes</span>
+                <div class="notes-card">Same thing happened with the talk in May. Wrote the closing slide first and the rest fell into place.</div>
+              </div>
+              <div class="related">
+                <div class="related-h">Related thoughts <b>3</b></div>
+                <div class="rel s3"><i></i><span>teaching is mostly noticing things out loud</span><small>tue</small></div>
+                <div class="rel s2"><i></i><span>the essay wants a door, not an introduction</span><small>21 oct</small></div>
+              </div>
+            </div>
+            <div class="ph-rest"><span class="rest"><i class="ph ph-moon"></i>Let it rest</span></div>
+          </div>
+        </div>
+        <figcaption>A thought on a phone.</figcaption>
+      </figure>
+      <div class="verdict">
+        <h3>Glow at a glance</h3>
+        <dl>
+          <dt>Type</dt><dd>General Sans 400 and 500. Sentence-case labels, nothing under 13px.</dd>
+          <dt>Accent</dt><dd>Vermilion as light: halos, warm washes, and a heat scale by age.</dd>
+          <dt>Surfaces</dt><dd>A frosted rail, warm tinted cards, a lit center.</dd>
+          <dt>Radius</dt><dd>Pills for anything you press, 20px for surfaces.</dd>
+        </dl>
+        <p><b>Tradeoff:</b> the most atmospheric of the four and the most to tune. Push the tints a little too far and the rail turns pink; keep them too faint and the heat scale stops reading.</p>
+      </div>
+    </div>
+  </section>
+
+
+  <footer class="end">
+    Pick one, or mix: the type from one and the surfaces from another. Light and dark toggle is at the top right.
+  </footer>
+</main>
+
+<script>
+  (function () {
+    var root = document.documentElement;
+    var buttons = document.querySelectorAll(".theme button");
+    function sync() {
+      buttons.forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.set === root.dataset.theme)); });
+    }
+    buttons.forEach(function (b) {
+      b.addEventListener("click", function () {
+        root.dataset.theme = b.dataset.set;
+        localStorage.setItem("vivid-theme", b.dataset.set);
+        sync();
+      });
+    });
+    sync();
+
+    // Highlight the tab of the section in view.
+    var tabs = document.querySelectorAll(".tabs a");
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        tabs.forEach(function (t) { t.classList.toggle("on", t.getAttribute("href") === "#" + e.target.id); });
+      });
+    }, { rootMargin: "-45% 0px -50% 0px" });
+    document.querySelectorAll("section.dir").forEach(function (s) { io.observe(s); });
+  })();
+</script>
+</body>
+</html>

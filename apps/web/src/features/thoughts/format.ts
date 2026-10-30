@@ -13,12 +13,19 @@ export const localDate = (now: Now) => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 };
 
-// hour cycle follows the viewer's locale — "9:41" or "9:41 am" alike.
+// hour cycle follows the viewer's locale — "9:41" or "9:41 am" alike;
+// lowercase like the rest of the shorthand ("tue", "8 jul").
 const time = (d: Date) =>
-  d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }).toLowerCase();
 
 export type Group = "today" | "this week" | "earlier";
 export const GROUPS: Group[] = ["today", "this week", "earlier"];
+// How a group is titled on screen.
+export const GROUP_LABEL: Record<Group, string> = {
+  today: "Today",
+  "this week": "This week",
+  earlier: "Earlier",
+};
 
 export function groupOf(at: number, now: Now): Group {
   const n = new Date(now);
@@ -40,15 +47,21 @@ export function ageLabel(at: number, now: Now): string {
     : `${dayMonth} ${String(d.getFullYear()).slice(2)}`;
 }
 
-// The thought view's header: "tuesday · 9:41", or "8 jul · 9:41" once
-// the weekday alone would be ambiguous.
+// The thought view's header, set as a sentence: "Tuesday, 9:41 am", or
+// "8 Jul, 9:41 am" once the weekday alone would be ambiguous ("8 Jul 25"
+// from another year). Lists keep ageLabel's lowercase shorthand.
 export function dateLine(at: number, now: Now): string {
   const d = new Date(at);
-  const day =
-    groupOf(at, now) === "earlier"
-      ? ageLabel(at, now)
-      : d.toLocaleDateString("en-US", { weekday: "long" }).toLowerCase();
-  return `${day} · ${time(d)}`;
+  let day: string;
+  if (groupOf(at, now) === "earlier") {
+    const month = d.toLocaleDateString("en-US", { month: "short" });
+    day = `${d.getDate()} ${month}`;
+    if (d.getFullYear() !== new Date(now).getFullYear())
+      day += ` ${String(d.getFullYear()).slice(2)}`;
+  } else {
+    day = d.toLocaleDateString("en-US", { weekday: "long" });
+  }
+  return `${day}, ${time(d)}`;
 }
 
 export const firstLine = (text: string) => text.split("\n")[0];
