@@ -9,6 +9,7 @@ A space for unfinished thoughts — instant capture on iOS, a quiet collection o
 - `docs/overview.html` — product & tech overview
 - `docs/experience.html` — the experience: moment-by-moment product spec (capture rules, return loop, connections, lifecycle)
 - `docs/design.html` — the design: "Stillness" (light + dark)
+- `docs/vivid.html` — the four "more vivid" web directions; Ember is the one the web app uses
 
 ## Commands
 
@@ -42,4 +43,4 @@ Account deletion (`convex/account.ts`, settings on web and iOS) needs `CLERK_SEC
 
 - Bun for packages and scripts; never npm/yarn.
 - TypeScript: no `any`.
-- Follow the Stillness design tokens in `docs/design.html` for all UI.
+- Web UI follows Ember (`docs/vivid.html#ember`): the Stillness palette from `docs/design.html` with Geist, sentence-case labels (no tiny spaced capitals), Phosphor icons (`@phosphor-icons/react`), 10px surfaces and pill controls, and the vermilion as the accent for "now" (tokens in `apps/web/src/index.css`). iOS still follows `docs/design.html`.

@@ -1,6 +1,10 @@
+@import "@fontsource-variable/geist";
+@import "@fontsource-variable/geist-mono";
 @import "tailwindcss";
 
-/* Stillness tokens — docs/design.html. Same room, day and night. */
+/* Stillness palette (docs/design.html), worn the Ember way
+   (docs/vivid.html#ember): Geist at a readable weight, sentence case, and
+   the vermilion promoted from a single dot to the accent for "now". */
 :root {
   --pg: #fafaf8;
   --scr: #fcfcfb;
@@ -12,6 +16,14 @@
   /* page-chrome text & labels — higher contrast than the mockup grays */
   --pt: #45453f;
   --pl: #6b6b65;
+  /* Ember derives everything else from the dot: soft tints for what is
+     "now", a darker vermilion for text on those tints (AA on --pg and on
+     both tints), and an edge for outlined vermilion controls. */
+  --tint: color-mix(in oklab, var(--dot) 8%, var(--pg));
+  --tint-2: color-mix(in oklab, var(--dot) 14%, var(--pg));
+  --dot-ink: color-mix(in oklab, var(--dot) 78%, var(--ink));
+  --dot-edge: color-mix(in oklab, var(--dot) 45%, var(--line));
+  --on-dot: var(--pg);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -25,6 +37,10 @@
     --dot: #d9502a;
     --pt: #c9c9c2;
     --pl: #97978f;
+    --tint: color-mix(in oklab, var(--dot) 12%, var(--pg));
+    --tint-2: color-mix(in oklab, var(--dot) 22%, var(--pg));
+    --dot-ink: color-mix(in oklab, var(--dot) 70%, var(--ink));
+    --dot-edge: color-mix(in oklab, var(--dot) 50%, var(--line));
   }
 }
 
@@ -38,7 +54,15 @@
   --color-dot: var(--dot);
   --color-pt: var(--pt);
   --color-pl: var(--pl);
-  --font-sans: "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
+  --color-tint: var(--tint);
+  --color-tint-2: var(--tint-2);
+  --color-dot-ink: var(--dot-ink);
+  --color-dot-edge: var(--dot-edge);
+  --color-on-dot: var(--on-dot);
+  --font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono Variable", ui-monospace, monospace;
+  /* One radius for surfaces (rows, panels, fields); controls are pills. */
+  --radius-card: 10px;
 }
 
 html {
@@ -50,7 +74,7 @@ html {
 }
 
 body {
-  @apply bg-pg font-sans font-light text-ink;
+  @apply bg-pg font-sans font-normal text-ink;
 }
 
 /* The room's one loading signal: a blinking caret, never a spinner. */
@@ -77,6 +101,30 @@ body {
 input:focus-visible,
 textarea:focus-visible {
   outline: none;
+}
+
+/* Notes are written onto the page, not into a box: one hairline rule
+   per line of text, behind a vermilion margin rule like a notebook's.
+   The bottom padding keeps two empty lines below the text, fading out;
+   the field's auto-height includes it, so the lines grow with the words.
+   Line height is fixed in px so every wrapped line sits on its rule. */
+.ruled {
+  --lh: 28px;
+  line-height: var(--lh);
+  padding: 0 0 calc(var(--lh) * 2) 18px;
+  background: linear-gradient(
+      to bottom,
+      transparent calc(var(--lh) - 1px),
+      var(--line) calc(var(--lh) - 1px)
+    )
+    0 0 / 100% var(--lh);
+  box-shadow: inset 2px 0 0 color-mix(in oklab, var(--dot) 75%, transparent);
+  caret-color: var(--dot);
+  mask-image: linear-gradient(
+    to bottom,
+    #000 calc(100% - var(--lh) * 2),
+    transparent
+  );
 }
 
 /* The settings time field edits in place; the browser's clock-icon

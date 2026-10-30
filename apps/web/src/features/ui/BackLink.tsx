@@ -1,3 +1,4 @@
+import { ArrowLeft } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
 
 export function BackLink() {
@@ -5,20 +6,9 @@ export function BackLink() {
     <Link
       to="/"
       aria-label="Back to thoughts"
-      className="flex size-11 shrink-0 items-center justify-center text-pl transition-colors hover:text-ink"
+      className="flex size-10 shrink-0 items-center justify-center rounded-full text-[20px] text-pt transition-colors hover:bg-tint hover:text-ink"
     >
-      <svg
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-        className="size-6"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="m15 5-7 7 7 7" />
-      </svg>
+      <ArrowLeft aria-hidden="true" />
     </Link>
   );
 }

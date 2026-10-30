@@ -1,3 +1,4 @@
+import { ArrowBendUpLeft, Moon, Sun, X } from "@phosphor-icons/react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
@@ -7,6 +8,7 @@ import { NotesField } from "../features/thoughts/NotesField";
 import { Rail } from "../features/thoughts/Rail";
 import { useThoughtPrewarm } from "../features/thoughts/useThoughtPrewarm";
 import { BackLink } from "../features/ui/BackLink";
+import { Badge } from "../features/ui/Badge";
 import { Skeleton } from "../features/ui/Skeleton";
 import type { FunctionReturnType } from "convex/server";
 import type { Id } from "@drft/backend/convex/_generated/dataModel";
@@ -24,9 +26,7 @@ function NotHere() {
     <main className="flex min-h-dvh flex-col">
       <BackHeader />
       <div className="flex flex-1 items-center justify-center pb-24">
-        <span className="text-[10.5px] tracking-[0.34em] text-pl uppercase">
-          this thought isn't here
-        </span>
+        <span className="text-[15px] text-pl">This thought isn't here.</span>
       </div>
     </main>
   );
@@ -42,26 +42,32 @@ function BackHeader({
   withRail?: boolean;
 }) {
   return (
-    <header className="relative z-10 flex items-center px-5 pt-4 md:px-8">
-      <BackLink />
+    // Spans the page over the fixed rail and notes columns, so only the way
+    // back takes the pointer; the rest of the bar lets clicks through.
+    <header className="pointer-events-none relative z-10 flex h-[72px] items-center px-4 md:px-5">
+      {/* With the rail on screen, the way back starts where the page does,
+          clear of the rail's own wordmark. */}
+      <span className={`pointer-events-auto ${withRail ? "lg:ml-72 xl:ml-80" : ""}`}>
+        <BackLink />
+      </span>
       <span
-        className={`pointer-events-none absolute right-0 text-center text-[11.5px] tracking-[0.4em] text-pl uppercase ${
+        className={`absolute right-0 text-center text-[14px] font-medium text-pt ${
           withRail
             ? "left-0 lg:left-72 xl:right-80 xl:left-80"
             : "left-0"
         }`}
       >
-        {loading ? <Skeleton className="mx-auto h-[7px] w-24" /> : (label ?? "")}
+        {loading ? <Skeleton className="mx-auto h-[9px] w-28" /> : (label ?? "")}
       </span>
     </header>
   );
 }
 
-// Your words hold the center of the page, exactly as captured. Gathered
-// quietly around them, where the thought has been — set down, returned to,
-// what it turned out to be near — and one action waiting at the bottom
-// edge. On wide screens the collection stays in the periphery as an edge
-// rail.
+// Your words hold the center of the page, exactly as captured (left-aligned
+// on phones). Gathered around them as small chips, where the thought has
+// been: set down, returned to. Below, your notes on their ruled lines, then
+// what it turned out to be near, and one action waiting at the bottom edge.
+// On wide screens the collection stays in the periphery as an edge rail.
 function ThoughtView() {
   const { thoughtId } = Route.useParams();
   const id = thoughtId as Id<"thoughts">;
@@ -161,40 +167,47 @@ function ThoughtView() {
           <ThoughtSkeleton />
         ) : view === null ? (
           <section className="flex flex-1 items-center justify-center pb-24">
-            <span className="text-[10.5px] tracking-[0.34em] text-pl uppercase">
-              this thought isn't here
-            </span>
+            <span className="text-[15px] text-pl">This thought isn't here.</span>
           </section>
         ) : (
           <section
             key={view._id}
-            className="mx-auto flex w-full max-w-[64ch] flex-1 flex-col items-center px-6"
+            className="mx-auto flex w-full max-w-[64ch] flex-1 flex-col px-6 md:items-center"
           >
-            <div className="flex w-full flex-1 flex-col items-center justify-center py-12">
-              <h1 className="max-w-[36ch] text-center text-[clamp(26px,3vw,34px)] leading-[1.55] font-light whitespace-pre-wrap">
+            <div className="flex w-full flex-1 flex-col justify-center py-10 md:items-center">
+              <h1 className="max-w-[26ch] text-[25px] leading-[1.38] font-[450] tracking-[-0.02em] whitespace-pre-wrap text-ink md:text-center md:text-[32px]">
                 {view.text}
               </h1>
 
-              {view.status === "resting" && (
-                <div className="mt-7 flex flex-col items-center gap-2.5">
-                  <span className="text-[10.5px] tracking-[0.34em] text-pl uppercase">
-                    set down{view.restedAt ? ` · ${ageLabel(view.restedAt, now)}` : ""}
-                  </span>
-                  {view.restingNote && (
-                    <p className="max-w-[44ch] text-center text-[15px] leading-[1.7] font-normal text-mut">
-                      {view.restingNote}
-                    </p>
+              {(view.lastReturnedAt || view.status === "resting") && (
+                <div className="mt-[18px] flex flex-wrap gap-2 md:justify-center">
+                  {view.lastReturnedAt && (
+                    <span className="inline-flex h-7 items-center gap-1.5 rounded-full bg-tint px-3 text-[13px] font-medium text-dot-ink">
+                      <ArrowBendUpLeft aria-hidden="true" className="text-[14px]" />
+                      Returned{" "}
+                      {groupOf(view.lastReturnedAt, now) === "today"
+                        ? "today"
+                        : ageLabel(view.lastReturnedAt, now)}
+                    </span>
+                  )}
+                  {view.status === "resting" && (
+                    <span className="inline-flex h-7 items-center gap-1.5 rounded-full bg-scr px-3 text-[13px] font-medium text-pt ring-1 ring-line ring-inset">
+                      <Moon aria-hidden="true" className="text-[14px]" />
+                      Set down
+                      {view.restedAt && (
+                        <span className="font-normal text-pl tabular-nums">
+                          {ageLabel(view.restedAt, now)}
+                        </span>
+                      )}
+                    </span>
                   )}
                 </div>
               )}
 
-              {view.lastReturnedAt && (
-                <span className="mt-6 text-[10px] tracking-[0.3em] text-faint uppercase">
-                  returned ·{" "}
-                  {groupOf(view.lastReturnedAt, now) === "today"
-                    ? "today"
-                    : ageLabel(view.lastReturnedAt, now)}
-                </span>
+              {view.status === "resting" && view.restingNote && (
+                <p className="mt-3 max-w-[44ch] text-[15px] leading-[1.6] text-pl md:text-center">
+                  {view.restingNote}
+                </p>
               )}
 
               {/* Your own writing, nearest the thought; the machine's
@@ -202,22 +215,20 @@ function ThoughtView() {
               <NotesField thoughtId={view._id} notes={view.notes} />
 
               {/* Related thoughts are destinations, not tags: their words
-                  keep their natural case and wrap for as long as they need. */}
+                  keep their natural case and wrap for as long as they need.
+                  Rows are parted by hairlines that give way to the hover
+                  tint, the row's own and the one beneath it. */}
               {view.connections.length > 0 && (
-                <div className="mt-12 w-full max-w-[52ch]">
-                  <div className="flex items-baseline justify-between pb-3">
-                    <span className="text-[10px] tracking-[0.28em] text-pl uppercase">
-                      related thoughts
-                    </span>
-                    <span className="text-[10px] font-normal text-faint">
-                      {view.connections.length}
-                    </span>
-                  </div>
-                  <div className="border-t border-line">
+                <div className="mt-10 w-full max-w-[520px]">
+                  <h2 className="flex items-center gap-2 px-3 pb-2.5 text-[15px] font-medium text-ink">
+                    Related thoughts
+                    <Badge>{view.connections.length}</Badge>
+                  </h2>
+                  <ul>
                     {view.connections.map((c, i) => (
-                      <div
+                      <li
                         key={c._id}
-                        className="group relative border-b border-line"
+                        className="group relative rounded-card transition-colors hover:bg-tint [li+&]:shadow-[0_-1px_0_var(--line)] hover:shadow-none! [&:hover+li]:shadow-none!"
                       >
                         <Link
                           to="/thought/$thoughtId"
@@ -234,53 +245,56 @@ function ThoughtView() {
                             prewarm(id);
                             prewarm(c.otherId);
                           }}
-                          className="grid min-h-17 w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-5 py-4 pr-11 text-left"
+                          className="grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-4 rounded-card py-[13px] pr-12 pl-3 text-left"
                         >
-                          <span className="whitespace-pre-wrap text-[14.5px] leading-[1.55] font-normal text-pt transition-colors group-hover:text-ink">
+                          <span className="text-[15px] leading-[1.45] whitespace-pre-wrap text-ink">
                             {c.otherText}
                           </span>
-                          <span className="text-right text-[9px] leading-[1.4] font-normal tracking-[0.18em] text-faint uppercase">
-                            {c.otherStatus === "resting"
-                              ? "set down"
-                              : ageLabel(c.otherCreatedAt, now)}
-                          </span>
+                          {c.otherStatus === "resting" ? (
+                            <span className="inline-flex h-[22px] items-center rounded-full px-[9px] text-[12px] text-pt ring-1 ring-line ring-inset">
+                              Set down
+                            </span>
+                          ) : (
+                            <span className="text-right text-[13px] text-pl tabular-nums">
+                              {ageLabel(c.otherCreatedAt, now)}
+                            </span>
+                          )}
                         </Link>
                         <button
                           type="button"
                           onClick={() => dismiss(c, i)}
-                          className="absolute top-1/2 right-0 flex size-10 -translate-y-1/2 items-center justify-center text-[15px] leading-none text-pl opacity-0 transition-[color,opacity] group-hover:opacity-100 hover:text-dot focus-visible:opacity-100 [@media(hover:none)]:opacity-100"
+                          className="absolute top-1/2 right-2 flex size-8 -translate-y-1/2 items-center justify-center rounded-full text-[16px] text-pl opacity-0 transition-[color,background-color,opacity] group-hover:opacity-100 hover:bg-tint-2 hover:text-dot-ink focus-visible:opacity-100 [@media(hover:none)]:opacity-100"
                           aria-label="set related thought aside"
                         >
-                          ×
+                          <X aria-hidden="true" />
                         </button>
-                      </div>
+                      </li>
                     ))}
-                  </div>
+                  </ul>
                 </div>
               )}
 
               {aside && (
                 <div
                   role="status"
-                  className="mt-5 flex items-center gap-5 text-[10px] tracking-[0.3em] uppercase"
+                  className="mt-4 flex items-center gap-2 px-3 text-[13px]"
                 >
-                  <span className="text-pl">
+                  <span className={aside.failed ? "text-dot-ink" : "text-pl"}>
                     {aside.failed
-                      ? "couldn't set the related thought aside"
-                      : "related thought set aside"}
+                      ? "Couldn't set the related thought aside."
+                      : "Related thought set aside."}
                   </span>
                   {!aside.failed && (
                     <button
                       type="button"
                       onClick={undo}
-                      className="text-pt transition-colors hover:text-ink"
+                      className="rounded-full px-2.5 py-1 font-medium text-dot-ink transition-colors hover:bg-tint"
                     >
-                      undo
+                      Undo
                     </button>
                   )}
                 </div>
               )}
-
             </div>
 
             <StatusFooter thoughtId={view._id} status={view.status} />
@@ -292,8 +306,10 @@ function ThoughtView() {
 }
 
 // The thought in its own proportions before its words arrive: the same
-// centered column, the same line boxes, the same word waiting at the
-// bottom edge — so nothing moves when it lands. Stillness has no spinners.
+// column, two line boxes of the thought's own type (centered from md, left
+// on phones, as the thought will be), and the pill waiting at the bottom
+// edge, so nothing moves when it lands. No spinners. (The header draws its
+// own date bar.)
 //
 // Only what every thought has is drawn. Where it landed, when it was
 // returned to, what it sits near are all conditional, and a skeleton that
@@ -303,29 +319,31 @@ function ThoughtSkeleton() {
     <section
       aria-busy="true"
       aria-label="loading thought"
-      className="mx-auto flex w-full max-w-[64ch] flex-1 flex-col items-center px-6"
+      className="mx-auto flex w-full max-w-[64ch] flex-1 flex-col px-6 md:items-center"
     >
-      {/* two line boxes of the thought's own type, held at the center the
-          way the thought itself will be */}
-      <div className="flex w-full flex-1 flex-col items-center justify-center py-12">
-        <div className="flex w-full max-w-[36ch] flex-col items-center gap-[30px]">
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-[62%]" />
+      <div className="flex w-full flex-1 flex-col justify-center py-10 md:items-center">
+        <div className="flex w-full max-w-[26ch] flex-col gap-[17px] text-[25px] md:items-center md:gap-[26px] md:text-[32px]">
+          <Skeleton className="h-[18px] w-full" />
+          <Skeleton className="h-[18px] w-[62%]" />
         </div>
       </div>
 
-      {/* the one word waiting at the bottom edge */}
-      <div className="flex w-full max-w-[48ch] justify-center pb-14">
-        <span className="flex h-4 items-center">
-          <Skeleton className="h-[9px] w-20" />
-        </span>
+      <div className="flex w-full justify-center pt-6 pb-10">
+        <Skeleton className="h-10 w-[124px]" />
       </div>
+
+      {/* the notes column's own panel (NotesField at xl), already standing */}
+      <div
+        aria-hidden="true"
+        className="fixed inset-y-0 right-0 hidden w-80 border-l border-line bg-scr xl:block"
+      />
     </section>
   );
 }
 
-// One quiet action, and the way back from it. Optional single line about
-// where it landed; reversible — some thoughts wake up.
+// One quiet action, and the way back from it: "Let it rest" as an outlined
+// vermilion pill, an optional single line about where it landed, and
+// "Wake" to reverse it, since some thoughts wake up.
 //
 // Both transitions land in the view the moment they're clicked, which is why
 // they share a component: the flip decides which control shows, and if that
@@ -393,8 +411,12 @@ function StatusFooter({
       });
   };
 
+  // The outlined vermilion pill both resting actions wear.
+  const outline =
+    "inline-flex h-10 items-center gap-2 rounded-full px-[18px] text-[14.5px] font-medium text-dot-ink ring-[1.5px] ring-dot-edge ring-inset transition-[background-color,scale] hover:bg-tint active:scale-[0.98]";
+
   return (
-    <footer className="flex w-full max-w-[48ch] flex-col items-center gap-4 pb-14">
+    <footer className="flex w-full max-w-[48ch] flex-col items-center gap-3 pt-6 pb-10">
       {leaving ? null : status === "resting" ? (
         <button
           type="button"
@@ -402,9 +424,10 @@ function StatusFooter({
             setFailed(null);
             void wake({ thoughtId }).catch(() => setFailed("wake"));
           }}
-          className="text-[11px] tracking-[0.3em] text-pl uppercase transition-colors hover:text-ink"
+          className={outline}
         >
-          wake
+          <Sun aria-hidden="true" className="text-[16px]" />
+          Wake
         </button>
       ) : asking ? (
         <>
@@ -416,40 +439,38 @@ function StatusFooter({
               if (e.key === "Escape") setAsking(false);
             }}
             autoFocus
-            placeholder="where it landed — optional"
-            className="w-full max-w-[40ch] bg-transparent text-center text-[15px] font-normal outline-none placeholder:text-pl"
+            aria-label="Where it landed (optional)"
+            placeholder="Where it landed (optional)"
+            className="h-11 w-full max-w-[40ch] rounded-card bg-scr px-4 text-[15px] text-ink ring-1 ring-line ring-inset outline-none transition-shadow placeholder:text-pl focus:ring-dot-edge"
           />
-          <div className="flex items-center gap-7 text-[11px] tracking-[0.3em] uppercase">
+          <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={setDown}
-              className="text-ink transition-opacity hover:opacity-70"
+              className="inline-flex h-10 items-center rounded-full bg-dot px-[18px] text-[14.5px] font-semibold text-on-dot transition-[filter,scale] hover:brightness-105 active:scale-[0.98]"
             >
-              set it down
+              Set it down
             </button>
             <button
               type="button"
               onClick={() => setAsking(false)}
-              className="text-pl transition-colors hover:text-ink"
+              className="inline-flex h-10 items-center rounded-full px-4 text-[14.5px] font-medium text-pt transition-colors hover:bg-tint hover:text-ink"
             >
-              not yet
+              Not yet
             </button>
           </div>
         </>
       ) : (
-        <button
-          type="button"
-          onClick={() => setAsking(true)}
-          className="text-[11px] tracking-[0.3em] text-pl uppercase transition-colors hover:text-ink"
-        >
-          let it rest
+        <button type="button" onClick={() => setAsking(true)} className={outline}>
+          <Moon aria-hidden="true" className="text-[16px]" />
+          Let it rest
         </button>
       )}
       {failed && (
-        <span className="text-[10px] tracking-[0.3em] text-pl uppercase">
+        <span role="status" className="text-[13px] text-dot-ink">
           {failed === "rest"
-            ? "couldn't set it down — try again"
-            : "couldn't wake it — try again"}
+            ? "Couldn't set it down. Try again."
+            : "Couldn't wake it. Try again."}
         </span>
       )}
     </footer>

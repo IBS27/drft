@@ -48,39 +48,39 @@ export function DeleteAccount() {
       <button
         type="button"
         onClick={() => setStep("confirming")}
-        className="text-[14px] text-mut transition-colors hover:text-ink"
+        className="flex w-full items-center rounded-[9px] px-4 py-3.5 text-left text-[15px] text-dot-ink transition-colors hover:bg-tint"
       >
-        delete account
+        Delete account
       </button>
     );
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 px-4 py-4">
       <p className="text-[14px] leading-[1.55] text-pt">
-        this deletes your account and everything in it — every thought, its
-        connections and notes, and the daily email. it can't be undone.
+        This deletes your account and everything in it: every thought, its
+        connections and notes, and the daily email. It can't be undone.
       </p>
       {step === "failed" && (
-        <p className="text-[12px] text-mut">
-          couldn't finish deleting — try again
+        <p role="status" className="text-[13px] text-dot-ink">
+          Couldn't finish deleting. Try again.
         </p>
       )}
-      <div className="flex items-center gap-7 text-[11px] tracking-[0.3em] uppercase">
+      <div className="flex items-center gap-2">
         <button
           type="button"
           disabled={step === "deleting"}
           onClick={() => void confirm()}
-          className="text-dot transition-opacity hover:opacity-70 disabled:opacity-50"
+          className="inline-flex h-10 items-center rounded-full bg-dot px-5 text-[14.5px] font-semibold text-on-dot transition-[filter,scale,opacity] hover:brightness-105 active:scale-[0.98] disabled:opacity-60"
         >
-          {step === "deleting" ? "deleting…" : "delete everything"}
+          {step === "deleting" ? "Deleting…" : "Delete everything"}
         </button>
         {step !== "deleting" && (
           <button
             type="button"
             onClick={() => setStep("idle")}
-            className="text-pl transition-colors hover:text-ink"
+            className="inline-flex h-10 items-center rounded-full px-5 text-[14.5px] text-pt transition-colors hover:bg-tint hover:text-ink"
           >
-            keep it
+            Keep it
           </button>
         )}
       </div>

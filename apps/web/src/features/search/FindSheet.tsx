@@ -1,3 +1,4 @@
+import { MagnifyingGlass } from "@phosphor-icons/react";
 import { useNavigate } from "@tanstack/react-router";
 import {
   useEffect,
@@ -7,6 +8,7 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
 } from "react";
 import { useThoughtPrewarm } from "../thoughts/useThoughtPrewarm";
+import { Kbd } from "../ui/Kbd";
 import { FindResults } from "./FindResults";
 import { OPEN_SEARCH_EVENT } from "./openSearch";
 import { hitOptionId, useThoughtSearch, type Hit } from "./useThoughtSearch";
@@ -105,40 +107,37 @@ function Sheet({ close }: { close: () => void }) {
         if (e.target === e.currentTarget) close();
       }}
     >
-      <div className="border-b border-line bg-scr">
-        <div className="mx-auto w-full max-w-xl px-6">
-          <div className="relative flex items-center gap-3 py-4">
-            {!query && (
-              <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center text-[10.5px] tracking-[0.3em] text-pl uppercase">
-                find a thought
-              </span>
-            )}
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={(e) => onResultsKey(e, go)}
-              autoFocus
-              aria-label="find a thought"
-              role="combobox"
-              aria-expanded={query.trim() !== ""}
-              aria-controls={listboxId}
-              aria-activedescendant={
-                hits && hits[active]
-                  ? hitOptionId(listboxId, active)
-                  : undefined
-              }
-              className="min-w-0 flex-1 bg-transparent text-[16px] font-normal outline-none"
-            />
-            <button
-              type="button"
-              onClick={close}
-              className="flex-none text-[9.5px] tracking-[0.16em] text-pl uppercase transition-colors hover:text-ink"
-            >
-              esc
-            </button>
+      <div className="border-b border-line bg-scr shadow-[0_18px_40px_-28px_color-mix(in_oklab,var(--ink)_40%,transparent)]">
+        <div className="mx-auto w-full max-w-xl px-4">
+          <div className="flex items-center gap-2.5 py-3">
+            <div className="flex h-11 min-w-0 flex-1 items-center gap-2.5 rounded-card bg-pg pr-2 pl-3 ring-1 ring-dot-edge ring-inset">
+              <MagnifyingGlass aria-hidden="true" className="flex-none text-[17px] text-pt" />
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={(e) => onResultsKey(e, go)}
+                autoFocus
+                placeholder="Find a thought"
+                aria-label="find a thought"
+                role="combobox"
+                aria-expanded={query.trim() !== ""}
+                aria-controls={listboxId}
+                aria-activedescendant={
+                  hits && hits[active]
+                    ? hitOptionId(listboxId, active)
+                    : undefined
+                }
+                className="min-w-0 flex-1 bg-transparent text-[16px] text-ink outline-none placeholder:text-pl"
+              />
+              <button type="button" onClick={close} aria-label="close find" className="flex-none">
+                <Kbd className="bg-scr text-pt ring-1 ring-line ring-inset transition-colors hover:text-ink">
+                  esc
+                </Kbd>
+              </button>
+            </div>
           </div>
           {query.trim() !== "" && (
-            <div className="-mx-3 max-h-[60dvh] overflow-y-auto px-3 pb-3">
+            <div className="max-h-[60dvh] overflow-y-auto pb-3">
               <FindResults
                 hits={hits}
                 active={active}

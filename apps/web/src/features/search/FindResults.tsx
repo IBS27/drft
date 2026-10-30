@@ -3,9 +3,10 @@ import type { Id } from "@drft/backend/convex/_generated/dataModel";
 import { ageLabel, firstLine } from "../thoughts/format";
 import { hitOptionId, type Hit } from "./useThoughtSearch";
 
-// Hits wear the collection's own row clothes — dot, first line, age —
-// so finding never looks like a different place, only the collection
-// answering to fewer names. Resting thoughts say so, quietly.
+// Hits wear the collection's own row clothes (first line, age, the same
+// tinted highlight) so finding never looks like a different place, only
+// the collection answering to fewer names. Resting thoughts carry a small
+// "Set down" tag.
 export function FindResults({
   hits,
   active,
@@ -26,7 +27,7 @@ export function FindResults({
   // names each option (see hitOptionId).
   listboxId: string;
 }) {
-  if (hits && hits.length === 0) return <Note text="nothing found" />;
+  if (hits && hits.length === 0) return <Note text="Nothing found" />;
   if (!hits) return null;
   return (
     <div role="listbox" id={listboxId} aria-label="search results">
@@ -48,7 +49,7 @@ export function FindResults({
 
 function Note({ text }: { text: string }) {
   return (
-    <p className="py-2.5 text-[10.5px] tracking-[0.3em] text-pl uppercase">
+    <p className="px-3 py-2.5 text-[14px] text-pl">
       {text}
     </p>
   );
@@ -86,22 +87,23 @@ function HitRow({
       onPointerEnter={() => prewarm(hit._id)}
       onFocus={() => prewarm(hit._id)}
       onMouseMove={activate}
-      className={`-mx-3 flex w-[calc(100%+1.5rem)] items-center gap-3 rounded-sm px-3 py-2.5 text-left transition-colors ${
-        active ? "bg-pg" : ""
+      className={`flex w-full items-center gap-2.5 rounded-card px-3 py-2.5 text-left transition-colors ${
+        active ? "bg-tint-2" : ""
       }`}
     >
       <span
-        className={`size-1.5 flex-none rounded-full ${active ? "bg-dot" : "bg-transparent"}`}
-      />
-      <span
-        className={`min-w-0 flex-1 truncate text-[15px] font-normal ${
-          active ? "text-ink" : "text-pt"
-        }`}
+        className={`min-w-0 flex-1 truncate text-[15px] ${active ? "text-ink" : "text-pt"}`}
       >
-        {hit.status === "resting" && <span className="text-pl">set down · </span>}
         {firstLine(hit.text)}
       </span>
-      <span className="flex-none text-[11px] tracking-[0.08em] text-pl tabular-nums">
+      {hit.status === "resting" && (
+        <span className="inline-flex h-[22px] flex-none items-center rounded-full px-[9px] text-[12px] text-pt ring-1 ring-line ring-inset">
+          Set down
+        </span>
+      )}
+      <span
+        className={`flex-none text-[12.5px] tabular-nums ${active ? "text-dot-ink" : "text-pl"}`}
+      >
         {ageLabel(hit.createdAt, now)}
       </span>
     </button>

@@ -1,4 +1,5 @@
 import { useAuth } from "@clerk/clerk-react";
+import { Check } from "@phosphor-icons/react";
 import { useConvexAuth, useMutation } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
@@ -12,7 +13,8 @@ import { localDate, previewOf } from "./format";
 const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
 
 // The web capture input obeys the same rules as iOS: one field, keep,
-// no questions asked. Verbatim in; a single vermilion dot acknowledges.
+// no questions asked. Verbatim in; Keep is a vermilion button you can see
+// from across the room, and a brief "Kept" acknowledges.
 export function CaptureField({ now }: { now: number }) {
   const { isAuthenticated } = useConvexAuth();
   const { userId } = useAuth();
@@ -114,7 +116,8 @@ export function CaptureField({ now }: { now: number }) {
     .toLowerCase();
 
   return (
-    <div className="flex w-full flex-col items-center">
+    <div className="flex w-full flex-col items-center gap-[22px]">
+      <span className="text-[13.5px] text-pl tabular-nums">{clock}, unfiled</span>
       <textarea
         ref={areaRef}
         value={text}
@@ -127,25 +130,35 @@ export function CaptureField({ now }: { now: number }) {
         }}
         autoFocus={!coarsePointer}
         rows={1}
-        className="w-full max-w-[36ch] resize-none overflow-hidden bg-transparent text-center text-[22px] leading-[1.65] font-light outline-none"
+        aria-label="A thought"
+        className="w-full max-w-[30ch] resize-none overflow-hidden bg-transparent text-center text-[24px] leading-[1.45] tracking-[-0.012em] text-ink caret-dot outline-none sm:text-[28px]"
       />
-      <div className="mt-5 flex h-5 items-center justify-center">
+      <div className="flex h-[42px] items-center justify-center gap-4">
         {kept ? (
-          <span className="size-2 rounded-full bg-dot" />
-        ) : text.trim() ? (
-          <button
-            type="button"
-            onClick={keep}
-            className="flex items-center gap-2.5 text-[12px] tracking-[0.3em] text-ink uppercase"
+          <span
+            role="status"
+            className="inline-flex h-8 items-center gap-1.5 rounded-full bg-tint px-3.5 text-[13.5px] font-medium text-dot-ink"
           >
-            <span className="size-2 rounded-full bg-dot" />
-            keep
-          </button>
-        ) : (
-          <span className="text-[11px] tracking-[0.3em] text-pl uppercase">
-            {clock} · unfiled
+            <Check aria-hidden="true" weight="bold" className="text-[14px]" />
+            Kept
           </span>
-        )}
+        ) : text.trim() ? (
+          <>
+            <button
+              type="button"
+              onClick={keep}
+              className="inline-flex h-[42px] items-center gap-2.5 rounded-full bg-dot pr-2 pl-5 text-[15px] font-semibold text-on-dot shadow-[0_10px_24px_-12px_color-mix(in_oklab,var(--dot)_70%,transparent)] transition-[scale,filter] duration-200 hover:brightness-105 active:scale-[0.98] motion-reduce:transition-none"
+            >
+              Keep
+              <kbd className="inline-flex size-[26px] items-center justify-center rounded-full bg-on-dot/20 font-mono text-[13px]">
+                ↵
+              </kbd>
+            </button>
+            {!coarsePointer && (
+              <span className="text-[13px] text-pl">Shift ↵ for a new line</span>
+            )}
+          </>
+        ) : null}
       </div>
     </div>
   );
