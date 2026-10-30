@@ -48,37 +48,31 @@ struct CaptureView: View {
             Stillness.page.ignoresSafeArea()
 
             VStack(spacing: 0) {
-                Button {
-                    model.stopDictation()
-                    settingsArePresented = true
-                } label: {
-                    Text("drft")
-                        .stillnessWordmark()
-                        .padding(.vertical, 13)
-                        .frame(minHeight: 44)
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .padding(.top, 5)
-                .accessibilityLabel("Open settings")
+                HomeHeader(onOpenSettings: openSettings)
 
                 Spacer(minLength: 28)
 
                 VStack(spacing: 22) {
+                    TimelineView(.periodic(from: .now, by: 15)) { context in
+                        Text(timestamp(for: context.date))
+                            .font(StillnessType.meta)
+                            .monospacedDigit()
+                            .foregroundStyle(Stillness.chromeLabel)
+                    }
+
                     TextField("", text: $model.text, axis: .vertical)
                         .textFieldStyle(.plain)
                         .textInputAutocapitalization(.never)
-                        .stillnessThought()
-                        .tint(Stillness.ink)
+                        .font(StillnessType.captureThought)
+                        .tracking(StillnessType.captureThoughtTracking)
+                        .lineSpacing(StillnessType.captureThoughtLineSpacing)
+                        .multilineTextAlignment(.center)
+                        .foregroundStyle(Stillness.ink)
+                        .tint(Stillness.now)
                         .focused($inputIsFocused)
                         .lineLimit(1...(dynamicTypeSize.isAccessibilitySize ? 8 : 5))
                         .submitLabel(.return)
                         .accessibilityLabel("Thought")
-
-                    TimelineView(.periodic(from: .now, by: 15)) { context in
-                        Text(timestamp(for: context.date))
-                            .stillnessLabel(.timestamp)
-                    }
                 }
                 .frame(maxWidth: 345)
                 .padding(.horizontal, 24)
@@ -181,44 +175,37 @@ struct CaptureView: View {
                 authService: authService,
                 convexService: convexService
             )
-                .presentationBackground(Stillness.surface)
+                .presentationBackground(Stillness.page)
                 .presentationDragIndicator(.hidden)
-                .presentationDetents([.medium, .large])
+                .presentationDetents([.large])
         }
     }
 
+    private func openSettings() {
+        model.stopDictation()
+        settingsArePresented = true
+    }
+
     private var actionRow: some View {
-        HStack(spacing: StillnessSpacing.actionGap) {
+        HStack(spacing: 12) {
             Button {
                 model.toggleDictation()
             } label: {
                 speakLabel
-                    .padding(.vertical, 13)
-                    .frame(minHeight: 44)
-                    .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(PillButtonStyle(kind: model.isListening ? .outline : .neutral))
             .accessibilityLabel(model.isListening ? "Stop listening" : "Speak")
 
             Button {
                 model.keep()
             } label: {
-                HStack(spacing: StillnessSpacing.dotLabelGap) {
-                    NowDot()
-                    Text("KEEP")
-                        .stillnessLabel(.actionInk)
-                }
-                .padding(.vertical, 13)
-                .frame(minHeight: 44)
-                .contentShape(Rectangle())
+                Text("Keep")
             }
-            .buttonStyle(.plain)
+            .buttonStyle(PillButtonStyle(kind: .primary, horizontalPadding: 24))
             .disabled(!model.canKeep)
-            .opacity(model.canKeep ? 1 : 0.35)
-            .animation(.easeOut(duration: 0.15), value: model.canKeep)
             .accessibilityLabel("Keep")
         }
-        .padding(.bottom, 9)
+        .padding(.bottom, 12)
         .opacity(model.isCaptureVisible ? 1 : 0)
         .animation(
             model.isCaptureVisible
@@ -266,7 +253,7 @@ struct CaptureView: View {
     @ViewBuilder
     private var speakLabel: some View {
         if model.isListening {
-            HStack(spacing: 9) {
+            HStack(spacing: 8) {
                 if accessibilityReduceMotion {
                     NowDot(diameter: 8)
                 } else {
@@ -274,12 +261,13 @@ struct CaptureView: View {
                         .scaleEffect(listeningPulse ? 1 : 0.72)
                         .opacity(listeningPulse ? 1 : 0.55)
                 }
-                Text("LISTENING")
-                    .stillnessLabel(.actionInk)
+                Text("Listening")
             }
         } else {
-            Text("SPEAK")
-                .stillnessLabel(.actionMuted)
+            HStack(spacing: 8) {
+                EmberIcon(.microphone, size: 16)
+                Text("Speak")
+            }
         }
     }
 
@@ -303,6 +291,6 @@ struct CaptureView: View {
     }
 
     private func timestamp(for date: Date) -> String {
-        "\(ShelfFormatting.time(for: date)) · unfiled"
+        "\(ShelfFormatting.time(for: date).lowercased()), unfiled"
     }
 }

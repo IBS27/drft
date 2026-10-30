@@ -1,60 +1,83 @@
 import SwiftUI
 import UIKit
 
+/// The Stillness palette (docs/design.html), worn the Ember way
+/// (docs/vivid.html#ember): the vermilion grows from a single dot into the
+/// accent for "now". Mirrors the tokens in apps/web/src/index.css; the
+/// Ember tints are the web's `color-mix(in oklab, …)` values, precomputed.
 enum Stillness {
-    static let page = dynamic(
-        light: UIColor(red: 250 / 255, green: 250 / 255, blue: 248 / 255, alpha: 1),
-        dark: UIColor(red: 19 / 255, green: 19 / 255, blue: 17 / 255, alpha: 1)
-    )
-    static let surface = dynamic(
-        light: UIColor(red: 252 / 255, green: 252 / 255, blue: 251 / 255, alpha: 1),
-        dark: UIColor(red: 24 / 255, green: 24 / 255, blue: 22 / 255, alpha: 1)
-    )
-    static let ink = dynamic(
-        light: UIColor(red: 43 / 255, green: 43 / 255, blue: 40 / 255, alpha: 1),
-        dark: UIColor(red: 234 / 255, green: 234 / 255, blue: 229 / 255, alpha: 1)
-    )
+    static let page = dynamic(light: 0xFAFAF8, dark: 0x131311)
+    static let surface = dynamic(light: 0xFCFCFB, dark: 0x181816)
+    static let ink = dynamic(light: 0x2B2B28, dark: 0xEAEAE5)
     static let muted = dynamic(
-        light: UIColor(red: 117 / 255, green: 117 / 255, blue: 111 / 255, alpha: 1),
-        dark: UIColor(red: 160 / 255, green: 160 / 255, blue: 153 / 255, alpha: 1),
-        lightHighContrast: UIColor(red: 75 / 255, green: 75 / 255, blue: 71 / 255, alpha: 1),
-        darkHighContrast: UIColor(red: 205 / 255, green: 205 / 255, blue: 199 / 255, alpha: 1)
+        light: 0x75756F,
+        dark: 0xA0A099,
+        lightHighContrast: 0x4B4B47,
+        darkHighContrast: 0xCDCDC7
     )
     static let hairline = dynamic(
-        light: UIColor(red: 232 / 255, green: 232 / 255, blue: 228 / 255, alpha: 1),
-        dark: UIColor(red: 43 / 255, green: 43 / 255, blue: 40 / 255, alpha: 1),
-        lightHighContrast: UIColor(red: 180 / 255, green: 180 / 255, blue: 174 / 255, alpha: 1),
-        darkHighContrast: UIColor(red: 82 / 255, green: 82 / 255, blue: 77 / 255, alpha: 1)
+        light: 0xE8E8E4,
+        dark: 0x2B2B28,
+        lightHighContrast: 0xB4B4AE,
+        darkHighContrast: 0x52524D
     )
-    static let now = dynamic(
-        light: UIColor(red: 199 / 255, green: 62 / 255, blue: 29 / 255, alpha: 1),
-        dark: UIColor(red: 217 / 255, green: 80 / 255, blue: 42 / 255, alpha: 1)
-    )
-    /// Label color on a `now`-filled control; near-white in both palettes.
-    static let onNow = dynamic(
-        light: UIColor(red: 252 / 255, green: 252 / 255, blue: 251 / 255, alpha: 1),
-        dark: UIColor(red: 252 / 255, green: 252 / 255, blue: 251 / 255, alpha: 1)
-    )
+    static let now = dynamic(light: 0xC73E1D, dark: 0xD9502A)
+    /// Label color on a `now`-filled control: the page color, as on web.
+    static let onNow = dynamic(light: 0xFAFAF8, dark: 0x131311)
     static let faint = dynamic(
-        light: UIColor(red: 117 / 255, green: 117 / 255, blue: 111 / 255, alpha: 0.6),
-        dark: UIColor(red: 160 / 255, green: 160 / 255, blue: 153 / 255, alpha: 0.6),
-        lightHighContrast: UIColor(red: 75 / 255, green: 75 / 255, blue: 71 / 255, alpha: 1),
-        darkHighContrast: UIColor(red: 205 / 255, green: 205 / 255, blue: 199 / 255, alpha: 1)
+        light: 0x75756F,
+        dark: 0xA0A099,
+        alpha: 0.6,
+        lightHighContrast: 0x4B4B47,
+        darkHighContrast: 0xCDCDC7
     )
 
+    /// Page-chrome text: headers, group names, quiet controls.
+    static let chromeText = dynamic(
+        light: 0x45453F,
+        dark: 0xC9C9C2,
+        lightHighContrast: 0x2B2B28,
+        darkHighContrast: 0xEAEAE5
+    )
+    /// Secondary labels: times, captions, hints.
+    static let chromeLabel = dynamic(
+        light: 0x6B6B65,
+        dark: 0x97978F,
+        lightHighContrast: 0x4B4B47,
+        darkHighContrast: 0xCDCDC7
+    )
+    /// Soft wash for whatever is "now" (Back today, chips, pressed rows).
+    static let nowTint = dynamic(light: 0xF8ECE7, dark: 0x281B16)
+    /// The stronger wash: badges, the open row.
+    static let nowTintStrong = dynamic(light: 0xF7E1DA, dark: 0x3A2219)
+    /// Vermilion text that stays legible on the page and on both tints.
+    static let nowInk = dynamic(light: 0xA33E25, dark: 0xE48367)
+    /// The edge of outlined vermilion controls.
+    static let nowEdge = dynamic(light: 0xE0A08E, dark: 0x7F412F)
+
     private static func dynamic(
-        light: UIColor,
-        dark: UIColor,
-        lightHighContrast: UIColor? = nil,
-        darkHighContrast: UIColor? = nil
+        light: UInt32,
+        dark: UInt32,
+        alpha: CGFloat = 1,
+        lightHighContrast: UInt32? = nil,
+        darkHighContrast: UInt32? = nil
     ) -> Color {
         Color(uiColor: UIColor { traits in
-            if traits.accessibilityContrast == .high {
-                return traits.userInterfaceStyle == .dark
-                    ? darkHighContrast ?? dark
-                    : lightHighContrast ?? light
+            let isDark = traits.userInterfaceStyle == .dark
+            if traits.accessibilityContrast == .high,
+               let contrast = isDark ? darkHighContrast : lightHighContrast {
+                return color(contrast, alpha: 1)
             }
-            return traits.userInterfaceStyle == .dark ? dark : light
+            return color(isDark ? dark : light, alpha: alpha)
         })
+    }
+
+    private static func color(_ hex: UInt32, alpha: CGFloat) -> UIColor {
+        UIColor(
+            red: CGFloat((hex >> 16) & 0xFF) / 255,
+            green: CGFloat((hex >> 8) & 0xFF) / 255,
+            blue: CGFloat(hex & 0xFF) / 255,
+            alpha: alpha
+        )
     }
 }

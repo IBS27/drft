@@ -272,6 +272,17 @@ final class ConvexService: ObservableObject {
         }
     }
 
+    // Same call as the web's useEnsureSettings: creates the settings row on
+    // first sign-in and keeps the server's timezone current after travel,
+    // without touching the send time.
+    func ensureSettings(timezone: String, email: String?) async throws {
+        var args: [String: ConvexEncodable?] = ["timezone": timezone]
+        if let email {
+            args["email"] = email
+        }
+        try await client.mutation("settings:ensure", with: args)
+    }
+
     func saveDailyThoughtSettings(
         sendTime: String,
         timezone: String,

@@ -62,6 +62,11 @@ adds the shelf.
 - `settings:get` query with no args → returns the daily email settings or `null`.
 - `settings:save` mutation with `{ sendTime, timezone, email? }` → writes the daily
   email settings.
+- `settings:ensure` mutation with `{ timezone, email? }` → creates the settings row
+  (default 8:00) or updates its timezone, leaving the send time alone. Called on
+  sign-in, on every return to the foreground, and when the system timezone
+  changes — the web's `useEnsureSettings` — so the server's timezone (and the one
+  named in Settings) follows the device after travel.
 - `account:deleteAccount` action with `{ appleAuthorizationCode? }` → deletes the
   Clerk user and everything stored for it. Once it returns the deletion is final;
   the server finishes the purge and retries the Clerk removal on its own.
@@ -96,40 +101,53 @@ apps/ios/
       CaptureQueue          durable on-device queue in the App Group container
       DictationService      SFSpeechRecognizer + AVAudioEngine, on-device
     Shared/
-      Stillness/            design tokens (colors, type, spacing), small components (Hairline, NowDot)
+      Stillness/            design tokens (colors, type, spacing), Geist fonts, Wordmark, Hairline, NowDot — shared with the widget
+      Ember/                app-only Ember components (Phosphor icons, badges, chips, button styles, HomeHeader)
   DrftWidget/               widget extension target
 ```
 
-## Design system — "Stillness"
+## Design system — Ember
 
-Near-monochrome. Helvetica Neue, light weights. Hairlines instead of boxes, air
-instead of chrome. Color is spent in exactly one place: a vermilion dot.
-Both light and dark, following the system setting.
+The same look as the web app: the Stillness palette (`docs/design.html`) worn the
+Ember way (`docs/vivid.html#ember`). Geist at a readable weight, sentence case
+(no tiny spaced capitals), Phosphor icons, 10pt surfaces and pill controls, and
+the vermilion promoted from a single dot to the accent for "now". Both light and
+dark, following the system setting. Tokens mirror `apps/web/src/index.css` and
+live in `Shared/Stillness` (shared with the widget); app-only components
+(icons, badges, chips, pill/icon/row button styles, `HomeHeader`) live in
+`Shared/Ember`.
 
-| token    | light     | dark      |
-|----------|-----------|-----------|
-| page     | `#FAFAF8` | `#131311` |
-| surface  | `#FCFCFB` | `#181816` |
-| ink      | `#2B2B28` | `#EAEAE5` |
-| muted    | `#75756F` | `#A0A099` |
-| hairline | `#E8E8E4` | `#2B2B28` |
-| now (dot)| `#C73E1D` | `#D9502A` |
+| token          | web       | light     | dark      |
+|----------------|-----------|-----------|-----------|
+| page           | `--pg`    | `#FAFAF8` | `#131311` |
+| surface        | `--scr`   | `#FCFCFB` | `#181816` |
+| ink            | `--ink`   | `#2B2B28` | `#EAEAE5` |
+| muted          | `--mut`   | `#75756F` | `#A0A099` |
+| hairline       | `--line`  | `#E8E8E4` | `#2B2B28` |
+| now            | `--dot`   | `#C73E1D` | `#D9502A` |
+| onNow          | `--on-dot`| `#FAFAF8` | `#131311` |
+| chromeText     | `--pt`    | `#45453F` | `#C9C9C2` |
+| chromeLabel    | `--pl`    | `#6B6B65` | `#97978F` |
+| nowTint        | `--tint`  | `#F8ECE7` | `#281B16` |
+| nowTintStrong  | `--tint-2`| `#F7E1DA` | `#3A2219` |
+| nowInk         | `--dot-ink`| `#A33E25` | `#E48367` |
+| nowEdge        | `--dot-edge`| `#E0A08E` | `#7F412F` |
 
-`faint` = muted at 60% opacity. Define all of these as dynamic `Color`s in
-`Shared/Stillness` (asset catalog or `UIColor(dynamicProvider:)`). Never use system
-accent colors, system grays, or default button styling.
+The Ember tints are the web's `color-mix(in oklab, …)` values, precomputed.
+Never use system accent colors, system grays, or default button styling.
 
-Typography (Helvetica Neue; sizes derived from the design mock, scaled to a 393pt
-screen — treat as the starting point, keep proportions):
-
-- **Wordmark** "drft": 15pt, weight .regular, lowercase, tracking ~0.5em, faint.
-- **Thought text** (the input): 30pt, weight .light (300), line spacing ~1.5–1.65,
-  ink, centered.
-- **Timestamp line**: 13pt, uppercase, tracking ~0.3em, faint.
-- **Action labels** (speak / keep): 15pt, uppercase, tracking ~0.3em. `speak` in
-  muted; `keep` in ink, preceded by the vermilion dot (10pt circle, 12pt gap).
-- Wide-tracked uppercase labels everywhere labels appear; generous whitespace;
-  no borders except 1px hairlines.
+- **Type**: Geist (`Shared/Stillness/Fonts`, registered via `UIAppFonts` in both
+  targets), 400 body, 500–600 headings and controls, 13pt minimum for anything
+  you read. Capture field 28pt, re-read thought 25pt, rows 16pt, body 15pt,
+  times and captions 13pt with tabular digits.
+- **Wordmark**: vermilion 8pt dot + `drft`, 17pt semibold, ink.
+- **Icons**: the web's Phosphor icons, bundled as template vectors in
+  `Assets.xcassets/Phosphor`.
+- **Controls**: pills. Solid vermilion for the one action that matters (Keep,
+  New thought, Allow, Set it down); outlined vermilion for resting; hairline or
+  quiet pills beside them. Pressed rows and controls take the `nowTint` wash.
+- **Counts**: tinted badges for each group, related thoughts, and the
+  collection total, as on the web.
 
 ## Screens
 
@@ -137,17 +155,16 @@ screen — treat as the starting point, keep proportions):
 
 Layout, top to bottom, on `page` background:
 
-1. Wordmark `drft` centered at the top (below safe area). Tapping it opens Settings
+1. Header: the wordmark on the left, a gear on the right. Either opens Settings
    as a sheet. This is the only navigation in the app.
 2. Flexible space, then the thought input, vertically centered: a borderless,
    chromeless multiline `TextField`/`TextEditor` (no placeholder text, no
    background, no border), 30pt light, centered text. The keyboard is up and the
    field focused **immediately on appear** — launch straight into typing.
-3. Beneath the input: the timestamp line — current time + `· unfiled`, e.g.
-   `21:47 · UNFILED` (24h or locale time, uppercase, tracked). Static label,
-   updates with the clock; purely ambient.
-4. Bottom row (above keyboard/safe area): `SPEAK` and `● KEEP`, centered,
-   ~40pt apart. Plain text buttons — no capsules, no backgrounds.
+3. Above the input: the time line, e.g. `9:41 pm, unfiled` (locale time,
+   lowercase), as on the web. Updates with the clock; purely ambient.
+4. Bottom row (above keyboard/safe area): `Speak` (hairline pill with a
+   microphone) and `Keep` (solid vermilion pill), centered.
 
 Behavior:
 
@@ -163,8 +180,8 @@ Behavior:
      the user swipes away; do not auto-exit the app.
   4. Meanwhile, async: flush the queue to Convex. Success or failure changes
      nothing visually.
-- **speak**: toggles dictation. While listening, the label swaps to `LISTENING`
-  in ink with the dot pulsing gently beside it; transcribed words stream into the
+- **speak**: toggles dictation. While listening, the pill turns vermilion-outlined and
+  reads `Listening` with the dot pulsing gently beside it; transcribed words stream into the
   input live (verbatim, on-device). Tapping again (or tapping keep) stops
   transcription. Keep works identically on dictated text. If speech/mic permission
   is denied, tapping speak opens the system settings prompt path — never an alert
@@ -186,100 +203,97 @@ Behavior:
 
 ### Shelf (behind capture)
 
-`page` background, same wordmark at top (tap → Settings sheet, same as capture).
+`page` background, same header as capture (wordmark + gear → Settings sheet), with
+a tinted `N thoughts` badge for the collection total.
 Below, a scrolling non-editing list of the open collection, driven by a live
 `thoughts:collection` subscription (client-local date, recomputed when the app
 becomes active so midnight rolls over):
 
 1. **Today's returned thought**, when `resurfacedId` is set: pinned above the
-   groups, held apart by whitespace, under a tracked-caps faint label
-   `RETURNED TODAY`. Same row treatment otherwise.
-2. **Groups** `TODAY` / `THIS WEEK` / `EARLIER` (tracked caps, faint, computed
-   client-side from `createdAt`; empty groups are omitted). Rows: first-line
-   verbatim `preview`, 17–18pt light, ink, hairline-separated. Tapping a row opens
-   the Thought view.
-3. **The new-thought bar**, fixed above the safe area: a full-width vermilion
-   (`now`-filled) rounded rect — 14pt continuous corners, 24pt side margins,
-   54pt tall — with `NEW THOUGHT` centered in near-white (`onNow`) tracked caps.
-   (Chosen design: `docs/shelf-button.html`, variant 07b.) Tapping it raises
-   capture; pressed state dims to ~70% opacity — no scale, no bounce. When a
-   draft exists, the label shows the draft's first words instead — lowercase,
-   lightly tracked, truncated.
+   groups on a `nowTint` surface labelled `Back today` (with the web's
+   arrow-bend icon), preview clamped to two lines.
+2. **Groups** `Today` / `This week` / `Earlier` (13pt medium, each with a count
+   badge; computed client-side from `createdAt`; empty groups are omitted). Rows:
+   first-line verbatim `preview`, 16pt, ink, age on the right, hairlines between
+   rows. Tapping a row opens the Thought view.
+3. **New thought**, fixed at the bottom over a fade of the page: a solid
+   vermilion pill with a plus icon. Tapping it raises capture.
 
-**No counts anywhere, ever** — not in groups, not on the app icon. Empty state is
-near-silence: wordmark, whitespace, the bottom affordance. No copy.
+No count on the app icon. Empty state is near-silence: header, whitespace, the
+bottom affordance. No copy.
 
 ### Thought (from a shelf row)
 
-Slides in over the shelf with a quiet back affordance (a faint `←`, no nav bar).
-The capture timestamp sits centered in that quiet header. Below it:
+Slides in over the shelf with a round back-arrow button, no nav bar. The capture
+date sits centered in that header as a sentence (`Tuesday, 9:41 am`). Below it:
 
-1. The verbatim text is held at the center of the available reading area, 24–26pt
-   light, ink — a step below capture's 30pt; here you read, not write. Selectable,
-   never editable.
-2. When related thoughts exist, a left-aligned `RELATED THOUGHTS` list follows
-   after a wide field of space. Rows show the complete thought in sentence case,
-   wrap without truncation, and carry a quiet capture-age or `SET DOWN` label.
-   Tapping follows the thought; back returns through followed thoughts before the
-   shelf. A trailing swipe reveals `SET ASIDE`, followed by an eight-second undo.
-   With no related thoughts, the entire section is absent.
-3. `REST`, tracked caps, muted, waits at the bottom. Tapping it reveals a single
-   borderless one-line field for the optional closing line (mirror the web's
-   resting-note copy from `apps/web/src/routes/thought.$thoughtId.tsx`) with a
-   quiet confirm; resting with or without a note fades the thought and returns
-   to the shelf. Resting from the phone is one-way — wake stays on the web.
+1. The verbatim text, left-aligned in the middle of the reading area, 25pt —
+   a step below capture's 28pt; here you read, not write. Selectable, never
+   editable. Chips beneath show where it has been: `Returned today` (tinted) and
+   `Set down` (quiet, with its age), then the resting note.
+2. When related thoughts exist, a `Related thoughts` list (with a count badge)
+   follows. Rows show the complete thought, wrap without truncation, and carry
+   the capture age or a `Set down` tag. Tapping follows the thought; back
+   returns through followed thoughts before the shelf. A trailing swipe reveals
+   `Set aside`, followed by an eight-second undo. With no related thoughts, the
+   entire section is absent.
+3. `Let it rest`, an outlined vermilion pill, waits at the bottom. Tapping it
+   reveals a one-line field (`Where it landed (optional)`, the web's copy) with
+   `Set it down` / `Not yet`; resting with or without a note fades the thought
+   and returns to the shelf. Resting from the phone is one-way — wake stays on
+   the web.
 
 No search or resting list. Those remain web surfaces.
 
 ### Sign-in (shown only when signed out)
 
-Same stillness: `page` background, wordmark large-ish center (`drft`, tracked,
-light), one line of muted copy beneath — `a space for unfinished thoughts` —
-and one quiet text button per enabled OAuth provider (`google` / `github`) —
-tracked caps with the provider mark, each starting Clerk's OAuth
-flow directly (do not build username/password UI). Beneath them, a faint
-`privacy policy` link. No feature list, no carousel, no branding beyond the
+As on the web: `page` background, the large wordmark centered, one line beneath
+— `A space for unfinished thoughts` — and one pill per provider (`Continue with
+Apple` / `Google` / `GitHub`, with its Phosphor mark), each starting Clerk's
+sign-in directly (do not build username/password UI). A `Privacy policy` link
+sits at the bottom edge. No feature list, no carousel, no branding beyond the
 wordmark.
 
 ### Connections permission (once)
 
 When signed in and `consent:get` answers `null`, a full-screen `page` view rises
 over idle capture (empty field, not listening, no confirmation playing) — never
-mid-thought, and never while the answer is unknown or offline. A `CONNECTIONS`
-label, the explanation that each thought's text is sent to OpenAI (which doesn't
-train on it), `ALLOW` / `NOT NOW` as equal ink text buttons, a quiet failure line
-on error or an 8-second stall, `you can change this anytime in settings`, and a
-`privacy policy` link. Deciding dismisses it and capture refocuses.
+mid-thought, and never while the answer is unknown or offline. On a surface card
+(as on the web): a `Connections` title, the explanation that each thought's text
+is sent to OpenAI (which doesn't train on it), `Allow` (solid) / `Not now`
+(hairline) pills, a failure line on error or an 8-second stall, `You can change
+this anytime in settings.`, and a `Privacy policy` link. Deciding dismisses it and capture refocuses.
 
 ### Settings (sheet over capture)
 
-Nearly empty by design. A sheet on `surface` with:
+Nearly empty by design. A full-height sheet on `page` with a centered `Settings`
+title and a close button, then rows grouped on surface cards as on the web:
 
-- `SETTINGS` label (tracked caps, faint) at top.
-- Signed-in identity (email, muted, plain text).
-- `daily thought` — a time picker (compact) for the daily resurfacing email.
+- Signed-in identity (envelope icon, email).
+- `Daily thought` — a time picker (compact) for the daily resurfacing email.
   Convex is the source of truth because the server sends the email. On appear,
   the picker adopts the signed-in user's server value when one exists. Changes
   save to Convex with the current IANA timezone and Clerk email, while
   `@AppStorage("dailyThoughtTime")` in the App Group defaults remains the offline
   cache and initial value. Default 8:00 when neither source has a value. One line
-  of faint copy: `one thought returns each morning`.
-- `connections` — on/off reflecting the server consent (never asked reads as
-  off), writing through `consent:setAiConnections`. Faint copy: `thought text is
+  of copy: `One thought returns each morning, <timezone>`.
+- `Connections` — a vermilion switch reflecting the server consent (never asked reads as
+  off), writing through `consent:setAiConnections`. Copy: `Thought text is
   sent to OpenAI to find echoes`.
-- `privacy policy` — muted link to `https://trydrft.app/privacy`.
-- `sign out` — muted text button. Confirmation-free.
-- `delete account` — muted text button. One system alert names what goes (every
+- `Privacy policy` — link row to `https://trydrft.app/privacy`.
+- `Sign out` — confirmation-free.
+- `Delete account` — on its own card, in vermilion text. One system alert names what goes (every
   thought, connection, note, and the daily email) and that it can't be undone.
   An account signed in with Apple first confirms with Apple once, so the server
   can revoke the Sign in with Apple grant (best effort: dismissing that sheet, or
   another Apple ID on the device, skips revocation, never the deletion). On
   success the device forgets the account (queued captures, cached rows, the
   remembered user) and signs out; if the request never reached the server the
-  row reads `couldn't finish deleting — try again`.
-- App version, faint, bottom.
+  row reads `Couldn't finish deleting. Try again.`
+- App version at the bottom.
 
-No other options. Rows separated by hairlines, no grouped-table chrome.
+No other options. Rows separated by hairlines on 10pt surfaces, no system
+grouped-table chrome.
 
 ## Services
 
@@ -314,9 +328,12 @@ Widgets are launchers — they deep-link into capture (`drft://capture`); no inl
 text entry.
 
 - **Lock screen** `accessoryCircular`: the vermilion dot, small, centered — nothing
-  else. `accessoryRectangular`: `drft` wordmark + one faint line `catch a thought`.
-- **Home screen** `systemSmall`: page background, small vermilion dot centered,
-  `drft` wordmark beneath in tracked caps. Quiet; no counts, no content preview.
+  else. `accessoryRectangular`: the wordmark + one line `Catch a thought`.
+- **Home screen** `systemSmall`: page background, the wordmark top-left and a
+  tinted `Catch a thought` chip at the bottom, always one line (it shrinks slightly
+  rather than wrap on narrow phones). On tinted and clear home screens, which keep
+  only shape, the chip is an outline in the accent group instead of a fill. Quiet;
+  no counts, no content preview.
 - **App Intent**: `CaptureThoughtIntent` (title "Capture a thought") that opens the
   app to capture — makes Shortcuts / Action button / Siri entry work.
 - Widget shows no user data, so it needs no auth.

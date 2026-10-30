@@ -8,11 +8,11 @@ enum ShelfGroup: CaseIterable, Hashable {
     var label: String {
         switch self {
         case .today:
-            "TODAY"
+            "Today"
         case .thisWeek:
-            "THIS WEEK"
+            "This week"
         case .earlier:
-            "EARLIER"
+            "Earlier"
         }
     }
 }
@@ -88,14 +88,16 @@ enum ShelfFormatting {
             day = weekdayFormatter.string(from: date)
         }
 
-        return "\(day) · \(time(for: date))"
+        // Set as a sentence, like the web's thought header: "Tuesday, 9:41 am".
+        return "\(day), \(time(for: date).lowercased())"
     }
 
     static func ageLabel(for milliseconds: Double, now: Date = .now) -> String {
         let date = Date(timeIntervalSince1970: milliseconds / 1_000)
         switch group(for: milliseconds, now: now) {
         case .today:
-            return time(for: date)
+            // Lowercase like the rest of the shorthand, as on the web.
+            return time(for: date).lowercased()
         case .thisWeek:
             update(shortWeekdayFormatter)
             return shortWeekdayFormatter.string(from: date).lowercased()

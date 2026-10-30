@@ -2,6 +2,6 @@ import CoreGraphics
 
 enum StillnessSpacing {
     static let nowDot: CGFloat = 10
-    static let dotLabelGap: CGFloat = 12
-    static let actionGap: CGFloat = 40
+    /// One radius for surfaces (rows, panels, fields); controls are pills.
+    static let cardRadius: CGFloat = 10
 }

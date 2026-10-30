@@ -25,155 +25,161 @@ struct SettingsView: View {
 
     var body: some View {
         ZStack {
-            Stillness.surface.ignoresSafeArea()
+            Stillness.page.ignoresSafeArea()
 
-            VStack(alignment: .leading, spacing: 0) {
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 0) {
-                        HStack {
-                            Text("SETTINGS")
-                                .stillnessLabel(.timestamp)
+            VStack(spacing: 0) {
+                ZStack {
+                    Text("Settings")
+                        .font(StillnessType.headerTitle)
+                        .foregroundStyle(Stillness.chromeText)
+                        .accessibilityAddTraits(.isHeader)
 
-                            Spacer()
-
-                            Button("CLOSE") {
-                                dismiss()
-                            }
-                            .stillnessLabel(.actionMuted)
-                            .padding(.vertical, 13)
-                            .frame(minHeight: 44)
-                            .contentShape(Rectangle())
-                            .buttonStyle(.plain)
-                            .accessibilityLabel("Close settings")
-                        }
-                        .padding(.top, 21)
-                        .padding(.bottom, 17)
-
-                        if let email = authService.email {
-                            Text(email)
-                                .stillnessMutedBody()
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.bottom, 24)
-                        }
-
-                        Hairline()
-
-                        VStack(alignment: .leading, spacing: 14) {
-                            HStack(spacing: 18) {
-                                Text("daily thought")
-                                    .font(StillnessType.action)
-                                    .tracking(1.2)
-                                    .foregroundStyle(Stillness.ink)
-
-                                Spacer(minLength: 12)
-
-                                Text(dailyThoughtTimeText)
-                                    .font(StillnessType.action)
-                                    .tracking(1.2)
-                                    .foregroundStyle(Stillness.muted)
-                                    .accessibilityHidden(true)
-                                    .overlay {
-                                        DatePicker(
-                                            "daily thought",
-                                            selection: $dailyThoughtTime,
-                                            displayedComponents: .hourAndMinute
-                                        )
-                                        .labelsHidden()
-                                        .datePickerStyle(.compact)
-                                        .tint(Stillness.ink)
-                                        .colorMultiply(.clear)
-                                    }
-                            }
-
-                            Text("one thought returns each morning")
-                                .stillnessFaintFootnote()
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
-                        .padding(.vertical, 24)
-
-                        Hairline()
-
-                        VStack(alignment: .leading, spacing: 14) {
-                            Toggle("connections", isOn: connections)
-                                .toggleStyle(StillnessToggleStyle())
-                                .disabled(convexService.consent == .unknown)
-
-                            Text("thought text is sent to OpenAI to find echoes")
-                                .stillnessFaintFootnote()
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
-                        .padding(.vertical, 24)
-
-                        Hairline()
-
-                        Link(destination: .privacyPolicy) {
-                            Text("privacy policy")
-                                .font(StillnessType.action)
-                                .tracking(1.2)
-                                .foregroundStyle(Stillness.muted)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .contentShape(Rectangle())
-                        }
-                        .padding(.vertical, 24)
-
-                        Hairline()
+                    HStack {
+                        Spacer()
 
                         Button {
                             dismiss()
-                            Task {
-                                await authService.signOut()
-                            }
                         } label: {
-                            Text("sign out")
-                                .font(StillnessType.action)
-                                .tracking(1.2)
-                                .foregroundStyle(Stillness.muted)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .contentShape(Rectangle())
+                            EmberIcon(.x, size: 18)
                         }
-                        .buttonStyle(.plain)
-                        .disabled(isDeletingAccount)
-                        .padding(.vertical, 24)
-
-                        Hairline()
-
-                        Button {
-                            deletionIsConfirming = true
-                        } label: {
-                            Text(isDeletingAccount ? "deleting…" : "delete account")
-                                .font(StillnessType.action)
-                                .tracking(1.2)
-                                .foregroundStyle(Stillness.muted)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .contentShape(Rectangle())
-                        }
-                        .buttonStyle(.plain)
-                        .disabled(isDeletingAccount)
-                        .padding(.top, 24)
-                        .padding(.bottom, deletionFailed ? 10 : 24)
-
-                        if deletionFailed {
-                            Text("couldn't finish deleting — try again")
-                                .stillnessFaintFootnote()
-                                .padding(.bottom, 24)
-                        }
-
-                        Hairline()
+                        .buttonStyle(IconButtonStyle())
+                        .accessibilityLabel("Close settings")
                     }
-                    .padding(.horizontal, 28)
+                }
+                .padding(.horizontal, 8)
+                .padding(.top, 8)
+                .frame(minHeight: 64)
+
+                ScrollView {
+                    VStack(spacing: 16) {
+                        VStack(spacing: 0) {
+                            if let email = authService.email {
+                                HStack(spacing: 12) {
+                                    EmberIcon(.envelopeSimple, size: 18)
+                                    Text(email)
+                                        .font(.geist(14, relativeTo: .subheadline))
+                                        .lineLimit(1)
+                                        .truncationMode(.middle)
+                                }
+                                .foregroundStyle(Stillness.chromeLabel)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 14)
+
+                                Hairline()
+                            }
+
+                            VStack(alignment: .leading, spacing: 4) {
+                                HStack(spacing: 16) {
+                                    Text("Daily thought")
+                                        .font(StillnessType.body)
+                                        .foregroundStyle(Stillness.ink)
+
+                                    Spacer(minLength: 12)
+
+                                    Text(dailyThoughtTimeText)
+                                        .font(StillnessType.body)
+                                        .monospacedDigit()
+                                        .foregroundStyle(Stillness.ink)
+                                        .padding(.horizontal, 12)
+                                        .frame(minHeight: 36)
+                                        .background(Stillness.page, in: Capsule())
+                                        .overlay {
+                                            Capsule().strokeBorder(Stillness.hairline, lineWidth: 1)
+                                        }
+                                        .accessibilityHidden(true)
+                                        .overlay {
+                                            DatePicker(
+                                                "Daily thought",
+                                                selection: $dailyThoughtTime,
+                                                displayedComponents: .hourAndMinute
+                                            )
+                                            .labelsHidden()
+                                            .datePickerStyle(.compact)
+                                            .tint(Stillness.now)
+                                            .colorMultiply(.clear)
+                                        }
+                                }
+
+                                Text("One thought returns each morning, \(TimeZone.current.identifier)")
+                                    .font(StillnessType.caption)
+                                    .foregroundStyle(Stillness.chromeLabel)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 14)
+
+                            Hairline()
+
+                            VStack(alignment: .leading, spacing: 4) {
+                                Toggle("Connections", isOn: connections)
+                                    .toggleStyle(EmberSwitchStyle())
+                                    .disabled(convexService.consent == .unknown)
+
+                                Text("Thought text is sent to OpenAI to find echoes")
+                                    .font(StillnessType.caption)
+                                    .foregroundStyle(Stillness.chromeLabel)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 10)
+                        }
+                        .emberSurface()
+
+                        VStack(spacing: 0) {
+                            Link(destination: .privacyPolicy) {
+                                linkRow("Privacy policy", icon: .arrowUpRight)
+                            }
+                            .buttonStyle(SettingsRowButtonStyle())
+
+                            Hairline()
+
+                            Button {
+                                dismiss()
+                                Task {
+                                    await authService.signOut()
+                                }
+                            } label: {
+                                linkRow("Sign out", icon: .signOut)
+                            }
+                            .buttonStyle(SettingsRowButtonStyle())
+                            .disabled(isDeletingAccount)
+                        }
+                        .emberSurface()
+
+                        VStack(alignment: .leading, spacing: 0) {
+                            Button {
+                                deletionIsConfirming = true
+                            } label: {
+                                Text(isDeletingAccount ? "Deleting…" : "Delete account")
+                                    .font(StillnessType.body)
+                                    .foregroundStyle(Stillness.nowInk)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 14)
+                            }
+                            .buttonStyle(SettingsRowButtonStyle())
+                            .disabled(isDeletingAccount)
+
+                            if deletionFailed {
+                                Text("Couldn't finish deleting. Try again.")
+                                    .font(StillnessType.caption)
+                                    .foregroundStyle(Stillness.nowInk)
+                                    .padding(.horizontal, 16)
+                                    .padding(.bottom, 14)
+                            }
+                        }
+                        .emberSurface()
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 8)
+                    .padding(.bottom, 24)
                 }
 
-                Spacer()
-
                 Text(versionText)
-                    .font(.custom(
-                        "Helvetica Neue",
-                        size: 12,
-                        relativeTo: .caption
-                    ).weight(.light))
-                    .tracking(1.2)
-                    .foregroundStyle(Stillness.faint)
-                    .padding(.horizontal, 28)
+                    .font(StillnessType.caption)
+                    .foregroundStyle(Stillness.chromeLabel)
+                    .padding(.horizontal, 16)
                     .padding(.bottom, 18)
             }
         }
@@ -223,6 +229,22 @@ struct SettingsView: View {
                 }
             }
         }
+    }
+
+    private func linkRow(_ title: String, icon: PhosphorIcon) -> some View {
+        HStack(spacing: 16) {
+            Text(title)
+                .font(StillnessType.body)
+                .foregroundStyle(Stillness.ink)
+
+            Spacer(minLength: 12)
+
+            EmberIcon(icon, size: 16)
+                .foregroundStyle(Stillness.chromeLabel)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
+        .contentShape(Rectangle())
     }
 
     private func deleteAccount() {
@@ -316,27 +338,51 @@ struct SettingsView: View {
     }
 }
 
-private struct StillnessToggleStyle: ToggleStyle {
+/// A row that tints when pressed; its surface clips the corners.
+private struct SettingsRowButtonStyle: ButtonStyle {
+    @Environment(\.isEnabled) private var isEnabled
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .background(configuration.isPressed ? Stillness.nowTint : .clear)
+            .opacity(isEnabled ? 1 : 0.5)
+    }
+}
+
+/// The web's switch: vermilion when on, a hairline track when off.
+private struct EmberSwitchStyle: ToggleStyle {
     @Environment(\.isEnabled) private var isEnabled
 
     func makeBody(configuration: Configuration) -> some View {
         Button {
             configuration.isOn.toggle()
         } label: {
-            HStack(spacing: 18) {
+            HStack(spacing: 16) {
                 configuration.label
-                    .font(StillnessType.action)
-                    .tracking(1.2)
+                    .font(StillnessType.body)
                     .foregroundStyle(Stillness.ink)
 
                 Spacer(minLength: 12)
 
-                Text(configuration.isOn ? "on" : "off")
-                    .font(StillnessType.action)
-                    .tracking(1.2)
-                    .foregroundStyle(configuration.isOn ? Stillness.ink : Stillness.muted)
-                    .opacity(isEnabled ? 1 : 0.35)
-                    .accessibilityHidden(true)
+                ZStack(alignment: configuration.isOn ? .trailing : .leading) {
+                    Capsule()
+                        .fill(configuration.isOn ? Stillness.now : Stillness.hairline)
+                        .overlay {
+                            if !configuration.isOn {
+                                Capsule().strokeBorder(Stillness.chromeLabel, lineWidth: 1)
+                            }
+                        }
+
+                    Circle()
+                        .fill(Stillness.page)
+                        .frame(width: 20, height: 20)
+                        .shadow(color: Stillness.ink.opacity(0.3), radius: 1.5, y: 1)
+                        .padding(2)
+                }
+                .frame(width: 40, height: 24)
+                .opacity(isEnabled ? 1 : 0.35)
+                .animation(.easeOut(duration: 0.18), value: configuration.isOn)
+                .accessibilityHidden(true)
             }
             .frame(minHeight: 44)
             .contentShape(Rectangle())

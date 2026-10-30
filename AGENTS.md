@@ -43,4 +43,4 @@ Account deletion (`convex/account.ts`, settings on web and iOS) needs `CLERK_SEC
 
 - Bun for packages and scripts; never npm/yarn.
 - TypeScript: no `any`.
-- Web UI follows Ember (`docs/vivid.html#ember`): the Stillness palette from `docs/design.html` with Geist, sentence-case labels (no tiny spaced capitals), Phosphor icons (`@phosphor-icons/react`), 10px surfaces and pill controls, and the vermilion as the accent for "now" (tokens in `apps/web/src/index.css`). iOS still follows `docs/design.html`.
+- Web UI follows Ember (`docs/vivid.html#ember`): the Stillness palette from `docs/design.html` with Geist, sentence-case labels (no tiny spaced capitals), Phosphor icons (`@phosphor-icons/react`), 10px surfaces and pill controls, and the vermilion as the accent for "now" (tokens in `apps/web/src/index.css`). iOS follows Ember too (tokens in `apps/ios/drft/Shared/Stillness`, components in `apps/ios/drft/Shared/Ember`; see `apps/ios/SPEC.md`).

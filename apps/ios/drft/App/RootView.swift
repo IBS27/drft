@@ -13,6 +13,7 @@ struct RootView: View {
     @State private var captureIsPresented = true
     @State private var captureDragOffset: CGFloat = 0
     @State private var captureIsIdle = false
+    @State private var timeZoneID = TimeZone.current.identifier
 
     var body: some View {
         Group {
@@ -67,6 +68,23 @@ struct RootView: View {
             }
             captureQueue.updateAuthenticatedUserID(userID)
         }
+        // Keep the server's timezone in step with the device, as the web
+        // does on every load: on sign-in, on each return to the app, and
+        // when the system timezone changes while it's open.
+        .task(id: SettingsSyncKey(
+            userID: convexService.authenticatedUserID,
+            isActive: scenePhase == .active,
+            timeZoneID: timeZoneID
+        )) {
+            guard convexService.authenticatedUserID != nil, scenePhase == .active else { return }
+            try? await convexService.ensureSettings(
+                timezone: timeZoneID,
+                email: authService.email
+            )
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .NSSystemTimeZoneDidChange)) { _ in
+            refreshTimeZone()
+        }
         .onChange(of: captureFocusRequest) {
             presentCapture()
         }
@@ -78,9 +96,12 @@ struct RootView: View {
         .onChange(of: scenePhase) { _, phase in
             if phase == .background {
                 cameFromBackground = true
-            } else if phase == .active, cameFromBackground {
-                cameFromBackground = false
-                presentCapture()
+            } else if phase == .active {
+                refreshTimeZone()
+                if cameFromBackground {
+                    cameFromBackground = false
+                    presentCapture()
+                }
             }
         }
     }
@@ -145,6 +166,13 @@ struct RootView: View {
         }
     }
 
+    private func refreshTimeZone() {
+        // The system timezone is cached per process; drop it so a change
+        // made while drft was suspended is read fresh.
+        NSTimeZone.resetSystemTimeZone()
+        timeZoneID = TimeZone.current.identifier
+    }
+
     private func revealShelf() {
         withAnimation(.easeInOut(duration: 0.34)) {
             captureIsPresented = false
@@ -158,4 +186,10 @@ struct RootView: View {
             captureIsPresented = true
         }
     }
+}
+
+private struct SettingsSyncKey: Equatable {
+    let userID: String?
+    let isActive: Bool
+    let timeZoneID: String
 }
