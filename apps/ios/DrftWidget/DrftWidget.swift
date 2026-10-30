@@ -28,11 +28,10 @@ struct DrftWidgetView: View {
             switch family {
             case .accessoryRectangular:
                 VStack(alignment: .leading, spacing: 3) {
-                    Text("drft")
-                        .stillnessWordmark()
-                    Text("catch a thought")
-                        .font(.custom("Helvetica Neue", size: 12).weight(.light))
-                        .foregroundStyle(Stillness.faint)
+                    Wordmark()
+                    Text("Catch a thought")
+                        .font(.geist(13, relativeTo: .footnote))
+                        .foregroundStyle(Stillness.chromeLabel)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
             case .accessoryCircular:
@@ -40,12 +39,17 @@ struct DrftWidgetView: View {
                     .widgetAccentable()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             case .systemSmall:
-                VStack(spacing: 14) {
-                    captureDot
-                    Text("drft")
-                        .stillnessWordmark()
+                VStack(alignment: .leading, spacing: 0) {
+                    Wordmark()
+                    Spacer(minLength: 0)
+                    Text("Catch a thought")
+                        .font(.geist(15, .medium, relativeTo: .subheadline))
+                        .foregroundStyle(Stillness.nowInk)
+                        .padding(.horizontal, 12)
+                        .frame(minHeight: 30)
+                        .background(Stillness.nowTint, in: Capsule())
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
             default:
                 EmptyView()
             }
@@ -79,7 +83,7 @@ struct DrftWidget: Widget {
             DrftWidgetView()
         }
         .configurationDisplayName("drft")
-        .description("catch a thought")
+        .description("Catch a thought")
         .supportedFamilies([.systemSmall, .accessoryCircular, .accessoryRectangular])
     }
 }

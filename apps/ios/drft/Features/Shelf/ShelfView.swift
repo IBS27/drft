@@ -147,33 +147,34 @@ struct ShelfView: View {
                 let layout = ShelfLayout(collection: model.collection, now: now)
 
                 VStack(spacing: 0) {
-                    wordmark
+                    HomeHeader(count: model.collection?.thoughts.count) {
+                        settingsArePresented = true
+                    }
 
                     ScrollView {
                         LazyVStack(alignment: .leading, spacing: 0) {
                             if let returnedThought = layout.returnedThought {
-                                sectionLabel("RETURNED TODAY")
-                                thoughtRow(returnedThought)
-                                Hairline()
-                                Spacer(minLength: 42)
+                                backToday(returnedThought)
+                                    .padding(.bottom, 4)
                             }
 
                             ForEach(layout.sections) { section in
-                                sectionLabel(section.group.label)
-                                ForEach(section.thoughts) { thought in
+                                sectionHeader(section)
+                                ForEach(Array(section.thoughts.enumerated()), id: \.element.id) { index, thought in
+                                    if index > 0 {
+                                        Hairline()
+                                    }
                                     thoughtRow(thought)
-                                    Hairline()
                                 }
-                                Spacer(minLength: 34)
                             }
                         }
-                        .padding(.horizontal, 28)
-                        .padding(.top, 34)
-                        .padding(.bottom, 94)
+                        .padding(.horizontal, 14)
+                        .padding(.top, 8)
+                        .padding(.bottom, 110)
                     }
                     .scrollIndicators(.hidden)
                 }
-                .overlay(alignment: .bottomTrailing) {
+                .overlay(alignment: .bottom) {
                     catchThoughtAffordance
                 }
             }
@@ -233,83 +234,128 @@ struct ShelfView: View {
                 authService: authService,
                 convexService: convexService
             )
-            .presentationBackground(Stillness.surface)
+            .presentationBackground(Stillness.page)
             .presentationDragIndicator(.hidden)
             .presentationDetents([.medium, .large])
         }
     }
 
-    private var wordmark: some View {
-        Button {
-            settingsArePresented = true
-        } label: {
-            Text("drft")
-                .stillnessWordmark()
-                .padding(.vertical, 13)
-                .frame(minHeight: 44)
-                .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .padding(.top, 5)
-        .accessibilityLabel("Open settings")
-    }
-
+    // A solid vermilion pill at the bottom edge, over a fade of the page so
+    // rows pass beneath it quietly.
     private var catchThoughtAffordance: some View {
         Button {
             onCatchThought()
         } label: {
-            Image(systemName: "plus")
-                .font(.system(size: 22, weight: .medium))
-                .foregroundStyle(Stillness.onNow)
-                .frame(width: 56, height: 56)
-                .background(Stillness.now, in: Circle())
-                .contentShape(Circle())
+            HStack(spacing: 8) {
+                EmberIcon(.plus, size: 16)
+                Text("New thought")
+            }
         }
-        .buttonStyle(NewThoughtButtonStyle())
-        .padding(.trailing, 28)
-        .padding(.bottom, 20)
+        .buttonStyle(PillButtonStyle(kind: .primary, height: 48, horizontalPadding: 24))
+        .padding(.top, 28)
+        .padding(.bottom, 16)
+        .frame(maxWidth: .infinity)
+        .background {
+            LinearGradient(
+                stops: [
+                    .init(color: Stillness.page.opacity(0), location: 0),
+                    .init(color: Stillness.page, location: 0.4),
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea(edges: .bottom)
+            .allowsHitTesting(false)
+        }
         .accessibilityLabel("New thought")
     }
 
-    private func sectionLabel(_ text: String) -> some View {
-        Text(text)
-            .stillnessLabel(.timestamp)
-            .padding(.bottom, 12)
+    private func sectionHeader(_ section: ShelfSection) -> some View {
+        HStack(spacing: 8) {
+            Text(section.group.label)
+                .font(StillnessType.groupLabel)
+                .foregroundStyle(Stillness.chromeText)
+            Badge(text: "\(section.thoughts.count)")
+        }
+        .padding(.horizontal, 10)
+        .padding(.top, 18)
+        .padding(.bottom, 4)
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(.isHeader)
+    }
+
+    // Today's returned thought, held apart above the groups on a tint.
+    private func backToday(_ thought: ConvexService.CollectionThought) -> some View {
+        Button {
+            open(thought)
+        } label: {
+            VStack(alignment: .leading, spacing: 5) {
+                HStack(spacing: 6) {
+                    EmberIcon(.arrowBendUpLeft, size: 14)
+                    Text("Back today")
+                        .font(.geist(12.5, .medium, relativeTo: .footnote))
+                }
+                .foregroundStyle(Stillness.nowInk)
+
+                Text(thought.preview)
+                    .font(StillnessType.body)
+                    .lineSpacing(StillnessType.bodyLineSpacing)
+                    .foregroundStyle(Stillness.ink)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.leading)
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .buttonStyle(RowButtonStyle(
+            background: Stillness.nowTint,
+            pressedBackground: Stillness.nowTintStrong
+        ))
+        .simultaneousGesture(
+            LongPressGesture(minimumDuration: 0).onEnded { _ in
+                convexService.prewarmThought(id: thought.id)
+            }
+        )
+        .accessibilityLabel("Returned today: \(thought.preview)")
     }
 
     private func thoughtRow(_ thought: ConvexService.CollectionThought) -> some View {
         let age = ShelfFormatting.ageLabel(for: thought.createdAt, now: now)
 
         return Button {
-            convexService.prewarmThought(id: thought.id)
-            withAnimation(.easeInOut(duration: 0.28)) {
-                selectedThoughtID = thought.id
-            }
+            open(thought)
         } label: {
-            HStack(spacing: 14) {
+            HStack(alignment: .firstTextBaseline, spacing: 12) {
                 Text(thought.preview)
-                    .font(StillnessType.shelfThought)
+                    .font(StillnessType.row)
                     .foregroundStyle(Stillness.ink)
                     .lineLimit(1)
                     .frame(maxWidth: .infinity, alignment: .leading)
 
                 Text(age)
-                    .font(StillnessType.relatedMetadata)
-                    .tracking(0.88)
+                    .font(StillnessType.caption)
                     .monospacedDigit()
-                    .foregroundStyle(Stillness.faint)
+                    .foregroundStyle(Stillness.chromeLabel)
                     .lineLimit(1)
             }
-            .padding(.vertical, 18)
-            .contentShape(Rectangle())
+            .padding(.horizontal, 10)
+            .padding(.vertical, 14)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(RowButtonStyle())
         .simultaneousGesture(
             LongPressGesture(minimumDuration: 0).onEnded { _ in
                 convexService.prewarmThought(id: thought.id)
             }
         )
         .accessibilityLabel("\(thought.preview), \(age)")
+    }
+
+    private func open(_ thought: ConvexService.CollectionThought) {
+        convexService.prewarmThought(id: thought.id)
+        withAnimation(.easeInOut(duration: 0.28)) {
+            selectedThoughtID = thought.id
+        }
     }
 
     private var displayUserID: String? {
@@ -330,13 +376,5 @@ struct ShelfView: View {
         withAnimation(.easeInOut(duration: 0.24)) {
             selectedThoughtID = nil
         }
-    }
-}
-
-private struct NewThoughtButtonStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .opacity(configuration.isPressed ? 0.7 : 1)
-            .scaleEffect(configuration.isPressed ? 0.96 : 1)
     }
 }

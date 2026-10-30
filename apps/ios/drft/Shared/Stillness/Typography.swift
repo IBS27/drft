@@ -1,173 +1,67 @@
 import SwiftUI
 
+/// Geist, bundled from Stillness/Fonts and registered via `UIAppFonts`.
+/// Referenced by PostScript name so each weight resolves to its own file.
+enum GeistWeight {
+    case regular
+    case medium
+    case semibold
+
+    fileprivate var postScriptName: String {
+        switch self {
+        case .regular: "Geist-Regular"
+        case .medium: "Geist-Medium"
+        case .semibold: "Geist-SemiBold"
+        }
+    }
+}
+
+extension Font {
+    static func geist(
+        _ size: CGFloat,
+        _ weight: GeistWeight = .regular,
+        relativeTo style: Font.TextStyle = .body
+    ) -> Font {
+        .custom(weight.postScriptName, size: size, relativeTo: style)
+    }
+}
+
+/// Ember's type scale (docs/vivid.html#ember): Geist at a readable weight,
+/// sentence case, 13pt minimum for anything you need to read. Sizes follow
+/// the web's phone layout. Geist's natural line height is 1.3em, so line
+/// spacing below is the extra leading on top of it.
 enum StillnessType {
-    static let wordmark = Font.custom(
-        "Helvetica Neue",
-        size: 15,
-        relativeTo: .subheadline
-    ).weight(.regular)
-    static let thought = Font.custom(
-        "Helvetica Neue",
-        size: 30,
-        relativeTo: .title
-    ).weight(.light)
-    static let timestamp = Font.custom(
-        "Helvetica Neue",
-        size: 13,
-        relativeTo: .footnote
-    ).weight(.light)
-    static let action = Font.custom(
-        "Helvetica Neue",
-        size: 15,
-        relativeTo: .subheadline
-    ).weight(.regular)
-    static let shelfThought = Font.custom(
-        "Helvetica Neue",
-        size: 18,
-        relativeTo: .body
-    ).weight(.light)
-    static let readingThought = Font.custom(
-        "Helvetica Neue",
-        size: 25,
-        relativeTo: .title2
-    ).weight(.light)
-    static let relatedThought = Font.custom(
-        "Helvetica Neue",
-        size: 16,
-        relativeTo: .body
-    ).weight(.regular)
-    static let relatedMetadata = Font.custom(
-        "Helvetica Neue",
-        size: 11,
-        relativeTo: .caption
-    ).weight(.regular)
-    static let sectionLabel = Font.custom(
-        "Helvetica Neue",
-        size: 11,
-        relativeTo: .caption
-    ).weight(.regular)
-    static let wordmarkTracking: CGFloat = 7.5
-    static let thoughtLineSpacing: CGFloat = 15
-    static let timestampTracking: CGFloat = 3.9
-    static let actionTracking: CGFloat = 4.5
-    static let sectionLabelTracking: CGFloat = 3.08
-}
+    static let wordmark = Font.geist(17, .semibold, relativeTo: .headline)
+    static let wordmarkTracking: CGFloat = -0.34
 
-private struct WordmarkStyle: ViewModifier {
-    func body(content: Content) -> some View {
-        content
-            .font(StillnessType.wordmark)
-            .tracking(StillnessType.wordmarkTracking)
-            .foregroundStyle(Stillness.faint)
-    }
-}
+    /// The capture field: your words, alone at the center.
+    static let captureThought = Font.geist(28, relativeTo: .title)
+    static let captureThoughtTracking: CGFloat = -0.34
+    static let captureThoughtLineSpacing: CGFloat = 4
 
-private struct ThoughtStyle: ViewModifier {
-    func body(content: Content) -> some View {
-        content
-            .font(StillnessType.thought)
-            .lineSpacing(StillnessType.thoughtLineSpacing)
-            .multilineTextAlignment(.center)
-            .foregroundStyle(Stillness.ink)
-    }
-}
+    /// A thought being re-read: a step below capture.
+    static let readingThought = Font.geist(25, relativeTo: .title2)
+    static let readingThoughtTracking: CGFloat = -0.5
+    static let readingThoughtLineSpacing: CGFloat = 2
 
-private struct MutedBodyStyle: ViewModifier {
-    func body(content: Content) -> some View {
-        content
-            .font(.custom(
-                "Helvetica Neue",
-                size: 15,
-                relativeTo: .subheadline
-            ).weight(.light))
-            .foregroundStyle(Stillness.muted)
-    }
-}
+    /// A page's name or a thought's date, centered in its header.
+    static let headerTitle = Font.geist(15, .medium, relativeTo: .subheadline)
+    static let headerDate = Font.geist(14, .medium, relativeTo: .subheadline)
 
-private struct FaintFootnoteStyle: ViewModifier {
-    func body(content: Content) -> some View {
-        content
-            .font(.custom(
-                "Helvetica Neue",
-                size: 13,
-                relativeTo: .footnote
-            ).weight(.light))
-            .foregroundStyle(Stillness.faint)
-    }
-}
+    static let groupLabel = Font.geist(13, .medium, relativeTo: .footnote)
+    static let sectionTitle = Font.geist(15, .medium, relativeTo: .subheadline)
+    static let row = Font.geist(16, relativeTo: .body)
+    static let body = Font.geist(15, relativeTo: .subheadline)
+    static let bodyLineSpacing: CGFloat = 2
+    static let meta = Font.geist(13.5, relativeTo: .footnote)
+    static let caption = Font.geist(13, relativeTo: .footnote)
+    static let captionEmphasis = Font.geist(13, .medium, relativeTo: .footnote)
 
-private struct StillnessLabelStyle: ViewModifier {
-    let kind: StillnessLabelKind
+    /// Solid vermilion actions (Keep, Allow, Set it down).
+    static let primaryButton = Font.geist(15, .semibold, relativeTo: .subheadline)
+    /// Outlined and quiet pill controls.
+    static let control = Font.geist(14.5, .medium, relativeTo: .subheadline)
 
-    func body(content: Content) -> some View {
-        content
-            .font(kind.font)
-            .tracking(kind.tracking)
-            .textCase(.uppercase)
-            .foregroundStyle(kind.color)
-    }
-}
-
-enum StillnessLabelKind {
-    case timestamp
-    case section
-    case actionMuted
-    case actionInk
-
-    fileprivate var font: Font {
-        switch self {
-        case .timestamp:
-            StillnessType.timestamp
-        case .section:
-            StillnessType.sectionLabel
-        case .actionMuted, .actionInk:
-            StillnessType.action
-        }
-    }
-
-    fileprivate var tracking: CGFloat {
-        switch self {
-        case .timestamp:
-            StillnessType.timestampTracking
-        case .section:
-            StillnessType.sectionLabelTracking
-        case .actionMuted, .actionInk:
-            StillnessType.actionTracking
-        }
-    }
-
-    fileprivate var color: Color {
-        switch self {
-        case .timestamp:
-            Stillness.faint
-        case .section:
-            Stillness.muted
-        case .actionMuted:
-            Stillness.muted
-        case .actionInk:
-            Stillness.ink
-        }
-    }
-}
-
-extension View {
-    func stillnessWordmark() -> some View {
-        modifier(WordmarkStyle())
-    }
-
-    func stillnessThought() -> some View {
-        modifier(ThoughtStyle())
-    }
-
-    func stillnessMutedBody() -> some View {
-        modifier(MutedBodyStyle())
-    }
-
-    func stillnessFaintFootnote() -> some View {
-        modifier(FaintFootnoteStyle())
-    }
-
-    func stillnessLabel(_ kind: StillnessLabelKind) -> some View {
-        modifier(StillnessLabelStyle(kind: kind))
-    }
+    static let badge = Font.geist(11.5, .medium, relativeTo: .caption2)
+    static let badgeLarge = Font.geist(13, .medium, relativeTo: .footnote)
 }

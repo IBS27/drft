@@ -79,17 +79,9 @@ struct ThoughtView: View {
                         Button {
                             goBack()
                         } label: {
-                            Text("←")
-                                .font(.custom(
-                                    "Helvetica Neue",
-                                    size: 22,
-                                    relativeTo: .title3
-                                ).weight(.light))
-                                .foregroundStyle(Stillness.faint)
-                                .frame(width: 44, height: 44)
-                                .contentShape(Rectangle())
+                            EmberIcon(.arrowLeft, size: 20)
                         }
-                        .buttonStyle(.plain)
+                        .buttonStyle(IconButtonStyle())
                         .accessibilityLabel(
                             thoughtPath.count > 1 ? "Back to thought" : "Back to shelf"
                         )
@@ -99,15 +91,17 @@ struct ThoughtView: View {
 
                     if let thought = model.thought {
                         Text(ShelfFormatting.captureLine(for: thought.createdAt))
-                            .stillnessLabel(.timestamp)
+                            .font(StillnessType.headerDate)
+                            .foregroundStyle(Stillness.chromeText)
                             .lineLimit(1)
+                            .padding(.horizontal, 52)
                             .allowsHitTesting(false)
                             .opacity(isLeaving ? 0 : 1)
                             .animation(.easeOut(duration: 0.24), value: isLeaving)
                     }
                 }
-                .padding(.horizontal, 12)
-                .padding(.top, 5)
+                .padding(.horizontal, 8)
+                .frame(height: 56)
 
                 GeometryReader { geometry in
                     ScrollView {
@@ -126,7 +120,7 @@ struct ThoughtView: View {
                 }
             }
         }
-        .tint(Stillness.ink)
+        .tint(Stillness.now)
         .task(id: activeThoughtID) {
             resetTransientState()
             model.subscribe(
@@ -156,46 +150,63 @@ struct ThoughtView: View {
         VStack(spacing: 0) {
             Spacer(minLength: 42)
 
+            // Your words, exactly as captured, left-aligned as on the web's
+            // phone layout.
             Text(thought.text)
                 .font(StillnessType.readingThought)
-                .lineSpacing(12)
-                .multilineTextAlignment(.center)
+                .tracking(StillnessType.readingThoughtTracking)
+                .lineSpacing(StillnessType.readingThoughtLineSpacing)
+                .multilineTextAlignment(.leading)
                 .foregroundStyle(Stillness.ink)
                 .textSelection(.enabled)
-                .frame(maxWidth: 350)
+                .frame(maxWidth: .infinity, alignment: .leading)
 
-            if thought.status == .resting {
-                VStack(spacing: 10) {
-                    Text("SET DOWN")
-                        .stillnessLabel(.timestamp)
+            if thought.lastReturnedAt != nil || thought.status == .resting {
+                HStack(spacing: 8) {
+                    if let lastReturnedAt = thought.lastReturnedAt {
+                        Chip(kind: .now) {
+                            EmberIcon(.arrowBendUpLeft, size: 14)
+                            Text(returnedLabel(for: lastReturnedAt))
+                        }
+                    }
 
-                    if let restingNote = thought.restingNote {
-                        Text(restingNote)
-                            .stillnessMutedBody()
-                            .multilineTextAlignment(.center)
+                    if thought.status == .resting {
+                        Chip(kind: .quiet) {
+                            EmberIcon(.moon, size: 14)
+                            Text("Set down")
+                            if let restedAt = thought.restedAt {
+                                Text(ShelfFormatting.ageLabel(for: restedAt))
+                                    .font(StillnessType.caption)
+                                    .monospacedDigit()
+                                    .foregroundStyle(Stillness.chromeLabel)
+                            }
+                        }
                     }
                 }
-                .frame(maxWidth: 350)
-                .padding(.top, 26)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.top, 18)
             }
 
-            if let lastReturnedAt = thought.lastReturnedAt {
-                Text(returnedLabel(for: lastReturnedAt))
-                    .stillnessLabel(.timestamp)
-                    .padding(.top, 22)
+            if thought.status == .resting, let restingNote = thought.restingNote {
+                Text(restingNote)
+                    .font(StillnessType.body)
+                    .lineSpacing(5)
+                    .foregroundStyle(Stillness.chromeLabel)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.top, 12)
             }
 
             let connections = displayedConnections(for: thought)
             if !connections.isEmpty {
                 relatedThoughts(
                     connections,
-                    width: min(350, max(0, availableWidth - 48))
+                    width: max(0, availableWidth - 48)
                 )
             }
 
             if let setAside {
                 setAsideStatus(setAside)
-                    .padding(.top, 20)
+                    .padding(.top, 12)
             }
 
             Spacer(minLength: 42)
@@ -214,9 +225,9 @@ struct ThoughtView: View {
 
     private func returnedLabel(for milliseconds: Double) -> String {
         let age = ShelfFormatting.group(for: milliseconds, now: .now) == .today
-            ? "TODAY"
-            : ShelfFormatting.ageLabel(for: milliseconds).uppercased()
-        return "RETURNED · \(age)"
+            ? "today"
+            : ShelfFormatting.ageLabel(for: milliseconds)
+        return "Returned \(age)"
     }
 
     private func displayedConnections(
@@ -244,56 +255,57 @@ struct ThoughtView: View {
         width: CGFloat
     ) -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text("RELATED THOUGHTS")
-                .stillnessLabel(.section)
-                .padding(.bottom, 13)
-
-            Hairline()
+            HStack(spacing: 8) {
+                Text("Related thoughts")
+                    .font(StillnessType.sectionTitle)
+                    .foregroundStyle(Stillness.ink)
+                Badge(text: "\(connections.count)")
+            }
+            .padding(.bottom, 6)
+            .accessibilityElement(children: .combine)
+            .accessibilityAddTraits(.isHeader)
 
             ForEach(Array(connections.enumerated()), id: \.element._id) { index, connection in
+                if index > 0 {
+                    Hairline()
+                }
+
                 RelatedThoughtRow(
                     connection: connection,
                     width: width,
                     metadata: connection.otherStatus == .resting
-                        ? "SET DOWN"
+                        ? nil
                         : ShelfFormatting.ageLabel(
                             for: connection.otherCreatedAt
-                        ).uppercased(),
+                        ),
                     onPrefetch: {
                         convexService.prewarmThought(id: connection.otherId)
                     },
                     onOpen: { openRelatedThought(connection.otherId) },
                     onSetAside: { setRelatedThoughtAside(connection, index: index) }
                 )
-
-                Hairline()
             }
         }
         .frame(width: width)
-        .padding(.top, 46)
+        .padding(.top, 40)
     }
 
     private func setAsideStatus(_ state: SetAsideState) -> some View {
-        HStack(spacing: 22) {
+        HStack(spacing: 4) {
             Text(
                 state.failed
-                    ? "COULDN'T SET THE RELATED THOUGHT ASIDE"
-                    : "RELATED THOUGHT SET ASIDE"
+                    ? "Couldn't set the related thought aside."
+                    : "Related thought set aside."
             )
-            .font(StillnessType.relatedMetadata)
-            .tracking(2.4)
-            .foregroundStyle(Stillness.faint)
+            .font(StillnessType.caption)
+            .foregroundStyle(state.failed ? Stillness.nowInk : Stillness.chromeLabel)
 
             if !state.failed {
-                Button("UNDO", action: undoSetAside)
-                    .font(StillnessType.relatedMetadata)
-                    .tracking(2.4)
-                    .foregroundStyle(Stillness.muted)
-                    .buttonStyle(.plain)
+                Button("Undo", action: undoSetAside)
+                    .buttonStyle(UndoButtonStyle())
             }
         }
-        .multilineTextAlignment(.center)
-        .frame(maxWidth: 350)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private func openRelatedThought(_ id: String) {
@@ -383,39 +395,57 @@ struct ThoughtView: View {
     @ViewBuilder
     private var restControls: some View {
         if isEnteringClosingLine {
-            VStack(spacing: 18) {
+            VStack(spacing: 12) {
                 TextField(
                     "",
                     text: $closingLine,
-                    prompt: Text("where it landed — optional")
-                        .foregroundStyle(Stillness.muted)
+                    prompt: Text("Where it landed (optional)")
+                        .foregroundStyle(Stillness.chromeLabel)
                 )
                     .textFieldStyle(.plain)
                     .textInputAutocapitalization(.never)
-                    .font(StillnessType.action.weight(.light))
+                    .font(StillnessType.body)
                     .foregroundStyle(Stillness.ink)
-                    .multilineTextAlignment(.center)
                     .lineLimit(1)
                     .submitLabel(.return)
                     .focused($closingLineIsFocused)
                     .onSubmit(sendToRest)
                     .disabled(isSendingToRest)
+                    .padding(.horizontal, 16)
+                    .frame(height: 44)
+                    .background(
+                        Stillness.surface,
+                        in: RoundedRectangle(
+                            cornerRadius: StillnessSpacing.cardRadius,
+                            style: .continuous
+                        )
+                    )
+                    .overlay {
+                        RoundedRectangle(
+                            cornerRadius: StillnessSpacing.cardRadius,
+                            style: .continuous
+                        )
+                        .strokeBorder(
+                            closingLineIsFocused ? Stillness.nowEdge : Stillness.hairline,
+                            lineWidth: 1
+                        )
+                    }
+                    .accessibilityLabel("Where it landed (optional)")
 
-                HStack(spacing: 28) {
-                    Button("SET IT DOWN", action: sendToRest)
-                        .stillnessLabel(.actionInk)
+                HStack(spacing: 8) {
+                    Button("Set it down", action: sendToRest)
+                        .buttonStyle(PillButtonStyle(kind: .primary))
                         .disabled(isSendingToRest)
 
-                    Button("NOT YET") {
+                    Button("Not yet") {
                         closingLineIsFocused = false
                         isEnteringClosingLine = false
                     }
-                    .stillnessLabel(.actionMuted)
+                    .buttonStyle(PillButtonStyle(kind: .quiet, horizontalPadding: 16))
                     .disabled(isSendingToRest)
                 }
-                .buttonStyle(.plain)
             }
-            .frame(maxWidth: 330)
+            .frame(maxWidth: 360)
         } else {
             Button {
                 isEnteringClosingLine = true
@@ -424,13 +454,12 @@ struct ThoughtView: View {
                     closingLineIsFocused = true
                 }
             } label: {
-                Text("REST")
-                    .stillnessLabel(.actionMuted)
-                    .padding(.vertical, 13)
-                    .frame(minHeight: 44)
-                    .contentShape(Rectangle())
+                HStack(spacing: 8) {
+                    EmberIcon(.moon, size: 16)
+                    Text("Let it rest")
+                }
             }
-            .buttonStyle(.plain)
+            .buttonStyle(PillButtonStyle(kind: .outline))
         }
     }
 
@@ -464,13 +493,30 @@ struct ThoughtView: View {
     }
 }
 
+private struct UndoButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(StillnessType.captionEmphasis)
+            .foregroundStyle(Stillness.nowInk)
+            .padding(.horizontal, 10)
+            .frame(minHeight: 44)
+            .background {
+                Capsule()
+                    .fill(configuration.isPressed ? Stillness.nowTint : .clear)
+                    .frame(height: 28)
+            }
+            .contentShape(Rectangle())
+    }
+}
+
 private struct RelatedThoughtRow: View {
     @State private var settledOffset: CGFloat = 0
     @GestureState private var dragOffset: CGFloat = 0
 
     let connection: ConvexService.Connection
     let width: CGFloat
-    let metadata: String
+    /// The capture age, or nil when the related thought is set down.
+    let metadata: String?
     let onPrefetch: () -> Void
     let onOpen: () -> Void
     let onSetAside: () -> Void
@@ -478,20 +524,33 @@ private struct RelatedThoughtRow: View {
     private let actionWidth: CGFloat = 112
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 9) {
+        HStack(alignment: .center, spacing: 16) {
             Text(connection.otherText)
-                .font(StillnessType.relatedThought)
+                .font(StillnessType.body)
+                .lineSpacing(StillnessType.bodyLineSpacing)
                 .foregroundStyle(Stillness.ink)
                 .multilineTextAlignment(.leading)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-            Text(metadata)
-                .font(StillnessType.relatedMetadata)
-                .tracking(1.98)
-                .foregroundStyle(Stillness.faint)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            if let metadata {
+                Text(metadata)
+                    .font(StillnessType.caption)
+                    .monospacedDigit()
+                    .foregroundStyle(Stillness.chromeLabel)
+                    .lineLimit(1)
+            } else {
+                Text("Set down")
+                    .font(.geist(12, relativeTo: .caption))
+                    .foregroundStyle(Stillness.chromeText)
+                    .lineLimit(1)
+                    .padding(.horizontal, 9)
+                    .frame(minHeight: 22)
+                    .overlay {
+                        Capsule().strokeBorder(Stillness.hairline, lineWidth: 1)
+                    }
+            }
         }
-        .padding(.vertical, 17)
+        .padding(.vertical, 13)
         .contentShape(Rectangle())
         .onTapGesture(perform: onOpen)
         .frame(width: width, alignment: .leading)
@@ -502,20 +561,22 @@ private struct RelatedThoughtRow: View {
             Button {
                 onSetAside()
             } label: {
-                Text("SET ASIDE")
-                    .font(StillnessType.relatedMetadata)
-                    .tracking(2.2)
-                    .foregroundStyle(Stillness.muted)
-                    .frame(width: actionWidth)
-                    .frame(maxHeight: .infinity)
-                    .contentShape(Rectangle())
+                HStack(spacing: 6) {
+                    EmberIcon(.x, size: 14)
+                    Text("Set aside")
+                }
+                .font(StillnessType.captionEmphasis)
+                .foregroundStyle(Stillness.nowInk)
+                .frame(width: actionWidth)
+                .frame(maxHeight: .infinity)
+                .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .background(Stillness.surface)
+            .background(Stillness.nowTint)
             .opacity(actionRevealProgress)
             .accessibilityHidden(actionRevealProgress < 0.5)
         }
-        .accessibilityLabel(connection.otherText)
+        .accessibilityLabel(accessibilityText)
         .accessibilityHint("Opens related thought")
         .accessibilityAddTraits(.isButton)
         .accessibilityAction { onOpen() }
@@ -532,6 +593,10 @@ private struct RelatedThoughtRow: View {
         .onChange(of: connection._id) { _, _ in
             settledOffset = 0
         }
+    }
+
+    private var accessibilityText: String {
+        "\(connection.otherText), \(metadata ?? "set down")"
     }
 
     private var rowOffset: CGFloat {
