@@ -62,6 +62,11 @@ adds the shelf.
 - `settings:get` query with no args → returns the daily email settings or `null`.
 - `settings:save` mutation with `{ sendTime, timezone, email? }` → writes the daily
   email settings.
+- `settings:ensure` mutation with `{ timezone, email? }` → creates the settings row
+  (default 8:00) or updates its timezone, leaving the send time alone. Called on
+  sign-in, on every return to the foreground, and when the system timezone
+  changes — the web's `useEnsureSettings` — so the server's timezone (and the one
+  named in Settings) follows the device after travel.
 - `account:deleteAccount` action with `{ appleAuthorizationCode? }` → deletes the
   Clerk user and everything stored for it. Once it returns the deletion is final;
   the server finishes the purge and retries the Clerk removal on its own.
@@ -261,8 +266,8 @@ this anytime in settings.`, and a `Privacy policy` link. Deciding dismisses it a
 
 ### Settings (sheet over capture)
 
-Nearly empty by design. A sheet on `page` with a centered `Settings` title and a
-close button, then rows grouped on surface cards as on the web:
+Nearly empty by design. A full-height sheet on `page` with a centered `Settings`
+title and a close button, then rows grouped on surface cards as on the web:
 
 - Signed-in identity (envelope icon, email).
 - `Daily thought` — a time picker (compact) for the daily resurfacing email.
@@ -325,7 +330,10 @@ text entry.
 - **Lock screen** `accessoryCircular`: the vermilion dot, small, centered — nothing
   else. `accessoryRectangular`: the wordmark + one line `Catch a thought`.
 - **Home screen** `systemSmall`: page background, the wordmark top-left and a
-  tinted `Catch a thought` chip at the bottom. Quiet; no counts, no content preview.
+  tinted `Catch a thought` chip at the bottom, always one line (it shrinks slightly
+  rather than wrap on narrow phones). On tinted and clear home screens, which keep
+  only shape, the chip is an outline in the accent group instead of a fill. Quiet;
+  no counts, no content preview.
 - **App Intent**: `CaptureThoughtIntent` (title "Capture a thought") that opens the
   app to capture — makes Shortcuts / Action button / Siri entry work.
 - Widget shows no user data, so it needs no auth.

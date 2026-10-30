@@ -556,6 +556,16 @@ private struct RelatedThoughtRow: View {
         .frame(width: width, alignment: .leading)
         .fixedSize(horizontal: false, vertical: true)
         .background(Stillness.page)
+        // One element per row; without this each text child carried the
+        // row's label and VoiceOver read every related thought twice. The
+        // swipe-revealed button below stays out; Set aside is the named
+        // action here instead.
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(accessibilityText)
+        .accessibilityHint("Opens related thought")
+        .accessibilityAddTraits(.isButton)
+        .accessibilityAction { onOpen() }
+        .accessibilityAction(named: Text("Set aside"), onSetAside)
         .offset(x: rowOffset)
         .background(alignment: .trailing) {
             Button {
@@ -576,11 +586,6 @@ private struct RelatedThoughtRow: View {
             .opacity(actionRevealProgress)
             .accessibilityHidden(actionRevealProgress < 0.5)
         }
-        .accessibilityLabel(accessibilityText)
-        .accessibilityHint("Opens related thought")
-        .accessibilityAddTraits(.isButton)
-        .accessibilityAction { onOpen() }
-        .accessibilityAction(named: Text("Set aside"), onSetAside)
         .frame(width: width)
         .clipped()
         .contentShape(Rectangle())

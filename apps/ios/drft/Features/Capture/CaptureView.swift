@@ -177,7 +177,7 @@ struct CaptureView: View {
             )
                 .presentationBackground(Stillness.page)
                 .presentationDragIndicator(.hidden)
-                .presentationDetents([.medium, .large])
+                .presentationDetents([.large])
         }
     }
 

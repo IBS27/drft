@@ -42,12 +42,7 @@ struct DrftWidgetView: View {
                 VStack(alignment: .leading, spacing: 0) {
                     Wordmark()
                     Spacer(minLength: 0)
-                    Text("Catch a thought")
-                        .font(.geist(15, .medium, relativeTo: .subheadline))
-                        .foregroundStyle(Stillness.nowInk)
-                        .padding(.horizontal, 12)
-                        .frame(minHeight: 30)
-                        .background(Stillness.nowTint, in: Capsule())
+                    capturePill
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
             default:
@@ -58,6 +53,34 @@ struct DrftWidgetView: View {
         .widgetURL(URL(string: "drft://capture"))
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Capture a thought in drft")
+    }
+
+    // One line on every phone width; shrinks a little rather than wrap.
+    private var capturePillLabel: some View {
+        Text("Catch a thought")
+            .font(.geist(15, .medium, relativeTo: .subheadline))
+            .lineLimit(1)
+            .minimumScaleFactor(0.75)
+            .padding(.horizontal, 12)
+            .frame(minHeight: 30)
+    }
+
+    // Tinted and clear home screens keep only shape, not colour, so a filled
+    // pill would swallow its own text. There the pill is an outline in the
+    // accent group instead.
+    @ViewBuilder
+    private var capturePill: some View {
+        if renderingMode == .fullColor {
+            capturePillLabel
+                .foregroundStyle(Stillness.nowInk)
+                .background(Stillness.nowTint, in: Capsule())
+        } else {
+            capturePillLabel
+                .overlay {
+                    Capsule().strokeBorder(lineWidth: 1)
+                }
+                .widgetAccentable()
+        }
     }
 
     @ViewBuilder
