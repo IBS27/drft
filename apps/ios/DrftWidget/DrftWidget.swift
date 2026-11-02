@@ -35,7 +35,7 @@ struct DrftWidgetView: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
             case .accessoryCircular:
-                captureDot
+                LogoMark(height: 26)
                     .widgetAccentable()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             case .systemSmall:
@@ -83,19 +83,6 @@ struct DrftWidgetView: View {
         }
     }
 
-    @ViewBuilder
-    private var captureDot: some View {
-        switch renderingMode {
-        case .accented, .vibrant:
-            Circle()
-                .frame(
-                    width: StillnessSpacing.nowDot,
-                    height: StillnessSpacing.nowDot
-                )
-        default:
-            NowDot()
-        }
-    }
 }
 
 struct DrftWidget: Widget {

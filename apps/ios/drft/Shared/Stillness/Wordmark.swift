@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// drft, with the vermilion dot that marks "now".
+/// The logo mark (the app icon's dot and caret) beside "drft".
 struct Wordmark: View {
     enum Size {
         case regular
@@ -10,11 +10,10 @@ struct Wordmark: View {
     var size: Size = .regular
 
     var body: some View {
-        HStack(spacing: size == .large ? 12 : 8) {
-            Circle()
-                .fill(Stillness.now)
-                .frame(width: dotDiameter, height: dotDiameter)
-                .accessibilityHidden(true)
+        HStack(alignment: .firstTextBaseline, spacing: size == .large ? 14 : 8) {
+            LogoMark(height: size == .large ? 24 : 12.5)
+                // The mark's shapes end on its bottom edge: rest it on the baseline.
+                .alignmentGuide(.firstTextBaseline) { $0[.bottom] }
 
             Text("drft")
                 .font(size == .large
@@ -24,8 +23,24 @@ struct Wordmark: View {
                 .foregroundStyle(Stillness.ink)
         }
     }
+}
 
-    private var dotDiameter: CGFloat {
-        size == .large ? 12 : 8
+/// The dot and caret from the app icon, cropped to the glyph (20 × 26 units).
+struct LogoMark: View {
+    var height: CGFloat
+
+    var body: some View {
+        let unit = height / 26
+        ZStack(alignment: .bottomLeading) {
+            Circle()
+                .fill(Stillness.now)
+                .frame(width: 12 * unit, height: 12 * unit)
+            RoundedRectangle(cornerRadius: 1.5 * unit)
+                .fill(Stillness.ink)
+                .frame(width: 4 * unit, height: height)
+                .offset(x: 16 * unit)
+        }
+        .frame(width: 20 * unit, height: height, alignment: .bottomLeading)
+        .accessibilityHidden(true)
     }
 }
