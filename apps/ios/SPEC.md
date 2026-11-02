@@ -140,7 +140,8 @@ Never use system accent colors, system grays, or default button styling.
   targets), 400 body, 500–600 headings and controls, 13pt minimum for anything
   you read. Capture field 28pt, re-read thought 25pt, rows 16pt, body 15pt,
   times and captions 13pt with tabular digits.
-- **Wordmark**: vermilion 8pt dot + `drft`, 17pt semibold, ink.
+- **Wordmark**: the logo mark (the app icon's vermilion dot + ink caret, 12.5pt
+  tall, resting on the baseline) + `drft`, 17pt semibold, ink.
 - **Icons**: the web's Phosphor icons, bundled as template vectors in
   `Assets.xcassets/Phosphor`.
 - **Controls**: pills. Solid vermilion for the one action that matters (Keep,
@@ -327,7 +328,7 @@ grouped-table chrome.
 Widgets are launchers — they deep-link into capture (`drft://capture`); no inline
 text entry.
 
-- **Lock screen** `accessoryCircular`: the vermilion dot, small, centered — nothing
+- **Lock screen** `accessoryCircular`: the logo mark, small, centered — nothing
   else. `accessoryRectangular`: the wordmark + one line `Catch a thought`.
 - **Home screen** `systemSmall`: page background, the wordmark top-left and a
   tinted `Catch a thought` chip at the bottom, always one line (it shrinks slightly

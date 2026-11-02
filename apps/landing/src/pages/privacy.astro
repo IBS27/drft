@@ -1,6 +1,7 @@
 ---
 import Footer from "../components/Footer.astro";
 import Layout from "../layouts/Layout.astro";
+import Wordmark from "../components/Wordmark.astro";
 
 const contact = "hello@trydrft.app";
 const label = "text-[10px] tracking-[0.28em] uppercase";
@@ -16,7 +17,7 @@ const a = "text-pt underline decoration-line underline-offset-4 transition-color
 >
   <main>
     <div class="flex items-baseline justify-between px-6 pt-10 sm:px-10">
-      <a href="/" class="text-[13px] tracking-[0.5em] text-pt uppercase">drft</a>
+      <Wordmark href="/" />
       <a href="/?signin" class="text-sm text-mut transition-colors hover:text-ink">Sign in</a>
     </div>
 

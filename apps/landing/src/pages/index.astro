@@ -1,6 +1,7 @@
 ---
 import Footer from "../components/Footer.astro";
 import Layout from "../layouts/Layout.astro";
+import Wordmark from "../components/Wordmark.astro";
 
 interface Fragment {
   text: string;
@@ -98,7 +99,7 @@ const heroHtml = heroChars
     <!-- 1 · HERO — the drift -->
     <section class="relative min-h-dvh overflow-hidden">
       <div class="absolute inset-x-0 top-0 z-20 flex items-baseline justify-between px-6 pt-10 sm:px-10">
-        <span class="text-[13px] tracking-[0.5em] text-pt uppercase">drft</span>
+        <Wordmark />
         <a href="/?signin" class="text-sm text-mut transition-colors hover:text-ink">Sign in</a>
       </div>
 

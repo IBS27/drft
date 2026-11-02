@@ -1,0 +1,16 @@
+---
+// The logo mark (the app icon's dot and caret) beside "drft", in the landing's tracked caps.
+interface Props {
+  href?: string;
+}
+const { href } = Astro.props;
+const Tag = href ? "a" : "span";
+---
+
+<Tag href={href} class="inline-flex items-baseline gap-3 text-[13px] tracking-[0.5em] text-pt uppercase">
+  <svg aria-hidden="true" viewBox="0 0 20 26" class="h-[0.78em] flex-none">
+    <circle cx="6" cy="20" r="6" class="fill-dot"></circle>
+    <rect x="16" width="4" height="26" rx="1.5" class="fill-ink"></rect>
+  </svg>
+  drft
+</Tag>
