@@ -454,6 +454,9 @@ const BackToday = memo(function BackToday({
       to="/thought/$thoughtId"
       params={{ thoughtId: t._id }}
       search={search}
+      data-hold-id={t._id}
+      data-held-at={t.heldAt ?? ""}
+      data-hold-notice=""
       onPointerEnter={() => prewarm(t._id)}
       onPointerDown={() => prewarm(t._id)}
       onFocus={() => prewarm(t._id)}

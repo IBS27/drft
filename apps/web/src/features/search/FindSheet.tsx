@@ -1,5 +1,5 @@
 import { MagnifyingGlass } from "@phosphor-icons/react";
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   useEffect,
   useId,
@@ -67,6 +67,8 @@ export function FindSheet() {
 
 function Sheet({ close }: { close: () => void }) {
   const navigate = useNavigate();
+  // A thought opened from Held keeps its way back to Held.
+  const from = useRouterState({ select: (s) => s.location.search.from });
   const prewarm = useThoughtPrewarm();
   const [query, setQuery] = useState("");
   const { hits, active, setActive, onResultsKey } = useThoughtSearch(query);
@@ -77,7 +79,11 @@ function Sheet({ close }: { close: () => void }) {
   const go = (hit: Hit) => {
     prewarm(hit._id);
     close();
-    void navigate({ to: "/thought/$thoughtId", params: { thoughtId: hit._id } });
+    void navigate({
+      to: "/thought/$thoughtId",
+      params: { thoughtId: hit._id },
+      search: from === "held" ? { from } : {},
+    });
   };
 
   // aria-modal promises focus stays inside, so Tab wraps at the
