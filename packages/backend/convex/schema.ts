@@ -11,6 +11,10 @@ export default defineSchema({
     status: v.union(v.literal("open"), v.literal("resting")),
     restingNote: v.optional(v.string()),
     restedAt: v.optional(v.number()),
+    // Set while you hold the thought close (the web's Held page): when you
+    // took hold of it. One switch you flip yourself, not a tag; resting a
+    // thought lets go of it.
+    heldAt: v.optional(v.number()),
     // Legacy partner field; remove (with migrations.ts) once clearPartnerData has run in prod.
     unseenQuestionCount: v.optional(v.number()),
     embedding: v.optional(v.array(v.float64())),
@@ -21,6 +25,9 @@ export default defineSchema({
     // order from newest-captured — it needs its own index to be able to
     // stop reading early.
     .index("by_user_status_restedAt", ["userId", "status", "restedAt"])
+    // The Held page reads newest-held first; thoughts never held sort
+    // below every timestamp, so a range over heldAt skips them in-index.
+    .index("by_user_heldAt", ["userId", "heldAt"])
     .vectorIndex("by_embedding", {
       vectorField: "embedding",
       dimensions: 1536,

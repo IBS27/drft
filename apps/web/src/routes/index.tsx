@@ -1,4 +1,10 @@
-import { ArrowBendUpLeft, GearSix, MagnifyingGlass, Moon } from "@phosphor-icons/react";
+import {
+  ArrowBendUpLeft,
+  BookmarkSimple,
+  GearSix,
+  MagnifyingGlass,
+  Moon,
+} from "@phosphor-icons/react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useConvexAuth } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
@@ -22,6 +28,7 @@ type Row = {
   _id: Id<"thoughts">;
   preview: string;
   createdAt: number;
+  heldAt?: number;
 };
 
 // One room: on wide screens the collection lives in the edge rail and
@@ -48,6 +55,11 @@ function Collection() {
     api.thoughts.resting,
     isAuthenticated ? {} : "skip",
     "resting",
+  );
+  const held = useCachedQuery(
+    api.thoughts.held,
+    isAuthenticated ? {} : "skip",
+    "held",
   );
 
   // One prewarm cache for the whole list, not one per row.
@@ -92,6 +104,15 @@ function Collection() {
           >
             <MagnifyingGlass aria-hidden="true" />
           </button>
+          {held && held.length > 0 && (
+            <Link
+              to="/held"
+              aria-label="Held thoughts"
+              className="flex size-9 items-center justify-center rounded-full text-[18px] text-pt transition-colors hover:bg-tint hover:text-ink lg:hidden"
+            >
+              <BookmarkSimple aria-hidden="true" />
+            </Link>
+          )}
           <Link
             to="/settings"
             aria-label="Settings"
@@ -216,6 +237,13 @@ const ThoughtRow = memo(function ThoughtRow({
       }`}
     >
       <span className="min-w-0 flex-1 truncate">{t.preview}</span>
+      {t.heldAt !== undefined && (
+        <BookmarkSimple
+          weight="fill"
+          aria-label="held"
+          className="flex-none self-center text-[13px] text-pt"
+        />
+      )}
       <span className="flex-none text-[13px] text-pl tabular-nums">
         {ageLabel(t.createdAt, now)}
       </span>

@@ -15,11 +15,26 @@ const CONNECTIONS_PER_GRAPH_THOUGHT_LIMIT = 50;
 const COLLECTION_LIMIT = 500;
 const PREVIEW_LIMIT = 160;
 const NOTES_LIMIT = 20_000;
+const HELD_LIMIT = 200;
+const HELD_NOTES_EXCERPT_LIMIT = 400;
 
 const collectionRowValidator = v.object({
   _id: v.id("thoughts"),
   preview: v.string(),
   createdAt: v.number(),
+  heldAt: v.optional(v.number()),
+});
+
+// One card on the Held page: the whole thought, the start of your notes,
+// and its live links to the other thoughts you're holding (only those; the
+// rest stay on the thought page).
+const heldCardValidator = v.object({
+  _id: v.id("thoughts"),
+  text: v.string(),
+  createdAt: v.number(),
+  heldAt: v.number(),
+  notes: v.string(),
+  links: v.array(v.object({ otherId: v.id("thoughts"), score: v.number() })),
 });
 
 const connectionViewValidator = v.object({
@@ -53,6 +68,7 @@ function collectionRow(thought: Doc<"thoughts">) {
     _id: thought._id,
     preview: preview(thought.text),
     createdAt: thought.createdAt,
+    heldAt: thought.heldAt,
   };
 }
 
@@ -201,6 +217,7 @@ export const view = query({
       status: v.union(v.literal("open"), v.literal("resting")),
       restingNote: v.optional(v.string()),
       restedAt: v.optional(v.number()),
+      heldAt: v.optional(v.number()),
       lastReturnedAt: v.union(v.number(), v.null()),
       notes: v.string(),
       connections: v.array(connectionViewValidator),
@@ -257,6 +274,7 @@ export const view = query({
       status: thought.status,
       restingNote: thought.restingNote,
       restedAt: thought.restedAt,
+      heldAt: thought.heldAt,
       lastReturnedAt: lastReturn?._creationTime ?? null,
       notes: note?.text ?? "",
       connections,
@@ -290,7 +308,8 @@ export const resting = query({
 });
 
 // The one transition, and the user makes it. Optional single line about
-// where it landed; reversible.
+// where it landed; reversible. A thought set down is no longer held: it
+// shouldn't still be waiting for you, and waking it doesn't hold it again.
 export const rest = mutation({
   args: { thoughtId: v.id("thoughts"), note: v.optional(v.string()) },
   handler: async (ctx, { thoughtId, note }) => {
@@ -301,6 +320,7 @@ export const rest = mutation({
       status: "resting",
       restedAt: Date.now(),
       restingNote: trimmed || undefined,
+      heldAt: undefined,
     });
   },
 });
@@ -316,6 +336,102 @@ export const wake = mutation({
       restedAt: undefined,
       restingNote: undefined,
     });
+  },
+});
+
+// The thoughts you're holding close, newest hold first.
+export const held = query({
+  args: {},
+  returns: v.array(heldCardValidator),
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return [];
+    const rows = await ctx.db
+      .query("thoughts")
+      .withIndex("by_user_heldAt", (q) =>
+        q.eq("userId", identity.subject).gte("heldAt", 0),
+      )
+      .order("desc")
+      .take(HELD_LIMIT);
+    // Resting clears the hold, so every row should be open; the filter
+    // only keeps a stray write from showing a set-down thought here.
+    const thoughts = rows.flatMap((t) =>
+      t.status === "open" && t.heldAt !== undefined
+        ? [{ thought: t, heldAt: t.heldAt }]
+        : [],
+    );
+    const heldIds = new Set<string>(thoughts.map(({ thought }) => thought._id));
+
+    return await Promise.all(
+      thoughts.map(async ({ thought, heldAt }) => {
+        const [fromLinks, toLinks, note] = await Promise.all([
+          ctx.db
+            .query("connections")
+            .withIndex("by_from_and_dismissedAt", (q) =>
+              q.eq("fromId", thought._id).eq("dismissedAt", undefined),
+            )
+            .take(CONNECTIONS_PER_DIRECTION_LIMIT),
+          ctx.db
+            .query("connections")
+            .withIndex("by_to_and_dismissedAt", (q) =>
+              q.eq("toId", thought._id).eq("dismissedAt", undefined),
+            )
+            .take(CONNECTIONS_PER_DIRECTION_LIMIT),
+          ctx.db
+            .query("notes")
+            .withIndex("by_thought", (q) => q.eq("thoughtId", thought._id))
+            .first(),
+        ]);
+        // Both directions, one entry per other held thought (its strongest).
+        const best = new Map<Id<"thoughts">, number>();
+        for (const c of [...fromLinks, ...toLinks]) {
+          const otherId = c.fromId === thought._id ? c.toId : c.fromId;
+          if (otherId === thought._id || !heldIds.has(otherId)) continue;
+          best.set(otherId, Math.max(best.get(otherId) ?? 0, c.score));
+        }
+        const links = [...best]
+          .map(([otherId, score]) => ({ otherId, score }))
+          .sort((a, b) => b.score - a.score);
+        return {
+          _id: thought._id,
+          text: thought.text,
+          createdAt: thought.createdAt,
+          heldAt,
+          notes: (note?.text ?? "").slice(0, HELD_NOTES_EXCERPT_LIMIT),
+          links,
+        };
+      }),
+    );
+  },
+});
+
+// Hold a thought close. Only open thoughts: a resting one has been set
+// down. `since` lets an undo put back the hold it just let go of, so the
+// thought keeps its age and its place.
+export const hold = mutation({
+  args: { thoughtId: v.id("thoughts"), since: v.optional(v.number()) },
+  handler: async (ctx, { thoughtId, since }) => {
+    const thought = await ownedThought(ctx, thoughtId);
+    if (!thought) throw new Error("Not found");
+    if (thought.status !== "open") throw new Error("Resting thoughts can't be held");
+    if (thought.heldAt !== undefined) return;
+    const now = Date.now();
+    const heldAt =
+      since !== undefined && since >= thought.createdAt && since <= now
+        ? since
+        : now;
+    await ctx.db.patch(thoughtId, { heldAt });
+  },
+});
+
+// And one click to let go.
+export const letGo = mutation({
+  args: { thoughtId: v.id("thoughts") },
+  handler: async (ctx, { thoughtId }) => {
+    const thought = await ownedThought(ctx, thoughtId);
+    if (!thought) throw new Error("Not found");
+    if (thought.heldAt === undefined) return;
+    await ctx.db.patch(thoughtId, { heldAt: undefined });
   },
 });
 

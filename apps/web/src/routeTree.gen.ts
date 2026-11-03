@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ConnectionsRouteImport } from './routes/connections'
+import { Route as HeldRouteImport } from './routes/held'
 import { Route as RestingRouteImport } from './routes/resting'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SsoCallbackRouteImport } from './routes/sso-callback'
@@ -24,6 +25,11 @@ const IndexRoute = IndexRouteImport.update({
 const ConnectionsRoute = ConnectionsRouteImport.update({
   id: '/connections',
   path: '/connections',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HeldRoute = HeldRouteImport.update({
+  id: '/held',
+  path: '/held',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RestingRoute = RestingRouteImport.update({
@@ -50,6 +56,7 @@ const ThoughtThoughtIdRoute = ThoughtThoughtIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/connections': typeof ConnectionsRoute
+  '/held': typeof HeldRoute
   '/resting': typeof RestingRoute
   '/settings': typeof SettingsRoute
   '/sso-callback': typeof SsoCallbackRoute
@@ -58,6 +65,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/connections': typeof ConnectionsRoute
+  '/held': typeof HeldRoute
   '/resting': typeof RestingRoute
   '/settings': typeof SettingsRoute
   '/sso-callback': typeof SsoCallbackRoute
@@ -67,6 +75,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/connections': typeof ConnectionsRoute
+  '/held': typeof HeldRoute
   '/resting': typeof RestingRoute
   '/settings': typeof SettingsRoute
   '/sso-callback': typeof SsoCallbackRoute
@@ -77,6 +86,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/connections'
+    | '/held'
     | '/resting'
     | '/settings'
     | '/sso-callback'
@@ -85,6 +95,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/connections'
+    | '/held'
     | '/resting'
     | '/settings'
     | '/sso-callback'
@@ -93,6 +104,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/connections'
+    | '/held'
     | '/resting'
     | '/settings'
     | '/sso-callback'
@@ -102,6 +114,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ConnectionsRoute: typeof ConnectionsRoute
+  HeldRoute: typeof HeldRoute
   RestingRoute: typeof RestingRoute
   SettingsRoute: typeof SettingsRoute
   SsoCallbackRoute: typeof SsoCallbackRoute
@@ -122,6 +135,13 @@ declare module '@tanstack/react-router' {
       path: '/connections'
       fullPath: '/connections'
       preLoaderRoute: typeof ConnectionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/held': {
+      id: '/held'
+      path: '/held'
+      fullPath: '/held'
+      preLoaderRoute: typeof HeldRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/resting': {
@@ -158,6 +178,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ConnectionsRoute: ConnectionsRoute,
+  HeldRoute: HeldRoute,
   RestingRoute: RestingRoute,
   SettingsRoute: SettingsRoute,
   SsoCallbackRoute: SsoCallbackRoute,

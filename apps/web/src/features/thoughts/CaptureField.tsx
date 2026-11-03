@@ -40,6 +40,7 @@ export function CaptureField({ now }: { now: number }) {
             _id: crypto.randomUUID() as Id<"thoughts">,
             preview: previewOf(args.text),
             createdAt: Date.now(),
+            heldAt: undefined,
           },
           ...current.thoughts,
         ],
