@@ -1,0 +1,847 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>drft — held thoughts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Geist+Mono:wght@400;500&display=swap">
+<script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+<style>
+/* ============================================================
+   drft — marking thoughts to come back to, and the one page
+   that gathers them. Web only. Ember tokens (apps/web/src/index.css).
+   ============================================================ */
+:root {
+  --pg: #fafaf8; --scr: #fcfcfb; --ink: #2b2b28; --mut: #75756f; --faint: #9e9e98;
+  --line: #e8e8e4; --dot: #c73e1d; --pt: #45453f; --pl: #6b6b65;
+  --frame: #dcdcd7;
+  --shadow: 0 1px 2px rgba(40,40,35,.04), 0 6px 16px rgba(40,40,35,.05);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --pg: #131311; --scr: #181816; --ink: #eaeae5; --mut: #a0a099; --faint: #74746d;
+    --line: #2b2b28; --dot: #d9502a; --pt: #c9c9c2; --pl: #97978f;
+    --frame: #2f2f2b; --shadow: 0 6px 16px rgba(0,0,0,.3);
+  }
+}
+:root[data-theme="dark"] {
+  --pg: #131311; --scr: #181816; --ink: #eaeae5; --mut: #a0a099; --faint: #74746d;
+  --line: #2b2b28; --dot: #d9502a; --pt: #c9c9c2; --pl: #97978f;
+  --frame: #2f2f2b; --shadow: 0 6px 16px rgba(0,0,0,.3);
+}
+:root {
+  --tint: color-mix(in oklab, var(--dot) 8%, var(--pg));
+  --tint-2: color-mix(in oklab, var(--dot) 14%, var(--pg));
+  --dot-ink: color-mix(in oklab, var(--dot) 78%, var(--ink));
+  --dot-edge: color-mix(in oklab, var(--dot) 45%, var(--line));
+}
+:root[data-theme="dark"] {
+  --tint: color-mix(in oklab, var(--dot) 12%, var(--pg));
+  --tint-2: color-mix(in oklab, var(--dot) 22%, var(--pg));
+  --dot-ink: color-mix(in oklab, var(--dot) 70%, var(--ink));
+  --dot-edge: color-mix(in oklab, var(--dot) 50%, var(--line));
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --tint: color-mix(in oklab, var(--dot) 12%, var(--pg));
+    --tint-2: color-mix(in oklab, var(--dot) 22%, var(--pg));
+    --dot-ink: color-mix(in oklab, var(--dot) 70%, var(--ink));
+    --dot-edge: color-mix(in oklab, var(--dot) 50%, var(--line));
+  }
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+body {
+  font-family: "Geist", ui-sans-serif, system-ui, sans-serif;
+  background: var(--pg); color: var(--ink);
+  padding: 40px 16px 120px;
+}
+.doc { max-width: 1000px; margin: 0 auto; }
+.ph, .ph-fill { line-height: 1; }
+
+/* ---------- doc chrome ---------- */
+.top { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.crumb { font-size: 13px; color: var(--pl); display: inline-flex; align-items: center; gap: 8px; font-weight: 500; }
+.crumb::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--dot); }
+.theme { display: inline-flex; padding: 3px; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--line); background: var(--scr); }
+.theme button { font: inherit; font-size: 12.5px; border: 0; background: none; color: var(--pl); padding: 5px 11px; border-radius: 999px; cursor: pointer; }
+.theme button[aria-pressed="true"] { background: var(--tint-2); color: var(--dot-ink); font-weight: 500; }
+
+h1 { font-size: clamp(30px, 5vw, 44px); font-weight: 500; letter-spacing: -.03em; margin-top: 44px; line-height: 1.1; }
+.lede { margin-top: 16px; font-size: 16px; line-height: 1.65; color: var(--pt); max-width: 64ch; }
+.lede + .lede { margin-top: 10px; }
+.lede strong, .note strong { color: var(--ink); font-weight: 600; }
+
+.toc { margin-top: 28px; display: flex; flex-wrap: wrap; gap: 8px; }
+.toc a { text-decoration: none; font-size: 13.5px; color: var(--pt); padding: 7px 14px; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--line); }
+.toc a:hover { background: var(--tint); color: var(--ink); }
+
+.part { margin-top: 96px; }
+.part > .eyebrow { font-size: 13px; font-weight: 500; color: var(--dot-ink); }
+.part > h2 { font-size: 28px; font-weight: 500; letter-spacing: -.02em; margin-top: 6px; }
+.part > .note { margin-top: 12px; }
+
+section.opt { margin-top: 64px; }
+.optnum { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--pl); font-weight: 500; font-family: "Geist Mono", ui-monospace, monospace; }
+.rec { font-family: "Geist", sans-serif; font-size: 12px; font-weight: 500; color: var(--dot-ink); background: var(--tint-2); padding: 3px 9px; border-radius: 999px; }
+h3 { font-size: 22px; font-weight: 500; letter-spacing: -.015em; margin-top: 8px; }
+.note { margin-top: 10px; font-size: 15px; line-height: 1.7; color: var(--pt); max-width: 66ch; }
+.pros { margin-top: 14px; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px 28px; max-width: 820px; }
+.pros div { font-size: 14px; line-height: 1.6; color: var(--pt); padding-left: 22px; position: relative; }
+.pros div i { position: absolute; left: 0; top: 3px; font-size: 15px; }
+.pros .y i { color: var(--pt); }
+.pros .n i { color: var(--dot-ink); }
+
+.callout { margin-top: 28px; max-width: 66ch; box-shadow: inset 2px 0 0 var(--dot); padding: 4px 0 4px 20px; font-size: 15px; line-height: 1.7; color: var(--pt); }
+.callout strong { color: var(--ink); font-weight: 600; }
+
+table.words { margin-top: 22px; width: 100%; max-width: 820px; border-collapse: collapse; font-size: 14.5px; }
+.words th { text-align: left; font-weight: 500; font-size: 13px; color: var(--pl); padding: 8px 12px; border-bottom: 1px solid var(--line); }
+.words td { padding: 12px; border-bottom: 1px solid var(--line); color: var(--pt); vertical-align: top; line-height: 1.55; }
+.words td:first-child { color: var(--ink); font-weight: 500; white-space: nowrap; }
+.words tr.pick td { background: var(--tint); }
+.words tr.pick td:first-child { border-radius: 10px 0 0 10px; }
+.words tr.pick td:last-child { border-radius: 0 10px 10px 0; }
+
+/* ---------- mock frames ---------- */
+.frame { margin-top: 22px; overflow-x: auto; padding: 4px 12px 26px; margin-left: -12px; margin-right: -12px; }
+.frame.duo { display: flex; gap: 20px; }
+.win {
+  width: 980px; height: 600px; flex: none;
+  border-radius: 12px; overflow: hidden; background: var(--pg);
+  box-shadow: 0 0 0 1px var(--frame), var(--shadow);
+  display: flex; flex-direction: column;
+}
+.win.sm { width: 480px; height: 360px; }
+.chrome { height: 32px; flex: none; display: flex; align-items: center; gap: 6px; padding: 0 12px; border-bottom: 1px solid var(--line); background: var(--scr); }
+.chrome span { width: 9px; height: 9px; border-radius: 50%; background: var(--line); }
+.chrome .url { width: auto; height: auto; border-radius: 6px; background: var(--pg); margin-left: 14px; padding: 3px 12px; font-size: 11.5px; color: var(--pl); font-family: "Geist Mono", monospace; box-shadow: inset 0 0 0 1px var(--line); }
+.body { flex: 1; min-height: 0; display: grid; grid-template-columns: 252px 1fr; }
+.body.solo { grid-template-columns: 1fr; }
+.cap { margin-top: 2px; font-size: 13px; color: var(--pl); }
+
+/* rail */
+.rail { background: var(--scr); border-right: 1px solid var(--line); padding: 18px 10px 12px; display: flex; flex-direction: column; gap: 14px; min-height: 0; overflow: hidden; font-size: 13px; }
+.wm { display: inline-flex; align-items: center; gap: 7px; font-size: 15px; font-weight: 600; letter-spacing: -.02em; padding: 0 8px; color: var(--ink); }
+.wm::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--dot); }
+.find { height: 34px; border-radius: 10px; background: var(--pg); box-shadow: inset 0 0 0 1px var(--line); display: flex; align-items: center; gap: 8px; padding: 0 7px 0 10px; color: var(--pl); }
+.find i { color: var(--pt); font-size: 14px; }
+.find .ft { flex: 1; white-space: nowrap; }
+.kbd { font-family: "Geist Mono", monospace; font-size: 10.5px; padding: 2px 6px; border-radius: 5px; background: var(--scr); box-shadow: inset 0 0 0 1px var(--line); color: var(--pt); }
+.nav { display: flex; align-items: center; gap: 8px; height: 34px; padding: 0 10px; border-radius: 10px; color: var(--pt); font-weight: 500; }
+.nav i { font-size: 15px; }
+.nav .grow { flex: 1; }
+.nav.on { background: var(--tint); color: var(--ink); }
+.nav.on i { color: var(--dot-ink); }
+.badge { display: inline-flex; align-items: center; height: 18px; padding: 0 7px; border-radius: 999px; background: var(--tint-2); color: var(--dot-ink); font-size: 11px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.badge.quiet { background: transparent; color: var(--pl); box-shadow: inset 0 0 0 1px var(--line); }
+.list { display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+.glabel { font-size: 12px; font-weight: 500; color: var(--pt); padding: 10px 10px 4px; display: flex; gap: 6px; align-items: center; }
+.rrow { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 10px; color: var(--ink); position: relative; }
+.rrow + .rrow { box-shadow: 0 -1px 0 var(--line); }
+.rrow .t { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rrow .a { color: var(--pl); font-size: 11.5px; font-variant-numeric: tabular-nums; flex: none; }
+.rrow .h { color: var(--pt); font-size: 12px; flex: none; }
+.rrow.hover { background: var(--tint); box-shadow: none; }
+.rrow.hover + .rrow { box-shadow: none; }
+.rrow.active { background: var(--tint-2); box-shadow: inset 2px 0 0 var(--dot); }
+.rrow .hb { flex: none; width: 24px; height: 24px; margin: -4px -4px -4px 0; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; color: var(--pt); background: var(--tint-2); font-size: 13px; }
+.back { background: var(--tint); border-radius: 10px; padding: 8px 10px; display: flex; flex-direction: column; gap: 3px; margin-bottom: 2px; }
+.back b { font-size: 11.5px; font-weight: 500; color: var(--dot-ink); display: inline-flex; gap: 5px; align-items: center; }
+.back span { font-size: 13px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* main */
+.main { min-height: 0; overflow: hidden; display: flex; flex-direction: column; position: relative; }
+.phead { height: 56px; flex: none; display: flex; align-items: center; justify-content: center; position: relative; font-size: 13.5px; font-weight: 500; color: var(--pt); }
+.phead .l { position: absolute; left: 18px; display: inline-flex; align-items: center; gap: 6px; font-weight: 400; color: var(--pl); font-size: 13px; }
+.phead .r { position: absolute; right: 18px; display: inline-flex; gap: 6px; align-items: center; }
+.ibtn { width: 30px; height: 30px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; color: var(--pt); font-size: 16px; }
+.ibtn.on { background: var(--tint-2); color: var(--dot-ink); }
+.pill { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 13px; border-radius: 999px; font-size: 12.5px; font-weight: 500; color: var(--pt); box-shadow: inset 0 0 0 1px var(--line); white-space: nowrap; }
+.pill i { font-size: 13px; }
+.pill.verm { color: var(--dot-ink); box-shadow: inset 0 0 0 1px var(--dot-edge); }
+.pill.fill { background: var(--tint-2); color: var(--dot-ink); box-shadow: none; }
+.pill.ink { background: var(--ink); color: var(--pg); box-shadow: none; }
+.chip { display: inline-flex; align-items: center; gap: 5px; height: 24px; padding: 0 10px; border-radius: 999px; font-size: 12px; font-weight: 500; }
+.chip.ret { background: var(--tint); color: var(--dot-ink); }
+.chip.held { background: var(--scr); color: var(--pt); box-shadow: inset 0 0 0 1px var(--line); }
+.chip.held .ag { font-weight: 400; color: var(--pl); }
+.chip.toggle { color: var(--pl); box-shadow: inset 0 0 0 1px dashed var(--line); border: 1px dashed var(--line); }
+.chip.toggle.on { border: 0; background: var(--ink); color: var(--pg); }
+.age { color: var(--pl); font-size: 12px; font-variant-numeric: tabular-nums; }
+
+.ruled { --lh: 24px; font-size: 13.5px; line-height: var(--lh); color: var(--pt); padding: 0 0 0 14px;
+  background: linear-gradient(to bottom, transparent calc(var(--lh) - 1px), var(--line) calc(var(--lh) - 1px)) 0 0 / 100% var(--lh);
+  box-shadow: inset 2px 0 0 color-mix(in oklab, var(--dot) 75%, transparent); }
+
+/* 01 — list */
+.col { width: 100%; max-width: 580px; margin: 0 auto; padding: 8px 20px 0; }
+.lrow { padding: 12px 12px; border-radius: 10px; }
+.lrow + .lrow { box-shadow: 0 -1px 0 var(--line); }
+.lrow .top1 { display: flex; align-items: baseline; gap: 12px; }
+.lrow .t { flex: 1; min-width: 0; font-size: 15px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.lrow .sub { margin-top: 3px; font-size: 13px; color: var(--pl); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; display: flex; gap: 6px; align-items: center; }
+.lrow.hover { background: var(--tint); box-shadow: none; }
+.lrow.hover + .lrow { box-shadow: none; }
+.lrow .x { font-size: 13px; color: var(--pt); }
+
+/* 02 — reading column */
+.read { overflow: hidden; flex: 1; min-height: 0; }
+.read .col { max-width: 620px; padding-top: 4px; }
+.entry { padding: 26px 14px 28px; position: relative; border-radius: 10px; }
+.entry + .entry { box-shadow: 0 -1px 0 var(--line); }
+.entry .meta { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--pl); }
+.entry .meta .sep { width: 3px; height: 3px; border-radius: 50%; background: var(--faint); }
+.entry .words { margin-top: 10px; font-size: 21px; line-height: 1.42; font-weight: 450; letter-spacing: -.015em; color: var(--ink); max-width: 30ch; }
+.entry .ruled { margin-top: 14px; max-width: 460px; }
+.entry .rel { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.entry .rel .lbl { font-size: 12px; color: var(--pl); margin-right: 2px; }
+.relchip { display: inline-flex; align-items: center; height: 24px; padding: 0 10px; border-radius: 999px; font-size: 12px; color: var(--pt); box-shadow: inset 0 0 0 1px var(--line); max-width: 220px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.relchip.inset { background: var(--tint); box-shadow: none; color: var(--dot-ink); }
+.entry .acts { position: absolute; right: 10px; top: 20px; display: flex; gap: 6px; }
+.entry.hover { background: var(--tint); box-shadow: none; }
+.entry.hover + .entry { box-shadow: none; }
+.fade { position: absolute; left: 0; right: 0; bottom: 0; height: 60px; background: linear-gradient(to bottom, transparent, var(--pg)); pointer-events: none; }
+
+/* 03 — spread */
+.spread { padding: 6px 22px 0; columns: 3; column-gap: 12px; overflow: hidden; flex: 1; }
+.card { break-inside: avoid; margin-bottom: 12px; background: var(--scr); border-radius: 10px; box-shadow: inset 0 0 0 1px var(--line); padding: 14px 15px 12px; }
+.card .w { font-size: 14.5px; line-height: 1.5; color: var(--ink); }
+.card .n { margin-top: 9px; font-size: 12.5px; line-height: 1.55; color: var(--pl); box-shadow: inset 2px 0 0 color-mix(in oklab, var(--dot) 70%, transparent); padding-left: 9px; }
+.card .f { margin-top: 11px; display: flex; align-items: center; gap: 8px; }
+.card .f .grow { flex: 1; }
+.card .f i { color: var(--pl); font-size: 13px; }
+.card.hover { box-shadow: inset 0 0 0 1px var(--dot-edge); background: var(--tint); }
+.card.link { box-shadow: inset 0 0 0 1px var(--dot-edge); }
+.toolbar { display: flex; align-items: center; gap: 8px; padding: 0 22px 12px; }
+.seg { display: inline-flex; padding: 3px; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--line); }
+.seg span { font-size: 12px; padding: 4px 10px; border-radius: 999px; color: var(--pl); }
+.seg span.on { background: var(--tint-2); color: var(--dot-ink); font-weight: 500; }
+
+/* 04 — sitting */
+.sit { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 0 40px; min-height: 0; }
+.sit .stage { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; max-width: 560px; }
+.sit .big { font-size: 28px; line-height: 1.36; font-weight: 450; letter-spacing: -.02em; text-align: center; max-width: 24ch; }
+.sit .chips { margin-top: 14px; display: flex; gap: 6px; justify-content: center; }
+.sit .ruled { margin-top: 26px; width: 100%; max-width: 440px; padding-bottom: 48px; }
+.sit .caret { display: inline-block; width: 1.5px; height: 15px; background: var(--dot); vertical-align: -2px; margin-left: 1px; }
+.sit .foot { flex: none; padding: 14px 0 22px; display: flex; align-items: center; gap: 14px; }
+.dots { display: flex; gap: 7px; align-items: center; }
+.dots span { width: 6px; height: 6px; border-radius: 50%; background: var(--line); }
+.dots span.seen { background: var(--faint); }
+.dots span.on { background: var(--dot); width: 18px; border-radius: 999px; }
+.hint { position: absolute; bottom: 16px; right: 20px; font-size: 11.5px; color: var(--pl); display: flex; gap: 6px; align-items: center; }
+
+/* 05 — constellation */
+.cons { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 280px; }
+.cons svg { width: 100%; height: 100%; display: block; }
+.cons .side { border-left: 1px solid var(--line); padding: 4px 10px 0; overflow: hidden; }
+.cons .side .lrow { padding: 10px; }
+.cons .side .lrow .t { font-size: 13.5px; white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.45; }
+.n-held { fill: var(--ink); }
+.n-other { fill: var(--scr); stroke: var(--faint); stroke-width: 1; }
+.n-hot { fill: var(--dot); }
+.e { stroke: var(--line); stroke-width: 1.2; }
+.e.hot { stroke: var(--dot-edge); stroke-width: 1.6; }
+.e.dash { stroke-dasharray: 3 4; stroke: var(--faint); stroke-width: 1; opacity: .7; }
+.lab { fill: var(--pt); font-size: 12px; font-family: "Geist", sans-serif; }
+.lab.hot { fill: var(--ink); font-weight: 500; }
+.lab.dim { fill: var(--pl); font-size: 11px; }
+.halo { fill: var(--tint-2); }
+
+/* marking mocks */
+.tv { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 30px; position: relative; }
+.tv .big { font-size: 21px; line-height: 1.4; font-weight: 450; letter-spacing: -.015em; text-align: center; max-width: 24ch; }
+.tv .chips { margin-top: 14px; display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
+.tv .foot { position: absolute; bottom: 18px; left: 0; right: 0; display: flex; justify-content: center; gap: 8px; }
+.tip { position: absolute; font-size: 11.5px; background: var(--ink); color: var(--pg); padding: 4px 8px; border-radius: 6px; white-space: nowrap; display: inline-flex; gap: 6px; align-items: center; }
+.tip .kbd { background: transparent; color: var(--pg); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--pg) 35%, transparent); }
+.toast { position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); display: inline-flex; gap: 10px; align-items: center; font-size: 12.5px; color: var(--pt); background: var(--scr); box-shadow: inset 0 0 0 1px var(--line), var(--shadow); padding: 6px 6px 6px 14px; border-radius: 999px; white-space: nowrap; }
+.toast b { font-weight: 500; color: var(--dot-ink); padding: 3px 9px; border-radius: 999px; }
+.state { font-size: 12px; color: var(--pl); margin-bottom: 6px; font-weight: 500; }
+
+.choose { margin-top: 96px; padding: 28px; border-radius: 10px; background: var(--scr); box-shadow: inset 0 0 0 1px var(--line); }
+.choose h2 { font-size: 22px; font-weight: 500; letter-spacing: -.015em; }
+.choose ol { margin-top: 14px; padding-left: 20px; font-size: 15px; line-height: 1.8; color: var(--pt); }
+.choose ol strong { color: var(--ink); font-weight: 600; }
+.foot-doc { margin-top: 56px; font-size: 12.5px; color: var(--pl); font-family: "Geist Mono", monospace; }
+
+
+/* 03 — the table, elaborated */
+h4 { font-size: 16.5px; font-weight: 500; letter-spacing: -.01em; margin-top: 40px; }
+.win.wide { width: 1000px; height: 640px; }
+.win.phone { width: 360px; height: 600px; border-radius: 22px; }
+.main .fade { height: 48px; }
+.board { flex: 1; min-height: 0; overflow: hidden; display: flex; gap: 12px; padding: 12px 20px 0; align-items: flex-start; }
+.bcol { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+.bcol .card, .trow .card, .tcards .card { margin: 0; }
+.card { position: relative; transition: opacity .2s; }
+.card .f .badge i { font-size: 11px; color: var(--dot-ink); }
+.card.dim { opacity: .38; }
+.card.hot { background: var(--tint); box-shadow: inset 0 0 0 1px var(--dot-edge); }
+.card.rel { box-shadow: inset 0 0 0 1.5px var(--dot-edge); }
+.reltag { position: absolute; top: -9px; left: 12px; font-size: 11px; font-weight: 500; color: var(--dot-ink); background: var(--pg); padding: 0 6px; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--dot-edge); line-height: 17px; }
+.cbtn { position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; background: var(--ink); color: var(--pg); font-size: 13px; }
+.card.hot .w { padding-right: 30px; }
+.card.ghost { visibility: hidden; }
+.together { flex: 1; min-height: 0; overflow: hidden; padding: 12px 20px 0; display: flex; flex-direction: column; gap: 16px; }
+.trow { display: flex; gap: 12px; align-items: flex-start; }
+.trow > .card { flex: 1; min-width: 0; }
+.trow + .trow { padding-top: 16px; box-shadow: 0 -1px 0 var(--line); }
+.trow.solo { flex-direction: column; gap: 8px; }
+.tl { font-size: 12px; font-weight: 500; color: var(--pl); }
+.tcards { display: flex; gap: 12px; align-items: flex-start; }
+.tcards > .card { flex: 1; min-width: 0; }
+.anat { margin-top: 14px; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px 28px; max-width: 860px; }
+.anat div { font-size: 14px; line-height: 1.6; color: var(--pt); }
+.anat b { display: block; color: var(--ink); font-weight: 500; margin-bottom: 2px; }
+.anat b i { color: var(--dot-ink); }
+.decided { margin-top: 28px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 13.5px; color: var(--pl); }
+
+@media (max-width: 640px) {
+  body { padding-top: 24px; }
+  .part { margin-top: 72px; }
+  .choose { padding: 20px; }
+}
+</style>
+</head>
+<body>
+<div class="doc">
+
+<div class="top">
+  <span class="crumb">drft · design exploration · web</span>
+  <div class="theme" role="group" aria-label="theme">
+    <button type="button" data-t="auto" aria-pressed="true">Auto</button>
+    <button type="button" data-t="light" aria-pressed="false">Light</button>
+    <button type="button" data-t="dark" aria-pressed="false">Dark</button>
+  </div>
+</div>
+
+<h1>Held thoughts</h1>
+<p class="lede">Some thoughts you want close for a while — the ones you're circling this week, the ones you want to read again together. This adds <strong>one mark you make yourself</strong> and <strong>one page that gathers every marked thought</strong>. Web only; the phone's shelf and the daily email don't change.</p>
+<p class="lede">The mark is a single on/off switch, like rest — not a tag, a folder or a second list you maintain. It has no due date, no count that grows into guilt, and no "done". Taking it off is one click. Part 01 is the name, part 02 is how you make the mark, and part 03 is the page, which is the main choice.</p>
+
+<div class="decided"><span class="rec">Decided</span> Name: Hold / Held · Mark: A, the chip beside the thought · Page: 03, Lay them out — <a href="#layout" style="color:var(--dot-ink)">read the detail</a></div>
+<nav class="toc">
+  <a href="#name">01 · What to call it</a>
+  <a href="#mark">02 · Making the mark</a>
+  <a href="#page">03 · The page — five directions</a>
+  <a href="#rules">04 · Behaviour</a>
+  <a href="#choose">Decided</a>
+</nav>
+
+<!-- =================================================== 01 -->
+<div class="part" id="name">
+  <div class="eyebrow">01</div>
+  <h2>What to call it</h2>
+  <p class="note">"Review" is the word you used, but drft's vocabulary rules rule out words that make a thought something to get through ("done", "inbox", "process"), and "review" reads that way: a queue to clear. The name decides how the page feels, so it's worth choosing on purpose. The mocks below use <strong>Hold / Held</strong>; any name here works in any direction.</p>
+
+  <table class="words">
+    <thead><tr><th>Name</th><th>The action · the page</th><th>Why / why not</th></tr></thead>
+    <tbody>
+      <tr class="pick"><td>Hold · Held</td><td>"Hold" on a thought · a "Held" page</td><td>Pairs with rest: you <em>let a thought rest</em>, or you <em>hold it close</em>. Short, physical, no deadline in it. Chosen.</td></tr>
+      <tr><td>Keep close</td><td>"Keep close" · "Close at hand"</td><td>Warmest wording, but two words for a button, and "keep" is already the capture verb.</td></tr>
+      <tr><td>Sit with</td><td>"Sit with this" · "Sitting with"</td><td>Uses the product's own language ("sat with"), but it's awkward as a page name in the rail.</td></tr>
+      <tr><td>Pin · Pinned</td><td>"Pin" · "Pinned"</td><td>Everyone knows it, but "pinned" suggests stuck to the top of the collection, which this isn't.</td></tr>
+      <tr><td>Review</td><td>"Mark for review" · "Review"</td><td>Clearest about the purpose, but it brings task-manager weight into a room built to avoid it.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- =================================================== 02 -->
+<div class="part" id="mark">
+  <div class="eyebrow">02</div>
+  <h2>Making the mark</h2>
+  <p class="note">Wherever the mark is made, it should look the same everywhere: a neutral <i class="ph-fill ph-bookmark-simple" style="color:var(--pt)"></i> bookmark in ink, never vermilion. Vermilion stays the colour of <em>now</em> (today's returned thought, the open row). A held thought is for <em>later</em>, so it gets the quieter ink. Pressing <span class="kbd">h</span> toggles it from the thought view and from a highlighted rail row.</p>
+
+  <section class="opt">
+    <span class="optnum">A <span class="rec">Chosen</span></span>
+    <h3>A chip beside the thought</h3>
+    <p class="note">The thought view already gathers small chips under your words: <em>Returned today</em>, <em>Set down</em>. Holding adds one more. Before it's held, it's a dashed "Hold" chip that only shows when you hover over the thought (and always on touch). Once held, it's a solid chip that says when: <em>Held · 3 days</em>. Click it again to let go. The single action at the bottom of the page stays <em>Let it rest</em>, as the experience doc requires.</p>
+    <div class="frame duo">
+      <div>
+        <div class="state">Not held — hovering the thought</div>
+        <div class="win sm">
+          <div class="chrome"><span></span><span></span><span></span><span class="url">trydrft.app/thought/…</span></div>
+          <div class="tv">
+            <div class="big">recipes as version control — forks &amp; merges</div>
+            <div class="chips">
+              <span class="chip ret"><i class="ph ph-arrow-bend-up-left"></i>Returned today</span>
+              <span class="chip toggle"><i class="ph ph-bookmark-simple"></i>Hold</span>
+            </div>
+            <div class="foot"><span class="pill verm"><i class="ph ph-moon"></i>Let it rest</span></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="state">Held</div>
+        <div class="win sm">
+          <div class="chrome"><span></span><span></span><span></span><span class="url">trydrft.app/thought/…</span></div>
+          <div class="tv">
+            <div class="big">recipes as version control — forks &amp; merges</div>
+            <div class="chips">
+              <span class="chip ret"><i class="ph ph-arrow-bend-up-left"></i>Returned today</span>
+              <span class="chip held"><i class="ph-fill ph-bookmark-simple"></i>Held <span class="ag">3 days</span></span>
+            </div>
+            <div class="foot"><span class="pill verm"><i class="ph ph-moon"></i>Let it rest</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="opt">
+    <span class="optnum">B</span>
+    <h3>A bookmark in the corner</h3>
+    <p class="note">One icon button in the thought view's top-right corner, the way a browser bookmarks a page. Familiar and always in the same place, but it adds a control to the page's edge, and the thought view has none there today. Easy to miss because it's far from the words.</p>
+    <div class="frame duo">
+      <div>
+        <div class="state">Not held — hover shows the key</div>
+        <div class="win sm">
+          <div class="chrome"><span></span><span></span><span></span><span class="url">trydrft.app/thought/…</span></div>
+          <div class="main" style="flex:1">
+            <div class="phead"><span class="l"><i class="ph ph-arrow-left"></i>Back</span>Kept Oct 19<span class="r"><span class="ibtn" style="box-shadow: inset 0 0 0 1px var(--line)"><i class="ph ph-bookmark-simple"></i></span></span></div>
+            <span class="tip" style="right:14px; top:58px">Hold <span class="kbd">h</span></span>
+            <div class="tv" style="padding-bottom:40px">
+              <div class="big">recipes as version control — forks &amp; merges</div>
+              <div class="foot"><span class="pill verm"><i class="ph ph-moon"></i>Let it rest</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="state">Held</div>
+        <div class="win sm">
+          <div class="chrome"><span></span><span></span><span></span><span class="url">trydrft.app/thought/…</span></div>
+          <div class="main" style="flex:1">
+            <div class="phead"><span class="l"><i class="ph ph-arrow-left"></i>Back</span>Kept Oct 19<span class="r"><span class="ibtn" style="background:var(--ink); color:var(--pg)"><i class="ph-fill ph-bookmark-simple"></i></span></span></div>
+            <div class="tv" style="padding-bottom:40px">
+              <div class="big">recipes as version control — forks &amp; merges</div>
+              <div class="foot"><span class="pill verm"><i class="ph ph-moon"></i>Let it rest</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="opt">
+    <span class="optnum">C <span class="rec">Optional, with A</span></span>
+    <h3>From the rail, without opening the thought</h3>
+    <p class="note">Hovering a row in the edge rail shows a small bookmark button at the end of the row, in place of its age. Held rows then carry a small <i class="ph-fill ph-bookmark-simple"></i> before the age, so you can tell them apart in the collection without an extra section. This works alongside A or B rather than replacing them; on its own it's hard to find.</p>
+    <div class="frame duo">
+      <div class="win sm" style="width:300px">
+        <div class="chrome"><span></span><span></span><span></span></div>
+        <div class="body solo" style="grid-template-columns:1fr">
+          <div class="rail" style="border-right:0">
+            <div class="list">
+              <div class="glabel">This week <span class="badge">5</span></div>
+              <div class="rrow"><span class="t">maps that show how long, not how far</span><span class="a">2d</span></div>
+              <div class="rrow hover"><span class="t">a museum that shows one painting a day</span><span class="hb"><i class="ph ph-bookmark-simple"></i></span></div>
+              <div class="rrow"><span class="t">most good ideas arrive as complaints</span><i class="ph-fill ph-bookmark-simple h"></i><span class="a">3d</span></div>
+              <div class="rrow"><span class="t">libraries that lend tools, not books</span><span class="a">4d</span></div>
+              <div class="rrow"><span class="t">recipes as version control — forks &amp; merges</span><i class="ph-fill ph-bookmark-simple h"></i><span class="a">6d</span></div>
+              <div class="glabel">Earlier <span class="badge">31</span></div>
+              <div class="rrow"><span class="t">edited silence</span><span class="a">3w</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="win sm" style="width:420px">
+        <div class="chrome"><span></span><span></span><span></span></div>
+        <div class="main" style="flex:1">
+          <div class="tv">
+            <div class="big" style="font-size:16px; color:var(--pt); font-weight:400; max-width:32ch">Holding from the rail confirms without moving you, with a one-click way back, same as setting a related thought aside.</div>
+            <span class="toast">Held <i class="ph-fill ph-bookmark-simple" style="color:var(--pt)"></i><b>Undo</b></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- =================================================== 03 -->
+<div class="part" id="page">
+  <div class="eyebrow">03</div>
+  <h2>The page — five directions</h2>
+  <p class="note">Every direction is reached the same way: a <em>Held</em> entry in the rail, under Find, with a quiet count (shown only when something is held). Below the rail's breakpoint it's a bookmark icon in the header beside search and settings. The directions differ in how much of each thought the page shows and how you move through them.</p>
+
+  <!-- 01 list -->
+  <section class="opt">
+    <span class="optnum">01</span>
+    <h3>The list</h3>
+    <p class="note">The same shape as the Resting page: one row per thought, the first line verbatim, how long it's been held, and the first line of your notes under it when there are any. Clicking a row opens the thought; <span class="kbd">j</span>/<span class="kbd">k</span> step through only the held thoughts. The quietest option and the closest to what's already built.</p>
+    <div class="frame"><div class="win">
+      <div class="chrome"><span></span><span></span><span></span><span class="url">trydrft.app/held</span></div>
+      <div class="body">
+        <div class="rail">
+          <span class="wm">drft</span>
+          <div class="find"><i class="ph ph-magnifying-glass"></i><span class="ft">Find a thought</span><span class="kbd">⌘K</span></div>
+          <div class="nav on"><i class="ph-fill ph-bookmark-simple"></i><span class="grow">Held</span><span class="badge quiet">5</span></div>
+          <div class="list">
+            <div class="back"><b><i class="ph ph-arrow-bend-up-left"></i>Back today</b><span>cities feel more creative because collisions are free</span></div>
+            <div class="glabel">This week <span class="badge">5</span></div>
+            <div class="rrow"><span class="t">maps that show how long, not how far</span><span class="a">2d</span></div>
+            <div class="rrow"><span class="t">most good ideas arrive as complaints</span><i class="ph-fill ph-bookmark-simple h"></i><span class="a">3d</span></div>
+            <div class="rrow"><span class="t">libraries that lend tools, not books</span><span class="a">4d</span></div>
+            <div class="rrow"><span class="t">recipes as version control — forks &amp; merges</span><i class="ph-fill ph-bookmark-simple h"></i><span class="a">6d</span></div>
+            <div class="glabel">Earlier <span class="badge">31</span></div>
+            <div class="rrow"><span class="t">edited silence</span><i class="ph-fill ph-bookmark-simple h"></i><span class="a">3w</span></div>
+            <div class="rrow"><span class="t">attention is a garden</span><span class="a">1mo</span></div>
+            <div class="rrow"><span class="t">a font that ages with the document</span><i class="ph-fill ph-bookmark-simple h"></i><span class="a">1mo</span></div>
+          </div>
+        </div>
+        <div class="main">
+          <div class="phead">Held</div>
+          <div class="col">
+            <div class="lrow"><div class="top1"><span class="t">most good ideas arrive as complaints</span><span class="age">held today</span></div></div>
+            <div class="lrow hover"><div class="top1"><span class="t">recipes as version control — forks &amp; merges</span><i class="ph-fill ph-bookmark-simple x"></i><span class="age">held 3d</span></div><div class="sub"><i class="ph ph-note-pencil"></i>forks are the variations a cook keeps; merges happen at weddings</div></div>
+            <div class="lrow"><div class="top1"><span class="t">a font that ages with the document — older paragraphs go softer</span><span class="age">held 5d</span></div><div class="sub"><i class="ph ph-note-pencil"></i>like paper yellowing, but on purpose</div></div>
+            <div class="lrow"><div class="top1"><span class="t">edited silence</span><span class="age">held 1w</span></div></div>
+            <div class="lrow"><div class="top1"><span class="t">the best meetings end with one sentence everyone could repeat</span><span class="age">held 2w</span></div><div class="sub"><i class="ph ph-note-pencil"></i>try it on Thursday's sync</div></div>
+          </div>
+        </div>
+      </div>
+    </div></div>
+    <div class="pros">
+      <div class="y"><i class="ph ph-check"></i>Matches Resting, so held and set-down thoughts look like each other: two lists you made.</div>
+      <div class="n"><i class="ph ph-minus"></i>You still open each thought one at a time; the page itself doesn't help you see them together.</div>
+    </div>
+  </section>
+
+  <!-- 02 reading column -->
+  <section class="opt">
+    <span class="optnum">02</span>
+    <h3>Read them through</h3>
+    <p class="note">One continuous column you read top to bottom. Each held thought is shown in full and close to its thought-view size, with the start of your notes on their ruled lines and the thoughts it's related to as chips. A related chip that is <em>also held</em> is tinted, so you can see where your held ideas touch each other. Hovering an entry shows <em>Open</em> and <em>Let go</em>. This is the page that does the reviewing: you can read everything you're holding in one sitting, without clicking.</p>
+    <div class="frame"><div class="win">
+      <div class="chrome"><span></span><span></span><span></span><span class="url">trydrft.app/held</span></div>
+      <div class="body">
+        <div class="rail">
+          <span class="wm">drft</span>
+          <div class="find"><i class="ph ph-magnifying-glass"></i><span class="ft">Find a thought</span><span class="kbd">⌘K</span></div>
+          <div class="nav on"><i class="ph-fill ph-bookmark-simple"></i><span class="grow">Held</span><span class="badge quiet">5</span></div>
+          <div class="list">
+            <div class="back"><b><i class="ph ph-arrow-bend-up-left"></i>Back today</b><span>cities feel more creative because collisions are free</span></div>
+            <div class="glabel">This week <span class="badge">5</span></div>
+            <div class="rrow"><span class="t">maps that show how long, not how far</span><span class="a">2d</span></div>
+            <div class="rrow"><span class="t">most good ideas arrive as complaints</span><i class="ph-fill ph-bookmark-simple h"></i><span class="a">3d</span></div>
+            <div class="rrow"><span class="t">libraries that lend tools, not books</span><span class="a">4d</span></div>
+            <div class="rrow"><span class="t">recipes as version control — forks &amp; merges</span><i class="ph-fill ph-bookmark-simple h"></i><span class="a">6d</span></div>
+            <div class="glabel">Earlier <span class="badge">31</span></div>
+            <div class="rrow"><span class="t">edited silence</span><i class="ph-fill ph-bookmark-simple h"></i><span class="a">3w</span></div>
+            <div class="rrow"><span class="t">attention is a garden</span><span class="a">1mo</span></div>
+            <div class="rrow"><span class="t">a font that ages with the document</span><i class="ph-fill ph-bookmark-simple h"></i><span class="a">1mo</span></div>
+          </div>
+        </div>
+        <div class="main">
+          <div class="phead">Held</div>
+          <div class="read"><div class="col">
+            <div class="entry">
+              <div class="meta">Kept 3 days ago <span class="sep"></span> held today</div>
+              <div class="words">most good ideas arrive as complaints</div>
+              <div class="rel"><span class="lbl">Related</span><span class="relchip">libraries that lend tools, not books</span></div>
+            </div>
+            <div class="entry hover">
+              <div class="acts"><span class="pill"><i class="ph ph-arrow-up-right"></i>Open</span><span class="pill"><i class="ph ph-bookmark-simple"></i>Let go</span></div>
+              <div class="meta">Kept Oct 27 <span class="sep"></span> held 3 days</div>
+              <div class="words">recipes as version control — forks &amp; merges</div>
+              <div class="ruled">forks are the variations a cook keeps; merges happen<br>at weddings, when two families' recipes meet</div>
+              <div class="rel"><span class="lbl">Related</span><span class="relchip inset"><i class="ph-fill ph-bookmark-simple" style="margin-right:5px"></i>a font that ages with the document</span><span class="relchip">cities feel more creative…</span></div>
+            </div>
+            <div class="entry">
+              <div class="meta">Kept a month ago <span class="sep"></span> held 5 days</div>
+              <div class="words">a font that ages with the document — older paragraphs go softer</div>
+            </div>
+          </div></div>
+          <div class="fade"></div>
+        </div>
+      </div>
+    </div></div>
+    <div class="pros">
+      <div class="y"><i class="ph ph-check"></i>Built for what you asked: seeing all of them at once, in full, in one place.</div>
+      <div class="y"><i class="ph ph-check"></i>Tinted related chips show which held ideas are related, with no new feature behind it.</div>
+      <div class="n"><i class="ph ph-minus"></i>Gets long once you hold more than ten or so thoughts; the list (01) stays short.</div>
+    </div>
+  </section>
+
+  <!-- 03 spread -->
+  <section class="opt" id="layout">
+    <span class="optnum">03 <span class="rec">Chosen</span></span>
+    <h3>Lay them out</h3>
+    <p class="note">Every held thought as a card, spread across the page like index cards on a table. Because you see them all at once, you compare them instead of reading them one by one, which is the point of holding them. The rail stays on the left as on every other page, so <em>Held</em> is a room in the same building, not a separate app.</p>
+    <div class="frame"><div class="win wide">
+      <div class="chrome"><span></span><span></span><span></span><span class="url">trydrft.app/held</span></div>
+      <div class="body">
+        <div class="rail">
+          <span class="wm">drft</span>
+          <div class="find"><i class="ph ph-magnifying-glass"></i><span class="ft">Find a thought</span><span class="kbd">⌘K</span></div>
+          <div class="nav on"><i class="ph-fill ph-bookmark-simple"></i><span class="grow">Held</span><span class="badge quiet">7</span></div>
+          <div class="list">
+            <div class="back"><b><i class="ph ph-arrow-bend-up-left"></i>Back today</b><span>cities feel more creative because collisions are free</span></div>
+            <div class="glabel">This week <span class="badge">5</span></div>
+            <div class="rrow"><span class="t">maps that show how long, not how far</span><span class="a">2d</span></div>
+            <div class="rrow"><span class="t">most good ideas arrive as complaints</span><i class="ph-fill ph-bookmark-simple h"></i><span class="a">3d</span></div>
+            <div class="rrow"><span class="t">libraries that lend tools, not books</span><span class="a">4d</span></div>
+            <div class="rrow"><span class="t">recipes as version control — forks &amp; merges</span><i class="ph-fill ph-bookmark-simple h"></i><span class="a">6d</span></div>
+            <div class="glabel">Earlier <span class="badge">31</span></div>
+            <div class="rrow"><span class="t">edited silence</span><i class="ph-fill ph-bookmark-simple h"></i><span class="a">3w</span></div>
+            <div class="rrow"><span class="t">attention is a garden</span><span class="a">1mo</span></div>
+            <div class="rrow"><span class="t">a font that ages with the document</span><i class="ph-fill ph-bookmark-simple h"></i><span class="a">1mo</span></div>
+            <div class="rrow"><span class="t">a museum that shows one painting a day</span><i class="ph-fill ph-bookmark-simple h"></i><span class="a">4mo</span></div>
+          </div>
+        </div>
+        <div class="main">
+          <div class="phead">Held<span class="r"><span class="seg"><span class="on">Recent</span><span>Together</span></span></span></div>
+          <div class="board"><div class="bcol"><div class="card "><div class="w">most good ideas arrive as complaints</div><div class="f"><span class="age">held today</span><span class="grow"></span></div></div><div class="card "><div class="w">edited silence</div><div class="n">the pause in a podcast that someone chose to leave in</div><div class="f"><span class="age">held 1w</span><span class="grow"></span><i class="ph ph-note-pencil"></i><span class="badge"><i class="ph ph-link-simple" style="margin-right:3px"></i>1</span></div></div><div class="card "><div class="w">cities feel more creative because collisions are free</div><div class="n">a lab is a city with the coffee machine in the wrong place</div><div class="f"><span class="age">held 1mo</span><span class="grow"></span><i class="ph ph-note-pencil"></i><span class="badge"><i class="ph ph-link-simple" style="margin-right:3px"></i>1</span></div></div></div><div class="bcol"><div class="card "><div class="w">recipes as version control — forks &amp; merges</div><div class="n">forks are the variations a cook keeps; merges happen at weddings, when two families' recipes meet</div><div class="f"><span class="age">held 3d</span><span class="grow"></span><i class="ph ph-note-pencil"></i><span class="badge"><i class="ph ph-link-simple" style="margin-right:3px"></i>2</span></div></div><div class="card "><div class="w">the best meetings end with one sentence everyone could repeat</div><div class="n">try it on Thursday's sync</div><div class="f"><span class="age">held 2w</span><span class="grow"></span><i class="ph ph-note-pencil"></i><span class="badge"><i class="ph ph-link-simple" style="margin-right:3px"></i>1</span></div></div></div><div class="bcol"><div class="card "><div class="w">a font that ages with the document — older paragraphs go softer, the newest sentence is the sharpest thing on the page</div><div class="n">like paper yellowing, but on purpose</div><div class="f"><span class="age">held 5d</span><span class="grow"></span><i class="ph ph-note-pencil"></i><span class="badge"><i class="ph ph-link-simple" style="margin-right:3px"></i>1</span></div></div><div class="card "><div class="w">a museum that shows one painting a day</div><div class="f"><span class="age">held 3w</span><span class="grow"></span></div></div></div></div>
+          <div class="fade"></div>
+        </div>
+      </div>
+    </div></div>
+    <p class="cap">Three columns beside the rail at most laptop and desktop widths, four from about 1800px, two when the window is narrow.</p>
+
+    <h4>The card</h4>
+    <div class="anat">
+      <div><b>Your words, in full.</b> Never cut to one line the way the rail does. A very long thought stops at about ten lines and fades, and the full text is one click away.</div>
+      <div><b>Your notes, a short excerpt.</b> The first three lines of the thought's notes, behind the same vermilion margin rule as the notebook lines in the thought view, so it's clearly <em>your</em> writing about the thought.</div>
+      <div><b>How long it's been held.</b> "held 3d", in the same small grey as every age in the app. No warning colours as it gets older.</div>
+      <div><b><i class="ph ph-link-simple"></i> 2 — links on this table.</b> Only counts related thoughts that are <em>also held</em>, because those are the ones you can see here. Related thoughts that aren't held stay on the thought page.</div>
+    </div>
+    <p class="note">The card has no buttons until you hover it. Clicking the card opens the thought; the rail then marks it as open, and <span class="kbd">Esc</span> brings you back to the table where you left off.</p>
+
+    <h4>Seeing which ones are related</h4>
+    <p class="note">This is what a table can show and a list can't. Hover a card (or move focus to it with the keyboard) and the cards it's related to get an outline and a small <em>Related</em> label, while the rest fade back. Two held thoughts you never thought of together turn out to be next to each other. The hovered card shows one button in its corner, the filled bookmark, to let go of the hold; <span class="kbd">h</span> does the same. The card closes up, and an undo strip appears for a few seconds, the same as when you set a related thought aside.</p>
+    <div class="frame"><div class="win wide">
+      <div class="chrome"><span></span><span></span><span></span><span class="url">trydrft.app/held</span></div>
+      <div class="body">
+        <div class="rail">
+          <span class="wm">drft</span>
+          <div class="find"><i class="ph ph-magnifying-glass"></i><span class="ft">Find a thought</span><span class="kbd">⌘K</span></div>
+          <div class="nav on"><i class="ph-fill ph-bookmark-simple"></i><span class="grow">Held</span><span class="badge quiet">7</span></div>
+          <div class="list">
+            <div class="back"><b><i class="ph ph-arrow-bend-up-left"></i>Back today</b><span>cities feel more creative because collisions are free</span></div>
+            <div class="glabel">This week <span class="badge">5</span></div>
+            <div class="rrow"><span class="t">maps that show how long, not how far</span><span class="a">2d</span></div>
+            <div class="rrow"><span class="t">most good ideas arrive as complaints</span><i class="ph-fill ph-bookmark-simple h"></i><span class="a">3d</span></div>
+            <div class="rrow"><span class="t">libraries that lend tools, not books</span><span class="a">4d</span></div>
+            <div class="rrow"><span class="t">recipes as version control — forks &amp; merges</span><i class="ph-fill ph-bookmark-simple h"></i><span class="a">6d</span></div>
+            <div class="glabel">Earlier <span class="badge">31</span></div>
+            <div class="rrow"><span class="t">edited silence</span><i class="ph-fill ph-bookmark-simple h"></i><span class="a">3w</span></div>
+            <div class="rrow"><span class="t">attention is a garden</span><span class="a">1mo</span></div>
+            <div class="rrow"><span class="t">a font that ages with the document</span><i class="ph-fill ph-bookmark-simple h"></i><span class="a">1mo</span></div>
+            <div class="rrow"><span class="t">a museum that shows one painting a day</span><i class="ph-fill ph-bookmark-simple h"></i><span class="a">4mo</span></div>
+          </div>
+        </div>
+        <div class="main">
+          <div class="phead">Held<span class="r"><span class="seg"><span class="on">Recent</span><span>Together</span></span></span></div>
+          <div class="board"><div class="bcol"><div class="card dim"><div class="w">most good ideas arrive as complaints</div><div class="f"><span class="age">held today</span><span class="grow"></span></div></div><div class="card rel"><span class="reltag">Related</span><div class="w">edited silence</div><div class="n">the pause in a podcast that someone chose to leave in</div><div class="f"><span class="age">held 1w</span><span class="grow"></span><i class="ph ph-note-pencil"></i><span class="badge"><i class="ph ph-link-simple" style="margin-right:3px"></i>1</span></div></div><div class="card dim"><div class="w">cities feel more creative because collisions are free</div><div class="n">a lab is a city with the coffee machine in the wrong place</div><div class="f"><span class="age">held 1mo</span><span class="grow"></span><i class="ph ph-note-pencil"></i><span class="badge"><i class="ph ph-link-simple" style="margin-right:3px"></i>1</span></div></div></div><div class="bcol"><div class="card hot"><span class="cbtn"><i class="ph-fill ph-bookmark-simple"></i></span><span class="tip" style="right:6px; top:42px; z-index:2">Let go <span class="kbd">h</span></span><div class="w">recipes as version control — forks &amp; merges</div><div class="n">forks are the variations a cook keeps; merges happen at weddings, when two families' recipes meet</div><div class="f"><span class="age">held 3d</span><span class="grow"></span><i class="ph ph-note-pencil"></i><span class="badge"><i class="ph ph-link-simple" style="margin-right:3px"></i>2</span></div></div><div class="card dim"><div class="w">the best meetings end with one sentence everyone could repeat</div><div class="n">try it on Thursday's sync</div><div class="f"><span class="age">held 2w</span><span class="grow"></span><i class="ph ph-note-pencil"></i><span class="badge"><i class="ph ph-link-simple" style="margin-right:3px"></i>1</span></div></div></div><div class="bcol"><div class="card rel"><span class="reltag">Related</span><div class="w">a font that ages with the document — older paragraphs go softer, the newest sentence is the sharpest thing on the page</div><div class="n">like paper yellowing, but on purpose</div><div class="f"><span class="age">held 5d</span><span class="grow"></span><i class="ph ph-note-pencil"></i><span class="badge"><i class="ph ph-link-simple" style="margin-right:3px"></i>1</span></div></div><div class="card dim"><div class="w">a museum that shows one painting a day</div><div class="f"><span class="age">held 3w</span><span class="grow"></span></div></div></div></div>
+          <div class="fade"></div>
+        </div>
+      </div>
+    </div></div>
+
+    <h4>Why two orders</h4>
+    <p class="note">In the first draft I gave the page a <em>When held / When kept</em> switch, because there are two honest ways to order the cards:</p>
+    <table class="words">
+      <thead><tr><th>Order</th><th>What it shows</th><th>Verdict</th></tr></thead>
+      <tbody>
+        <tr><td>When held</td><td>Newest hold first: what you're thinking about this week comes first. Holds you've kept for a long time drift to the end, a quiet hint that they might be ready to let go.</td><td>Keep, as the default. Renamed <em>Recent</em>.</td></tr>
+        <tr><td>When kept</td><td>By when you first wrote the thought down, so a thought from June can sit beside its echo from October. It shows how your thinking moved over time.</td><td>Drop it. The cards' dates already give you this, and the order is hard to read on a table: card order across uneven columns isn't obvious. Its real goal, putting echoes side by side, is done better by the next option.</td></tr>
+        <tr class="pick"><td>Together</td><td>Related held thoughts sit next to each other in rows. Each row is a group that's linked, strongest links first, and the thoughts that aren't near any others share the last row.</td><td>Replace "When kept" with this. It uses the space for what space is good at: things that belong together, together.</td></tr>
+      </tbody>
+    </table>
+    <p class="note">So the switch becomes <strong>Recent · Together</strong>. The groups have no names or titles: a name would have to be written by the AI, and drft doesn't put generated words on the page. You can tell what joins a group by reading it.</p>
+    <div class="frame"><div class="win wide">
+      <div class="chrome"><span></span><span></span><span></span><span class="url">trydrft.app/held</span></div>
+      <div class="body">
+        <div class="rail">
+          <span class="wm">drft</span>
+          <div class="find"><i class="ph ph-magnifying-glass"></i><span class="ft">Find a thought</span><span class="kbd">⌘K</span></div>
+          <div class="nav on"><i class="ph-fill ph-bookmark-simple"></i><span class="grow">Held</span><span class="badge quiet">7</span></div>
+          <div class="list">
+            <div class="back"><b><i class="ph ph-arrow-bend-up-left"></i>Back today</b><span>cities feel more creative because collisions are free</span></div>
+            <div class="glabel">This week <span class="badge">5</span></div>
+            <div class="rrow"><span class="t">maps that show how long, not how far</span><span class="a">2d</span></div>
+            <div class="rrow"><span class="t">most good ideas arrive as complaints</span><i class="ph-fill ph-bookmark-simple h"></i><span class="a">3d</span></div>
+            <div class="rrow"><span class="t">libraries that lend tools, not books</span><span class="a">4d</span></div>
+            <div class="rrow"><span class="t">recipes as version control — forks &amp; merges</span><i class="ph-fill ph-bookmark-simple h"></i><span class="a">6d</span></div>
+            <div class="glabel">Earlier <span class="badge">31</span></div>
+            <div class="rrow"><span class="t">edited silence</span><i class="ph-fill ph-bookmark-simple h"></i><span class="a">3w</span></div>
+            <div class="rrow"><span class="t">attention is a garden</span><span class="a">1mo</span></div>
+            <div class="rrow"><span class="t">a font that ages with the document</span><i class="ph-fill ph-bookmark-simple h"></i><span class="a">1mo</span></div>
+            <div class="rrow"><span class="t">a museum that shows one painting a day</span><i class="ph-fill ph-bookmark-simple h"></i><span class="a">4mo</span></div>
+          </div>
+        </div>
+        <div class="main">
+          <div class="phead">Held<span class="r"><span class="seg"><span>Recent</span><span class="on">Together</span></span></span></div>
+          <div class="together"><div class="trow"><div class="card "><div class="w">recipes as version control — forks &amp; merges</div><div class="n">forks are the variations a cook keeps; merges happen at weddings, when two families' recipes meet</div><div class="f"><span class="age">held 3d</span><span class="grow"></span><i class="ph ph-note-pencil"></i><span class="badge"><i class="ph ph-link-simple" style="margin-right:3px"></i>2</span></div></div><div class="card "><div class="w">a font that ages with the document — older paragraphs go softer, the newest sentence is the sharpest thing on the page</div><div class="n">like paper yellowing, but on purpose</div><div class="f"><span class="age">held 5d</span><span class="grow"></span><i class="ph ph-note-pencil"></i><span class="badge"><i class="ph ph-link-simple" style="margin-right:3px"></i>1</span></div></div><div class="card "><div class="w">edited silence</div><div class="n">the pause in a podcast that someone chose to leave in</div><div class="f"><span class="age">held 1w</span><span class="grow"></span><i class="ph ph-note-pencil"></i><span class="badge"><i class="ph ph-link-simple" style="margin-right:3px"></i>1</span></div></div></div><div class="trow"><div class="card "><div class="w">cities feel more creative because collisions are free</div><div class="n">a lab is a city with the coffee machine in the wrong place</div><div class="f"><span class="age">held 1mo</span><span class="grow"></span><i class="ph ph-note-pencil"></i><span class="badge"><i class="ph ph-link-simple" style="margin-right:3px"></i>1</span></div></div><div class="card "><div class="w">the best meetings end with one sentence everyone could repeat</div><div class="n">try it on Thursday's sync</div><div class="f"><span class="age">held 2w</span><span class="grow"></span><i class="ph ph-note-pencil"></i><span class="badge"><i class="ph ph-link-simple" style="margin-right:3px"></i>1</span></div></div><div class="card ghost"></div></div><div class="trow solo"><div class="tl">Not near the others yet</div><div class="tcards"><div class="card "><div class="w">most good ideas arrive as complaints</div><div class="f"><span class="age">held today</span><span class="grow"></span></div></div><div class="card "><div class="w">a museum that shows one painting a day</div><div class="f"><span class="age">held 3w</span><span class="grow"></span></div></div><div class="card ghost"></div></div></div></div>
+          <div class="fade"></div>
+        </div>
+      </div>
+    </div></div>
+
+    <h4>On a phone-width window</h4>
+    <p class="note">Below the rail's breakpoint the table becomes a single column of cards, with the same switch. At that width, <em>Together</em> just stacks each group with a hairline between them.</p>
+    <div class="frame"><div class="win phone">
+      <div class="main" style="flex:1">
+        <div class="phead"><span class="l"><i class="ph ph-arrow-left"></i></span>Held<span class="r"><span class="seg"><span class="on">Recent</span><span>Together</span></span></span></div>
+        <div class="board" style="padding:4px 14px 0"><div class="bcol"><div class="card "><div class="w">most good ideas arrive as complaints</div><div class="f"><span class="age">held today</span><span class="grow"></span></div></div><div class="card "><div class="w">recipes as version control — forks &amp; merges</div><div class="n">forks are the variations a cook keeps; merges happen at weddings, when two families' recipes meet</div><div class="f"><span class="age">held 3d</span><span class="grow"></span><i class="ph ph-note-pencil"></i><span class="badge"><i class="ph ph-link-simple" style="margin-right:3px"></i>2</span></div></div><div class="card "><div class="w">a font that ages with the document — older paragraphs go softer, the newest sentence is the sharpest thing on the page</div><div class="n">like paper yellowing, but on purpose</div><div class="f"><span class="age">held 5d</span><span class="grow"></span><i class="ph ph-note-pencil"></i><span class="badge"><i class="ph ph-link-simple" style="margin-right:3px"></i>1</span></div></div><div class="card "><div class="w">edited silence</div><div class="n">the pause in a podcast that someone chose to leave in</div><div class="f"><span class="age">held 1w</span><span class="grow"></span><i class="ph ph-note-pencil"></i><span class="badge"><i class="ph ph-link-simple" style="margin-right:3px"></i>1</span></div></div></div></div>
+        <div class="fade"></div>
+      </div>
+    </div></div>
+
+    <h4>About the "no grid of cards" rule</h4>
+    <p class="note">The experience doc says the collection shouldn't be a grid of cards. The reason is that cards turn every thought into an item to manage, and the collection is everything you've ever captured. <em>Held</em> is a different case: a small set you picked by hand, for the purpose of looking at them together. The cards stay quiet — no colours per card, no drag-to-arrange, no pinning to positions — so the page is a table you read, not a board you manage. The collection itself keeps its list.</p>
+
+    <div class="pros">
+      <div class="y"><i class="ph ph-check"></i>Shows the whole held set at once, and the hover highlight shows which ones are related.</div>
+      <div class="y"><i class="ph ph-check"></i><em>Together</em> groups echoes side by side without anyone having to tag or sort.</div>
+      <div class="n"><i class="ph ph-minus"></i>It's the one place that uses cards, so it has to stay quiet to fit with the rest. Beyond about 30 held thoughts the page gets long, which is itself a hint to let some go.</div>
+    </div>
+  </section>
+
+  <!-- 04 sitting -->
+  <section class="opt">
+    <span class="optnum">04</span>
+    <h3>One at a time</h3>
+    <p class="note">A focused sitting. One held thought fills the page, with your notes beneath it, editable right there. <span class="kbd">←</span>/<span class="kbd">→</span> move to the next one. A row of dots shows where you are in the set, without numbers. <em>Let go</em> drops the hold and moves on. Good for going deep on each one, like the thought view on repeat.</p>
+    <div class="frame"><div class="win">
+      <div class="chrome"><span></span><span></span><span></span><span class="url">trydrft.app/held</span></div>
+      <div class="body solo">
+        <div class="main">
+          <div class="phead"><span class="l"><i class="ph ph-arrow-left"></i>Back</span>Held</div>
+          <div class="sit">
+            <div class="stage">
+              <div class="big">recipes as version control — forks &amp; merges</div>
+              <div class="chips"><span class="chip held"><i class="ph-fill ph-bookmark-simple"></i>Held <span class="ag">3 days</span></span><span class="chip held" style="color:var(--pl)">Kept Oct 27</span></div>
+              <div class="ruled">forks are the variations a cook keeps; merges happen<br>at weddings, when two families' recipes meet<br>and the result is a third recipe nobody owns<span class="caret"></span></div>
+            </div>
+            <div class="foot">
+              <span class="pill"><i class="ph ph-arrow-left"></i>Previous</span>
+              <span class="dots"><span class="seen"></span><span class="on"></span><span></span><span></span><span></span></span>
+              <span class="pill"><span>Next</span><i class="ph ph-arrow-right"></i></span>
+              <span style="width:10px"></span>
+              <span class="pill"><i class="ph ph-bookmark-simple"></i>Let go</span>
+            </div>
+          </div>
+          <div class="hint"><span class="kbd">←</span><span class="kbd">→</span> step · <span class="kbd">h</span> let go</div>
+        </div>
+      </div>
+    </div></div>
+    <div class="pros">
+      <div class="y"><i class="ph ph-check"></i>Gives each thought your full attention, with the notes where you write next.</div>
+      <div class="n"><i class="ph ph-minus"></i>Next / previous with progress dots turns it into a queue to get through, the inbox feeling drft avoids. It also can't show the set as a whole.</div>
+    </div>
+  </section>
+
+  <!-- 05 constellation -->
+  <section class="opt">
+    <span class="optnum">05</span>
+    <h3>How they connect</h3>
+    <p class="note">Held thoughts as dots, with the related thoughts that join them drawn as lines, beside a short list. The connections graph already exists in the app; this is that graph narrowed to what you're holding. Hovering a list row lights up its dot and its links. Held thoughts that aren't directly related can still join through a thought you're not holding (dashed lines, small open dots), which is often the interesting part.</p>
+    <div class="frame"><div class="win">
+      <div class="chrome"><span></span><span></span><span></span><span class="url">trydrft.app/held</span></div>
+      <div class="body solo">
+        <div class="main">
+          <div class="phead"><span class="l"><i class="ph ph-arrow-left"></i>Back</span>Held</div>
+          <div class="cons">
+            <svg viewBox="0 0 700 500" preserveAspectRatio="xMidYMid meet" aria-label="held thoughts and their links">
+              <line class="e hot" x1="300" y1="230" x2="470" y2="170"/>
+              <line class="e hot" x1="300" y1="230" x2="260" y2="380"/>
+              <line class="e dash" x1="260" y1="380" x2="430" y2="400"/>
+              <line class="e dash" x1="430" y1="400" x2="560" y2="320"/>
+              <line class="e" x1="140" y1="160" x2="300" y2="230"/>
+              <line class="e dash" x1="140" y1="160" x2="200" y2="70"/>
+              <circle class="halo" cx="300" cy="230" r="20"/>
+              <circle class="n-hot" cx="300" cy="230" r="7"/>
+              <circle class="n-held" cx="470" cy="170" r="6"/>
+              <circle class="n-held" cx="260" cy="380" r="6"/>
+              <circle class="n-held" cx="560" cy="320" r="6"/>
+              <circle class="n-held" cx="140" cy="160" r="6"/>
+              <circle class="n-held" cx="600" cy="90" r="6"/>
+              <circle class="n-other" cx="430" cy="400" r="4"/>
+              <circle class="n-other" cx="200" cy="70" r="4"/>
+              <text class="lab hot" x="300" y="265" text-anchor="middle">recipes as version control</text>
+              <text class="lab" x="470" y="150" text-anchor="middle">a font that ages with the document</text>
+              <text class="lab" x="260" y="410" text-anchor="middle">edited silence</text>
+              <text class="lab" x="560" y="350" text-anchor="middle">the best meetings end with one sentence</text>
+              <text class="lab" x="140" y="190" text-anchor="middle">ideas arrive as complaints</text>
+              <text class="lab" x="600" y="70" text-anchor="middle">one painting a day</text>
+              <text class="lab dim" x="430" y="425" text-anchor="middle">attention is a garden</text>
+              <text class="lab dim" x="200" y="52" text-anchor="middle">libraries that lend tools</text>
+            </svg>
+            <div class="side">
+              <div class="lrow hover"><div class="top1"><span class="t">recipes as version control — forks &amp; merges</span></div><div class="sub">2 held nearby</div></div>
+              <div class="lrow"><div class="top1"><span class="t">a font that ages with the document</span></div><div class="sub">1 held nearby</div></div>
+              <div class="lrow"><div class="top1"><span class="t">edited silence</span></div><div class="sub">1 held nearby · 1 through another</div></div>
+              <div class="lrow"><div class="top1"><span class="t">the best meetings end with one sentence</span></div><div class="sub">1 through another</div></div>
+              <div class="lrow"><div class="top1"><span class="t">most good ideas arrive as complaints</span></div><div class="sub">1 held nearby</div></div>
+              <div class="lrow"><div class="top1"><span class="t">a museum that shows one painting a day</span></div><div class="sub" style="color:var(--faint)">nothing nearby yet</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div></div>
+    <div class="pros">
+      <div class="y"><i class="ph ph-check"></i>Shows something no other page does: how the ideas you're holding relate.</div>
+      <div class="n"><i class="ph ph-minus"></i>With only a few held thoughts, or ones with few links, it's mostly empty space. It also hides the words, which are the point. Better as a second view of 02 than as the page itself.</div>
+    </div>
+  </section>
+
+  <div class="callout"><strong>Chosen: 03, Lay them out.</strong> The other directions stay here for reference. 05's map could later become a third view of the same table, if <em>Together</em> leaves you wanting more.</div>
+</div>
+
+<!-- =================================================== 04 -->
+<div class="part" id="rules">
+  <div class="eyebrow">04</div>
+  <h2>Behaviour, whichever you pick</h2>
+  <table class="words">
+    <thead><tr><th>Case</th><th>Proposed</th></tr></thead>
+    <tbody>
+      <tr><td>Order</td><td>Most recently held first. Holding is a "now" gesture; the oldest holds sink to the bottom, where it's obvious they've been there a while, without a nag saying so.</td></tr>
+      <tr><td>Resting a held thought</td><td>Resting also lets go of the hold: a thought that's been set down shouldn't still be waiting for you. Waking it doesn't bring the hold back.</td></tr>
+      <tr><td>Daily email</td><td>Unchanged. Selection never ranks thoughts, so holding doesn't make one come back sooner. The page is where you go to them yourself.</td></tr>
+      <tr><td>Nothing held</td><td>The rail entry goes away and the page shows one line: "Hold a thought to keep it here." No empty state illustration, no hint of something to do.</td></tr>
+      <tr><td>Limit</td><td>None. If it grows long, that's useful to see, and the oldest holds are the obvious ones to let go.</td></tr>
+      <tr><td>iOS</td><td>Not part of this. The shelf ignores the mark. It's a new optional field, so the app keeps working as-is.</td></tr>
+      <tr><td>Data</td><td>One optional <code style="font-family:'Geist Mono',monospace; font-size:.9em">heldAt</code> timestamp on the thought, plus an index by user and <code style="font-family:'Geist Mono',monospace; font-size:.9em">heldAt</code> so the page reads newest-held first, the same way the resting list uses <code style="font-family:'Geist Mono',monospace; font-size:.9em">restedAt</code>.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="choose" id="choose">
+  <h2>Decided</h2>
+  <ol>
+    <li><strong>Name</strong> — Hold / Held.</li>
+    <li><strong>Mark</strong> — A, the chip beside the thought, plus <span class="kbd">h</span>. C (from the rail) still open.</li>
+    <li><strong>Page</strong> — 03, Lay them out, with a <em>Recent · Together</em> switch.</li>
+  </ol>
+</div>
+
+<div class="foot-doc">drft · held thoughts · design exploration · November 2026 · see experience.html, vivid.html#ember</div>
+</div>
+
+<script>
+(function () {
+  var root = document.documentElement;
+  var buttons = document.querySelectorAll('.theme button');
+  function apply(t) {
+    if (t === 'auto') root.removeAttribute('data-theme'); else root.setAttribute('data-theme', t);
+    buttons.forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.t === t)); });
+  }
+  var saved = 'auto';
+  try { saved = localStorage.getItem('drft-held-theme') || 'auto'; } catch (e) {}
+  apply(saved);
+  buttons.forEach(function (b) {
+    b.addEventListener('click', function () {
+      apply(b.dataset.t);
+      try { localStorage.setItem('drft-held-theme', b.dataset.t); } catch (e) {}
+    });
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,15 +1,17 @@
 import {
   ArrowBendUpLeft,
+  BookmarkSimple,
   CaretDown,
   GearSix,
   Graph,
   MagnifyingGlass,
 } from "@phosphor-icons/react";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useConvexAuth } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
 import { memo, useCallback, useEffect, useId, useMemo, useState } from "react";
 import type { Id } from "@drft/backend/convex/_generated/dataModel";
+import { useHold, type ToggleHold } from "../held/useHold";
 import { FindResults } from "../search/FindResults";
 import {
   hitOptionId,
@@ -24,10 +26,17 @@ import { ageLabel, localDate, orderRows, type Group, GROUP_LABEL } from "./forma
 import { useCachedQuery } from "./useCachedQuery";
 import { useThoughtPrewarm } from "./useThoughtPrewarm";
 
+// Carried on every move between thoughts while you came from the Held
+// page, so Esc and the way back keep returning there.
+type ThoughtSearch = { from?: "held" };
+const FROM_HELD: ThoughtSearch = { from: "held" };
+const FROM_HOME: ThoughtSearch = {};
+
 type RailThought = {
   _id: Id<"thoughts">;
   preview: string;
   createdAt: number;
+  heldAt?: number;
 };
 
 // The edge rail (docs/vivid.html#ember): the collection stays in the
@@ -35,14 +44,20 @@ type RailThought = {
 // main area holds only capture. Today's returned thought sits on top as a
 // tinted "Back today" strip; the open thought is held by a deeper tint and
 // a vermilion bar.
+// Held thoughts carry a small bookmark; hovering a row offers to hold it
+// or let go without opening it. The Held page sits under Find while
+// anything is held.
 // Also owns the collection's keyboard: j/k move between thoughts (j enters
-// the top from home), Esc returns to the door.
+// the top from home), Esc returns to the door — home, or the Held page
+// when the thought was opened from there.
 export const Rail = memo(function Rail({
   activeId,
   now,
+  backTo = "/",
 }: {
   activeId: Id<"thoughts"> | null;
   now: number;
+  backTo?: "/" | "/held";
 }) {
   const { isAuthenticated } = useConvexAuth();
   const date = useMemo(() => localDate(now), [now]);
@@ -56,6 +71,15 @@ export const Rail = memo(function Rail({
     isAuthenticated ? {} : "skip",
     "resting",
   );
+  const held = useCachedQuery(
+    api.thoughts.held,
+    isAuthenticated ? {} : "skip",
+    "held",
+  );
+  const heldCount = held?.length ?? 0;
+  const onHeld = useRouterState({ select: (s) => s.location.pathname === "/held" });
+  const toggleHold = useHold();
+  const search = backTo === "/held" ? FROM_HELD : FROM_HOME;
   const [restingOpen, setRestingOpen] = useState(false);
   const navigate = useNavigate();
   const prewarm = useThoughtPrewarm();
@@ -82,9 +106,13 @@ export const Rail = memo(function Rail({
     (hit: Hit) => {
       prepareNavigation(hit._id);
       closeFind();
-      void navigate({ to: "/thought/$thoughtId", params: { thoughtId: hit._id } });
+      void navigate({
+        to: "/thought/$thoughtId",
+        params: { thoughtId: hit._id },
+        search,
+      });
     },
-    [prepareNavigation, closeFind, navigate],
+    [prepareNavigation, closeFind, navigate, search],
   );
 
   // ⌘K toggles find, "/" opens it from anywhere outside a field — only
@@ -153,7 +181,7 @@ export const Rail = memo(function Rail({
           closeFind();
           return;
         }
-        if (activeId) void navigate({ to: "/" });
+        if (activeId) void navigate({ to: backTo });
         return;
       }
       if (e.key !== "j" && e.key !== "k") return;
@@ -166,12 +194,16 @@ export const Rail = memo(function Rail({
       const next = flat[i + (e.key === "j" ? 1 : -1)];
       if (next) {
         prepareNavigation(next);
-        void navigate({ to: "/thought/$thoughtId", params: { thoughtId: next } });
+        void navigate({
+          to: "/thought/$thoughtId",
+          params: { thoughtId: next },
+          search,
+        });
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [flat, activeId, navigate, prepareNavigation, findOpen, closeFind]);
+  }, [flat, activeId, backTo, search, navigate, prepareNavigation, findOpen, closeFind]);
 
   const activeResting =
     resting?.some((thought) => thought._id === activeId) ?? false;
@@ -239,6 +271,27 @@ export const Rail = memo(function Rail({
             <Kbd className="bg-scr text-pt ring-1 ring-line ring-inset">⌘K</Kbd>
           </button>
         )}
+        {(heldCount > 0 || onHeld) && (
+          <Link
+            to="/held"
+            aria-current={onHeld ? "page" : undefined}
+            className={`-mt-2.5 flex h-10 items-center gap-2.5 rounded-card px-3 text-[14px] font-medium transition-colors ${
+              onHeld ? "bg-tint text-ink" : "text-pt hover:bg-tint hover:text-ink"
+            }`}
+          >
+            <BookmarkSimple
+              aria-hidden="true"
+              weight="fill"
+              className={`text-[16px] ${onHeld ? "text-dot-ink" : ""}`}
+            />
+            <span className="flex-1">Held</span>
+            {heldCount > 0 && (
+              <span className="inline-flex h-[18px] items-center rounded-full px-[7px] text-[11.5px] font-medium text-pl tabular-nums ring-1 ring-line ring-inset">
+                {heldCount}
+              </span>
+            )}
+          </Link>
+        )}
       </div>
 
       <div
@@ -266,6 +319,7 @@ export const Rail = memo(function Rail({
                 t={ordered.pinned}
                 active={ordered.pinned._id === activeId}
                 prewarm={prepareNavigation}
+                search={search}
               />
             )}
             {ordered.groups.map(({ group, rows }) => (
@@ -278,6 +332,9 @@ export const Rail = memo(function Rail({
                     time={ageLabel(t.createdAt, now)}
                     active={t._id === activeId}
                     prewarm={prepareNavigation}
+                    search={search}
+                    heldAt={t.heldAt}
+                    toggleHold={toggleHold}
                   />
                 ))}
               </div>
@@ -307,6 +364,7 @@ export const Rail = memo(function Rail({
                         time={thought.restedAt ? ageLabel(thought.restedAt, now) : ""}
                         active={thought._id === activeId}
                         prewarm={prepareNavigation}
+                        search={search}
                       />
                     ))}
                   </div>
@@ -384,15 +442,18 @@ const BackToday = memo(function BackToday({
   t,
   active,
   prewarm,
+  search,
 }: {
   t: RailThought;
   active: boolean;
   prewarm: (thoughtId: Id<"thoughts">) => void;
+  search: ThoughtSearch;
 }) {
   return (
     <Link
       to="/thought/$thoughtId"
       params={{ thoughtId: t._id }}
+      search={search}
       onPointerEnter={() => prewarm(t._id)}
       onPointerDown={() => prewarm(t._id)}
       onFocus={() => prewarm(t._id)}
@@ -415,21 +476,33 @@ const BackToday = memo(function BackToday({
 
 // The time arrives as a string, so the 30s tick re-renders only the rows
 // whose label actually changed; memo holds every other row still.
+// Collection rows can be held (`toggleHold`): a held row carries a small
+// bookmark, and on hover the time gives way to a button that holds or
+// lets go (h does the same on the focused or hovered row). Resting rows
+// can't be held.
 const RailRow = memo(function RailRow({
   t,
   time,
   active,
   prewarm,
+  search,
+  heldAt,
+  toggleHold,
 }: {
   t: { _id: Id<"thoughts">; preview: string };
   time: string;
   active: boolean;
   prewarm: (thoughtId: Id<"thoughts">) => void;
+  search: ThoughtSearch;
+  heldAt?: number;
+  toggleHold?: ToggleHold;
 }) {
-  return (
+  const held = heldAt !== undefined;
+  const link = (
     <Link
       to="/thought/$thoughtId"
       params={{ thoughtId: t._id }}
+      search={search}
       onPointerEnter={() => prewarm(t._id)}
       onPointerDown={() => prewarm(t._id)}
       onFocus={() => prewarm(t._id)}
@@ -441,13 +514,45 @@ const RailRow = memo(function RailRow({
       <span className="min-w-0 flex-1 truncate text-[14.5px] text-ink">
         {t.preview}
       </span>
+      {held && (
+        <BookmarkSimple
+          weight="fill"
+          aria-label="held"
+          className="flex-none self-center text-[12px] text-pt"
+        />
+      )}
       {time && (
         <span
-          className={`flex-none text-[12.5px] tabular-nums ${active ? "text-dot-ink" : "text-pl"}`}
+          className={`flex-none text-[12.5px] tabular-nums ${active ? "text-dot-ink" : "text-pl"} ${
+            toggleHold ? "group-hover:invisible [@media(hover:none)]:visible" : ""
+          }`}
         >
           {time}
         </span>
       )}
     </Link>
+  );
+  if (!toggleHold) return link;
+  return (
+    <div
+      className="group relative"
+      data-hold-id={t._id}
+      data-held-at={heldAt ?? ""}
+      data-hold-notice=""
+    >
+      {link}
+      {/* Out of the tab order: the row's link already takes focus, and h
+          acts on it. */}
+      <button
+        type="button"
+        tabIndex={-1}
+        onClick={() => toggleHold(t._id, heldAt, { notice: true })}
+        aria-label={held ? "Let go" : "Hold"}
+        title={held ? "Let go (h)" : "Hold (h)"}
+        className="absolute top-1/2 right-1.5 flex size-7 -translate-y-1/2 items-center justify-center rounded-full bg-tint-2 text-[13px] text-pt opacity-0 transition-[opacity,color] group-hover:opacity-100 hover:text-ink [@media(hover:none)]:hidden"
+      >
+        <BookmarkSimple aria-hidden="true" weight={held ? "fill" : "regular"} />
+      </button>
+    </div>
   );
 });

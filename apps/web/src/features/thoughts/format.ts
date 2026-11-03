@@ -90,3 +90,20 @@ export function orderRows<T extends { _id: string; createdAt: number }>(
   })).filter(({ rows }) => rows.length > 0);
   return { pinned, groups };
 }
+
+// How long a thought has been held, counted in the viewer's days: "held
+// 3d" on a card, "Held 3 days" on the thought's own chip.
+export function heldAge(heldAt: number, now: Now): { short: string; long: string } {
+  const days = Math.round(
+    (dayStart(new Date(now)) - dayStart(new Date(heldAt))) / 86_400_000,
+  );
+  const unit = (n: number, short: string, word: string) => ({
+    short: `${n}${short}`,
+    long: `${n} ${word}${n === 1 ? "" : "s"}`,
+  });
+  if (days <= 0) return { short: "today", long: "today" };
+  if (days < 7) return unit(days, "d", "day");
+  if (days < 30) return unit(Math.floor(days / 7), "w", "week");
+  if (days < 365) return unit(Math.floor(days / 30), "mo", "month");
+  return unit(Math.floor(days / 365), "y", "year");
+}

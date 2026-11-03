@@ -7,6 +7,7 @@ import { clearRememberedSession } from "../features/auth/rememberedSession";
 import { readSeenUser, writeSeenUser } from "../features/auth/seenUser";
 import { SignIn } from "../features/auth/SignIn";
 import { ConnectionsPrompt } from "../features/consent/ConnectionsPrompt";
+import { HoldLayer } from "../features/held/HoldLayer";
 import { FindSheet } from "../features/search/FindSheet";
 import { useEnsureSettings } from "../features/settings/useEnsureSettings";
 import { OfflineNote } from "../features/ui/OfflineNote";
@@ -55,6 +56,7 @@ function Root() {
     <>
       <Outlet />
       <FindSheet />
+      <HoldLayer />
       <OfflineNote />
     </>
   );

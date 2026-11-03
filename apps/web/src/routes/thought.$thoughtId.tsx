@@ -1,9 +1,10 @@
-import { ArrowBendUpLeft, Moon, Sun, X } from "@phosphor-icons/react";
+import { ArrowBendUpLeft, BookmarkSimple, Moon, Sun, X } from "@phosphor-icons/react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
 import { useEffect, useRef, useState } from "react";
-import { ageLabel, dateLine, groupOf } from "../features/thoughts/format";
+import { useHold } from "../features/held/useHold";
+import { ageLabel, dateLine, groupOf, heldAge } from "../features/thoughts/format";
 import { NotesField } from "../features/thoughts/NotesField";
 import { Rail } from "../features/thoughts/Rail";
 import { useThoughtPrewarm } from "../features/thoughts/useThoughtPrewarm";
@@ -13,9 +14,15 @@ import { Skeleton } from "../features/ui/Skeleton";
 import type { FunctionReturnType } from "convex/server";
 import type { Id } from "@drft/backend/convex/_generated/dataModel";
 
+// `from=held` when opened from the Held page, so the way back (and Esc)
+// returns to the table rather than home.
+type ThoughtSearch = { from?: "held" };
+
 export const Route = createFileRoute("/thought/$thoughtId")({
   component: ThoughtView,
   errorComponent: NotHere,
+  validateSearch: (search: Record<string, unknown>): ThoughtSearch =>
+    search.from === "held" ? { from: "held" } : {},
 });
 
 type ThoughtData = NonNullable<FunctionReturnType<typeof api.thoughts.view>>;
@@ -36,10 +43,12 @@ function BackHeader({
   label,
   loading = false,
   withRail = false,
+  backTo = "/",
 }: {
   label?: string;
   loading?: boolean;
   withRail?: boolean;
+  backTo?: "/" | "/held";
 }) {
   return (
     // Spans the page over the fixed rail and notes columns, so only the way
@@ -48,7 +57,7 @@ function BackHeader({
       {/* With the rail on screen, the way back starts where the page does,
           clear of the rail's own wordmark. */}
       <span className={`pointer-events-auto ${withRail ? "lg:ml-72 xl:ml-80" : ""}`}>
-        <BackLink />
+        <BackLink to={backTo} />
       </span>
       <span
         className={`absolute right-0 text-center text-[14px] font-medium text-pt ${
@@ -65,11 +74,13 @@ function BackHeader({
 
 // Your words hold the center of the page, exactly as captured (left-aligned
 // on phones). Gathered around them as small chips, where the thought has
-// been: set down, returned to. Below, your notes on their ruled lines, then
+// been: set down, returned to, held. Below, your notes on their ruled lines, then
 // what it turned out to be near, and one action waiting at the bottom edge.
 // On wide screens the collection stays in the periphery as an edge rail.
 function ThoughtView() {
   const { thoughtId } = Route.useParams();
+  const { from } = Route.useSearch();
+  const backTo = from === "held" ? "/held" : "/";
   const id = thoughtId as Id<"thoughts">;
   // The route can render before Convex has the user's token; asking then
   // would only be answered "not signed in", and the answer would stick.
@@ -159,8 +170,9 @@ function ThoughtView() {
         label={view ? dateLine(view.createdAt, now) : undefined}
         loading={view === undefined}
         withRail
+        backTo={backTo}
       />
-      <Rail activeId={id} now={now} />
+      <Rail activeId={id} now={now} backTo={backTo} />
 
       <div className="flex flex-1 flex-col lg:pl-72 xl:pr-80 xl:pl-80">
         {view === undefined ? (
@@ -174,35 +186,36 @@ function ThoughtView() {
             key={view._id}
             className="mx-auto flex w-full max-w-[64ch] flex-1 flex-col px-6 md:items-center"
           >
-            <div className="flex w-full flex-1 flex-col justify-center py-10 md:items-center">
+            <div className="group/thought flex w-full flex-1 flex-col justify-center py-10 md:items-center">
               <h1 className="max-w-[26ch] text-[25px] leading-[1.38] font-[450] tracking-[-0.02em] whitespace-pre-wrap text-ink md:text-center md:text-[32px]">
                 {view.text}
               </h1>
 
-              {(view.lastReturnedAt || view.status === "resting") && (
-                <div className="mt-[18px] flex flex-wrap gap-2 md:justify-center">
-                  {view.lastReturnedAt && (
-                    <span className="inline-flex h-7 items-center gap-1.5 rounded-full bg-tint px-3 text-[13px] font-medium text-dot-ink">
-                      <ArrowBendUpLeft aria-hidden="true" className="text-[14px]" />
-                      Returned{" "}
-                      {groupOf(view.lastReturnedAt, now) === "today"
-                        ? "today"
-                        : ageLabel(view.lastReturnedAt, now)}
-                    </span>
-                  )}
-                  {view.status === "resting" && (
-                    <span className="inline-flex h-7 items-center gap-1.5 rounded-full bg-scr px-3 text-[13px] font-medium text-pt ring-1 ring-line ring-inset">
-                      <Moon aria-hidden="true" className="text-[14px]" />
-                      Set down
-                      {view.restedAt && (
-                        <span className="font-normal text-pl tabular-nums">
-                          {ageLabel(view.restedAt, now)}
-                        </span>
-                      )}
-                    </span>
-                  )}
-                </div>
-              )}
+              <div className="mt-[18px] flex flex-wrap gap-2 md:justify-center">
+                {view.lastReturnedAt && (
+                  <span className="inline-flex h-7 items-center gap-1.5 rounded-full bg-tint px-3 text-[13px] font-medium text-dot-ink">
+                    <ArrowBendUpLeft aria-hidden="true" className="text-[14px]" />
+                    Returned{" "}
+                    {groupOf(view.lastReturnedAt, now) === "today"
+                      ? "today"
+                      : ageLabel(view.lastReturnedAt, now)}
+                  </span>
+                )}
+                {view.status === "resting" && (
+                  <span className="inline-flex h-7 items-center gap-1.5 rounded-full bg-scr px-3 text-[13px] font-medium text-pt ring-1 ring-line ring-inset">
+                    <Moon aria-hidden="true" className="text-[14px]" />
+                    Set down
+                    {view.restedAt && (
+                      <span className="font-normal text-pl tabular-nums">
+                        {ageLabel(view.restedAt, now)}
+                      </span>
+                    )}
+                  </span>
+                )}
+                {view.status === "open" && (
+                  <HoldChip thoughtId={view._id} heldAt={view.heldAt} now={now} />
+                )}
+              </div>
 
               {view.status === "resting" && view.restingNote && (
                 <p className="mt-3 max-w-[44ch] text-[15px] leading-[1.6] text-pl md:text-center">
@@ -370,8 +383,17 @@ function StatusFooter({
           status: "resting",
           restedAt: Date.now(),
           restingNote: args.note?.trim() || undefined,
+          heldAt: undefined,
         },
       );
+      // Setting a thought down lets go of it.
+      const held = localStore.getQuery(api.thoughts.held, {});
+      if (held)
+        localStore.setQuery(
+          api.thoughts.held,
+          {},
+          held.filter((card) => card._id !== args.thoughtId),
+        );
     },
   );
   const wake = useMutation(api.thoughts.wake).withOptimisticUpdate(
@@ -474,5 +496,48 @@ function StatusFooter({
         </span>
       )}
     </footer>
+  );
+}
+
+// Hold, beside the thought's other chips. Until it's held it's a dashed
+// "Hold" that shows while you're on the thought (always, on touch); held,
+// a solid chip that says since when. Clicking it again lets go. h does
+// the same from anywhere on the page.
+function HoldChip({
+  thoughtId,
+  heldAt,
+  now,
+}: {
+  thoughtId: Id<"thoughts">;
+  heldAt: number | undefined;
+  now: number;
+}) {
+  const toggle = useHold();
+  const held = heldAt !== undefined;
+  const age = held ? heldAge(heldAt, now).long : "";
+  return (
+    <button
+      type="button"
+      data-hold-id={thoughtId}
+      data-held-at={heldAt ?? ""}
+      data-hold-default=""
+      onClick={() => toggle(thoughtId, heldAt)}
+      aria-pressed={held}
+      aria-label={held ? `Held ${age}. Let go` : "Hold this thought"}
+      title={held ? "Let go (h)" : "Hold (h)"}
+      className={
+        held
+          ? "inline-flex h-7 items-center gap-1.5 rounded-full bg-scr px-3 text-[13px] font-medium text-pt ring-1 ring-line ring-inset transition-shadow hover:ring-dot-edge"
+          : "inline-flex h-7 items-center gap-1.5 rounded-full border border-dashed border-line px-3 text-[13px] font-medium text-pl opacity-0 transition-[opacity,color,border-color] group-hover/thought:opacity-100 hover:border-dot-edge hover:text-ink focus-visible:opacity-100 [@media(hover:none)]:opacity-100"
+      }
+    >
+      <BookmarkSimple
+        aria-hidden="true"
+        weight={held ? "fill" : "regular"}
+        className="text-[14px]"
+      />
+      {held ? "Held" : "Hold"}
+      {held && <span className="font-normal text-pl tabular-nums">{age}</span>}
+    </button>
   );
 }
