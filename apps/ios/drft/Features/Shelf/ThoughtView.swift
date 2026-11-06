@@ -270,7 +270,6 @@ struct ThoughtView: View {
                 Text("Related thoughts")
                     .font(StillnessType.groupLabel)
                     .foregroundStyle(Stillness.chromeText)
-                Badge(text: "\(connections.count)")
             }
             .padding(.horizontal, 10)
             .padding(.top, 6)
