@@ -3,10 +3,11 @@ import { ArrowUpRight, EnvelopeSimple, SignOut } from "@phosphor-icons/react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { clearRememberedSession } from "../features/auth/rememberedSession";
 import { DeleteAccount } from "../features/settings/DeleteAccount";
 import { PageHeader } from "../features/ui/PageHeader";
+import { Rail } from "../features/thoughts/Rail";
 
 export const Route = createFileRoute("/settings")({ component: Settings });
 
@@ -34,6 +35,11 @@ function Settings() {
   const connections = consent?.aiConnections ?? false;
 
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(Date.now()), 60_000);
+    return () => window.clearInterval(id);
+  }, []);
   // `undefined` is "not answered yet"; `null` is "no row — use the
   // default". Until the answer lands the page keeps its shape and simply
   // says nothing, rather than showing a time that may not be yours.
@@ -64,15 +70,18 @@ function Settings() {
   };
 
   return (
-    <main className="flex min-h-dvh flex-col">
+    <main className="min-h-dvh">
+      <Rail activeId={null} now={now} />
+      <div className="flex min-h-dvh flex-col lg:pl-72 xl:pl-80">
       <PageHeader title="Settings" />
 
       <section className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-4 px-4 pt-6 pb-16 md:px-6">
         <div className={SURFACE}>
-          <div className="flex items-center gap-3 px-4 py-3.5 text-[14px] text-pl">
-            <EnvelopeSimple aria-hidden="true" className="flex-none text-[18px]" />
+          <div className="flex items-center gap-3 px-4 py-3.5 text-[15px]">
+            <EnvelopeSimple aria-hidden="true" className="flex-none text-[18px] text-pl" />
+            <span className="flex-none text-pl">Signed in as</span>
             {email ? (
-              <span className="min-w-0 truncate">{email}</span>
+              <span className="min-w-0 flex-1 truncate text-right text-ink">{email}</span>
             ) : (
               <span className="inline-block h-2 w-[20ch] max-w-full rounded-full bg-line" />
             )}
@@ -121,7 +130,7 @@ function Settings() {
               >
                 <span
                   aria-hidden="true"
-                  className={`absolute top-0.5 left-0.5 size-5 rounded-full bg-pg shadow-[0_1px_3px_color-mix(in_oklab,var(--ink)_30%,transparent)] transition-transform ${
+                  className={`absolute top-0.5 left-0.5 size-5 rounded-full bg-[#fdfcfa] shadow-[0_1px_3px_color-mix(in_oklab,var(--ink)_30%,transparent)] transition-transform ${
                     connections ? "translate-x-4" : ""
                   }`}
                 />
@@ -155,6 +164,7 @@ function Settings() {
           <DeleteAccount />
         </div>
       </section>
+      </div>
     </main>
   );
 }

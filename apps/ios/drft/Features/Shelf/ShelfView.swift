@@ -147,7 +147,7 @@ struct ShelfView: View {
                 let layout = ShelfLayout(collection: model.collection, now: now)
 
                 VStack(spacing: 0) {
-                    HomeHeader(count: model.collection?.thoughts.count) {
+                    HomeHeader {
                         settingsArePresented = true
                     }
 
@@ -259,7 +259,8 @@ struct ShelfView: View {
             LinearGradient(
                 stops: [
                     .init(color: Stillness.page.opacity(0), location: 0),
-                    .init(color: Stillness.page, location: 0.4),
+                    .init(color: Stillness.page.opacity(0.85), location: 0.45),
+                    .init(color: Stillness.page, location: 0.7),
                 ],
                 startPoint: .top,
                 endPoint: .bottom
@@ -275,7 +276,6 @@ struct ShelfView: View {
             Text(section.group.label)
                 .font(StillnessType.groupLabel)
                 .foregroundStyle(Stillness.chromeText)
-            Badge(text: "\(section.thoughts.count)")
         }
         .padding(.horizontal, 10)
         .padding(.top, 18)

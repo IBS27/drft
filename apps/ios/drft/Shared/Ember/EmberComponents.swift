@@ -46,7 +46,7 @@ struct EmberIcon: View {
     }
 }
 
-/// A count, or a few words about one, in the accent's tint.
+/// A count, or a few words about one: a quiet fact, never the accent.
 struct Badge: View {
     enum Size {
         case small
@@ -60,11 +60,11 @@ struct Badge: View {
         Text(text)
             .font(size == .medium ? StillnessType.badgeLarge : StillnessType.badge)
             .monospacedDigit()
-            .foregroundStyle(Stillness.nowInk)
+            .foregroundStyle(Stillness.chromeLabel)
             .lineLimit(1)
             .padding(.horizontal, size == .medium ? 11 : 7)
             .frame(minHeight: size == .medium ? 26 : 18)
-            .background(Stillness.nowTintStrong, in: Capsule())
+            .background(Stillness.hairline.opacity(0.7), in: Capsule())
     }
 }
 
@@ -137,20 +137,21 @@ struct PillButtonStyle: ButtonStyle {
                 }
             }
             .shadow(
-                color: kind == .primary && isEnabled ? Stillness.now.opacity(0.4) : .clear,
-                radius: 12,
-                y: 10
+                color: kind == .primary && isEnabled ? Stillness.now.opacity(0.25) : .clear,
+                radius: 9,
+                y: 6
             )
             .contentShape(Capsule())
             .scaleEffect(isPressed ? 0.98 : 1)
-            .opacity(isEnabled ? 1 : 0.35)
+            // A primary action waiting for words reads as quiet, not broken.
+            .opacity(isEnabled || kind == .primary ? 1 : 0.35)
             .animation(.easeOut(duration: 0.15), value: isPressed)
             .animation(.easeOut(duration: 0.15), value: isEnabled)
     }
 
     private var foreground: Color {
         switch kind {
-        case .primary: Stillness.onNow
+        case .primary: isEnabled ? Stillness.onNow : Stillness.chromeLabel
         case .outline: Stillness.nowInk
         case .neutral: Stillness.chromeText
         case .quiet: Stillness.chromeText
@@ -159,7 +160,7 @@ struct PillButtonStyle: ButtonStyle {
 
     private func fill(isPressed: Bool) -> Color {
         switch kind {
-        case .primary: Stillness.now
+        case .primary: isEnabled ? Stillness.now : Stillness.hairline
         case .neutral: isPressed ? Stillness.nowTint : Stillness.surface
         case .outline, .quiet: isPressed ? Stillness.nowTint : .clear
         }
@@ -216,6 +217,9 @@ extension View {
 /// the right. Both open settings; the wordmark keeps the tap it always had.
 struct HomeHeader: View {
     var count: Int?
+    /// Capture's way down to the shelf: a grabber at the top center, the
+    /// visible half of the pull-down gesture.
+    var onShowShelf: (() -> Void)?
     let onOpenSettings: () -> Void
 
     var body: some View {
@@ -245,5 +249,18 @@ struct HomeHeader: View {
         .padding(.leading, 22)
         .padding(.trailing, 10)
         .frame(height: 56)
+        .overlay {
+            if let onShowShelf {
+                Button(action: onShowShelf) {
+                    Capsule()
+                        .fill(Stillness.chromeLabel.opacity(0.45))
+                        .frame(width: 38, height: 5)
+                        .frame(width: 88, height: 44)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Show thoughts")
+            }
+        }
     }
 }

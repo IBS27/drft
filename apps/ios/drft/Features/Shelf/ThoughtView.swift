@@ -148,7 +148,9 @@ struct ThoughtView: View {
         minimumHeight: CGFloat
     ) -> some View {
         VStack(spacing: 0) {
-            Spacer(minLength: 42)
+            // Your words start near the top, where reading starts; what
+            // it's near and what you can do with it follow directly.
+            Color.clear.frame(height: 40)
 
             // Your words, exactly as captured, left-aligned as on the web's
             // phone layout.
@@ -209,14 +211,14 @@ struct ThoughtView: View {
                     .padding(.top, 12)
             }
 
-            Spacer(minLength: 42)
-
             if thought.status == .open {
                 restControls
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.top, 40)
                     .padding(.bottom, 34)
-            } else {
-                Spacer(minLength: 34)
             }
+
+            Spacer(minLength: 34)
         }
         .frame(maxWidth: .infinity)
         .frame(minHeight: minimumHeight)

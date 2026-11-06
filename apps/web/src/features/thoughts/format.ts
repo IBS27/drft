@@ -40,8 +40,8 @@ export function ageLabel(at: number, now: Now): string {
   const group = groupOf(at, now);
   if (group === "today") return time(d);
   if (group === "this week")
-    return d.toLocaleDateString("en-US", { weekday: "short" }).toLowerCase();
-  const dayMonth = `${d.getDate()} ${d.toLocaleDateString("en-US", { month: "short" }).toLowerCase()}`;
+    return d.toLocaleDateString("en-US", { weekday: "short" });
+  const dayMonth = `${d.getDate()} ${d.toLocaleDateString("en-US", { month: "short" })}`;
   return d.getFullYear() === n.getFullYear()
     ? dayMonth
     : `${dayMonth} ${String(d.getFullYear()).slice(2)}`;

@@ -6,6 +6,7 @@ import { ageLabel } from "../features/thoughts/format";
 import { useCachedQuery } from "../features/thoughts/useCachedQuery";
 import { useThoughtPrewarm } from "../features/thoughts/useThoughtPrewarm";
 import { PageHeader } from "../features/ui/PageHeader";
+import { Rail } from "../features/thoughts/Rail";
 import { SkeletonRows } from "../features/ui/Skeleton";
 
 export const Route = createFileRoute("/resting")({ component: Resting });
@@ -23,7 +24,9 @@ function Resting() {
   const prewarm = useThoughtPrewarm();
 
   return (
-    <main className="flex min-h-dvh flex-col">
+    <main className="min-h-dvh">
+      <Rail activeId={null} now={now} />
+      <div className="flex min-h-dvh flex-col lg:pl-72 xl:pl-80">
       <PageHeader title="Resting" />
 
       <section className="mx-auto w-full max-w-2xl flex-1 px-4 pt-4 pb-16 md:px-6">
@@ -67,6 +70,7 @@ function Resting() {
           </div>
         )}
       </section>
+      </div>
     </main>
   );
 }

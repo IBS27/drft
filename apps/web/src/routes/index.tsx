@@ -91,9 +91,9 @@ function Collection() {
         <span className="flex items-center gap-0.5">
           {count > 0 && (
             <span className="mr-1.5 lg:mr-0">
-              <Badge size="md">
+              <span className="text-[13.5px] text-pl tabular-nums">
                 {count} {count === 1 ? "thought" : "thoughts"}
-              </Badge>
+              </span>
             </span>
           )}
           <button

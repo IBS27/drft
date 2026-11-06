@@ -91,7 +91,7 @@ function fitTransform(
   const graphWidth = Math.max(1, maxX - minX);
   const graphHeight = Math.max(1, maxY - minY);
   const scale = Math.min(
-    1.2,
+    1.35,
     Math.max(
       MIN_SCALE,
       Math.min((width - 100) / graphWidth, (height - 150) / graphHeight),

@@ -378,14 +378,14 @@ export const Rail = memo(function Rail({
       <div className="flex flex-none flex-col gap-0.5 border-t border-line px-3 pt-2.5 pb-3.5">
         <Link
           to="/connections"
-          className="flex items-center gap-2.5 rounded-card px-3 py-2 text-[14px] text-pt transition-colors hover:bg-tint hover:text-ink"
+          className="flex items-center gap-2.5 rounded-card px-3 py-2 text-[14px] text-pt transition-colors hover:bg-tint hover:text-ink aria-[current=page]:bg-tint aria-[current=page]:font-medium aria-[current=page]:text-ink"
         >
           <Graph aria-hidden="true" className="text-[17px]" />
           Connections
         </Link>
         <Link
           to="/settings"
-          className="flex items-center gap-2.5 rounded-card px-3 py-2 text-[14px] text-pt transition-colors hover:bg-tint hover:text-ink"
+          className="flex items-center gap-2.5 rounded-card px-3 py-2 text-[14px] text-pt transition-colors hover:bg-tint hover:text-ink aria-[current=page]:bg-tint aria-[current=page]:font-medium aria-[current=page]:text-ink"
         >
           <GearSix aria-hidden="true" className="text-[17px]" />
           Settings

@@ -186,7 +186,7 @@ function ThoughtView() {
             key={view._id}
             className="mx-auto flex w-full max-w-[64ch] flex-1 flex-col px-6 md:items-center"
           >
-            <div className="group/thought flex w-full flex-1 flex-col justify-center py-10 md:items-center">
+            <div className="group/thought flex w-full flex-col pt-[8vh] pb-2 md:items-center md:pt-[12vh]">
               <h1 className="max-w-[24ch] text-[27px] leading-[1.32] font-[460] tracking-[-0.024em] text-balance whitespace-pre-wrap text-ink md:text-center md:text-[38px]">
                 {view.text}
               </h1>
@@ -276,7 +276,7 @@ function ThoughtView() {
                         <button
                           type="button"
                           onClick={() => dismiss(c, i)}
-                          className="absolute top-1/2 right-2 flex size-8 -translate-y-1/2 items-center justify-center rounded-full text-[16px] text-pl opacity-0 transition-[color,background-color,opacity] group-hover:opacity-100 hover:bg-tint-2 hover:text-dot-ink focus-visible:opacity-100 [@media(hover:none)]:opacity-100"
+                          className="absolute top-1/2 right-2 flex size-8 -translate-y-1/2 items-center justify-center rounded-full text-[16px] text-pl opacity-0 transition-[color,background-color,opacity] group-hover:opacity-100 hover:bg-tint-2 hover:text-dot-ink focus-visible:opacity-100 [@media(hover:none)]:text-faint [@media(hover:none)]:opacity-100"
                           aria-label="set related thought aside"
                         >
                           <X aria-hidden="true" />
@@ -334,14 +334,14 @@ function ThoughtSkeleton() {
       aria-label="loading thought"
       className="mx-auto flex w-full max-w-[64ch] flex-1 flex-col px-6 md:items-center"
     >
-      <div className="flex w-full flex-1 flex-col justify-center py-10 md:items-center">
-        <div className="flex w-full max-w-[26ch] flex-col gap-[17px] text-[25px] md:items-center md:gap-[26px] md:text-[32px]">
+      <div className="flex w-full flex-col pt-[8vh] pb-2 md:items-center md:pt-[12vh]">
+        <div className="flex w-full max-w-[24ch] flex-col gap-[19px] text-[27px] md:items-center md:gap-[31px] md:text-[38px]">
           <Skeleton className="h-[18px] w-full" />
           <Skeleton className="h-[18px] w-[62%]" />
         </div>
       </div>
 
-      <div className="flex w-full justify-center pt-6 pb-10">
+      <div className="flex w-full justify-start pt-10 pb-16 md:justify-center">
         <Skeleton className="h-10 w-[124px]" />
       </div>
 
@@ -438,7 +438,7 @@ function StatusFooter({
     "inline-flex h-10 items-center gap-2 rounded-full px-[18px] text-[14.5px] font-medium text-dot-ink ring-[1.5px] ring-dot-edge ring-inset transition-[background-color,scale] hover:bg-tint active:scale-[0.98]";
 
   return (
-    <footer className="flex w-full max-w-[48ch] flex-col items-center gap-3 pt-6 pb-10">
+    <footer className="flex w-full max-w-[48ch] flex-col items-start gap-3 pt-10 pb-16 md:items-center">
       {leaving ? null : status === "resting" ? (
         <button
           type="button"
@@ -528,7 +528,7 @@ function HoldChip({
       className={
         held
           ? "inline-flex h-7 items-center gap-1.5 rounded-full bg-scr px-3 text-[13px] font-medium text-pt ring-1 ring-line ring-inset transition-shadow hover:ring-dot-edge"
-          : "inline-flex h-7 items-center gap-1.5 rounded-full border border-dashed border-faint/60 px-3 text-[13px] font-medium text-pl transition-[color,border-color,background-color] hover:border-dot-edge hover:bg-tint hover:text-ink"
+          : "inline-flex h-7 items-center gap-1.5 rounded-full bg-scr px-3 text-[13px] font-medium text-pt ring-1 ring-line ring-inset transition-[color,box-shadow,background-color] hover:bg-tint hover:text-ink hover:ring-dot-edge"
       }
     >
       <BookmarkSimple

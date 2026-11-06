@@ -1,4 +1,4 @@
-import { ArrowLeft } from "@phosphor-icons/react";
+import { ArrowLeft, Graph } from "@phosphor-icons/react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useConvexAuth, usePaginatedQuery } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
@@ -47,8 +47,20 @@ function Connections() {
     <main className="flex min-h-dvh flex-col">
       <div className="flex min-h-dvh flex-col lg:hidden">
         <PageHeader title="Connections" />
-        <div className="flex flex-1 items-center justify-center px-8 pb-24 text-center text-[15px] text-pt">
-          Connections is available on a larger screen.
+        <div className="flex flex-1 flex-col items-center justify-center px-8 pb-24 text-center">
+          <span className="flex size-12 items-center justify-center rounded-full bg-line/70 text-[22px] text-pt">
+            <Graph aria-hidden="true" />
+          </span>
+          <p className="mt-5 text-[17px] font-medium text-ink">Connections opens on a wider screen</p>
+          <p className="mt-2 max-w-[30ch] text-[15px] leading-relaxed text-pl">
+            The map of how your thoughts relate needs room. Each thought still shows its related ones.
+          </p>
+          <Link
+            to="/"
+            className="mt-6 inline-flex h-10 items-center rounded-full px-[18px] text-[14.5px] font-medium text-pt ring-1 ring-line ring-inset transition-colors hover:bg-tint hover:text-ink"
+          >
+            Back to thoughts
+          </Link>
         </div>
       </div>
 

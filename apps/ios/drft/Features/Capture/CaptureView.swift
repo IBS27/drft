@@ -48,7 +48,7 @@ struct CaptureView: View {
             Stillness.page.ignoresSafeArea()
 
             VStack(spacing: 0) {
-                HomeHeader(onOpenSettings: openSettings)
+                HomeHeader(onShowShelf: showShelf, onOpenSettings: openSettings)
 
                 Spacer(minLength: 28)
 
@@ -186,6 +186,12 @@ struct CaptureView: View {
         }
     }
 
+    private func showShelf() {
+        inputIsFocused = false
+        model.stopDictation()
+        onRevealShelf()
+    }
+
     private func openSettings() {
         model.stopDictation()
         settingsArePresented = true
@@ -296,6 +302,6 @@ struct CaptureView: View {
     }
 
     private func timestamp(for date: Date) -> String {
-        "\(ShelfFormatting.time(for: date).lowercased()), unfiled"
+        ShelfFormatting.time(for: date).lowercased()
     }
 }

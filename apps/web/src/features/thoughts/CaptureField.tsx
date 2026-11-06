@@ -126,7 +126,7 @@ export function CaptureField({ now }: { now: number }) {
     <div className="flex w-full max-w-[640px] flex-col rounded-[18px] bg-scr px-6 pt-6 pb-5 shadow-lift ring-1 ring-line ring-inset sm:px-10 sm:pt-9 sm:pb-7">
       <div className="flex items-baseline justify-between gap-4 text-[14px]">
         <span className="font-medium text-pt">{day}</span>
-        <span className="text-pl tabular-nums">{clock}, unfiled</span>
+        <span className="text-pl tabular-nums">{clock}</span>
       </div>
       <textarea
         ref={areaRef}
@@ -162,10 +162,10 @@ export function CaptureField({ now }: { now: number }) {
           type="button"
           onClick={keep}
           disabled={!typed}
-          className="inline-flex h-[42px] items-center gap-2.5 rounded-full bg-dot pr-2 pl-5 text-[15px] font-semibold text-on-dot shadow-[0_10px_24px_-12px_color-mix(in_oklab,var(--dot)_70%,transparent)] transition-[scale,filter,opacity,box-shadow] duration-200 hover:brightness-105 active:scale-[0.98] disabled:opacity-35 disabled:shadow-none disabled:hover:brightness-100 disabled:active:scale-100 motion-reduce:transition-none"
+          className="inline-flex h-[42px] items-center gap-2.5 rounded-full bg-dot pr-2 pl-5 text-[15px] font-semibold text-on-dot shadow-[0_8px_18px_-12px_color-mix(in_oklab,var(--dot)_60%,transparent)] transition-[scale,filter,background-color,color,box-shadow] duration-200 hover:brightness-105 active:scale-[0.98] disabled:bg-line disabled:text-pl disabled:shadow-none disabled:hover:brightness-100 disabled:active:scale-100 motion-reduce:transition-none"
         >
           Keep
-          <kbd className="inline-flex size-[26px] items-center justify-center rounded-full bg-on-dot/20 font-mono text-[13px]">
+          <kbd className="inline-flex size-[26px] items-center justify-center rounded-full bg-on-dot/20 font-mono text-[13px] [:disabled>&]:bg-pg/70">
             ↵
           </kbd>
         </button>
