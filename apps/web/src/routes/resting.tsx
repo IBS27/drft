@@ -42,7 +42,7 @@ function Resting() {
       <div className="flex min-h-dvh flex-col lg:pl-72 xl:pl-80">
       <PageHeader title="Resting" />
 
-      <section className="mx-auto w-full max-w-[688px] flex-1 px-4 pt-4 pb-16 md:px-10">
+      <section className="mx-auto w-full max-w-[688px] flex-1 px-4 pt-0 pb-16 md:px-10">
         <p className="pb-5 text-[15px] leading-relaxed text-pretty text-pl">
           Thoughts you've set down. They stay out of the daily return, and any
           of them can wake.

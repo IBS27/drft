@@ -467,7 +467,7 @@ export function ConnectionsGraph({
                 const y = node.y ?? size.height / 2;
                 const radius =
                   connected === 0
-                    ? 3
+                    ? 2.5
                     : node.thought.status === "resting"
                       ? Math.max(3.5, nodeRadius(connected) - 2)
                       : nodeRadius(connected);
@@ -522,7 +522,7 @@ export function ConnectionsGraph({
                             ? "fill-pg stroke-faint"
                             : connected > 0
                               ? "fill-pt stroke-pg"
-                              : "fill-pg stroke-pl"
+                              : "fill-pl stroke-none"
                       }
                       strokeWidth={node.thought.status === "resting" || connected === 0 ? 1.25 : 2}
                     />
@@ -570,7 +570,7 @@ export function ConnectionsGraph({
                 set down
               </span>
               <span className="ml-3 inline-flex items-center gap-1.5">
-                <span className="inline-block size-1.5 rounded-full ring-1 ring-pl" />
+                <span className="inline-block size-1.5 rounded-full bg-pl/50" />
                 no echoes yet
               </span>
               </p>

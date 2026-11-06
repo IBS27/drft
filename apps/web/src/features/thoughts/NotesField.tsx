@@ -11,9 +11,8 @@ const NOTES_LIMIT = 20_000;
 // Your own writing next to the thought: one field, no save button. What you
 // type is the truth while you type it — the server is only told, a moment
 // after you pause, and never talks back into a field you are in. It sits
-// on a card under the thought, in the same column as everything else, and
-// is written onto ruled lines (`.ruled` in index.css), which grow with the
-// field. A quiet status beside the label
+// in a plain field under the thought (`.notes-field` in index.css), in the
+// same column as everything else, growing with the words. A quiet status beside the label
 // says "Saving…" while words wait to be sent and "Saved" once the latest
 // ones are; it only reports, and never holds up a save.
 export function NotesField({
@@ -129,8 +128,7 @@ export function NotesField({
   }, []);
 
   // Grows with its content, and re-measures when its width changes; the page scrolls,
-  // never the field. The measure includes the ruled padding below the
-  // text, so there are always empty lines left to write on.
+  // never the field. The measure includes the field's padding.
   useLayoutEffect(() => {
     const el = field.current;
     if (!el) return;
@@ -189,7 +187,7 @@ export function NotesField({
           save();
         }}
         placeholder="Write around it…"
-        className="ruled w-full resize-none overflow-hidden rounded-card bg-scr text-[15px] text-ink ring-1 ring-transparent outline-none ring-inset transition-shadow placeholder:text-pl hover:ring-line focus:ring-pl/40"
+        className="notes-field w-full resize-none overflow-hidden rounded-card bg-scr text-[15px] text-ink ring-1 ring-line outline-none ring-inset transition-shadow placeholder:text-pl hover:ring-pl/30 focus:ring-pl/50"
       />
       {failed && (
         <div

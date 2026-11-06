@@ -391,7 +391,7 @@ private struct BackTodayButtonStyle: ButtonStyle {
         let shape = RoundedRectangle(cornerRadius: StillnessSpacing.surfaceRadius, style: .continuous)
         configuration.label
             .background(configuration.isPressed ? Stillness.nowTint : Stillness.nowWash, in: shape)
-            .overlay { shape.strokeBorder(Stillness.now.opacity(0.2), lineWidth: 1) }
+            .overlay { shape.strokeBorder(Stillness.nowWashEdge, lineWidth: 1) }
             .contentShape(shape)
     }
 }

@@ -94,7 +94,9 @@ struct ThoughtView: View {
                             .font(StillnessType.meta)
                             .foregroundStyle(Stillness.chromeLabel)
                             .lineLimit(1)
-                            .padding(.horizontal, 52)
+                            // Beside the way back, as on the web.
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.leading, 48)
                             .allowsHitTesting(false)
                             .opacity(isLeaving ? 0 : 1)
                             .animation(.easeOut(duration: 0.24), value: isLeaving)

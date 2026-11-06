@@ -2,8 +2,6 @@ import {
   ArrowBendUpLeft,
   CaretRight,
   BookmarkSimple,
-  GearSix,
-  MagnifyingGlass,
   Moon,
 } from "@phosphor-icons/react";
 import { createFileRoute, Link } from "@tanstack/react-router";
@@ -87,22 +85,18 @@ function Collection() {
             type="button"
             onClick={openSearch}
             aria-label="Find a thought"
-            className="flex size-11 items-center justify-center rounded-full text-[18px] text-pt transition-colors hover:bg-tint hover:text-ink lg:hidden"
+            className="flex h-11 items-center rounded-full px-2.5 text-[14.5px] font-medium text-pt transition-colors hover:bg-tint hover:text-ink lg:hidden"
           >
-            <MagnifyingGlass aria-hidden="true" />
+            Find
           </button>
-          <Link to="/held" className="flex h-11 items-center rounded-full px-3 text-[14.5px] font-medium text-pt transition-colors hover:bg-tint hover:text-ink lg:hidden">
+          <Link to="/held" className="flex h-11 items-center rounded-full px-2.5 text-[14.5px] font-medium text-pt transition-colors hover:bg-tint hover:text-ink lg:hidden">
             Held
           </Link>
-          <Link to="/resting" className="flex h-11 items-center rounded-full px-3 text-[14.5px] font-medium text-pt transition-colors hover:bg-tint hover:text-ink lg:hidden">
+          <Link to="/resting" className="flex h-11 items-center rounded-full px-2.5 text-[14.5px] font-medium text-pt transition-colors hover:bg-tint hover:text-ink lg:hidden">
             Resting
           </Link>
-          <Link
-            to="/settings"
-            aria-label="Settings"
-            className="flex size-11 items-center justify-center rounded-full text-[18px] text-pt transition-colors hover:bg-tint hover:text-ink lg:hidden"
-          >
-            <GearSix aria-hidden="true" />
+          <Link to="/settings" className="flex h-11 items-center rounded-full px-2.5 text-[14.5px] font-medium text-pt transition-colors hover:bg-tint hover:text-ink lg:hidden">
+            Settings
           </Link>
         </span>
       </header>
@@ -121,7 +115,7 @@ function Collection() {
         >
           <CaptureField now={now} />
           {pinned && (
-            <div data-capture className="mt-6 hidden w-full max-w-[640px] lg:block">
+            <div data-capture className="mt-6 hidden w-full max-w-[608px] lg:block">
               <BackToday t={pinned} prewarm={prewarm} wide />
             </div>
           )}
@@ -191,8 +185,8 @@ function BackToday({
       onFocus={() => prewarm(t._id)}
       className={
         wide
-          ? "group/back flex items-center gap-4 rounded-[18px] bg-[color-mix(in_oklab,var(--dot)_5%,var(--pg))] px-10 py-6 ring-1 ring-dot/20 ring-inset transition-colors hover:bg-tint"
-          : "group/back mb-1 flex items-center gap-3 rounded-[18px] bg-[color-mix(in_oklab,var(--dot)_5%,var(--pg))] px-4 py-3.5 ring-1 ring-dot/20 ring-inset transition-colors hover:bg-tint"
+          ? "group/back flex items-center gap-4 rounded-[18px] bg-(--back-wash) px-10 py-6 ring-1 ring-(--back-edge) ring-inset transition-colors hover:bg-tint"
+          : "group/back mb-1 flex items-center gap-3 rounded-[18px] bg-(--back-wash) px-4 py-3.5 ring-1 ring-(--back-edge) ring-inset transition-colors hover:bg-tint"
       }
     >
       <span className="flex min-w-0 flex-1 flex-col gap-1.5">

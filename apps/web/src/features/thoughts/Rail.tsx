@@ -271,7 +271,7 @@ export const Rail = memo(function Rail({
         <Link
           to="/"
           activeOptions={{ exact: true }}
-          className="-mt-2.5 flex h-10 items-center gap-2.5 rounded-card px-3 text-[14px] text-pt transition-colors hover:bg-tint hover:text-ink aria-[current=page]:hidden"
+          className="-mt-2.5 flex h-10 items-center gap-2.5 rounded-card px-3 text-[14px] text-pt transition-colors hover:bg-tint hover:text-ink aria-[current=page]:bg-line/55 aria-[current=page]:font-medium aria-[current=page]:text-ink"
         >
           <PencilSimpleLine aria-hidden="true" className="text-[16px]" />
           New thought
@@ -282,7 +282,7 @@ export const Rail = memo(function Rail({
         role="region"
         aria-label="collection"
         aria-busy={loading}
-        className="min-h-0 flex-1 overflow-y-auto px-3 pt-1 pb-10 [scrollbar-width:none]"
+        className="min-h-0 flex-1 overflow-y-auto px-3 pt-1 pb-10 [mask-image:linear-gradient(to_bottom,#000_calc(100%-32px),transparent)] [scrollbar-width:none]"
       >
         {finding ? (
           <FindResults
