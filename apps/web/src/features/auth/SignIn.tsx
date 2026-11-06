@@ -2,6 +2,7 @@ import { useSignIn } from "@clerk/clerk-react";
 import { AppleLogo, GithubLogo, GoogleLogo, type Icon } from "@phosphor-icons/react";
 import { useLocation } from "@tanstack/react-router";
 import { useState } from "react";
+import { LogoMark } from "../ui/Wordmark";
 
 type Strategy = "oauth_apple" | "oauth_google" | "oauth_github";
 
@@ -36,8 +37,8 @@ export function SignIn() {
 
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center px-6 pb-16">
-      <h1 className="inline-flex items-center gap-3 text-[32px] font-semibold tracking-[-0.03em] text-ink">
-        <span aria-hidden="true" className="size-3 rounded-full bg-dot" />
+      <h1 className="inline-flex items-baseline gap-[0.44em] text-[32px] font-semibold tracking-[-0.03em] text-ink">
+        <LogoMark className="h-[0.75em]" />
         drft
       </h1>
       <p className="mt-3 text-[16px] text-pt">A space for unfinished thoughts</p>
