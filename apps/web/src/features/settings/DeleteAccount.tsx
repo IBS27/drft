@@ -48,7 +48,7 @@ export function DeleteAccount() {
       <button
         type="button"
         onClick={() => setStep("confirming")}
-        className="flex w-full items-center rounded-[9px] px-4 py-3.5 text-left text-[15px] text-pt transition-colors hover:bg-tint hover:text-dot-ink"
+        className="flex w-full items-center rounded-[9px] px-4 py-3.5 text-left text-[15px] text-dot-ink/80 transition-colors hover:bg-tint hover:text-dot-ink"
       >
         Delete account
       </button>

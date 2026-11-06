@@ -61,7 +61,6 @@ struct SettingsView: View {
                         VStack(spacing: 0) {
                             if let email = authService.email {
                                 HStack(spacing: 12) {
-                                    EmberIcon(.envelopeSimple, size: 18)
                                     Text("Signed in as")
                                         .font(StillnessType.body)
                                     Spacer(minLength: 8)
@@ -163,7 +162,7 @@ struct SettingsView: View {
                             } label: {
                                 Text(isDeletingAccount ? "Deleting…" : "Delete account")
                                     .font(StillnessType.body)
-                                    .foregroundStyle(Stillness.chromeText)
+                                    .foregroundStyle(Stillness.nowInk.opacity(0.8))
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .padding(.horizontal, 16)
                                     .padding(.vertical, 14)

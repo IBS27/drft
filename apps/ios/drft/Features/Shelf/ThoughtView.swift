@@ -91,8 +91,8 @@ struct ThoughtView: View {
 
                     if let thought = model.thought {
                         Text(ShelfFormatting.captureLine(for: thought.createdAt))
-                            .font(StillnessType.headerDate)
-                            .foregroundStyle(Stillness.chromeText)
+                            .font(StillnessType.meta)
+                            .foregroundStyle(Stillness.chromeLabel)
                             .lineLimit(1)
                             .padding(.horizontal, 52)
                             .allowsHitTesting(false)
@@ -150,7 +150,7 @@ struct ThoughtView: View {
         VStack(spacing: 0) {
             // Your words start near the top, where reading starts; what
             // it's near and what you can do with it follow directly.
-            Color.clear.frame(height: 40)
+            Color.clear.frame(height: 24)
 
             // Your words, exactly as captured, left-aligned as on the web's
             // phone layout.

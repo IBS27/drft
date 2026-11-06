@@ -1,5 +1,5 @@
 import { SignOutButton, useUser } from "@clerk/clerk-react";
-import { ArrowUpRight, EnvelopeSimple, SignOut } from "@phosphor-icons/react";
+import { ArrowUpRight, SignOut } from "@phosphor-icons/react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
@@ -78,7 +78,6 @@ function Settings() {
       <section className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-4 px-4 pt-6 pb-16 md:px-6">
         <div className={SURFACE}>
           <div className="flex items-center gap-3 px-4 py-3.5 text-[15px]">
-            <EnvelopeSimple aria-hidden="true" className="flex-none text-[18px] text-pl" />
             <span className="flex-none text-pl">Signed in as</span>
             {email ? (
               <span className="min-w-0 flex-1 truncate text-right text-ink">{email}</span>

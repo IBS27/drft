@@ -51,18 +51,14 @@ struct CaptureView: View {
                 HomeHeader(onShowShelf: showShelf, onOpenSettings: openSettings)
 
                 Spacer(minLength: 28)
+                    .frame(maxHeight: 56)
 
                 VStack(alignment: .leading, spacing: 22) {
                     TimelineView(.periodic(from: .now, by: 15)) { context in
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(context.date.formatted(.dateTime.weekday(.wide).day().month(.wide)))
-                                .font(StillnessType.meta)
-                                .foregroundStyle(Stillness.chromeLabel)
-                            Text(timestamp(for: context.date))
-                                .font(StillnessType.meta)
-                                .monospacedDigit()
-                                .foregroundStyle(Stillness.chromeLabel)
-                        }
+                        Text("\(context.date.formatted(.dateTime.weekday(.wide).day().month(.wide))) · \(timestamp(for: context.date))")
+                            .font(StillnessType.meta)
+                            .monospacedDigit()
+                            .foregroundStyle(Stillness.chromeLabel)
                     }
 
                     TextField(

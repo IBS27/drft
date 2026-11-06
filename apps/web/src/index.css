@@ -147,20 +147,21 @@ textarea:focus-visible {
 .ruled {
   --lh: 28px;
   line-height: var(--lh);
-  padding: 0 0 calc(var(--lh) * 2) 18px;
+  padding: 0 0 var(--lh) 18px;
   background: linear-gradient(
       to bottom,
       transparent calc(var(--lh) - 1px),
       var(--line) calc(var(--lh) - 1px)
     )
     0 0 / 100% var(--lh);
-  box-shadow: inset 2px 0 0 color-mix(in oklab, var(--dot) 75%, transparent);
+  /* The margin rule is quiet until you write: then it is "now". */
+  box-shadow: inset 2px 0 0 var(--line);
   caret-color: var(--dot);
-  mask-image: linear-gradient(
-    to bottom,
-    #000 calc(100% - var(--lh) * 2),
-    transparent
-  );
+  transition: box-shadow 150ms;
+  mask-image: linear-gradient(to bottom, #000 calc(100% - var(--lh)), transparent);
+}
+.ruled:focus {
+  box-shadow: inset 2px 0 0 color-mix(in oklab, var(--dot) 75%, transparent);
 }
 
 /* The settings time picker's options follow the theme. */

@@ -219,7 +219,7 @@ export const Rail = memo(function Rail({
         {findOpen ? (
           <div
             data-rail-find
-            className="flex h-10 items-center gap-2.5 rounded-card bg-pg pr-2 pl-3 ring-1 ring-dot-edge ring-inset"
+            className="flex h-10 items-center gap-2.5 rounded-card bg-pg pr-2 pl-3 ring-1 ring-pl/50 ring-inset"
           >
             <MagnifyingGlass aria-hidden="true" className="flex-none text-[16px] text-pt" />
             <input
@@ -258,7 +258,7 @@ export const Rail = memo(function Rail({
             data-rail-find
             type="button"
             onClick={() => setFindOpen(true)}
-            className="flex h-10 items-center gap-2.5 rounded-card bg-pg pr-2 pl-3 text-left text-[14px] text-pl ring-1 ring-line ring-inset transition-shadow hover:ring-dot-edge"
+            className="flex h-10 items-center gap-2.5 rounded-card bg-pg pr-2 pl-3 text-left text-[14px] text-pl ring-1 ring-line ring-inset transition-shadow hover:ring-pl/50"
           >
             <MagnifyingGlass aria-hidden="true" className="flex-none text-[16px] text-pt" />
             <span className="flex-1">Find a thought</span>
@@ -285,7 +285,7 @@ export const Rail = memo(function Rail({
         role="region"
         aria-label="collection"
         aria-busy={loading}
-        className="min-h-0 flex-1 overflow-y-auto px-3 pt-1 pb-6 [mask-image:linear-gradient(to_bottom,#000_calc(100%-28px),transparent)] [scrollbar-gutter:stable]"
+        className="min-h-0 flex-1 overflow-y-auto px-3 pt-1 pb-6 [mask-image:linear-gradient(to_bottom,#000_calc(100%-28px),transparent)] [scrollbar-width:none]"
       >
         {finding ? (
           <FindResults

@@ -43,7 +43,7 @@ function Resting() {
       <PageHeader title="Resting" />
 
       <section className="mx-auto w-full max-w-2xl flex-1 px-4 pt-4 pb-16 md:px-6">
-        <p className="px-1 pb-5 text-[15px] leading-relaxed text-pl">
+        <p className="px-5 pb-5 text-[15px] leading-relaxed text-pl">
           Thoughts you've set down. They stay out of the daily return, and any
           of them can wake.
         </p>
@@ -56,37 +56,40 @@ function Resting() {
         ) : (
           <div className="rounded-[14px] bg-scr p-1.5 ring-1 ring-line ring-inset">
           {rows.map((t, i) => (
-            <div key={t._id} className={`group relative ${i > 0 ? "divided" : ""}`}>
-            <Link
-              to="/thought/$thoughtId"
-              params={{ thoughtId: t._id }}
-              onPointerEnter={() => prewarm(t._id)}
-              onPointerDown={() => prewarm(t._id)}
-              onFocus={() => prewarm(t._id)}
-              className="block rounded-card py-3.5 pr-[104px] pl-3.5 transition-colors hover:bg-tint"
+            <div
+              key={t._id}
+              className={`flex items-center gap-2 rounded-card pr-2.5 transition-colors hover:bg-tint ${i > 0 ? "divided" : ""}`}
             >
-              <div className="flex items-baseline gap-3">
-                <span className="line-clamp-2 min-w-0 flex-1 text-[16px] leading-[1.4] text-ink">
-                  {t.preview}
-                </span>
-                <span className="flex-none text-[13px] text-pl tabular-nums">
-                  {t.restedAt ? ageLabel(t.restedAt, now) : ""}
-                </span>
-              </div>
-              {t.restingNote && (
-                <div className="mt-1 truncate text-[13.5px] text-pl">
-                  {t.restingNote}
+              <Link
+                to="/thought/$thoughtId"
+                params={{ thoughtId: t._id }}
+                onPointerEnter={() => prewarm(t._id)}
+                onPointerDown={() => prewarm(t._id)}
+                onFocus={() => prewarm(t._id)}
+                className="block min-w-0 flex-1 rounded-card py-3.5 pl-3.5"
+              >
+                <div className="flex items-baseline gap-3">
+                  <span className="line-clamp-2 min-w-0 flex-1 text-[16px] leading-[1.4] text-ink">
+                    {t.preview}
+                  </span>
+                  <span className="flex-none text-[13px] text-pl tabular-nums">
+                    {t.restedAt ? ageLabel(t.restedAt, now) : ""}
+                  </span>
                 </div>
-              )}
-            </Link>
-            <button
-              type="button"
-              onClick={() => void wake({ thoughtId: t._id }).catch(() => {})}
-              className="absolute top-3 right-3 inline-flex h-8 items-center gap-1.5 rounded-full bg-scr px-3 text-[13px] font-medium text-pl ring-1 ring-line ring-inset transition-[color,box-shadow] group-hover:text-pt hover:text-ink! hover:ring-dot-edge"
-            >
-              <Sun aria-hidden="true" className="text-[14px]" />
-              Wake
-            </button>
+                {t.restingNote && (
+                  <div className="mt-1 truncate text-[13.5px] text-pl">
+                    {t.restingNote}
+                  </div>
+                )}
+              </Link>
+              <button
+                type="button"
+                onClick={() => void wake({ thoughtId: t._id }).catch(() => {})}
+                className="inline-flex h-8 flex-none items-center gap-1.5 rounded-full bg-scr px-3 text-[13px] font-medium text-pt ring-1 ring-line ring-inset transition-[color,box-shadow] hover:text-ink hover:ring-dot-edge [@media(hover:none)]:h-9"
+              >
+                <Sun aria-hidden="true" className="text-[14px]" />
+                Wake
+              </button>
             </div>
           ))}
           </div>

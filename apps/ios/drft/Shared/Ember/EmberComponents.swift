@@ -6,7 +6,7 @@ enum PhosphorIcon: String {
     case arrowBendUpLeft = "ph-arrow-bend-up-left"
     case arrowLeft = "ph-arrow-left"
     case arrowUpRight = "ph-arrow-up-right"
-    case caretDown = "ph-caret-down"
+    case list = "ph-list"
     case envelopeSimple = "ph-envelope-simple"
     case gearSix = "ph-gear-six"
     case githubLogoFill = "ph-github-logo-fill"
@@ -217,8 +217,8 @@ extension View {
 /// the right. Both open settings; the wordmark keeps the tap it always had.
 struct HomeHeader: View {
     var count: Int?
-    /// Capture's way down to the shelf: a grabber at the top center, the
-    /// visible half of the pull-down gesture.
+    /// Capture's way down to the shelf (the visible half of the pull-down
+    /// gesture), beside settings.
     var onShowShelf: (() -> Void)?
     let onOpenSettings: () -> Void
 
@@ -235,6 +235,14 @@ struct HomeHeader: View {
 
             Spacer()
 
+            if let onShowShelf {
+                Button(action: onShowShelf) {
+                    EmberIcon(.list, size: 18)
+                }
+                .buttonStyle(IconButtonStyle(diameter: 36))
+                .accessibilityLabel("Show thoughts")
+            }
+
             if let count, count > 0 {
                 Badge(text: "\(count) \(count == 1 ? "thought" : "thoughts")", size: .medium)
                     .padding(.trailing, 4)
@@ -249,25 +257,5 @@ struct HomeHeader: View {
         .padding(.leading, 22)
         .padding(.trailing, 10)
         .frame(height: 56)
-        .overlay {
-            if let onShowShelf {
-                Button(action: onShowShelf) {
-                    HStack(spacing: 5) {
-                        Text("Thoughts")
-                            .font(StillnessType.captionEmphasis)
-                        EmberIcon(.caretDown, size: 12)
-                    }
-                    .foregroundStyle(Stillness.chromeText)
-                    .padding(.horizontal, 12)
-                    .frame(height: 30)
-                    .background(Stillness.surface, in: Capsule())
-                    .overlay { Capsule().strokeBorder(Stillness.hairline, lineWidth: 1) }
-                    .frame(minWidth: 88, minHeight: 44)
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel("Show thoughts")
-            }
-        }
     }
 }

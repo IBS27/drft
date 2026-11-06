@@ -59,7 +59,7 @@ function BackHeader({
         <BackLink to={backTo} />
       </span>
       <span
-        className={`absolute right-0 text-center text-[14px] font-medium text-pt ${
+        className={`absolute right-0 text-center text-[14px] text-pl ${
           withRail
             ? "left-0 lg:left-72 xl:left-80"
             : "left-0"
@@ -185,7 +185,7 @@ function ThoughtView() {
             key={view._id}
             className="mx-auto flex w-full max-w-[688px] flex-1 flex-col px-6 md:px-10"
           >
-            <div className="group/thought flex w-full flex-col pt-6 pb-2 md:pt-[9vh]">
+            <div className="group/thought flex w-full flex-col pt-4 pb-2 md:pt-[6vh]">
               <h1
                 className={`font-[460] text-pretty whitespace-pre-wrap text-ink ${
                   view.text.length > 240
@@ -261,18 +261,18 @@ function ThoughtView() {
                             prewarm(id);
                             prewarm(c.otherId);
                           }}
-                          className="grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-4 rounded-card py-[13px] pr-12 pl-3 text-left [@media(hover:none)]:pr-3"
+                          className="grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-4 rounded-card py-[13px] pr-3 pl-3 text-left"
                         >
                           <span className="text-[15px] leading-[1.45] whitespace-pre-wrap text-ink">
                             {c.otherText}
                           </span>
                           {c.otherStatus === "resting" ? (
-                            <span className="inline-flex items-center gap-1 text-[13px] text-pl">
+                            <span className="inline-flex items-center gap-1 text-[13px] text-pl transition-opacity group-hover:opacity-0 [@media(hover:none)]:group-hover:opacity-100">
                               <Moon aria-hidden="true" className="text-[13px]" />
                               Set down
                             </span>
                           ) : (
-                            <span className="text-right text-[13px] text-pl tabular-nums">
+                            <span className="text-right text-[13px] text-pl tabular-nums transition-opacity group-hover:opacity-0 [@media(hover:none)]:group-hover:opacity-100">
                               {ageLabel(c.otherCreatedAt, now)}
                             </span>
                           )}
@@ -338,7 +338,7 @@ function ThoughtSkeleton() {
       aria-label="loading thought"
       className="mx-auto flex w-full max-w-[688px] flex-1 flex-col px-6 md:px-10"
     >
-      <div className="flex w-full flex-col pt-6 pb-2 md:pt-[9vh]">
+      <div className="flex w-full flex-col pt-4 pb-2 md:pt-[6vh]">
         <div className="flex w-full max-w-[24ch] flex-col gap-[19px] text-[27px] md:gap-[31px] md:text-[38px]">
           <Skeleton className="h-[18px] w-full" />
           <Skeleton className="h-[18px] w-[62%]" />
