@@ -282,7 +282,7 @@ export const Rail = memo(function Rail({
         role="region"
         aria-label="collection"
         aria-busy={loading}
-        className="min-h-0 flex-1 overflow-y-auto px-3 pt-1 pb-10 [mask-image:linear-gradient(to_bottom,#000_calc(100%-48px),transparent)] [scrollbar-width:none]"
+        className="min-h-0 flex-1 overflow-y-auto px-3 pt-1 pb-10 [scrollbar-width:none]"
       >
         {finding ? (
           <FindResults

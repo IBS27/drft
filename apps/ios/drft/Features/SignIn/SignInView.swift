@@ -74,10 +74,16 @@ struct SignInView: View {
         Button {
             start(provider)
         } label: {
-            HStack(spacing: 12) {
+            // Marks in one column at the leading edge; the label centred.
+            HStack(spacing: 0) {
                 providerIcon(provider)
+                    .frame(width: 22)
+                Spacer(minLength: 8)
                 Text(label)
+                Spacer(minLength: 8)
+                Color.clear.frame(width: 22)
             }
+            .padding(.horizontal, 4)
             .frame(maxWidth: .infinity)
         }
         .buttonStyle(ProviderButtonStyle(provider: provider, pending: pending))
@@ -101,7 +107,7 @@ struct SignInView: View {
                 .frame(width: 17, height: 17)
                 .accessibilityHidden(true)
         case .github:
-            EmberIcon(.githubLogoFill, size: 18)
+            EmberIcon(.githubLogoFill, size: 20)
         default:
             EmptyView()
         }

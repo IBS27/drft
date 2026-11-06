@@ -522,9 +522,9 @@ export function ConnectionsGraph({
                             ? "fill-pg stroke-faint"
                             : connected > 0
                               ? "fill-pt stroke-pg"
-                              : "fill-faint stroke-none"
+                              : "fill-pg stroke-pl"
                       }
-                      strokeWidth={node.thought.status === "resting" ? 1.25 : 2}
+                      strokeWidth={node.thought.status === "resting" || connected === 0 ? 1.25 : 2}
                     />
                     {showLabel && (
                       <text
@@ -570,7 +570,7 @@ export function ConnectionsGraph({
                 set down
               </span>
               <span className="ml-3 inline-flex items-center gap-1.5">
-                <span className="inline-block size-2 rounded-full bg-faint/60" />
+                <span className="inline-block size-1.5 rounded-full ring-1 ring-pl" />
                 no echoes yet
               </span>
               </p>

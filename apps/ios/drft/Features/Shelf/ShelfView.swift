@@ -255,7 +255,9 @@ struct ShelfView: View {
         .buttonStyle(PillButtonStyle(kind: .ink, height: 44, horizontalPadding: 22))
         .padding(.top, 12)
         .padding(.bottom, 12)
-        .frame(maxWidth: .infinity)
+        .padding(.trailing, 20)
+        // On the thumb side, so it sits beside the list rather than on it.
+        .frame(maxWidth: .infinity, alignment: .trailing)
         .background {
             LinearGradient(
                 stops: [

@@ -58,25 +58,23 @@ struct SettingsView: View {
 
                 ScrollView {
                     VStack(spacing: 16) {
-                        VStack(spacing: 0) {
-                            if let email = authService.email {
-                                HStack(spacing: 12) {
-                                    Text("Signed in as")
-                                        .font(StillnessType.body)
-                                    Spacer(minLength: 8)
-                                    Text(email)
-                                        .font(StillnessType.body)
-                                        .foregroundStyle(Stillness.ink)
-                                        .lineLimit(1)
-                                        .truncationMode(.middle)
-                                }
-                                .foregroundStyle(Stillness.chromeLabel)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 14)
-
-                                Hairline()
+                        // Who you are is context, not a setting: a quiet
+                        // line above the cards.
+                        if let email = authService.email {
+                            HStack(spacing: 6) {
+                                Text("Signed in as")
+                                Text(email)
+                                    .foregroundStyle(Stillness.chromeText)
+                                    .lineLimit(1)
+                                    .truncationMode(.middle)
                             }
+                            .font(StillnessType.caption)
+                            .foregroundStyle(Stillness.chromeLabel)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal, 4)
+                        }
+
+                        VStack(spacing: 0) {
 
                             VStack(alignment: .leading, spacing: 4) {
                                 HStack(spacing: 16) {
