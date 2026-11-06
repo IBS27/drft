@@ -42,7 +42,7 @@ type Point = { x: number; y: number };
 
 const MIN_SCALE = 0.36;
 const MAX_SCALE = 3.2;
-const LABEL_LIMIT = 32;
+const LINE_CHARS = 22;
 
 function hash(value: string): number {
   let result = 2166136261;
@@ -65,19 +65,36 @@ function initialPoint(id: string, width: number, height: number): Point {
   };
 }
 
-function label(text: string): string {
-  const oneLine = text.replace(/\s+/g, " ").trim();
-  if (oneLine.length <= LABEL_LIMIT) return oneLine;
-  // Cut at a word, not inside one.
-  const cut = oneLine.slice(0, LABEL_LIMIT);
-  const space = cut.lastIndexOf(" ");
-  return `${(space > LABEL_LIMIT / 2 ? cut.slice(0, space) : cut).replace(/[\s,—–-]+$/, "")}…`;
+// A thought's label: up to two short lines, broken at words, so most
+// thoughts are named in full and long ones end in an ellipsis at a word.
+function labelLines(text: string): string[] {
+  const words = text.replace(/\s+/g, " ").trim().split(" ");
+  const lines: string[] = [];
+  let line = "";
+  for (const word of words) {
+    const next = line ? `${line} ${word}` : word;
+    if (next.length <= LINE_CHARS || !line) {
+      line = next;
+      continue;
+    }
+    lines.push(line);
+    line = word;
+    if (lines.length === 2) break;
+  }
+  if (lines.length < 2 && line) lines.push(line);
+  const shown = lines.join(" ").length;
+  const full = words.join(" ").length;
+  if (shown < full) {
+    const last = lines[lines.length - 1].replace(/[\s,—–-]+$/, "");
+    lines[lines.length - 1] = `${last.slice(0, LINE_CHARS - 1)}…`;
+  }
+  return lines;
 }
 
 type LabelSide = "right" | "left" | "top" | "bottom";
 type Box = { x0: number; y0: number; x1: number; y1: number };
 
-const LABEL_HEIGHT = 16;
+const LINE_HEIGHT = 17;
 const LABEL_GAP = 7;
 
 function nodeRadius(connected: number): number {
@@ -85,10 +102,10 @@ function nodeRadius(connected: number): number {
 }
 
 // Where a label sits around its node, in world units. Width is estimated
-// from the text (Geist at 12.5px averages ~6.4px a character).
-function labelBox(x: number, y: number, r: number, text: string, side: LabelSide): Box {
-  const w = text.length * 6.4;
-  const h = LABEL_HEIGHT;
+// from the text (Geist at 13.5px averages ~6.9px a character).
+function labelBox(x: number, y: number, r: number, lines: string[], side: LabelSide): Box {
+  const w = Math.max(...lines.map((line) => line.length)) * 6.9;
+  const h = lines.length * LINE_HEIGHT;
   switch (side) {
     case "right":
       return { x0: x + r + LABEL_GAP, y0: y - h / 2, x1: x + r + LABEL_GAP + w, y1: y + h / 2 };
@@ -126,9 +143,9 @@ function placeLabels(
     .sort((a, b) => (degree.get(b.id) ?? 0) - (degree.get(a.id) ?? 0));
   for (const node of order) {
     const r = nodeRadius(degree.get(node.id) ?? 0);
-    const text = label(node.thought.text);
+    const lines = labelLines(node.thought.text);
     for (const side of sides) {
-      const box = labelBox(node.x ?? 0, node.y ?? 0, r, text, side);
+      const box = labelBox(node.x ?? 0, node.y ?? 0, r, lines, side);
       const clear =
         placed.every((other) => !overlaps(box, other)) &&
         nodeBoxes.every((n) => n.id === node.id || !overlaps(box, n.box));
@@ -493,7 +510,7 @@ export function ConnectionsGraph({
                     role="link"
                     tabIndex={0}
                     aria-label={`${node.thought.text}, ${connected} connection${connected === 1 ? "" : "s"}${node.thought.status === "resting" ? ", set down" : ""}`}
-                    className={`cursor-pointer outline-none transition-opacity duration-200 ${receded ? "opacity-35" : lone ? "opacity-35" : ""}`}
+                    className={`cursor-pointer outline-none transition-opacity duration-200 ${receded ? "opacity-35" : lone ? "opacity-25" : ""}`}
                     onPointerEnter={() => setActiveId(node.id)}
                     onPointerLeave={() => setActiveId(null)}
                     onFocus={() => setActiveId(node.id)}
@@ -505,19 +522,14 @@ export function ConnectionsGraph({
                     <circle r={16} fill="transparent" />
                     {selected && <circle r={radius + 6} className="fill-dot/15" />}
                     {node.id === returnedId && !selected && (
-                      <circle
-                        r={radius + 4}
-                        vectorEffect="non-scaling-stroke"
-                        className="fill-none stroke-dot"
-                        strokeWidth={1.5}
-                      />
+                      <circle r={radius + 5} className="fill-dot/15" />
                     )}
                     <circle
                       r={radius}
                       vectorEffect="non-scaling-stroke"
                       className={
-                        selected
-                          ? "fill-dot stroke-none"
+                        selected || node.id === returnedId
+                          ? "fill-dot stroke-pg"
                           : node.thought.status === "resting"
                             ? "fill-pg stroke-faint"
                             : connected > 0
@@ -528,28 +540,36 @@ export function ConnectionsGraph({
                     />
                     {showLabel && (
                       <text
-                        x={
-                          side === "right"
-                            ? radius + LABEL_GAP
-                            : side === "left"
-                              ? -(radius + LABEL_GAP)
-                              : 0
-                        }
-                        y={
-                          side === "top"
-                            ? -(radius + LABEL_GAP + LABEL_HEIGHT / 2)
-                            : side === "bottom"
-                              ? radius + LABEL_GAP + LABEL_HEIGHT / 2
-                              : 0
-                        }
                         dominantBaseline="central"
                         textAnchor={side === "right" ? "start" : side === "left" ? "end" : "middle"}
                         paintOrder="stroke"
-                        strokeWidth={4}
+                        strokeWidth={7}
                         strokeLinejoin="round"
-                        className={`pointer-events-none stroke-pg text-[12.5px] ${selected ? "fill-ink font-medium" : "fill-pt"}`}
+                        className={`pointer-events-none stroke-pg text-[13.5px] ${selected ? "fill-ink font-medium" : "fill-pt"}`}
                       >
-                        {label(node.thought.text)}
+                        {(() => {
+                          const lines = labelLines(node.thought.text);
+                          const block = lines.length * LINE_HEIGHT;
+                          const x =
+                            side === "right"
+                              ? radius + LABEL_GAP
+                              : side === "left"
+                                ? -(radius + LABEL_GAP)
+                                : 0;
+                          // Centre of the label block, then one line per row.
+                          const cy =
+                            side === "top"
+                              ? -(radius + LABEL_GAP + block / 2)
+                              : side === "bottom"
+                                ? radius + LABEL_GAP + block / 2
+                                : 0;
+                          const first = cy - ((lines.length - 1) * LINE_HEIGHT) / 2;
+                          return lines.map((line, i) => (
+                            <tspan key={i} x={x} y={first + i * LINE_HEIGHT}>
+                              {line}
+                            </tspan>
+                          ));
+                        })()}
                       </text>
                     )}
                   </g>
@@ -561,17 +581,19 @@ export function ConnectionsGraph({
           {!active && (
             <div className="pointer-events-none absolute inset-x-7 bottom-6 flex items-center justify-between text-[13px] text-pl">
               <p className="flex items-center rounded-full bg-scr/90 px-4 py-2 ring-1 ring-line ring-inset backdrop-blur">
+              {returnedId && (
+                <span className="mr-3 inline-flex items-center gap-1.5">
+                  <span className="inline-block size-2 rounded-full bg-dot" />
+                  Back today
+                </span>
+              )}
               <span className="inline-flex items-center gap-1.5">
                 <span className="inline-block size-2 rounded-full bg-pt" />
-                kept
+                Kept
               </span>
               <span className="ml-3 inline-flex items-center gap-1.5">
                 <span className="inline-block size-2 rounded-full ring-1 ring-faint" />
-                set down
-              </span>
-              <span className="ml-3 inline-flex items-center gap-1.5">
-                <span className="inline-block size-1.5 rounded-full bg-pl/50" />
-                no echoes yet
+                Set down
               </span>
               </p>
               <p className="rounded-full bg-scr/90 px-4 py-2 ring-1 ring-line ring-inset backdrop-blur">

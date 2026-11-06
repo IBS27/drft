@@ -524,7 +524,7 @@ const RailRow = memo(function RailRow({
       )}
       {time && (
         <span
-          className={`flex-none text-[12.5px] tabular-nums text-pl ${
+          className={`flex-none text-[13px] tabular-nums text-pl ${
             toggleHold ? "group-hover:invisible [@media(hover:none)]:visible" : ""
           }`}
         >

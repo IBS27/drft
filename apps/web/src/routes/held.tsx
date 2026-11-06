@@ -102,7 +102,7 @@ function EmptyHeld() {
       </p>
       <Link
         to="/"
-        className="mt-5 text-[14px] font-medium text-pt underline decoration-line underline-offset-4 transition-colors hover:text-ink"
+        className="mt-5 hidden text-[14px] font-medium text-pt underline decoration-line underline-offset-4 transition-colors hover:text-ink lg:inline"
       >
         Back to thoughts
       </Link>

@@ -1,7 +1,9 @@
 import {
   ArrowBendUpLeft,
-  CaretRight,
   BookmarkSimple,
+  CaretRight,
+  GearSix,
+  MagnifyingGlass,
   Moon,
 } from "@phosphor-icons/react";
 import { createFileRoute, Link } from "@tanstack/react-router";
@@ -85,18 +87,12 @@ function Collection() {
             type="button"
             onClick={openSearch}
             aria-label="Find a thought"
-            className="flex h-11 items-center rounded-full px-2.5 text-[14.5px] font-medium text-pt transition-colors hover:bg-tint hover:text-ink lg:hidden"
+            className="flex size-11 items-center justify-center rounded-full text-[19px] text-pt transition-colors hover:bg-tint hover:text-ink lg:hidden"
           >
-            Find
+            <MagnifyingGlass aria-hidden="true" />
           </button>
-          <Link to="/held" className="flex h-11 items-center rounded-full px-2.5 text-[14.5px] font-medium text-pt transition-colors hover:bg-tint hover:text-ink lg:hidden">
-            Held
-          </Link>
-          <Link to="/resting" className="flex h-11 items-center rounded-full px-2.5 text-[14.5px] font-medium text-pt transition-colors hover:bg-tint hover:text-ink lg:hidden">
-            Resting
-          </Link>
-          <Link to="/settings" className="flex h-11 items-center rounded-full px-2.5 text-[14.5px] font-medium text-pt transition-colors hover:bg-tint hover:text-ink lg:hidden">
-            Settings
+          <Link to="/settings" aria-label="Settings" className="flex size-11 items-center justify-center rounded-full text-[19px] text-pt transition-colors hover:bg-tint hover:text-ink lg:hidden">
+            <GearSix aria-hidden="true" />
           </Link>
         </span>
       </header>
@@ -127,6 +123,24 @@ function Collection() {
               <SkeletonRows heading count={5} />
             ) : (
               <>
+                {/* The other places, by name, where the list begins. */}
+                <nav aria-label="places" className="mb-4 flex gap-2">
+                  {(
+                    [
+                      ["/held", "Held", BookmarkSimple],
+                      ["/resting", "Resting", Moon],
+                    ] as const
+                  ).map(([to, name, Icon]) => (
+                    <Link
+                      key={to}
+                      to={to}
+                      className="inline-flex h-10 items-center gap-2 rounded-full bg-scr px-4 text-[14px] font-medium text-pt ring-1 ring-line ring-inset transition-colors hover:bg-tint hover:text-ink"
+                    >
+                      <Icon aria-hidden="true" className="text-[15px]" />
+                      {name}
+                    </Link>
+                  ))}
+                </nav>
                 {pinned && <BackToday t={pinned} prewarm={prewarm} />}
                 {groups.map(({ group, rows }) => (
                   <div key={group}>
@@ -185,8 +199,8 @@ function BackToday({
       onFocus={() => prewarm(t._id)}
       className={
         wide
-          ? "group/back flex items-center gap-4 rounded-[18px] bg-(--back-wash) px-10 py-6 ring-1 ring-(--back-edge) ring-inset transition-colors hover:bg-tint"
-          : "group/back mb-1 flex items-center gap-3 rounded-[18px] bg-(--back-wash) px-4 py-3.5 ring-1 ring-(--back-edge) ring-inset transition-colors hover:bg-tint"
+          ? "group/back flex items-center gap-4 rounded-[14px] bg-(--back-wash) px-10 py-6 ring-1 ring-(--back-edge) ring-inset transition-colors hover:bg-tint"
+          : "group/back mb-1 flex items-center gap-3 rounded-[14px] bg-(--back-wash) px-4 py-3.5 ring-1 ring-(--back-edge) ring-inset transition-colors hover:bg-tint"
       }
     >
       <span className="flex min-w-0 flex-1 flex-col gap-1.5">

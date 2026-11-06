@@ -227,6 +227,13 @@ struct ThoughtView: View {
                     connections,
                     width: max(0, availableWidth - 48)
                 )
+            } else {
+                // Said plainly, so the page doesn't look half-loaded.
+                Text("No echoes yet")
+                    .font(StillnessType.caption)
+                    .foregroundStyle(Stillness.chromeLabel)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.top, 32)
             }
 
             if let setAside {

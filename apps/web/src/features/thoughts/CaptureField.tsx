@@ -123,7 +123,7 @@ export function CaptureField({ now }: { now: number }) {
   // in the middle, and the one action at its foot. The sheet is there
   // before you type, so it is always clear where words go.
   return (
-    <div data-capture className="flex w-full max-w-[608px] flex-col rounded-[18px] bg-scr px-6 pt-6 pb-5 shadow-lift ring-1 ring-line ring-inset sm:px-10 sm:pt-9 sm:pb-7">
+    <div data-capture className="flex w-full max-w-[608px] flex-col rounded-[14px] bg-scr px-6 pt-6 pb-5 shadow-lift ring-1 ring-line ring-inset sm:px-10 sm:pt-9 sm:pb-7">
       <span className="text-[14px] text-pl tabular-nums">
         {day} · {clock}
       </span>

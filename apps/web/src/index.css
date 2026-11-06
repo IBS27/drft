@@ -55,8 +55,8 @@
     --dot-ink: color-mix(in oklab, var(--dot) 55%, var(--ink));
     --dot-edge: color-mix(in oklab, var(--dot) 50%, var(--line));
     --switch: #ebe8e1;
-    --back-wash: color-mix(in oklab, var(--dot) 12%, var(--pg));
-    --back-edge: color-mix(in oklab, var(--dot) 42%, transparent);
+    --back-wash: color-mix(in oklab, var(--dot) 9%, var(--pg));
+    --back-edge: color-mix(in oklab, var(--dot) 30%, transparent);
     --danger: #e0786e;
   }
 }

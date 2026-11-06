@@ -171,11 +171,13 @@ struct ShelfView: View {
                         }
                         .padding(.horizontal, 14)
                         .padding(.top, 8)
-                        .padding(.bottom, 110)
+                        .padding(.bottom, 16)
                     }
                     .scrollIndicators(.hidden)
                 }
-                .overlay(alignment: .bottom) {
+                // A bounded band at the bottom: the list ends above it, so
+                // no row ever sits under the button.
+                .safeAreaInset(edge: .bottom, spacing: 0) {
                     catchThoughtAffordance
                 }
             }
@@ -241,8 +243,7 @@ struct ShelfView: View {
         }
     }
 
-    // A solid vermilion pill at the bottom edge, over a fade of the page so
-    // rows pass beneath it quietly.
+    // A quiet ink pill on the thumb side, in its own band below the list.
     private var catchThoughtAffordance: some View {
         Button {
             onCatchThought()
@@ -259,16 +260,10 @@ struct ShelfView: View {
         // On the thumb side, so it sits beside the list rather than on it.
         .frame(maxWidth: .infinity, alignment: .trailing)
         .background {
-            LinearGradient(
-                stops: [
-                    .init(color: Stillness.page.opacity(0), location: 0),
-                    .init(color: Stillness.page, location: 0.3),
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea(edges: .bottom)
-            .allowsHitTesting(false)
+            Stillness.page
+                .overlay(alignment: .top) { Hairline() }
+                .ignoresSafeArea(edges: .bottom)
+                .allowsHitTesting(false)
         }
         .accessibilityLabel("New thought")
     }

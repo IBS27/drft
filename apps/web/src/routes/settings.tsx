@@ -109,7 +109,7 @@ function Settings() {
               <CaretDown aria-hidden="true" className="pointer-events-none absolute right-3 text-[13px] text-pl" />
               </span>
             </div>
-            <div className="mt-1 text-[13px] text-pl">
+            <div className="mt-1 text-[14px] text-pl">
               One thought returns each morning, {timezone.split("/").pop()?.replaceAll("_", " ")} time
             </div>
             {failed && (
@@ -147,7 +147,7 @@ function Settings() {
                 </span>
               </button>
             </div>
-            <div className="mt-1 text-[13px] text-pl">
+            <div className="mt-1 text-[14px] text-pl">
               Thought text is sent to OpenAI to find echoes
             </div>
             {connectionsFailed && (

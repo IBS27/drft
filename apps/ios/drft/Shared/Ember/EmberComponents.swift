@@ -265,9 +265,15 @@ struct HomeHeader: View {
             }
 
             Button(action: onOpenSettings) {
-                EmberIcon(.gearSix, size: 18)
+                EmberIcon(.gearSix, size: 17)
+                    .foregroundStyle(Stillness.chromeText)
+                    .frame(width: 32, height: 32)
+                    .background(Stillness.surface, in: Circle())
+                    .overlay { Circle().strokeBorder(Stillness.hairline, lineWidth: 1) }
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
             }
-            .buttonStyle(IconButtonStyle(diameter: 36))
+            .buttonStyle(.plain)
             .accessibilityLabel("Settings")
         }
         .padding(.leading, 22)
