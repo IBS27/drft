@@ -190,7 +190,8 @@ export function NotesField({
           }
           save();
         }}
-        className="ruled w-full resize-none overflow-hidden text-[15px] text-ink outline-none"
+        placeholder="Write around it…"
+        className="ruled w-full resize-none overflow-hidden text-[15px] text-ink outline-none placeholder:text-faint"
       />
       {failed && (
         <div

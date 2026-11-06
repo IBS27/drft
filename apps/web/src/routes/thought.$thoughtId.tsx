@@ -187,7 +187,7 @@ function ThoughtView() {
             className="mx-auto flex w-full max-w-[64ch] flex-1 flex-col px-6 md:items-center"
           >
             <div className="group/thought flex w-full flex-1 flex-col justify-center py-10 md:items-center">
-              <h1 className="max-w-[26ch] text-[25px] leading-[1.38] font-[450] tracking-[-0.02em] whitespace-pre-wrap text-ink md:text-center md:text-[32px]">
+              <h1 className="max-w-[24ch] text-[27px] leading-[1.32] font-[460] tracking-[-0.024em] text-balance whitespace-pre-wrap text-ink md:text-center md:text-[38px]">
                 {view.text}
               </h1>
 
@@ -232,8 +232,8 @@ function ThoughtView() {
                   Rows are parted by hairlines that give way to the hover
                   tint, the row's own and the one beneath it. */}
               {view.connections.length > 0 && (
-                <div className="mt-10 w-full max-w-[520px]">
-                  <h2 className="flex items-center gap-2 px-3 pb-2.5 text-[15px] font-medium text-ink">
+                <div className="mt-12 w-full max-w-[540px] rounded-[14px] bg-scr p-2 shadow-lift ring-1 ring-line ring-inset">
+                  <h2 className="flex items-center gap-2 px-3 pt-2 pb-2 text-[14px] font-medium text-pt">
                     Related thoughts
                     <Badge>{view.connections.length}</Badge>
                   </h2>

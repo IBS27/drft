@@ -317,7 +317,10 @@ export function ConnectionsGraph({
   };
 
   return (
-    <div ref={frameRef} className="relative min-h-0 flex-1 overflow-hidden">
+    <div
+      ref={frameRef}
+      className="relative min-h-0 flex-1 overflow-hidden bg-[radial-gradient(color-mix(in_oklab,var(--line)_90%,transparent)_1px,transparent_1.2px)] bg-[length:26px_26px]"
+    >
       {thoughts.length === 0 ? (
         <div className="flex h-full items-center justify-center pb-20 text-[14px] text-pl">
           {loading ? <span className="caret h-5 w-0.5 rounded-full bg-dot" /> : "No thoughts yet"}
@@ -358,8 +361,14 @@ export function ConnectionsGraph({
                       x2={target.x}
                       y2={target.y}
                       vectorEffect="non-scaling-stroke"
-                      className={`transition-colors duration-200 ${visible ? "stroke-ink/45" : "stroke-line"}`}
-                      strokeWidth={1}
+                      className={`transition-[stroke,opacity] duration-200 ${
+                        visible
+                          ? "stroke-dot opacity-80"
+                          : activeId
+                            ? "stroke-faint opacity-25"
+                            : "stroke-faint opacity-60"
+                      }`}
+                      strokeWidth={visible ? 1.5 : 1.1}
                     />
                   );
                 })}
@@ -371,8 +380,14 @@ export function ConnectionsGraph({
                 const connected = degree.get(node.id) ?? 0;
                 const x = node.x ?? size.width / 2;
                 const y = node.y ?? size.height / 2;
-                const radius = Math.min(6.5, 3.4 + connected * 0.55);
-                const showLabel = selected || neighbor;
+                const radius = Math.min(9, 4.2 + connected * 1.1);
+                // At rest every connected thought is named, so the map
+                // reads at a glance; while one is in hand, only its
+                // neighbourhood speaks and the rest steps back.
+                const showLabel = activeId
+                  ? selected || neighbor
+                  : connected > 0 && (layout.nodes.length <= 48 || connected > 1);
+                const receded = activeId !== null && !selected && !neighbor;
                 const labelOnLeft = x > size.width * 0.72;
                 return (
                   <g
@@ -385,7 +400,7 @@ export function ConnectionsGraph({
                     role="link"
                     tabIndex={0}
                     aria-label={`${node.thought.text}, ${connected} connection${connected === 1 ? "" : "s"}${node.thought.status === "resting" ? ", set down" : ""}`}
-                    className="cursor-pointer outline-none"
+                    className={`cursor-pointer outline-none transition-opacity duration-200 ${receded ? "opacity-35" : ""}`}
                     onPointerEnter={() => setActiveId(node.id)}
                     onPointerLeave={() => setActiveId(null)}
                     onFocus={() => setActiveId(node.id)}
@@ -395,6 +410,7 @@ export function ConnectionsGraph({
                     transform={`translate(${x} ${y})`}
                   >
                     <circle r={16} fill="transparent" />
+                    {selected && <circle r={radius + 6} className="fill-dot/15" />}
                     <circle
                       r={radius}
                       vectorEffect="non-scaling-stroke"
@@ -402,17 +418,22 @@ export function ConnectionsGraph({
                         selected
                           ? "fill-dot stroke-none"
                           : node.thought.status === "resting"
-                            ? `fill-pg stroke-faint ${neighbor ? "opacity-100" : "opacity-50"}`
-                            : `stroke-none ${neighbor ? "fill-ink opacity-90" : "fill-mut opacity-45"}`
+                            ? "fill-pg stroke-faint"
+                            : connected > 0
+                              ? "fill-pt stroke-pg"
+                              : "fill-faint stroke-none"
                       }
-                      strokeWidth={1}
+                      strokeWidth={node.thought.status === "resting" ? 1.25 : 2}
                     />
                     {showLabel && (
                       <text
                         x={labelOnLeft ? -13 : 13}
                         y={-5}
                         textAnchor={labelOnLeft ? "end" : "start"}
-                        className="pointer-events-none fill-pt text-[12px]"
+                        paintOrder="stroke"
+                        strokeWidth={4}
+                        strokeLinejoin="round"
+                        className={`pointer-events-none stroke-pg text-[12.5px] ${selected ? "fill-ink font-medium" : "fill-pt"}`}
                       >
                         {label(node.thought.text)}
                       </text>
@@ -423,10 +444,15 @@ export function ConnectionsGraph({
             </g>
           </svg>
 
+          {!active && (
+            <p className="pointer-events-none absolute bottom-7 left-1/2 -translate-x-1/2 rounded-full bg-scr/90 px-4 py-2 text-[13px] text-pl shadow-lift ring-1 ring-line ring-inset backdrop-blur">
+              Point at a thought to see what it's near · scroll to zoom, drag to move
+            </p>
+          )}
           {active && (
             <div
               aria-live="polite"
-              className="pointer-events-none absolute bottom-7 left-1/2 w-[min(640px,70%)] -translate-x-1/2 text-center"
+              className="pointer-events-none absolute bottom-7 left-1/2 w-[min(600px,70%)] -translate-x-1/2 rounded-[16px] bg-scr/95 px-6 py-4 text-center shadow-lift ring-1 ring-line ring-inset backdrop-blur"
             >
               <div className="text-[13px] text-pl first-letter:uppercase">
                 {dateLine(active.createdAt, Date.now())}

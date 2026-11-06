@@ -257,11 +257,13 @@ struct ThoughtView: View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 8) {
                 Text("Related thoughts")
-                    .font(StillnessType.sectionTitle)
-                    .foregroundStyle(Stillness.ink)
+                    .font(StillnessType.groupLabel)
+                    .foregroundStyle(Stillness.chromeText)
                 Badge(text: "\(connections.count)")
             }
-            .padding(.bottom, 6)
+            .padding(.horizontal, 10)
+            .padding(.top, 6)
+            .padding(.bottom, 4)
             .accessibilityElement(children: .combine)
             .accessibilityAddTraits(.isHeader)
 
@@ -272,7 +274,7 @@ struct ThoughtView: View {
 
                 RelatedThoughtRow(
                     connection: connection,
-                    width: width,
+                    width: max(0, width - 16),
                     metadata: connection.otherStatus == .resting
                         ? nil
                         : ShelfFormatting.ageLabel(
@@ -286,8 +288,10 @@ struct ThoughtView: View {
                 )
             }
         }
+        .padding(8)
         .frame(width: width)
-        .padding(.top, 40)
+        .emberSurface()
+        .padding(.top, 36)
     }
 
     private func setAsideStatus(_ state: SetAsideState) -> some View {

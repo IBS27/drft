@@ -26,11 +26,20 @@ function Resting() {
     <main className="flex min-h-dvh flex-col">
       <PageHeader title="Resting" />
 
-      <section className="mx-auto w-full max-w-2xl flex-1 px-4 pt-8 pb-16 md:px-6">
+      <section className="mx-auto w-full max-w-2xl flex-1 px-4 pt-4 pb-16 md:px-6">
+        <p className="px-1 pb-5 text-[15px] leading-relaxed text-pl">
+          Thoughts you've set down. They stay out of the daily return, and any
+          of them can wake.
+        </p>
         {rows === undefined ? (
           <SkeletonRows count={4} />
+        ) : rows.length === 0 ? (
+          <p className="rounded-[14px] bg-scr px-5 py-8 text-center text-[15px] text-pl ring-1 ring-line ring-inset">
+            Nothing is resting.
+          </p>
         ) : (
-          rows.map((t) => (
+          <div className="rounded-[14px] bg-scr p-1.5 shadow-lift ring-1 ring-line ring-inset">
+          {rows.map((t) => (
             <Link
               key={t._id}
               to="/thought/$thoughtId"
@@ -38,7 +47,7 @@ function Resting() {
               onPointerEnter={() => prewarm(t._id)}
               onPointerDown={() => prewarm(t._id)}
               onFocus={() => prewarm(t._id)}
-              className="block rounded-card px-2.5 py-3.5 transition-colors hover:bg-tint [a+&]:shadow-[0_-1px_0_var(--line)] hover:shadow-none! [a:hover+&]:shadow-none!"
+              className="block rounded-card px-3.5 py-3.5 transition-colors hover:bg-tint [a+&]:shadow-[0_-1px_0_var(--line)] hover:shadow-none! [a:hover+&]:shadow-none!"
             >
               <div className="flex items-baseline gap-3">
                 <span className="min-w-0 flex-1 truncate text-[16px] text-ink">
@@ -54,7 +63,8 @@ function Resting() {
                 </div>
               )}
             </Link>
-          ))
+          ))}
+          </div>
         )}
       </section>
     </main>

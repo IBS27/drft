@@ -54,10 +54,15 @@ struct CaptureView: View {
 
                 VStack(spacing: 22) {
                     TimelineView(.periodic(from: .now, by: 15)) { context in
-                        Text(timestamp(for: context.date))
-                            .font(StillnessType.meta)
-                            .monospacedDigit()
-                            .foregroundStyle(Stillness.chromeLabel)
+                        VStack(spacing: 4) {
+                            Text(context.date.formatted(.dateTime.weekday(.wide).day().month(.wide)))
+                                .font(StillnessType.sectionTitle)
+                                .foregroundStyle(Stillness.chromeText)
+                            Text(timestamp(for: context.date))
+                                .font(StillnessType.meta)
+                                .monospacedDigit()
+                                .foregroundStyle(Stillness.chromeLabel)
+                        }
                     }
 
                     TextField("", text: $model.text, axis: .vertical)

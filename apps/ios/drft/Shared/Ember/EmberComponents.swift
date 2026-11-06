@@ -203,11 +203,12 @@ extension View {
     /// A quiet surface grouping rows: settings, the connections prompt.
     func emberSurface() -> some View {
         background(Stillness.surface)
-        .clipShape(RoundedRectangle(cornerRadius: StillnessSpacing.cardRadius, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: StillnessSpacing.surfaceRadius, style: .continuous))
         .overlay {
-            RoundedRectangle(cornerRadius: StillnessSpacing.cardRadius, style: .continuous)
+            RoundedRectangle(cornerRadius: StillnessSpacing.surfaceRadius, style: .continuous)
                 .strokeBorder(Stillness.hairline, lineWidth: 1)
         }
+        .shadow(color: Stillness.lift, radius: 12, y: 6)
     }
 }
 

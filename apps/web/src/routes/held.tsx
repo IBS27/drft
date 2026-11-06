@@ -1,3 +1,4 @@
+import { BookmarkSimple } from "@phosphor-icons/react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useConvexAuth } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
@@ -75,15 +76,31 @@ function Held() {
           {cards === undefined ? (
             <BoardSkeleton />
           ) : cards.length === 0 ? (
-            <div className="flex flex-1 items-center justify-center pb-24">
-              <span className="text-[15px] text-pl">Hold a thought to keep it here.</span>
-            </div>
+            <EmptyHeld />
           ) : (
             <Board cards={cards} mode={mode} now={now} />
           )}
         </section>
       </div>
     </main>
+  );
+}
+
+// Nothing held yet: say what the page is for and how a thought gets here.
+function EmptyHeld() {
+  return (
+    <div className="flex flex-1 flex-col items-center justify-center px-6 pb-24 text-center">
+      <span className="flex size-12 items-center justify-center rounded-full bg-tint text-[22px] text-dot-ink">
+        <BookmarkSimple aria-hidden="true" weight="fill" />
+      </span>
+      <h2 className="mt-5 text-[19px] font-medium tracking-[-0.01em] text-ink">
+        Nothing held yet
+      </h2>
+      <p className="mt-2 max-w-[34ch] text-[15px] leading-relaxed text-pl">
+        Hold the thoughts you want close, and they gather here side by side.
+        Use the bookmark on any thought, or press h.
+      </p>
+    </div>
   );
 }
 

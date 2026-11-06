@@ -4,9 +4,7 @@ import { useConvexAuth, usePaginatedQuery } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
 import { useEffect, useState } from "react";
 import { ConnectionsGraph } from "../features/connections/ConnectionsGraph";
-import { Badge } from "../features/ui/Badge";
 import { PageHeader } from "../features/ui/PageHeader";
-import { Wordmark } from "../features/ui/Wordmark";
 
 export const Route = createFileRoute("/connections")({
   component: Connections,
@@ -63,10 +61,13 @@ function Connections() {
             <ArrowLeft aria-hidden="true" className="text-[16px]" />
             Collection
           </Link>
-          <Wordmark />
+          <h1 className="text-[16px] font-medium tracking-[-0.01em] text-ink">Connections</h1>
           <span className="flex items-center gap-2.5 justify-self-end">
-            <span className="text-[14px] font-medium text-pt">Connections</span>
-            {results.length > 0 && <Badge size="md">{results.length}</Badge>}
+            {results.length > 0 && (
+              <span className="text-[13.5px] text-pl tabular-nums">
+                {results.length} {results.length === 1 ? "thought" : "thoughts"}
+              </span>
+            )}
             {loading && (
               <span aria-label="loading" className="caret h-4 w-0.5 rounded-full bg-dot" />
             )}

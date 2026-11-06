@@ -161,6 +161,6 @@ function Settings() {
 
 // Settings groups its rows on quiet surfaces, divided by hairlines.
 const SURFACE =
-  "divide-y divide-line rounded-card border border-line bg-scr";
+  "divide-y divide-line rounded-[14px] border border-line bg-scr shadow-lift";
 const LINK_ROW =
-  "flex w-full items-center justify-between gap-4 px-4 py-3.5 text-left text-[15px] text-ink transition-colors first:rounded-t-[9px] last:rounded-b-[9px] hover:bg-tint";
+  "flex w-full items-center justify-between gap-4 px-4 py-3.5 text-left text-[15px] text-ink transition-colors first:rounded-t-[13px] last:rounded-b-[13px] hover:bg-tint";

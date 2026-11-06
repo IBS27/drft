@@ -131,8 +131,8 @@ function Collection() {
         <section
           className={
             hasList
-              ? "flex flex-col items-center px-6 pt-12 pb-6 lg:flex-1 lg:justify-center lg:pt-0 lg:pb-24"
-              : "flex flex-1 flex-col items-center justify-center px-6 pb-24"
+              ? "flex flex-col items-center px-4 pt-3 pb-2 sm:px-6 sm:pt-8 lg:flex-1 lg:justify-center lg:px-10 lg:pt-0 lg:pb-24"
+              : "flex flex-1 flex-col items-center justify-center px-4 pb-24 sm:px-6"
           }
         >
           <CaptureField now={now} />

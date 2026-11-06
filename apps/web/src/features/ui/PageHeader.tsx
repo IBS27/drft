@@ -6,7 +6,7 @@ export function PageHeader({ title }: { title: string }) {
   return (
     <header className="grid h-[72px] grid-cols-[44px_1fr_44px] items-center px-4 md:px-5">
       <BackLink />
-      <h1 className="text-center text-[15px] font-medium text-pt">{title}</h1>
+      <h1 className="text-center text-[16px] font-medium tracking-[-0.01em] text-ink">{title}</h1>
       <span />
     </header>
   );
