@@ -12,12 +12,12 @@
   --scr: #fbfaf7;
   --ink: #26241f;
   --mut: #716d64;
-  --faint: #9a958a;
+  --faint: #8f8a7f;
   --line: #e4e0d7;
   --dot: #c73e1d;
   /* page-chrome text & labels — higher contrast than the mockup grays */
   --pt: #423f38;
-  --pl: #6b675e;
+  --pl: #635f56;
   /* Soft elevation for raised surfaces (cards, the capture stage). */
   --lift: 0 1px 2px color-mix(in oklab, #3a2c1c 5%, transparent),
     0 6px 16px -10px color-mix(in oklab, #3a2c1c 12%, transparent);
@@ -29,6 +29,8 @@
   --dot-ink: color-mix(in oklab, var(--dot) 78%, var(--ink));
   --dot-edge: color-mix(in oklab, var(--dot) 45%, var(--line));
   --on-dot: #fffaf5;
+  /* The one destructive action: a deeper red than the accent. */
+  --danger: #a1302b;
   /* An "on" switch: ink, never the accent. */
   --switch: #2f2c27;
 }
@@ -44,13 +46,14 @@
     --line: #36342f;
     --dot: #cc4a24;
     --pt: #cdc9bf;
-    --pl: #aaa59b;
+    --pl: #b3aea4;
     --lift: 0 1px 2px rgb(0 0 0 / 0.3), 0 10px 28px -14px rgb(0 0 0 / 0.6);
-    --tint: color-mix(in oklab, var(--dot) 16%, var(--pg));
-    --tint-2: color-mix(in oklab, var(--dot) 22%, var(--pg));
-    --dot-ink: color-mix(in oklab, var(--dot) 70%, var(--ink));
+    --tint: color-mix(in oklab, var(--dot) 13%, var(--pg));
+    --tint-2: color-mix(in oklab, var(--dot) 19%, var(--pg));
+    --dot-ink: color-mix(in oklab, var(--dot) 55%, var(--ink));
     --dot-edge: color-mix(in oklab, var(--dot) 50%, var(--line));
     --switch: #ebe8e1;
+    --danger: #e0786e;
   }
 }
 
@@ -70,6 +73,7 @@
   --color-dot-edge: var(--dot-edge);
   --color-on-dot: var(--on-dot);
   --color-switch: var(--switch);
+  --color-danger: var(--danger);
   --font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "Geist Mono Variable", ui-monospace, monospace;
   /* One radius for surfaces (rows, panels, fields); controls are pills. */
@@ -114,7 +118,7 @@ body {
   transition: opacity 200ms;
 }
 :root:has(nav[data-finding]) [data-capture] {
-  opacity: 0.6;
+  opacity: 0.4;
 }
 
 /* The room's one loading signal: a blinking caret, never a spinner. */

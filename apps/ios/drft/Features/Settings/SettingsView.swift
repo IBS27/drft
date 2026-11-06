@@ -167,7 +167,7 @@ struct SettingsView: View {
                             } label: {
                                 Text(isDeletingAccount ? "Deleting…" : "Delete account")
                                     .font(StillnessType.body)
-                                    .foregroundStyle(Stillness.nowInk.opacity(0.8))
+                                    .foregroundStyle(Stillness.danger)
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .padding(.horizontal, 16)
                                     .padding(.vertical, 14)

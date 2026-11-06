@@ -448,7 +448,7 @@ export function ConnectionsGraph({
                           ? "stroke-dot opacity-80"
                           : activeId
                             ? "stroke-faint opacity-25"
-                            : "stroke-faint opacity-60"
+                            : "stroke-faint opacity-85"
                       }`}
                       strokeWidth={visible ? 1.5 : 1.1}
                     />

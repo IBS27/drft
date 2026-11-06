@@ -156,7 +156,7 @@ struct PillButtonStyle: ButtonStyle {
     private var foreground: Color {
         switch kind {
         case .primary: isEnabled ? Stillness.onNow : Stillness.chromeLabel
-        case .ink: Stillness.page
+        case .ink: Stillness.onInkPill
         case .outline: Stillness.nowInk
         case .neutral: Stillness.chromeText
         case .quiet: Stillness.chromeText
@@ -166,7 +166,7 @@ struct PillButtonStyle: ButtonStyle {
     private func fill(isPressed: Bool) -> Color {
         switch kind {
         case .primary: isEnabled ? Stillness.now : Stillness.hairline
-        case .ink: Stillness.ink
+        case .ink: Stillness.inkPill
         case .neutral: isPressed ? Stillness.nowTint : Stillness.surface
         case .outline, .quiet: isPressed ? Stillness.nowTint : .clear
         }
@@ -245,8 +245,12 @@ struct HomeHeader: View {
                     Text("Thoughts")
                         .font(StillnessType.control)
                         .foregroundStyle(Stillness.chromeText)
-                        .padding(.horizontal, 10)
+                        .padding(.horizontal, 14)
+                        .frame(height: 32)
+                        .background(Stillness.surface, in: Capsule())
+                        .overlay { Capsule().strokeBorder(Stillness.hairline, lineWidth: 1) }
                         .frame(minHeight: 44)
+                        .padding(.trailing, 4)
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
