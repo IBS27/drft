@@ -1,5 +1,5 @@
 import { SignOutButton, useUser } from "@clerk/clerk-react";
-import { ArrowUpRight, SignOut } from "@phosphor-icons/react";
+import { ArrowUpRight, CaretDown, SignOut } from "@phosphor-icons/react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
@@ -75,7 +75,7 @@ function Settings() {
       <div className="flex min-h-dvh flex-col lg:pl-72 xl:pl-80">
       <PageHeader title="Settings" />
 
-      <section className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-4 px-4 pt-6 pb-16 md:px-6">
+      <section className="mx-auto flex w-full max-w-[688px] flex-1 flex-col gap-4 px-4 pt-4 pb-16 md:px-10">
         <div className={SURFACE}>
           <div className="flex items-center gap-3 px-4 py-3.5 text-[15px]">
             <span className="flex-none text-pl">Signed in as</span>
@@ -91,12 +91,13 @@ function Settings() {
               <label htmlFor="settings-send-time" className="text-[15px] text-ink">
                 Daily thought
               </label>
+              <span className="relative inline-flex items-center">
               <select
                 id="settings-send-time"
                 value={shown}
                 disabled={!loaded}
                 onChange={(e) => change(e.target.value)}
-                className="h-9 cursor-pointer appearance-none rounded-full bg-pg px-4 text-center text-[15px] text-ink tabular-nums ring-1 ring-line outline-none ring-inset hover:ring-dot-edge focus-visible:ring-dot-edge"
+                className="h-9 cursor-pointer appearance-none rounded-full bg-pg pr-8 pl-4 text-[15px] text-ink tabular-nums ring-1 ring-line outline-none ring-inset hover:ring-pl/50 focus-visible:ring-pl/50"
               >
                 {timeOptions(shown).map((value) => (
                   <option key={value} value={value}>
@@ -104,6 +105,8 @@ function Settings() {
                   </option>
                 ))}
               </select>
+              <CaretDown aria-hidden="true" className="pointer-events-none absolute right-3 text-[13px] text-pl" />
+              </span>
             </div>
             <div className="mt-1 text-[13px] text-pl">
               One thought returns each morning, {timezone.split("/").pop()?.replaceAll("_", " ")} time
@@ -129,7 +132,7 @@ function Settings() {
                   consent === undefined
                     ? "invisible"
                     : connections
-                      ? "bg-ink"
+                      ? "bg-pt"
                       : "bg-line ring-1 ring-pl ring-inset"
                 }`}
               >

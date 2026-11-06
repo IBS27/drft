@@ -199,6 +199,8 @@ struct CaptureView: View {
         settingsArePresented = true
     }
 
+    // Speak at the leading edge, Keep at the trailing edge, under the
+    // left-aligned words.
     private var actionRow: some View {
         HStack(spacing: 12) {
             Button {
@@ -209,6 +211,8 @@ struct CaptureView: View {
             .buttonStyle(PillButtonStyle(kind: model.isListening ? .outline : .neutral))
             .accessibilityLabel(model.isListening ? "Stop listening" : "Speak")
 
+            Spacer(minLength: 12)
+
             Button {
                 model.keep()
             } label: {
@@ -218,6 +222,7 @@ struct CaptureView: View {
             .disabled(!model.canKeep)
             .accessibilityLabel("Keep")
         }
+        .padding(.horizontal, 20)
         .padding(.bottom, 12)
         .opacity(model.isCaptureVisible ? 1 : 0)
         .animation(

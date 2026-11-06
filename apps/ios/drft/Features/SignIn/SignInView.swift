@@ -52,19 +52,18 @@ struct SignInView: View {
                     .padding(.top, 24)
                     .opacity(failed ? 1 : 0)
                     .accessibilityHidden(!failed)
+
+                Link(destination: .privacyPolicy) {
+                    Text("Privacy policy")
+                        .font(StillnessType.caption)
+                        .underline(color: Stillness.hairline)
+                        .foregroundStyle(Stillness.chromeLabel)
+                        .frame(minHeight: 44)
+                        .contentShape(Rectangle())
+                }
             }
             .padding(.horizontal, 24)
             .padding(.bottom, 64)
-        }
-        .safeAreaInset(edge: .bottom, spacing: 0) {
-            Link(destination: .privacyPolicy) {
-                Text("Privacy policy")
-                    .font(StillnessType.caption)
-                    .foregroundStyle(Stillness.chromeLabel)
-                    .frame(minHeight: 44)
-                    .contentShape(Rectangle())
-            }
-            .padding(.bottom, 8)
         }
     }
 
@@ -95,7 +94,12 @@ struct SignInView: View {
                 .frame(width: 18, height: 18)
                 .accessibilityHidden(true)
         case .google:
-            EmberIcon(.googleLogoFill, size: 18)
+            // Google's own four-colour mark, as its sign-in guidelines ask.
+            Image("google-g")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 17, height: 17)
+                .accessibilityHidden(true)
         case .github:
             EmberIcon(.githubLogoFill, size: 18)
         default:

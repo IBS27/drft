@@ -110,7 +110,7 @@ body {
   transition: opacity 200ms;
 }
 :root:has(nav[data-finding]) [data-capture] {
-  opacity: 0.4;
+  opacity: 0.6;
 }
 
 /* The room's one loading signal: a blinking caret, never a spinner. */

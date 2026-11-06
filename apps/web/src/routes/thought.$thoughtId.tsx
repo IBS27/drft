@@ -183,7 +183,7 @@ function ThoughtView() {
         ) : (
           <section
             key={view._id}
-            className="mx-auto flex w-full max-w-[688px] flex-1 flex-col px-6 md:px-10"
+            className="mx-auto flex w-full max-w-[688px] flex-1 flex-col px-5 md:px-10"
           >
             <div className="group/thought flex w-full flex-col pt-4 pb-2 md:pt-[6vh]">
               <h1
@@ -336,7 +336,7 @@ function ThoughtSkeleton() {
     <section
       aria-busy="true"
       aria-label="loading thought"
-      className="mx-auto flex w-full max-w-[688px] flex-1 flex-col px-6 md:px-10"
+      className="mx-auto flex w-full max-w-[688px] flex-1 flex-col px-5 md:px-10"
     >
       <div className="flex w-full flex-col pt-4 pb-2 md:pt-[6vh]">
         <div className="flex w-full max-w-[24ch] flex-col gap-[19px] text-[27px] md:gap-[31px] md:text-[38px]">

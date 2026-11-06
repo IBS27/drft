@@ -92,10 +92,10 @@ function Collection() {
           </button>
           <Link
             to="/held"
-            aria-label="Held thoughts"
-            className="flex size-9 items-center justify-center rounded-full text-[18px] text-pt transition-colors hover:bg-tint hover:text-ink lg:hidden"
+            className="mx-1 inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-[13.5px] font-medium text-pt ring-1 ring-line ring-inset transition-colors hover:bg-tint hover:text-ink lg:hidden"
           >
-            <BookmarkSimple aria-hidden="true" />
+            <BookmarkSimple aria-hidden="true" weight="fill" className="text-[14px]" />
+            Held
           </Link>
           <Link
             to="/settings"

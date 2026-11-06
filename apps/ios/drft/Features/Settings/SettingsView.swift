@@ -375,7 +375,7 @@ private struct EmberSwitchStyle: ToggleStyle {
 
                 ZStack(alignment: configuration.isOn ? .trailing : .leading) {
                     Capsule()
-                        .fill(configuration.isOn ? Stillness.ink : Stillness.hairline)
+                        .fill(configuration.isOn ? Stillness.chromeText : Stillness.hairline)
                         .overlay {
                             if !configuration.isOn {
                                 Capsule().strokeBorder(Stillness.chromeLabel, lineWidth: 1)
