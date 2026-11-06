@@ -4,7 +4,7 @@ A space for unfinished thoughts — instant capture on iOS, a quiet collection o
 
 - `apps/web` — Vite + React + TypeScript SPA (bun)
 - `apps/landing` — Astro static landing page. Ships inside the web deployment: `build:deploy` (apps/web, the Vercel build command via its `vercel.json`) builds it and copies the output into `dist` (`/landing.html`, `/privacy.html`, `/_astro/`, `/robots.txt`); `apps/web/middleware.ts` (edge) rewrites signed-out `/` to `/landing.html`, and `/?signin` bypasses it so the CTA reaches the app's sign-in screen. `/privacy` (the privacy policy) is a `vercel.json` rewrite to `/privacy.html` for everyone.
-- `apps/ios` — native Swift/SwiftUI capture app (outside the Bun workspace; see `apps/ios/SPEC.md`)
+- `apps/ios` — native Swift/SwiftUI capture app (outside the Bun workspace)
 - `packages/backend` — Convex backend (schema, capture mutation, enrichment AI, return-loop scheduler + email, Clerk auth config)
 - `docs/overview.html` — product & tech overview
 - `docs/experience.html` — the experience: moment-by-moment product spec (capture rules, return loop, connections, lifecycle)
@@ -18,6 +18,21 @@ From `apps/landing`: `bun dev` · `bun run build` · `bun run typecheck`
 The web dev server mirrors production routing (see `landingSite` in `apps/web/vite.config.ts`): signed-out `/` serves the landing site, `/privacy` the privacy policy, `/?signin` bypasses the landing. It builds `apps/landing` on start and rebuilds + reloads on landing source changes — no second dev server needed; use `bun dev` in `apps/landing` only for focused landing work with HMR.
 From `packages/backend`: `bun run dev` (convex dev) · `bun run typecheck`
 Whenever the iOS Simulator is needed, use the iPhone 17 Pro Max simulator. Never build with signing disabled (e.g. `CODE_SIGNING_ALLOWED=NO`) — it strips the entitlements, silently breaking Clerk sign-in and the capture queue.
+
+### iOS from the Linux machine
+
+Xcode and the simulators live on the MacBook, T3 device host `macbook` (`ssh macbook` works without a password). Agents running on the Mac itself build in their own checkout and skip the sync. From Linux, build over ssh and drive the simulator only through T3's device tools. `apps/ios` is self-contained, so each checkout syncs just that folder to its own directory on the Mac — never build in the Mac's `~/Developer/drft` or `~/.t3/worktrees`, which are other checkouts.
+
+1. `device_open` the iPhone 17 Pro Max on host `macbook` (this boots it; install fails on a shut-down simulator). It returns the `agent-device` command to use for every UI action.
+2. Sync, build and install (works from anywhere in the checkout):
+   ```sh
+   R=$(git rev-parse --show-toplevel); W=$(basename "$R")
+   rsync -az --delete --exclude .build --exclude xcuserdata "$R/apps/ios/" "macbook:.cache/drft-remote/$W/apps/ios/"
+   ssh macbook "cd ~/.cache/drft-remote/$W/apps/ios && xcodebuild -project drft.xcodeproj -scheme drft -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max' -derivedDataPath .build/DerivedData -quiet build && xcrun simctl install 'iPhone 17 Pro Max' .build/DerivedData/Build/Products/Debug-iphonesimulator/drft.app"
+   ```
+3. `<agent-device> open com.srinivasib.drft --relaunch`.
+
+Simulator builds sign "to run locally", so signing stays on and needs no keychain unlock over ssh. Debug builds talk to the dev Convex deployment. All checkouts share this one simulator, so the last install wins — relaunch right before checking, and don't run two iOS checks in parallel. Each checkout's build cache on the Mac is ~2 GB; remove `~/.cache/drft-remote/<worktree>` on the Mac when the worktree is gone.
 
 Convex deploys the entire backend snapshot. Never run `convex dev` from parallel worktrees against the same deployment; use one designated backend worktree, or give the worktree its own deployment: from `packages/backend`, `bunx convex deployment create dev/<name> --type dev --select`, set its env vars (including `CLERK_JWT_ISSUER_DOMAIN`), then point that worktree's clients at it — `VITE_CONVEX_URL` in `apps/web/.env.local`, and `ConvexService.deploymentUrl` for iOS Debug builds.
 
@@ -43,4 +58,6 @@ Account deletion (`convex/account.ts`, settings on web and iOS) needs `CLERK_SEC
 
 - Bun for packages and scripts; never npm/yarn.
 - TypeScript: no `any`.
-- Web UI follows Ember (`docs/vivid.html#ember`): the Stillness palette from `docs/design.html` with Geist, sentence-case labels (no tiny spaced capitals), Phosphor icons (`@phosphor-icons/react`), 10px surfaces and pill controls, and the vermilion as the accent for "now" (tokens in `apps/web/src/index.css`). iOS follows Ember too (tokens in `apps/ios/drft/Shared/Stillness`, components in `apps/ios/drft/Shared/Ember`; see `apps/ios/SPEC.md`).
+- Web UI follows Ember (`docs/vivid.html#ember`): the Stillness palette from `docs/design.html` with Geist, sentence-case labels (no tiny spaced capitals), Phosphor icons (`@phosphor-icons/react`), 10px surfaces and pill controls, and the vermilion as the accent for "now" (tokens in `apps/web/src/index.css`). iOS follows Ember too (tokens in `apps/ios/drft/Shared/Stillness`, components in `apps/ios/drft/Shared/Ember`).
+- UI copy (web, iOS, email): never "done", "complete", "archive", "inbox", "process" or "task" — thoughts are *kept*, *revisited*, *held*, *set down* (`docs/experience.html`). No congratulating, streaks or nudges.
+- Capture never fails visibly and never asks for anything: no error, spinner, retry or extra field on the capture path. Offline captures queue on-device and still confirm; the user's words are stored verbatim.
