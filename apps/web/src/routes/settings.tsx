@@ -194,6 +194,6 @@ function clockLabel(value: string): string {
 
 // Settings groups its rows on quiet surfaces, divided by hairlines.
 const SURFACE =
-  "divide-y divide-line rounded-[14px] border border-line bg-scr shadow-lift";
+  "divide-y divide-line rounded-[14px] border border-line bg-scr";
 const LINK_ROW =
   "flex w-full items-center justify-between gap-4 px-4 py-3.5 text-left text-[15px] text-ink transition-colors first:rounded-t-[13px] last:rounded-b-[13px] hover:bg-tint";

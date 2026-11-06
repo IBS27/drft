@@ -259,8 +259,7 @@ struct ShelfView: View {
             LinearGradient(
                 stops: [
                     .init(color: Stillness.page.opacity(0), location: 0),
-                    .init(color: Stillness.page.opacity(0.85), location: 0.45),
-                    .init(color: Stillness.page, location: 0.7),
+                    .init(color: Stillness.page, location: 0.38),
                 ],
                 startPoint: .top,
                 endPoint: .bottom

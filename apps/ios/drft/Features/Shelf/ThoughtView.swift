@@ -172,10 +172,14 @@ struct ThoughtView: View {
             if thought.lastReturnedAt != nil || thought.status == .resting {
                 HStack(spacing: 8) {
                     if let lastReturnedAt = thought.lastReturnedAt {
-                        Chip(kind: .now) {
+                        // History, not a control: plain words in the accent.
+                        HStack(spacing: 6) {
                             EmberIcon(.arrowBendUpLeft, size: 14)
                             Text(returnedLabel(for: lastReturnedAt))
                         }
+                        .font(StillnessType.caption)
+                        .foregroundStyle(Stillness.nowInk)
+                        .frame(minHeight: 28)
                     }
 
                     if thought.status == .resting {
@@ -553,15 +557,13 @@ private struct RelatedThoughtRow: View {
                     .foregroundStyle(Stillness.chromeLabel)
                     .lineLimit(1)
             } else {
-                Text("Set down")
-                    .font(.geist(12, relativeTo: .caption))
-                    .foregroundStyle(Stillness.chromeText)
-                    .lineLimit(1)
-                    .padding(.horizontal, 9)
-                    .frame(minHeight: 22)
-                    .overlay {
-                        Capsule().strokeBorder(Stillness.hairline, lineWidth: 1)
-                    }
+                HStack(spacing: 4) {
+                    EmberIcon(.moon, size: 13)
+                    Text("Set down")
+                }
+                .font(StillnessType.caption)
+                .foregroundStyle(Stillness.chromeLabel)
+                .lineLimit(1)
             }
         }
         .padding(.vertical, 13)

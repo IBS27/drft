@@ -542,7 +542,17 @@ export function ConnectionsGraph({
 
           {!active && (
             <p className="pointer-events-none absolute bottom-7 left-1/2 -translate-x-1/2 rounded-full bg-scr/90 px-4 py-2 text-[13px] text-pl shadow-lift ring-1 ring-line ring-inset backdrop-blur">
-              Point at a thought to see what it's near · scroll to zoom, drag to move
+              <span className="inline-flex items-center gap-1.5">
+                <span className="inline-block size-2 rounded-full bg-pt" />
+                kept
+              </span>
+              <span className="ml-3 inline-flex items-center gap-1.5">
+                <span className="inline-block size-2 rounded-full ring-1 ring-faint" />
+                set down
+              </span>
+              <span className="ml-3">
+                · point at a thought to see what it's near · scroll to zoom
+              </span>
             </p>
           )}
           {active && (

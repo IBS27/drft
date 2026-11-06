@@ -54,7 +54,7 @@ function Resting() {
             Nothing is resting.
           </p>
         ) : (
-          <div className="rounded-[14px] bg-scr p-1.5 shadow-lift ring-1 ring-line ring-inset">
+          <div className="rounded-[14px] bg-scr p-1.5 ring-1 ring-line ring-inset">
           {rows.map((t, i) => (
             <div key={t._id} className={`group relative ${i > 0 ? "divided" : ""}`}>
             <Link
@@ -63,13 +63,13 @@ function Resting() {
               onPointerEnter={() => prewarm(t._id)}
               onPointerDown={() => prewarm(t._id)}
               onFocus={() => prewarm(t._id)}
-              className="block rounded-card py-3.5 pr-24 pl-3.5 transition-colors hover:bg-tint"
+              className="block rounded-card py-3.5 pr-[104px] pl-3.5 transition-colors hover:bg-tint"
             >
               <div className="flex items-baseline gap-3">
                 <span className="line-clamp-2 min-w-0 flex-1 text-[16px] leading-[1.4] text-ink">
                   {t.preview}
                 </span>
-                <span className="flex-none text-[13px] text-pl tabular-nums transition-opacity group-hover:opacity-0 [@media(hover:none)]:hidden">
+                <span className="flex-none text-[13px] text-pl tabular-nums">
                   {t.restedAt ? ageLabel(t.restedAt, now) : ""}
                 </span>
               </div>
@@ -82,7 +82,7 @@ function Resting() {
             <button
               type="button"
               onClick={() => void wake({ thoughtId: t._id }).catch(() => {})}
-              className="absolute top-3 right-3 inline-flex h-8 items-center gap-1.5 rounded-full bg-scr px-3 text-[13px] font-medium text-pt opacity-0 ring-1 ring-line ring-inset transition-[opacity,color,box-shadow] group-hover:opacity-100 hover:text-ink hover:ring-dot-edge focus-visible:opacity-100 [@media(hover:none)]:opacity-100"
+              className="absolute top-3 right-3 inline-flex h-8 items-center gap-1.5 rounded-full bg-scr px-3 text-[13px] font-medium text-pl ring-1 ring-line ring-inset transition-[color,box-shadow] group-hover:text-pt hover:text-ink! hover:ring-dot-edge"
             >
               <Sun aria-hidden="true" className="text-[14px]" />
               Wake

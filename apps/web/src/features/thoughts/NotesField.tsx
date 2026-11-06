@@ -145,7 +145,7 @@ export function NotesField({
   }, [text]);
 
   return (
-    <div className="group mt-9 flex w-full flex-col gap-2.5 rounded-[14px] bg-scr px-4 pt-4 pb-1 shadow-lift ring-1 ring-line ring-inset">
+    <div className="group mt-9 flex w-full flex-col gap-2.5 rounded-[14px] bg-scr px-4 pt-4 pb-1 ring-1 ring-line ring-inset">
       <div className="flex h-6 items-center justify-between gap-3 pl-1">
         <label
           htmlFor="thought-notes"
@@ -189,7 +189,7 @@ export function NotesField({
           save();
         }}
         placeholder="Write around it…"
-        className="ruled w-full resize-none overflow-hidden text-[15px] text-ink outline-none placeholder:text-pl/75"
+        className="ruled w-full resize-none overflow-hidden text-[15px] text-ink outline-none placeholder:text-pl"
       />
       {failed && (
         <div

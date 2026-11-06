@@ -210,7 +210,6 @@ extension View {
             RoundedRectangle(cornerRadius: StillnessSpacing.surfaceRadius, style: .continuous)
                 .strokeBorder(Stillness.hairline, lineWidth: 1)
         }
-        .shadow(color: Stillness.lift, radius: 6, y: 3)
     }
 }
 

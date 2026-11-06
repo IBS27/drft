@@ -198,9 +198,9 @@ function ThoughtView() {
                 {view.text}
               </h1>
 
-              <div className="mt-[18px] flex flex-wrap gap-2">
+              <div className="mt-[18px] flex flex-wrap items-center gap-x-4 gap-y-2">
                 {view.lastReturnedAt && (
-                  <span className="inline-flex h-7 items-center gap-1.5 rounded-full bg-tint px-3 text-[13px] font-medium text-dot-ink">
+                  <span className="inline-flex h-7 items-center gap-1.5 text-[13px] text-dot-ink">
                     <ArrowBendUpLeft aria-hidden="true" className="text-[14px]" />
                     Returned {returnedLabel(view.lastReturnedAt, now)}
                   </span>
@@ -236,7 +236,7 @@ function ThoughtView() {
                   Rows are parted by hairlines that give way to the hover
                   tint, the row's own and the one beneath it. */}
               {view.connections.length > 0 && (
-                <div className="mt-5 w-full rounded-[14px] bg-scr p-2 shadow-lift ring-1 ring-line ring-inset">
+                <div className="mt-5 w-full rounded-[14px] bg-scr p-2 ring-1 ring-line ring-inset">
                   <h2 className="flex items-center gap-2 px-3 pt-2 pb-2 text-[14px] font-medium text-pt">
                     Related thoughts
                   </h2>
@@ -267,7 +267,8 @@ function ThoughtView() {
                             {c.otherText}
                           </span>
                           {c.otherStatus === "resting" ? (
-                            <span className="inline-flex h-[22px] items-center rounded-full px-[9px] text-[12px] text-pt ring-1 ring-line ring-inset">
+                            <span className="inline-flex items-center gap-1 text-[13px] text-pl">
+                              <Moon aria-hidden="true" className="text-[13px]" />
                               Set down
                             </span>
                           ) : (
@@ -527,7 +528,7 @@ function HoldChip({
       className={
         held
           ? "inline-flex h-7 items-center gap-1.5 rounded-full bg-scr px-3 text-[13px] font-medium text-pt ring-1 ring-line ring-inset transition-shadow hover:ring-dot-edge"
-          : "inline-flex h-7 items-center gap-1.5 rounded-full bg-scr px-3 text-[13px] font-medium text-pt ring-1 ring-line ring-inset transition-[color,box-shadow,background-color] hover:bg-tint hover:text-ink hover:ring-dot-edge"
+          : "inline-flex h-7 items-center gap-1.5 rounded-full bg-scr px-3 text-[13px] font-medium text-pt ring-1 ring-line ring-inset transition-[color,box-shadow,background-color] hover:bg-tint hover:text-ink hover:ring-dot-edge [@media(hover:none)]:h-9 [@media(hover:none)]:px-3.5"
       }
     >
       <BookmarkSimple
