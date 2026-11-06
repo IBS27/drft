@@ -124,10 +124,9 @@ export function CaptureField({ now }: { now: number }) {
   // before you type, so it is always clear where words go.
   return (
     <div data-capture className="flex w-full max-w-[640px] flex-col rounded-[18px] bg-scr px-6 pt-6 pb-5 shadow-lift ring-1 ring-line ring-inset sm:px-10 sm:pt-9 sm:pb-7">
-      <div className="flex items-baseline justify-between gap-4 text-[14px]">
-        <span className="text-pl">{day}</span>
-        <span className="text-pl tabular-nums">{clock}</span>
-      </div>
+      <span className="text-[14px] text-pl tabular-nums">
+        {day} · {clock}
+      </span>
       <textarea
         ref={areaRef}
         value={text}

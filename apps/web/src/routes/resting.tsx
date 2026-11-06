@@ -43,7 +43,7 @@ function Resting() {
       <PageHeader title="Resting" />
 
       <section className="mx-auto w-full max-w-[688px] flex-1 px-4 pt-4 pb-16 md:px-10">
-        <p className="px-5 pb-5 text-[15px] leading-relaxed text-pl">
+        <p className="px-5 pb-5 text-[15px] leading-relaxed text-pretty text-pl">
           Thoughts you've set down. They stay out of the daily return, and any
           of them can wake.
         </p>
@@ -58,7 +58,7 @@ function Resting() {
           {rows.map((t, i) => (
             <div
               key={t._id}
-              className={`flex items-start gap-2 rounded-card pr-2.5 transition-colors hover:bg-tint ${i > 0 ? "divided" : ""}`}
+              className={`flex items-center gap-2 rounded-card pr-2.5 transition-colors hover:bg-tint ${i > 0 ? "divided" : ""}`}
             >
               <Link
                 to="/thought/$thoughtId"
@@ -68,27 +68,25 @@ function Resting() {
                 onFocus={() => prewarm(t._id)}
                 className="block min-w-0 flex-1 rounded-card py-3.5 pl-3.5"
               >
-                <div className="flex items-baseline gap-3">
-                  <span className="line-clamp-2 min-w-0 flex-1 text-[16px] leading-[1.4] text-ink">
-                    {t.preview}
-                  </span>
+                <span className="line-clamp-2 text-[16px] leading-[1.4] text-ink">
+                  {t.preview}
+                </span>
+                <span className="mt-1 flex items-center gap-1.5 text-[13px] text-pl">
                   {t.restedAt && (
-                    <span className="inline-flex flex-none items-center gap-1 text-[13px] text-pl tabular-nums">
-                      <Moon aria-label="set down" className="text-[12px]" />
-                      {ageLabel(t.restedAt, now)}
+                    <span className="inline-flex flex-none items-center gap-1 tabular-nums">
+                      <Moon aria-hidden="true" className="text-[12px]" />
+                      Set down {ageLabel(t.restedAt, now)}
                     </span>
                   )}
-                </div>
-                {t.restingNote && (
-                  <div className="mt-1 truncate text-[13.5px] text-pl">
-                    {t.restingNote}
-                  </div>
-                )}
+                  {t.restingNote && (
+                    <span className="min-w-0 truncate">· {t.restingNote}</span>
+                  )}
+                </span>
               </Link>
               <button
                 type="button"
                 onClick={() => void wake({ thoughtId: t._id }).catch(() => {})}
-                className="mt-2.5 inline-flex h-8 flex-none items-center gap-1.5 rounded-full bg-scr px-3 text-[13px] font-medium text-pt ring-1 ring-line ring-inset transition-[color,box-shadow] hover:text-ink hover:ring-dot-edge [@media(hover:none)]:h-9"
+                className="inline-flex h-8 flex-none items-center gap-1.5 rounded-full bg-scr px-3 text-[13px] font-medium text-pt ring-1 ring-line ring-inset transition-[color,box-shadow] hover:text-ink hover:ring-dot-edge [@media(hover:none)]:h-9"
               >
                 <Sun aria-hidden="true" className="text-[14px]" />
                 Wake

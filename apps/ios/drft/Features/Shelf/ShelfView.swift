@@ -163,6 +163,7 @@ struct ShelfView: View {
                                 ForEach(Array(section.thoughts.enumerated()), id: \.element.id) { index, thought in
                                     if index > 0 {
                                         Hairline()
+                                            .padding(.horizontal, 10)
                                     }
                                     thoughtRow(thought)
                                 }

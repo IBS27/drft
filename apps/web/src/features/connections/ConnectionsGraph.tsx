@@ -463,9 +463,11 @@ export function ConnectionsGraph({
                 const x = node.x ?? size.width / 2;
                 const y = node.y ?? size.height / 2;
                 const radius =
-                  node.thought.status === "resting"
-                    ? Math.max(3.5, nodeRadius(connected) - 2)
-                    : nodeRadius(connected);
+                  connected === 0
+                    ? 3
+                    : node.thought.status === "resting"
+                      ? Math.max(3.5, nodeRadius(connected) - 2)
+                      : nodeRadius(connected);
                 // At rest every connected thought that has room is named,
                 // so the map reads at a glance; while one is in hand, only
                 // its neighbourhood speaks and the rest steps back.
@@ -488,7 +490,7 @@ export function ConnectionsGraph({
                     role="link"
                     tabIndex={0}
                     aria-label={`${node.thought.text}, ${connected} connection${connected === 1 ? "" : "s"}${node.thought.status === "resting" ? ", set down" : ""}`}
-                    className={`cursor-pointer outline-none transition-opacity duration-200 ${receded ? "opacity-35" : lone ? "opacity-50" : ""}`}
+                    className={`cursor-pointer outline-none transition-opacity duration-200 ${receded ? "opacity-35" : lone ? "opacity-35" : ""}`}
                     onPointerEnter={() => setActiveId(node.id)}
                     onPointerLeave={() => setActiveId(null)}
                     onFocus={() => setActiveId(node.id)}

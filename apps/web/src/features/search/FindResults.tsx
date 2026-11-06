@@ -14,7 +14,7 @@ function highlight(text: string, query: string): ReactNode {
   );
   return text.split(pattern).map((part, i) =>
     i % 2 === 1 ? (
-      <mark key={i} className="bg-transparent font-medium text-ink underline decoration-dot/50 underline-offset-[3px]">
+      <mark key={i} className="bg-transparent font-medium text-ink">
         {part}
       </mark>
     ) : (

@@ -1,5 +1,5 @@
 import { SignOutButton, useUser } from "@clerk/clerk-react";
-import { ArrowUpRight, CaretDown, SignOut } from "@phosphor-icons/react";
+import { ArrowUpRight, CaretDown, Check, SignOut } from "@phosphor-icons/react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
@@ -138,10 +138,12 @@ function Settings() {
               >
                 <span
                   aria-hidden="true"
-                  className={`absolute top-0.5 left-0.5 size-5 rounded-full bg-[#fffaf5] shadow-[0_1px_3px_color-mix(in_oklab,var(--ink)_30%,transparent)] transition-transform ${
+                  className={`absolute top-0.5 left-0.5 flex size-5 items-center justify-center rounded-full bg-pg shadow-[0_1px_3px_color-mix(in_oklab,var(--ink)_30%,transparent)] transition-transform ${
                     connections ? "translate-x-4" : ""
                   }`}
-                />
+                >
+                  {connections && <Check weight="bold" className="text-[11px] text-ink" />}
+                </span>
               </button>
             </div>
             <div className="mt-1 text-[13px] text-pl">

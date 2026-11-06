@@ -92,10 +92,10 @@ function Collection() {
           </button>
           <Link
             to="/held"
-            className="mx-1 inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-[13.5px] font-medium text-pt ring-1 ring-line ring-inset transition-colors hover:bg-tint hover:text-ink lg:hidden"
+            aria-label="Held thoughts"
+            className="flex size-11 items-center justify-center rounded-full text-[18px] text-pt transition-colors hover:bg-tint hover:text-ink lg:hidden"
           >
-            <BookmarkSimple aria-hidden="true" weight="fill" className="text-[14px]" />
-            Held
+            <BookmarkSimple aria-hidden="true" />
           </Link>
           <Link
             to="/settings"
@@ -115,7 +115,7 @@ function Collection() {
         <section
           className={
             hasList
-              ? "flex flex-col items-center px-4 pt-3 pb-2 sm:px-6 sm:pt-8 lg:flex-1 lg:justify-center lg:px-10 lg:pt-0 lg:pb-24"
+              ? "flex flex-col items-center px-4 pt-3 pb-2 sm:px-6 sm:pt-8 lg:flex-1 lg:justify-start lg:px-10 lg:pt-[16vh] lg:pb-24"
               : "flex flex-1 flex-col items-center justify-center px-4 pb-24 sm:px-6"
           }
         >

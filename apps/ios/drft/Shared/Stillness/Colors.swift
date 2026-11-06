@@ -47,7 +47,7 @@ enum Stillness {
         darkHighContrast: 0xCDCDC7
     )
     /// An "on" switch: ink, never the accent (the web's --switch).
-    static let switchOn = dynamic(light: 0x423F38, dark: 0x8A857B)
+    static let switchOn = dynamic(light: 0x2F2C27, dark: 0xEBE8E1)
     /// Soft elevation under raised surfaces (the web's --lift).
     static let lift = dynamic(light: 0x3A2C1C, dark: 0x000000, alpha: 0.06)
     /// The short shadow under a solid primary pill.

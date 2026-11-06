@@ -45,8 +45,9 @@ type RailThought = {
 // tinted "Back today" strip; the open thought is held by a deeper tint and
 // a vermilion bar.
 // Held thoughts carry a small bookmark; hovering a row offers to hold it
-// or let go without opening it. The Held page sits under Find while
-// anything is held.
+// or let go without opening it. Held, Resting, Connections and Settings
+// share the footer. On home the day's thought has the main pane, so the
+// rail leaves it out.
 // Also owns the collection's keyboard: j/k move between thoughts (j enters
 // the top from home), Esc returns to the door — home, or the Held page
 // when the thought was opened from there.
@@ -71,7 +72,7 @@ export const Rail = memo(function Rail({
     isAuthenticated ? {} : "skip",
     "resting",
   );
-  const onHeld = useRouterState({ select: (s) => s.location.pathname === "/held" });
+  const onHome = useRouterState({ select: (s) => s.location.pathname === "/" });
   const toggleHold = useHold();
   const search = backTo === "/held" ? FROM_HELD : FROM_HOME;
   const [restingOpen, setRestingOpen] = useState(false);
@@ -266,20 +267,6 @@ export const Rail = memo(function Rail({
             <Kbd className="bg-scr text-pt ring-1 ring-line ring-inset">⌘K</Kbd>
           </button>
         )}
-        <Link
-            to="/held"
-            aria-current={onHeld ? "page" : undefined}
-            className={`-mt-2.5 flex h-10 items-center gap-2.5 rounded-card px-3 text-[14px] font-medium transition-colors ${
-              onHeld ? "bg-line/55 text-ink" : "text-pt hover:bg-line/40 hover:text-ink"
-            }`}
-          >
-            <BookmarkSimple
-              aria-hidden="true"
-              weight="fill"
-              className="text-[16px]"
-            />
-            <span className="flex-1">Held</span>
-          </Link>
       </div>
 
       <div
@@ -303,7 +290,7 @@ export const Rail = memo(function Rail({
           <RailSkeleton />
         ) : (
           <>
-            {ordered.pinned && (
+            {ordered.pinned && !onHome && (
               <BackToday
                 t={ordered.pinned}
                 active={ordered.pinned._id === activeId}
@@ -365,6 +352,13 @@ export const Rail = memo(function Rail({
       </div>
 
       <div className="flex flex-none flex-col gap-0.5 border-t border-line px-3 pt-2.5 pb-3.5">
+        <Link
+          to="/held"
+          className="flex items-center gap-2.5 rounded-card px-3 py-2 text-[14px] text-pt transition-colors hover:bg-tint hover:text-ink aria-[current=page]:bg-line/55 aria-[current=page]:font-medium aria-[current=page]:text-ink"
+        >
+          <BookmarkSimple aria-hidden="true" className="text-[17px]" />
+          Held
+        </Link>
         <Link
           to="/resting"
           className="flex items-center gap-2.5 rounded-card px-3 py-2 text-[14px] text-pt transition-colors hover:bg-tint hover:text-ink aria-[current=page]:bg-line/55 aria-[current=page]:font-medium aria-[current=page]:text-ink"
@@ -456,8 +450,8 @@ const BackToday = memo(function BackToday({
       onPointerDown={() => prewarm(t._id)}
       onFocus={() => prewarm(t._id)}
       aria-current={active ? "page" : undefined}
-      className={`relative mb-1.5 flex flex-col gap-[5px] rounded-card px-3.5 py-3 transition-colors hover:bg-tint-2 ${
-        active ? ACTIVE_BAR : "bg-tint ring-1 ring-dot/15 ring-inset"
+      className={`relative mb-1 flex flex-col gap-1 rounded-card px-3 py-2.5 transition-colors ${
+        active ? ACTIVE_BAR : "hover:bg-tint"
       }`}
     >
       <span className="flex items-center gap-1.5 text-[12.5px] font-medium text-dot-ink">
@@ -465,7 +459,7 @@ const BackToday = memo(function BackToday({
         <span className="sr-only">returned today: </span>
         <span aria-hidden="true">Back today</span>
       </span>
-      <span className="line-clamp-2 text-[14.5px] leading-[1.45] text-ink">
+      <span className="line-clamp-2 text-[15px] leading-[1.4] text-ink">
         {t.preview}
       </span>
     </Link>

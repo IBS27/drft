@@ -388,8 +388,15 @@ private struct EmberSwitchStyle: ToggleStyle {
                         }
 
                     Circle()
-                        .fill(Color(red: 1, green: 0.98, blue: 0.96))
+                        .fill(Stillness.page)
                         .frame(width: 20, height: 20)
+                        .overlay {
+                            if configuration.isOn {
+                                Image(systemName: "checkmark")
+                                    .font(.system(size: 9, weight: .bold))
+                                    .foregroundStyle(Stillness.ink)
+                            }
+                        }
                         .shadow(color: Stillness.ink.opacity(0.3), radius: 1.5, y: 1)
                         .padding(2)
                 }
