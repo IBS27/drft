@@ -241,7 +241,7 @@ function ThoughtView() {
                     {view.connections.map((c, i) => (
                       <li
                         key={c._id}
-                        className="group relative rounded-card transition-colors hover:bg-tint [li+&]:shadow-[0_-1px_0_var(--line)] hover:shadow-none! [&:hover+li]:shadow-none!"
+                        className={`group relative rounded-card transition-colors hover:bg-tint ${i > 0 ? "divided" : ""}`}
                       >
                         <Link
                           to="/thought/$thoughtId"
@@ -528,7 +528,7 @@ function HoldChip({
       className={
         held
           ? "inline-flex h-7 items-center gap-1.5 rounded-full bg-scr px-3 text-[13px] font-medium text-pt ring-1 ring-line ring-inset transition-shadow hover:ring-dot-edge"
-          : "inline-flex h-7 items-center gap-1.5 rounded-full border border-dashed border-line px-3 text-[13px] font-medium text-pl opacity-0 transition-[opacity,color,border-color] group-hover/thought:opacity-100 hover:border-dot-edge hover:text-ink focus-visible:opacity-100 [@media(hover:none)]:opacity-100"
+          : "inline-flex h-7 items-center gap-1.5 rounded-full border border-dashed border-faint/60 px-3 text-[13px] font-medium text-pl transition-[color,border-color,background-color] hover:border-dot-edge hover:bg-tint hover:text-ink"
       }
     >
       <BookmarkSimple

@@ -233,7 +233,7 @@ const ThoughtRow = memo(function ThoughtRow({
       onPointerDown={() => prewarm(t._id)}
       onFocus={() => prewarm(t._id)}
       className={`flex items-baseline gap-3 rounded-card px-2.5 py-3.5 text-[16px] text-ink transition-colors hover:bg-tint ${
-        divided ? "shadow-[0_-1px_0_var(--line)] hover:shadow-none! [a:hover+&]:shadow-none!" : ""
+        divided ? "divided" : ""
       }`}
     >
       <span className="min-w-0 flex-1 truncate">{t.preview}</span>

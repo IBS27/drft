@@ -37,13 +37,13 @@ export function SignIn() {
 
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center px-6 pb-16">
-      <h1 className="inline-flex items-baseline gap-[0.44em] text-[32px] font-semibold tracking-[-0.03em] text-ink">
-        <LogoMark className="h-[0.75em]" />
-        drft
-      </h1>
-      <p className="mt-3 text-[16px] text-pt">A space for unfinished thoughts</p>
+      <span className="flex size-[76px] items-center justify-center rounded-[22px] bg-scr shadow-lift ring-1 ring-line ring-inset">
+        <LogoMark className="h-[30px] text-ink" />
+      </span>
+      <h1 className="mt-7 text-[34px] font-semibold tracking-[-0.03em] text-ink">drft</h1>
+      <p className="mt-2 text-[17px] text-pt">A space for unfinished thoughts</p>
 
-      <div className="mt-12 flex w-72 max-w-full flex-col gap-3">
+      <div className="mt-11 flex w-[300px] max-w-full flex-col gap-3">
         {PROVIDERS.map(({ strategy, label, Icon }) => (
           <button
             key={strategy}
@@ -51,7 +51,7 @@ export function SignIn() {
             disabled={!isLoaded || pending !== null}
             onClick={() => start(strategy)}
             className={`flex h-12 w-full items-center justify-center gap-3 rounded-full text-[15px] font-medium text-ink ring-1 transition-[background-color,box-shadow,opacity,scale] ring-inset hover:bg-tint hover:ring-dot-edge active:scale-[0.98] disabled:cursor-default ${
-              pending === strategy ? "bg-tint ring-dot-edge" : "bg-scr ring-line"
+              pending === strategy ? "bg-tint ring-dot-edge" : "bg-scr shadow-lift ring-line"
             } ${pending && pending !== strategy ? "opacity-40" : ""}`}
           >
             <Icon aria-hidden="true" weight="fill" className="text-[18px]" />

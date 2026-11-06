@@ -85,6 +85,26 @@ body {
   @apply bg-pg font-sans font-normal text-ink;
 }
 
+/* A hairline between list rows, kept straight and inset from the rows'
+   rounded corners; it steps aside for a hovered row and the one below. */
+.divided {
+  position: relative;
+}
+.divided::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 10px;
+  right: 10px;
+  height: 1px;
+  background: var(--line);
+  transition: opacity 150ms;
+}
+.divided:hover::before,
+:hover + .divided::before {
+  opacity: 0;
+}
+
 /* The room's one loading signal: a blinking caret, never a spinner. */
 @keyframes caret-blink {
   0%,

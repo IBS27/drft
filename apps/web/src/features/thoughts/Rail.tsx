@@ -425,11 +425,11 @@ function RailSkeleton() {
 // Varied lengths so the placeholder reads as thoughts, not as a table.
 const SKELETON_WIDTHS = ["w-[78%]", "w-[56%]", "w-[70%]", "w-[48%]", "w-[64%]"];
 
-// One rail row to the pixel: a 14.5px line box inside py-2, time at right.
+// One rail row to the pixel: a 15px line box inside py-[9px], time at right.
 function RailSkeletonRow({ width }: { width: string }) {
   return (
-    <div className="flex items-center gap-2.5 px-3 py-2">
-      <span className="flex h-[21px] min-w-0 flex-1 items-center">
+    <div className="flex items-center gap-2.5 px-3 py-[9px]">
+      <span className="flex h-[22px] min-w-0 flex-1 items-center">
         <Skeleton className={`h-[9px] ${width}`} />
       </span>
       <Skeleton className="h-[9px] w-7" />
@@ -510,11 +510,11 @@ const RailRow = memo(function RailRow({
       onPointerDown={() => prewarm(t._id)}
       onFocus={() => prewarm(t._id)}
       aria-current={active ? "page" : undefined}
-      className={`relative flex items-baseline gap-2.5 rounded-card px-3 py-2 transition-colors ${
+      className={`relative flex items-baseline gap-2.5 rounded-card px-3 py-[9px] transition-colors ${
         active ? ACTIVE_BAR : "hover:bg-tint"
       }`}
     >
-      <span className="min-w-0 flex-1 truncate text-[14.5px] text-ink">
+      <span className="min-w-0 flex-1 truncate text-[15px] text-ink">
         {t.preview}
       </span>
       {held && (

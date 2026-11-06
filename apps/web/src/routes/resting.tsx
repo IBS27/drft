@@ -39,7 +39,7 @@ function Resting() {
           </p>
         ) : (
           <div className="rounded-[14px] bg-scr p-1.5 shadow-lift ring-1 ring-line ring-inset">
-          {rows.map((t) => (
+          {rows.map((t, i) => (
             <Link
               key={t._id}
               to="/thought/$thoughtId"
@@ -47,7 +47,7 @@ function Resting() {
               onPointerEnter={() => prewarm(t._id)}
               onPointerDown={() => prewarm(t._id)}
               onFocus={() => prewarm(t._id)}
-              className="block rounded-card px-3.5 py-3.5 transition-colors hover:bg-tint [a+&]:shadow-[0_-1px_0_var(--line)] hover:shadow-none! [a:hover+&]:shadow-none!"
+              className={`block rounded-card px-3.5 py-3.5 transition-colors hover:bg-tint ${i > 0 ? "divided" : ""}`}
             >
               <div className="flex items-baseline gap-3">
                 <span className="min-w-0 flex-1 truncate text-[16px] text-ink">

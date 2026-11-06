@@ -11,14 +11,30 @@ struct SignInView: View {
             Stillness.page.ignoresSafeArea()
 
             VStack(spacing: 0) {
-                Wordmark(size: .large)
+                LogoMark(height: 30)
+                    .frame(width: 76, height: 76)
+                    .background(
+                        Stillness.surface,
+                        in: RoundedRectangle(cornerRadius: 22, style: .continuous)
+                    )
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 22, style: .continuous)
+                            .strokeBorder(Stillness.hairline, lineWidth: 1)
+                    }
+                    .shadow(color: Stillness.lift, radius: 12, y: 6)
+
+                Text("drft")
+                    .font(.geist(34, .semibold, relativeTo: .largeTitle))
+                    .tracking(-1)
+                    .foregroundStyle(Stillness.ink)
+                    .padding(.top, 26)
                     .accessibilityAddTraits(.isHeader)
 
                 Text("A space for unfinished thoughts")
-                    .font(.geist(16, relativeTo: .callout))
+                    .font(.geist(17, relativeTo: .callout))
                     .foregroundStyle(Stillness.chromeText)
                     .multilineTextAlignment(.center)
-                    .padding(.top, 12)
+                    .padding(.top, 8)
 
                 VStack(spacing: 12) {
                     // Apple first: App Review expects it to be at least as prominent.
