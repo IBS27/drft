@@ -161,7 +161,7 @@ textarea:focus-visible {
   /* The margin rule is quiet until you write: then it is "now". */
   caret-color: var(--dot);
   transition: box-shadow 150ms;
-  mask-image: linear-gradient(to bottom, #000 calc(100% - var(--lh) * 1.5), transparent);
+  mask-image: linear-gradient(to bottom, #000 calc(100% - var(--lh) * 0.75), transparent);
 }
 
 /* The settings time picker's options follow the theme. */

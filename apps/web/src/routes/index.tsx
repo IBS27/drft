@@ -98,6 +98,13 @@ function Collection() {
             <BookmarkSimple aria-hidden="true" />
           </Link>
           <Link
+            to="/resting"
+            aria-label="Resting thoughts"
+            className="flex size-11 items-center justify-center rounded-full text-[18px] text-pt transition-colors hover:bg-tint hover:text-ink lg:hidden"
+          >
+            <Moon aria-hidden="true" />
+          </Link>
+          <Link
             to="/settings"
             aria-label="Settings"
             className="flex size-11 items-center justify-center rounded-full text-[18px] text-pt transition-colors hover:bg-tint hover:text-ink lg:hidden"

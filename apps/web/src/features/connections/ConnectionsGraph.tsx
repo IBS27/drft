@@ -401,7 +401,7 @@ export function ConnectionsGraph({
   return (
     <div
       ref={frameRef}
-      className="relative min-h-0 flex-1 overflow-hidden bg-[radial-gradient(color-mix(in_oklab,var(--line)_90%,transparent)_1px,transparent_1.2px)] bg-[length:26px_26px]"
+      className="relative min-h-0 flex-1 overflow-hidden bg-[radial-gradient(color-mix(in_oklab,var(--line)_60%,transparent)_1px,transparent_1.2px)] bg-[length:26px_26px]"
     >
       {thoughts.length === 0 ? (
         <div className="flex h-full items-center justify-center pb-20 text-[14px] text-pl">

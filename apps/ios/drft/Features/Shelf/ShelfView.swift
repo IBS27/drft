@@ -253,7 +253,7 @@ struct ShelfView: View {
             }
         }
         .buttonStyle(PillButtonStyle(kind: .ink, height: 48, horizontalPadding: 24))
-        .padding(.top, 28)
+        .padding(.top, 18)
         .padding(.bottom, 16)
         .frame(maxWidth: .infinity)
         .background {

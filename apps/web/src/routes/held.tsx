@@ -1,5 +1,5 @@
 import { BookmarkSimple } from "@phosphor-icons/react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useConvexAuth } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
 import type { Id } from "@drft/backend/convex/_generated/dataModel";
@@ -96,10 +96,16 @@ function EmptyHeld() {
       <h2 className="mt-5 text-[19px] font-medium tracking-[-0.01em] text-ink">
         Nothing held yet
       </h2>
-      <p className="mt-2 max-w-[34ch] text-[15px] leading-relaxed text-pl">
-        Hold the thoughts you want close, and they gather here side by side.
-        Use the bookmark on any thought<span className="[@media(hover:none)]:hidden">, or press h</span>.
+      <p className="mt-2 max-w-[32ch] text-[15px] leading-relaxed text-pretty text-pl">
+        Hold a thought from its page<span className="[@media(hover:none)]:hidden"> (or press h)</span>{" "}
+        to keep it close here.
       </p>
+      <Link
+        to="/"
+        className="mt-5 text-[14px] font-medium text-pt underline decoration-line underline-offset-4 transition-colors hover:text-ink lg:hidden"
+      >
+        Back to thoughts
+      </Link>
     </div>
   );
 }
