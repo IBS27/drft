@@ -51,7 +51,7 @@ export function SignIn() {
             disabled={!isLoaded || pending !== null}
             onClick={() => start(strategy)}
             className={`flex h-12 w-full items-center justify-center gap-3 rounded-full text-[15px] font-medium text-ink ring-1 transition-[background-color,box-shadow,opacity,scale] ring-inset hover:bg-tint hover:ring-dot-edge active:scale-[0.98] disabled:cursor-default ${
-              pending === strategy ? "bg-tint ring-dot-edge" : "bg-scr shadow-lift ring-line"
+              pending === strategy ? "bg-tint ring-dot-edge" : "bg-scr shadow-lift ring-[color-mix(in_oklab,var(--line),var(--ink)_10%)]"
             } ${pending && pending !== strategy ? "opacity-40" : ""}`}
           >
             <Icon aria-hidden="true" weight="fill" className="text-[18px]" />

@@ -49,9 +49,9 @@ enum Stillness {
     /// Soft elevation under raised surfaces (the web's --lift).
     static let lift = dynamic(light: 0x3A2C1C, dark: 0x000000, alpha: 0.07)
     /// Soft wash for whatever is "now" (Back today, chips, pressed rows).
-    static let nowTint = dynamic(light: 0xF1E5DD, dark: 0x301F18)
+    static let nowTint = dynamic(light: 0xF1E5DD, dark: 0x2E1E18)
     /// The stronger wash: badges, the open row.
-    static let nowTintStrong = dynamic(light: 0xEFDAD1, dark: 0x43251B)
+    static let nowTintStrong = dynamic(light: 0xEFDAD1, dark: 0x3A221A)
     /// Vermilion text that stays legible on the page and on both tints.
     static let nowInk = dynamic(light: 0xA4381D, dark: 0xE18265)
     /// The edge of outlined vermilion controls.
