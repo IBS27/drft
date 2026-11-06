@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Sun } from "@phosphor-icons/react";
+import { Moon, Sun } from "@phosphor-icons/react";
 import { useConvexAuth, useMutation } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
 import { useState } from "react";
@@ -58,7 +58,7 @@ function Resting() {
           {rows.map((t, i) => (
             <div
               key={t._id}
-              className={`flex items-center gap-2 rounded-card pr-2.5 transition-colors hover:bg-tint ${i > 0 ? "divided" : ""}`}
+              className={`flex items-start gap-2 rounded-card pr-2.5 transition-colors hover:bg-tint ${i > 0 ? "divided" : ""}`}
             >
               <Link
                 to="/thought/$thoughtId"
@@ -72,9 +72,12 @@ function Resting() {
                   <span className="line-clamp-2 min-w-0 flex-1 text-[16px] leading-[1.4] text-ink">
                     {t.preview}
                   </span>
-                  <span className="flex-none text-[13px] text-pl tabular-nums">
-                    {t.restedAt ? ageLabel(t.restedAt, now) : ""}
-                  </span>
+                  {t.restedAt && (
+                    <span className="inline-flex flex-none items-center gap-1 text-[13px] text-pl tabular-nums">
+                      <Moon aria-label="set down" className="text-[12px]" />
+                      {ageLabel(t.restedAt, now)}
+                    </span>
+                  )}
                 </div>
                 {t.restingNote && (
                   <div className="mt-1 truncate text-[13.5px] text-pl">
@@ -85,7 +88,7 @@ function Resting() {
               <button
                 type="button"
                 onClick={() => void wake({ thoughtId: t._id }).catch(() => {})}
-                className="inline-flex h-8 flex-none items-center gap-1.5 rounded-full bg-scr px-3 text-[13px] font-medium text-pt ring-1 ring-line ring-inset transition-[color,box-shadow] hover:text-ink hover:ring-dot-edge [@media(hover:none)]:h-9"
+                className="mt-2.5 inline-flex h-8 flex-none items-center gap-1.5 rounded-full bg-scr px-3 text-[13px] font-medium text-pt ring-1 ring-line ring-inset transition-[color,box-shadow] hover:text-ink hover:ring-dot-edge [@media(hover:none)]:h-9"
               >
                 <Sun aria-hidden="true" className="text-[14px]" />
                 Wake

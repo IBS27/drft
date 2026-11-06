@@ -86,11 +86,16 @@ struct SettingsView: View {
 
                                     Spacer(minLength: 12)
 
-                                    Text(dailyThoughtTimeText)
-                                        .font(StillnessType.body)
-                                        .monospacedDigit()
-                                        .foregroundStyle(Stillness.ink)
-                                        .padding(.horizontal, 12)
+                                    HStack(spacing: 6) {
+                                        Text(dailyThoughtTimeText)
+                                            .font(StillnessType.body)
+                                            .monospacedDigit()
+                                            .foregroundStyle(Stillness.ink)
+                                        EmberIcon(.caretDown, size: 11)
+                                            .foregroundStyle(Stillness.chromeLabel)
+                                    }
+                                        .padding(.leading, 14)
+                                        .padding(.trailing, 11)
                                         .frame(minHeight: 36)
                                         .background(Stillness.page, in: Capsule())
                                         .overlay {
@@ -120,7 +125,7 @@ struct SettingsView: View {
 
                             Hairline()
 
-                            VStack(alignment: .leading, spacing: 4) {
+                            VStack(alignment: .leading, spacing: 0) {
                                 Toggle("Connections", isOn: connections)
                                     .toggleStyle(EmberSwitchStyle())
                                     .disabled(convexService.consent == .unknown)

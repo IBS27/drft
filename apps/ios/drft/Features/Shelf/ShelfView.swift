@@ -251,7 +251,7 @@ struct ShelfView: View {
                 Text("New thought")
             }
         }
-        .buttonStyle(PillButtonStyle(kind: .primary, height: 48, horizontalPadding: 24))
+        .buttonStyle(PillButtonStyle(kind: .ink, height: 48, horizontalPadding: 24))
         .padding(.top, 28)
         .padding(.bottom, 16)
         .frame(maxWidth: .infinity)
@@ -311,6 +311,11 @@ struct ShelfView: View {
             background: Stillness.nowTint,
             pressedBackground: Stillness.nowTintStrong
         ))
+        .overlay {
+            RoundedRectangle(cornerRadius: StillnessSpacing.cardRadius, style: .continuous)
+                .strokeBorder(Stillness.now.opacity(0.15), lineWidth: 1)
+                .allowsHitTesting(false)
+        }
         .simultaneousGesture(
             LongPressGesture(minimumDuration: 0).onEnded { _ in
                 convexService.prewarmThought(id: thought.id)

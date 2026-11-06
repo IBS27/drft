@@ -120,6 +120,11 @@ function Collection() {
           }
         >
           <CaptureField now={now} />
+          {pinned && (
+            <div className="mt-5 hidden w-full max-w-[640px] lg:block">
+              <BackToday t={pinned} prewarm={prewarm} wide />
+            </div>
+          )}
         </section>
 
         {hasList && (
@@ -171,9 +176,11 @@ function Collection() {
 function BackToday({
   t,
   prewarm,
+  wide = false,
 }: {
   t: Row;
   prewarm: (thoughtId: Id<"thoughts">) => void;
+  wide?: boolean;
 }) {
   return (
     <Link
@@ -182,14 +189,22 @@ function BackToday({
       onPointerEnter={() => prewarm(t._id)}
       onPointerDown={() => prewarm(t._id)}
       onFocus={() => prewarm(t._id)}
-      className="mb-1 flex flex-col gap-[5px] rounded-card bg-tint px-3.5 py-3 transition-colors hover:bg-tint-2"
+      className={
+        wide
+          ? "flex flex-col gap-2 rounded-[18px] bg-tint px-10 py-6 ring-1 ring-dot/20 ring-inset transition-colors hover:bg-tint-2"
+          : "mb-1 flex flex-col gap-[5px] rounded-card bg-tint px-3.5 py-3 ring-1 ring-dot/15 ring-inset transition-colors hover:bg-tint-2"
+      }
     >
       <span className="flex items-center gap-1.5 text-[12.5px] font-medium text-dot-ink">
         <ArrowBendUpLeft aria-hidden="true" className="text-[14px]" />
         <span className="sr-only">returned today: </span>
         <span aria-hidden="true">Back today</span>
       </span>
-      <span className="line-clamp-2 text-[15px] leading-[1.45] text-ink">{t.preview}</span>
+      <span
+        className={`line-clamp-2 text-ink ${wide ? "text-[20px] leading-[1.4] tracking-[-0.01em]" : "text-[15px] leading-[1.45]"}`}
+      >
+        {t.preview}
+      </span>
     </Link>
   );
 }

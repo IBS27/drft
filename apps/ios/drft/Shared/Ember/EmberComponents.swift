@@ -6,6 +6,7 @@ enum PhosphorIcon: String {
     case arrowBendUpLeft = "ph-arrow-bend-up-left"
     case arrowLeft = "ph-arrow-left"
     case arrowUpRight = "ph-arrow-up-right"
+    case caretDown = "ph-caret-down"
     case caretRight = "ph-caret-right"
     case envelopeSimple = "ph-envelope-simple"
     case gearSix = "ph-gear-six"
@@ -103,6 +104,8 @@ struct Chip<Label: View>: View {
 struct PillButtonStyle: ButtonStyle {
     enum Kind {
         case primary
+        /// Solid ink: a standing action that isn't "now" (New thought).
+        case ink
         case outline
         case neutral
         case quiet
@@ -118,7 +121,7 @@ struct PillButtonStyle: ButtonStyle {
         let isPressed = configuration.isPressed
 
         configuration.label
-            .font(kind == .primary ? StillnessType.primaryButton : StillnessType.control)
+            .font(kind == .primary || kind == .ink ? StillnessType.primaryButton : StillnessType.control)
             .lineLimit(1)
             .foregroundStyle(foreground)
             .padding(.horizontal, horizontalPadding)
@@ -133,12 +136,12 @@ struct PillButtonStyle: ButtonStyle {
                         isPressed ? Stillness.nowEdge : Stillness.hairline,
                         lineWidth: 1
                     )
-                case .primary, .quiet:
+                case .primary, .ink, .quiet:
                     EmptyView()
                 }
             }
             .shadow(
-                color: kind == .primary && isEnabled ? Stillness.shadow : .clear,
+                color: (kind == .primary || kind == .ink) && isEnabled ? Stillness.shadow : .clear,
                 radius: 8,
                 y: 5
             )
@@ -153,6 +156,7 @@ struct PillButtonStyle: ButtonStyle {
     private var foreground: Color {
         switch kind {
         case .primary: isEnabled ? Stillness.onNow : Stillness.chromeLabel
+        case .ink: Stillness.page
         case .outline: Stillness.nowInk
         case .neutral: Stillness.chromeText
         case .quiet: Stillness.chromeText
@@ -162,6 +166,7 @@ struct PillButtonStyle: ButtonStyle {
     private func fill(isPressed: Bool) -> Color {
         switch kind {
         case .primary: isEnabled ? Stillness.now : Stillness.hairline
+        case .ink: Stillness.ink
         case .neutral: isPressed ? Stillness.nowTint : Stillness.surface
         case .outline, .quiet: isPressed ? Stillness.nowTint : .clear
         }

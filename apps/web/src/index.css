@@ -28,7 +28,7 @@
   --tint-2: color-mix(in oklab, var(--dot) 14%, var(--pg));
   --dot-ink: color-mix(in oklab, var(--dot) 78%, var(--ink));
   --dot-edge: color-mix(in oklab, var(--dot) 45%, var(--line));
-  --on-dot: var(--pg);
+  --on-dot: #fffaf5;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -40,12 +40,12 @@
     --mut: #a6a298;
     --faint: #78746b;
     --line: #312f2b;
-    --dot: #dd5630;
+    --dot: #cc4a24;
     --pt: #cdc9bf;
     --pl: #9c988e;
     --lift: 0 1px 2px rgb(0 0 0 / 0.3), 0 10px 28px -14px rgb(0 0 0 / 0.6);
-    --tint: color-mix(in oklab, var(--dot) 11%, var(--pg));
-    --tint-2: color-mix(in oklab, var(--dot) 17%, var(--pg));
+    --tint: color-mix(in oklab, var(--dot) 16%, var(--pg));
+    --tint-2: color-mix(in oklab, var(--dot) 22%, var(--pg));
     --dot-ink: color-mix(in oklab, var(--dot) 70%, var(--ink));
     --dot-edge: color-mix(in oklab, var(--dot) 50%, var(--line));
   }
@@ -155,7 +155,6 @@ textarea:focus-visible {
     )
     0 0 / 100% var(--lh);
   /* The margin rule is quiet until you write: then it is "now". */
-  box-shadow: inset 2px 0 0 var(--line);
   caret-color: var(--dot);
   transition: box-shadow 150ms;
   mask-image: linear-gradient(to bottom, #000 calc(100% - var(--lh)), transparent);

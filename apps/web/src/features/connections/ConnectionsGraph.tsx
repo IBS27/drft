@@ -67,9 +67,11 @@ function initialPoint(id: string, width: number, height: number): Point {
 
 function label(text: string): string {
   const oneLine = text.replace(/\s+/g, " ").trim();
-  return oneLine.length > LABEL_LIMIT
-    ? `${oneLine.slice(0, LABEL_LIMIT - 1)}…`
-    : oneLine;
+  if (oneLine.length <= LABEL_LIMIT) return oneLine;
+  // Cut at a word, not inside one.
+  const cut = oneLine.slice(0, LABEL_LIMIT);
+  const space = cut.lastIndexOf(" ");
+  return `${(space > LABEL_LIMIT / 2 ? cut.slice(0, space) : cut).replace(/[\s,—–-]+$/, "")}…`;
 }
 
 type LabelSide = "right" | "left" | "top" | "bottom";
@@ -541,7 +543,8 @@ export function ConnectionsGraph({
           </svg>
 
           {!active && (
-            <p className="pointer-events-none absolute bottom-7 left-1/2 -translate-x-1/2 rounded-full bg-scr/90 px-4 py-2 text-[13px] text-pl shadow-lift ring-1 ring-line ring-inset backdrop-blur">
+            <div className="pointer-events-none absolute inset-x-7 bottom-6 flex items-center justify-between text-[13px] text-pl">
+              <p className="flex items-center rounded-full bg-scr/90 px-4 py-2 ring-1 ring-line ring-inset backdrop-blur">
               <span className="inline-flex items-center gap-1.5">
                 <span className="inline-block size-2 rounded-full bg-pt" />
                 kept
@@ -554,10 +557,11 @@ export function ConnectionsGraph({
                 <span className="inline-block size-2 rounded-full bg-faint/60" />
                 no echoes yet
               </span>
-              <span className="ml-3">
-                · point at a thought to read it · scroll to zoom
-              </span>
-            </p>
+              </p>
+              <p className="rounded-full bg-scr/90 px-4 py-2 ring-1 ring-line ring-inset backdrop-blur">
+                Point at a thought to read it · scroll to zoom
+              </p>
+            </div>
           )}
           {active && (
             <div

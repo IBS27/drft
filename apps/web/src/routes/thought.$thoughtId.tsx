@@ -200,7 +200,11 @@ function ThoughtView() {
 
               <div className="mt-[18px] flex flex-wrap items-center gap-x-4 gap-y-2">
                 {view.lastReturnedAt && (
-                  <span className="inline-flex h-7 items-center gap-1.5 text-[13px] text-dot-ink">
+                  <span
+                    className={`inline-flex h-7 items-center gap-1.5 text-[13px] ${
+                      returnedLabel(view.lastReturnedAt, now) === "today" ? "text-dot-ink" : "text-pl"
+                    }`}
+                  >
                     <ArrowBendUpLeft aria-hidden="true" className="text-[14px]" />
                     Returned {returnedLabel(view.lastReturnedAt, now)}
                   </span>

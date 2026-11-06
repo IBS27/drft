@@ -457,7 +457,7 @@ const BackToday = memo(function BackToday({
       onFocus={() => prewarm(t._id)}
       aria-current={active ? "page" : undefined}
       className={`relative mb-1.5 flex flex-col gap-[5px] rounded-card px-3.5 py-3 transition-colors hover:bg-tint-2 ${
-        active ? ACTIVE_BAR : "bg-tint"
+        active ? ACTIVE_BAR : "bg-tint ring-1 ring-dot/15 ring-inset"
       }`}
     >
       <span className="flex items-center gap-1.5 text-[12.5px] font-medium text-dot-ink">

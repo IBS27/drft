@@ -21,9 +21,9 @@ enum Stillness {
         lightHighContrast: 0xB4B4AE,
         darkHighContrast: 0x52524D
     )
-    static let now = dynamic(light: 0xC73E1D, dark: 0xDD5630)
+    static let now = dynamic(light: 0xC73E1D, dark: 0xCC4A24)
     /// Label color on a `now`-filled control: the page color, as on web.
-    static let onNow = dynamic(light: 0xF5F3EE, dark: 0x181715)
+    static let onNow = dynamic(light: 0xFFFAF5, dark: 0xFFFAF5)
     static let faint = dynamic(
         light: 0x716D64,
         dark: 0xA6A298,
@@ -51,9 +51,9 @@ enum Stillness {
     /// The short shadow under a solid primary pill.
     static let shadow = dynamic(light: 0x3A2C1C, dark: 0x000000, alpha: 0.2)
     /// Soft wash for whatever is "now" (Back today, chips, pressed rows).
-    static let nowTint = dynamic(light: 0xF1E5DD, dark: 0x2E1E18)
+    static let nowTint = dynamic(light: 0xF1E5DD, dark: 0x35211A)
     /// The stronger wash: badges, the open row.
-    static let nowTintStrong = dynamic(light: 0xEFDAD1, dark: 0x3A221A)
+    static let nowTintStrong = dynamic(light: 0xEFDAD1, dark: 0x40251C)
     /// Vermilion text that stays legible on the page and on both tints.
     static let nowInk = dynamic(light: 0xA4381D, dark: 0xE18265)
     /// The edge of outlined vermilion controls.

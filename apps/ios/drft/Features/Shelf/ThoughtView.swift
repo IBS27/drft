@@ -178,7 +178,11 @@ struct ThoughtView: View {
                             Text(returnedLabel(for: lastReturnedAt))
                         }
                         .font(StillnessType.caption)
-                        .foregroundStyle(Stillness.nowInk)
+                        .foregroundStyle(
+                            ShelfFormatting.group(for: lastReturnedAt, now: .now) == .today
+                                ? Stillness.nowInk
+                                : Stillness.chromeLabel
+                        )
                         .frame(minHeight: 28)
                     }
 
