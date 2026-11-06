@@ -550,8 +550,12 @@ export function ConnectionsGraph({
                 <span className="inline-block size-2 rounded-full ring-1 ring-faint" />
                 set down
               </span>
+              <span className="ml-3 inline-flex items-center gap-1.5">
+                <span className="inline-block size-2 rounded-full bg-faint/60" />
+                no echoes yet
+              </span>
               <span className="ml-3">
-                · point at a thought to see what it's near · scroll to zoom
+                · point at a thought to read it · scroll to zoom
               </span>
             </p>
           )}

@@ -145,8 +145,8 @@ export function NotesField({
   }, [text]);
 
   return (
-    <div className="group mt-9 flex w-full flex-col gap-2.5 rounded-[14px] bg-scr px-4 pt-4 pb-1 ring-1 ring-line ring-inset">
-      <div className="flex h-6 items-center justify-between gap-3 pl-1">
+    <div className="group mt-10 flex w-full flex-col gap-3">
+      <div className="flex h-6 items-center justify-between gap-3">
         <label
           htmlFor="thought-notes"
           className="text-[14px] font-medium text-pt transition-colors group-focus-within:text-ink"

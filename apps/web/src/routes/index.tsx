@@ -86,13 +86,13 @@ function Collection() {
             type="button"
             onClick={openSearch}
             aria-label="Find a thought"
-            className="flex size-9 items-center justify-center rounded-full text-[18px] text-pt transition-colors hover:bg-tint hover:text-ink lg:hidden"
+            className="flex size-11 items-center justify-center rounded-full text-[18px] text-pt transition-colors hover:bg-tint hover:text-ink lg:hidden"
           >
             <MagnifyingGlass aria-hidden="true" />
           </button>
           <Link
             to="/held"
-            className="mx-1 inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-[13.5px] font-medium text-pt ring-1 ring-line ring-inset transition-colors hover:bg-tint hover:text-ink lg:hidden"
+            className="mx-1 inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-[13.5px] font-medium text-pt ring-1 ring-line ring-inset transition-colors hover:bg-tint hover:text-ink lg:hidden"
           >
             <BookmarkSimple aria-hidden="true" weight="fill" className="text-[14px]" />
             Held
@@ -100,7 +100,7 @@ function Collection() {
           <Link
             to="/settings"
             aria-label="Settings"
-            className="flex size-9 items-center justify-center rounded-full text-[18px] text-pt transition-colors hover:bg-tint hover:text-ink lg:hidden"
+            className="flex size-11 items-center justify-center rounded-full text-[18px] text-pt transition-colors hover:bg-tint hover:text-ink lg:hidden"
           >
             <GearSix aria-hidden="true" />
           </Link>

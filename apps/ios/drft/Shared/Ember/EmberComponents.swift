@@ -6,7 +6,7 @@ enum PhosphorIcon: String {
     case arrowBendUpLeft = "ph-arrow-bend-up-left"
     case arrowLeft = "ph-arrow-left"
     case arrowUpRight = "ph-arrow-up-right"
-    case list = "ph-list"
+    case caretRight = "ph-caret-right"
     case envelopeSimple = "ph-envelope-simple"
     case gearSix = "ph-gear-six"
     case githubLogoFill = "ph-github-logo-fill"
@@ -237,9 +237,14 @@ struct HomeHeader: View {
 
             if let onShowShelf {
                 Button(action: onShowShelf) {
-                    EmberIcon(.list, size: 18)
+                    Text("Thoughts")
+                        .font(StillnessType.control)
+                        .foregroundStyle(Stillness.chromeText)
+                        .padding(.horizontal, 10)
+                        .frame(minHeight: 44)
+                        .contentShape(Rectangle())
                 }
-                .buttonStyle(IconButtonStyle(diameter: 36))
+                .buttonStyle(.plain)
                 .accessibilityLabel("Show thoughts")
             }
 

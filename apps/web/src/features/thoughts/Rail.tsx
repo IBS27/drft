@@ -5,6 +5,7 @@ import {
   GearSix,
   Graph,
   MagnifyingGlass,
+  Moon,
 } from "@phosphor-icons/react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useConvexAuth } from "convex/react";
@@ -364,6 +365,13 @@ export const Rail = memo(function Rail({
       </div>
 
       <div className="flex flex-none flex-col gap-0.5 border-t border-line px-3 pt-2.5 pb-3.5">
+        <Link
+          to="/resting"
+          className="flex items-center gap-2.5 rounded-card px-3 py-2 text-[14px] text-pt transition-colors hover:bg-tint hover:text-ink aria-[current=page]:bg-line/55 aria-[current=page]:font-medium aria-[current=page]:text-ink"
+        >
+          <Moon aria-hidden="true" className="text-[17px]" />
+          Resting
+        </Link>
         <Link
           to="/connections"
           className="flex items-center gap-2.5 rounded-card px-3 py-2 text-[14px] text-pt transition-colors hover:bg-tint hover:text-ink aria-[current=page]:bg-line/55 aria-[current=page]:font-medium aria-[current=page]:text-ink"

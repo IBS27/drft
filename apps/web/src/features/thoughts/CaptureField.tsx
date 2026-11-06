@@ -142,7 +142,7 @@ export function CaptureField({ now }: { now: number }) {
         rows={1}
         aria-label="A thought"
         placeholder="Write a thought…"
-        className="mt-5 min-h-[88px] w-full resize-none overflow-hidden bg-transparent text-[24px] leading-[1.42] tracking-[-0.014em] text-ink caret-dot outline-none placeholder:text-pl/75 sm:mt-7 sm:min-h-[124px] sm:text-[30px]"
+        className="mt-5 min-h-[88px] w-full resize-none overflow-hidden bg-transparent text-[24px] leading-[1.42] tracking-[-0.014em] text-ink caret-dot outline-none placeholder:text-pl sm:mt-7 sm:min-h-[124px] sm:text-[30px]"
       />
       <div className="mt-4 flex h-[42px] items-center justify-between gap-4">
         {kept ? (

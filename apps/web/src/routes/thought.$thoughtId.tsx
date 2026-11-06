@@ -1,4 +1,4 @@
-import { ArrowBendUpLeft, BookmarkSimple, Moon, Sun, X } from "@phosphor-icons/react";
+import { ArrowBendUpLeft, BookmarkSimple, CaretRight, Moon, Sun, X } from "@phosphor-icons/react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
@@ -261,7 +261,7 @@ function ThoughtView() {
                             prewarm(id);
                             prewarm(c.otherId);
                           }}
-                          className="grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-4 rounded-card py-[13px] pr-3 pl-3 text-left"
+                          className="grid w-full grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-3 rounded-card py-[13px] pr-2.5 pl-3 text-left"
                         >
                           <span className="text-[15px] leading-[1.45] whitespace-pre-wrap text-ink">
                             {c.otherText}
@@ -276,6 +276,10 @@ function ThoughtView() {
                               {ageLabel(c.otherCreatedAt, now)}
                             </span>
                           )}
+                          <CaretRight
+                            aria-hidden="true"
+                            className="text-[13px] text-faint transition-opacity group-hover:opacity-0 [@media(hover:none)]:group-hover:opacity-100"
+                          />
                         </Link>
                         <button
                           type="button"

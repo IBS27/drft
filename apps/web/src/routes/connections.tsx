@@ -54,7 +54,7 @@ function Connections() {
           </span>
           <p className="mt-5 text-[17px] font-medium text-ink">Connections opens on a wider screen</p>
           <p className="mt-2 max-w-[30ch] text-[15px] leading-relaxed text-pl">
-            The map of how your thoughts relate needs room. Each thought still shows its related ones.
+            Each thought's page still shows what it's near.
           </p>
         </div>
       </div>

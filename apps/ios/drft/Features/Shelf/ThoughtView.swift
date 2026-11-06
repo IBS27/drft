@@ -542,7 +542,7 @@ private struct RelatedThoughtRow: View {
     private let actionWidth: CGFloat = 112
 
     var body: some View {
-        HStack(alignment: .center, spacing: 16) {
+        HStack(alignment: .center, spacing: 12) {
             Text(connection.otherText)
                 .font(StillnessType.body)
                 .lineSpacing(StillnessType.bodyLineSpacing)
@@ -565,6 +565,9 @@ private struct RelatedThoughtRow: View {
                 .foregroundStyle(Stillness.chromeLabel)
                 .lineLimit(1)
             }
+
+            EmberIcon(.caretRight, size: 12)
+                .foregroundStyle(Stillness.faint)
         }
         .padding(.vertical, 13)
         .padding(.horizontal, 10)
