@@ -560,11 +560,12 @@ private struct RelatedThoughtRow: View {
             }
         }
         .padding(.vertical, 13)
+        .padding(.horizontal, 10)
         .contentShape(Rectangle())
         .onTapGesture(perform: onOpen)
         .frame(width: width, alignment: .leading)
         .fixedSize(horizontal: false, vertical: true)
-        .background(Stillness.page)
+        .background(Stillness.surface)
         // One element per row; without this each text child carried the
         // row's label and VoiceOver read every related thought twice. The
         // swipe-revealed button below stays out; Set aside is the named

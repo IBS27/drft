@@ -173,11 +173,11 @@ export function ConnectionsGraph({
         "link",
         forceLink<LayoutNode, LayoutLink>(layout.links)
           .id((node) => node.id)
-          .distance(92)
+          .distance(124)
           .strength(0.34),
       )
-      .force("charge", forceManyBody().strength(-54).distanceMax(300))
-      .force("collide", forceCollide(13).strength(0.8))
+      .force("charge", forceManyBody().strength(-130).distanceMax(380))
+      .force("collide", forceCollide(26).strength(0.9))
       .force("center", forceCenter(size.width / 2, size.height / 2))
       .force("x", forceX(size.width / 2).strength(0.025))
       .force("y", forceY(size.height / 2).strength(0.025))

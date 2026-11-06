@@ -98,7 +98,7 @@ function EmptyHeld() {
       </h2>
       <p className="mt-2 max-w-[34ch] text-[15px] leading-relaxed text-pl">
         Hold the thoughts you want close, and they gather here side by side.
-        Use the bookmark on any thought, or press h.
+        Use the bookmark on any thought<span className="[@media(hover:none)]:hidden">, or press h</span>.
       </p>
     </div>
   );

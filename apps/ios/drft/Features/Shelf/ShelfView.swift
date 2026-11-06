@@ -329,8 +329,9 @@ struct ShelfView: View {
             HStack(alignment: .firstTextBaseline, spacing: 12) {
                 Text(thought.preview)
                     .font(StillnessType.row)
+                    .lineSpacing(3)
                     .foregroundStyle(Stillness.ink)
-                    .lineLimit(1)
+                    .lineLimit(2)
                     .frame(maxWidth: .infinity, alignment: .leading)
 
                 Text(age)

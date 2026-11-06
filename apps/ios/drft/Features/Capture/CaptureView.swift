@@ -52,9 +52,9 @@ struct CaptureView: View {
 
                 Spacer(minLength: 28)
 
-                VStack(spacing: 22) {
+                VStack(alignment: .leading, spacing: 22) {
                     TimelineView(.periodic(from: .now, by: 15)) { context in
-                        VStack(spacing: 4) {
+                        VStack(alignment: .leading, spacing: 4) {
                             Text(context.date.formatted(.dateTime.weekday(.wide).day().month(.wide)))
                                 .font(StillnessType.sectionTitle)
                                 .foregroundStyle(Stillness.chromeText)
@@ -65,13 +65,19 @@ struct CaptureView: View {
                         }
                     }
 
-                    TextField("", text: $model.text, axis: .vertical)
+                    TextField(
+                        "",
+                        text: $model.text,
+                        prompt: Text("Write a thought…")
+                            .foregroundStyle(Stillness.chromeLabel.opacity(0.75)),
+                        axis: .vertical
+                    )
                         .textFieldStyle(.plain)
                         .textInputAutocapitalization(.never)
                         .font(StillnessType.captureThought)
                         .tracking(StillnessType.captureThoughtTracking)
                         .lineSpacing(StillnessType.captureThoughtLineSpacing)
-                        .multilineTextAlignment(.center)
+                        .multilineTextAlignment(.leading)
                         .foregroundStyle(Stillness.ink)
                         .tint(Stillness.now)
                         .focused($inputIsFocused)
@@ -79,8 +85,8 @@ struct CaptureView: View {
                         .submitLabel(.return)
                         .accessibilityLabel("Thought")
                 }
-                .frame(maxWidth: 345)
-                .padding(.horizontal, 24)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 28)
 
                 Spacer(minLength: 28)
             }

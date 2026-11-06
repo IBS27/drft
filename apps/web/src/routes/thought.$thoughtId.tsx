@@ -186,7 +186,7 @@ function ThoughtView() {
             key={view._id}
             className="mx-auto flex w-full max-w-[64ch] flex-1 flex-col px-6 md:items-center"
           >
-            <div className="group/thought flex w-full flex-col pt-[8vh] pb-2 md:items-center md:pt-[12vh]">
+            <div className="group/thought flex w-full flex-col pt-6 pb-2 md:items-center md:pt-[12vh]">
               <h1 className="max-w-[24ch] text-[27px] leading-[1.32] font-[460] tracking-[-0.024em] text-balance whitespace-pre-wrap text-ink md:text-center md:text-[38px]">
                 {view.text}
               </h1>
@@ -255,7 +255,7 @@ function ThoughtView() {
                             prewarm(id);
                             prewarm(c.otherId);
                           }}
-                          className="grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-4 rounded-card py-[13px] pr-12 pl-3 text-left"
+                          className="grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-4 rounded-card py-[13px] pr-12 pl-3 text-left [@media(hover:none)]:pr-3"
                         >
                           <span className="text-[15px] leading-[1.45] whitespace-pre-wrap text-ink">
                             {c.otherText}
@@ -273,7 +273,7 @@ function ThoughtView() {
                         <button
                           type="button"
                           onClick={() => dismiss(c, i)}
-                          className="absolute top-1/2 right-2 flex size-8 -translate-y-1/2 items-center justify-center rounded-full text-[16px] text-pl opacity-0 transition-[color,background-color,opacity] group-hover:opacity-100 hover:bg-tint-2 hover:text-dot-ink focus-visible:opacity-100 [@media(hover:none)]:text-faint [@media(hover:none)]:opacity-100"
+                          className="absolute top-1/2 right-2 flex size-8 -translate-y-1/2 items-center justify-center rounded-full text-[16px] text-pl opacity-0 transition-[color,background-color,opacity] group-hover:opacity-100 hover:bg-tint-2 hover:text-dot-ink focus-visible:opacity-100 [@media(hover:none)]:hidden"
                           aria-label="set related thought aside"
                         >
                           <X aria-hidden="true" />
@@ -331,7 +331,7 @@ function ThoughtSkeleton() {
       aria-label="loading thought"
       className="mx-auto flex w-full max-w-[64ch] flex-1 flex-col px-6 md:items-center"
     >
-      <div className="flex w-full flex-col pt-[8vh] pb-2 md:items-center md:pt-[12vh]">
+      <div className="flex w-full flex-col pt-6 pb-2 md:items-center md:pt-[12vh]">
         <div className="flex w-full max-w-[24ch] flex-col gap-[19px] text-[27px] md:items-center md:gap-[31px] md:text-[38px]">
           <Skeleton className="h-[18px] w-full" />
           <Skeleton className="h-[18px] w-[62%]" />

@@ -19,8 +19,8 @@
   --pt: #423f38;
   --pl: #6b675e;
   /* Soft elevation for raised surfaces (cards, the capture stage). */
-  --lift: 0 1px 2px color-mix(in oklab, #3a2c1c 6%, transparent),
-    0 8px 24px -12px color-mix(in oklab, #3a2c1c 16%, transparent);
+  --lift: 0 1px 2px color-mix(in oklab, #3a2c1c 5%, transparent),
+    0 6px 16px -10px color-mix(in oklab, #3a2c1c 12%, transparent);
   /* Ember derives everything else from the dot: soft tints for what is
      "now", a darker vermilion for text on those tints (AA on --pg and on
      both tints), and an edge for outlined vermilion controls. */

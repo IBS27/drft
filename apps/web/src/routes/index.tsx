@@ -236,7 +236,7 @@ const ThoughtRow = memo(function ThoughtRow({
         divided ? "divided" : ""
       }`}
     >
-      <span className="min-w-0 flex-1 truncate">{t.preview}</span>
+      <span className="line-clamp-2 min-w-0 flex-1 leading-[1.4]">{t.preview}</span>
       {t.heldAt !== undefined && (
         <BookmarkSimple
           weight="fill"

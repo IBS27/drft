@@ -6,6 +6,7 @@ enum PhosphorIcon: String {
     case arrowBendUpLeft = "ph-arrow-bend-up-left"
     case arrowLeft = "ph-arrow-left"
     case arrowUpRight = "ph-arrow-up-right"
+    case caretDown = "ph-caret-down"
     case envelopeSimple = "ph-envelope-simple"
     case gearSix = "ph-gear-six"
     case githubLogoFill = "ph-github-logo-fill"
@@ -137,7 +138,7 @@ struct PillButtonStyle: ButtonStyle {
                 }
             }
             .shadow(
-                color: kind == .primary && isEnabled ? Stillness.ink.opacity(0.18) : .clear,
+                color: kind == .primary && isEnabled ? Stillness.shadow : .clear,
                 radius: 8,
                 y: 5
             )
@@ -209,7 +210,7 @@ extension View {
             RoundedRectangle(cornerRadius: StillnessSpacing.surfaceRadius, style: .continuous)
                 .strokeBorder(Stillness.hairline, lineWidth: 1)
         }
-        .shadow(color: Stillness.lift, radius: 12, y: 6)
+        .shadow(color: Stillness.lift, radius: 6, y: 3)
     }
 }
 
@@ -252,11 +253,18 @@ struct HomeHeader: View {
         .overlay {
             if let onShowShelf {
                 Button(action: onShowShelf) {
-                    Capsule()
-                        .fill(Stillness.chromeLabel.opacity(0.45))
-                        .frame(width: 38, height: 5)
-                        .frame(width: 88, height: 44)
-                        .contentShape(Rectangle())
+                    HStack(spacing: 5) {
+                        Text("Thoughts")
+                            .font(StillnessType.captionEmphasis)
+                        EmberIcon(.caretDown, size: 12)
+                    }
+                    .foregroundStyle(Stillness.chromeText)
+                    .padding(.horizontal, 12)
+                    .frame(height: 30)
+                    .background(Stillness.surface, in: Capsule())
+                    .overlay { Capsule().strokeBorder(Stillness.hairline, lineWidth: 1) }
+                    .frame(minWidth: 88, minHeight: 44)
+                    .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("Show thoughts")

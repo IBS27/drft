@@ -53,7 +53,7 @@ function Resting() {
               className={`block rounded-card px-3.5 py-3.5 transition-colors hover:bg-tint ${i > 0 ? "divided" : ""}`}
             >
               <div className="flex items-baseline gap-3">
-                <span className="min-w-0 flex-1 truncate text-[16px] text-ink">
+                <span className="line-clamp-2 min-w-0 flex-1 text-[16px] leading-[1.4] text-ink">
                   {t.preview}
                 </span>
                 <span className="flex-none text-[13px] text-pl tabular-nums">
