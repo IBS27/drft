@@ -1,13 +1,13 @@
 import { BackLink } from "./BackLink";
 
 // The header of every page that isn't the collection or a thought: the way
-// back on the left, the page's name at the center.
+// back, then the page's name, on the same column as the page's content
+// (the arrow's glyph lines up with the content's left edge).
 export function PageHeader({ title }: { title: string }) {
   return (
-    <header className="grid h-[72px] grid-cols-[44px_1fr_44px] items-center px-4 md:px-5">
+    <header className="mx-auto flex h-[72px] w-full max-w-[688px] items-center gap-1 px-1.5 md:px-[30px]">
       <BackLink />
-      <h1 className="text-center text-[16px] font-medium tracking-[-0.01em] text-ink">{title}</h1>
-      <span />
+      <h1 className="text-[16px] font-medium tracking-[-0.01em] text-ink">{title}</h1>
     </header>
   );
 }

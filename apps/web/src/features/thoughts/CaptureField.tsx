@@ -142,7 +142,7 @@ export function CaptureField({ now }: { now: number }) {
         rows={1}
         aria-label="A thought"
         placeholder="Write a thought…"
-        className="mt-5 min-h-[88px] w-full resize-none overflow-hidden bg-transparent text-[24px] leading-[1.42] tracking-[-0.014em] text-ink caret-dot outline-none placeholder:text-pl sm:mt-7 sm:min-h-[124px] sm:text-[30px]"
+        className="mt-5 min-h-[88px] w-full resize-none overflow-hidden bg-transparent text-[24px] leading-[1.42] tracking-[-0.014em] text-ink caret-dot outline-none placeholder:text-pl sm:mt-6 sm:min-h-[96px] sm:text-[30px]"
       />
       <div className="mt-4 flex h-[42px] items-center justify-between gap-4">
         {kept ? (
@@ -162,13 +162,11 @@ export function CaptureField({ now }: { now: number }) {
           type="button"
           onClick={keep}
           disabled={!typed}
-          className="inline-flex h-[42px] items-center gap-2.5 rounded-full bg-dot pl-5 pr-5 [@media(hover:hover)]:pr-2 text-[15px] font-semibold text-on-dot shadow-[0_6px_16px_-8px_color-mix(in_oklab,var(--ink)_30%,transparent)] transition-[scale,filter,background-color,color,box-shadow] duration-200 hover:brightness-105 active:scale-[0.98] disabled:bg-line disabled:text-pl disabled:shadow-none disabled:hover:brightness-100 disabled:active:scale-100 motion-reduce:transition-none"
+          className="inline-flex h-[42px] items-center gap-2.5 rounded-full bg-dot px-5 text-[15px] font-semibold text-on-dot shadow-[0_6px_16px_-8px_color-mix(in_oklab,var(--ink)_30%,transparent)] transition-[scale,filter,background-color,color,box-shadow] duration-200 hover:brightness-105 active:scale-[0.98] disabled:bg-line disabled:text-pl disabled:shadow-none disabled:hover:brightness-100 disabled:active:scale-100 motion-reduce:transition-none"
         >
           Keep
           {!coarsePointer && (
-            <kbd className="inline-flex size-[26px] items-center justify-center rounded-full bg-on-dot/20 font-mono text-[13px] [:disabled>&]:bg-pg/70">
-              ↵
-            </kbd>
+            <kbd className="font-mono text-[13px] opacity-70">↵</kbd>
           )}
         </button>
       </div>

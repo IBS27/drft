@@ -132,13 +132,13 @@ function Settings() {
                   consent === undefined
                     ? "invisible"
                     : connections
-                      ? "bg-pt"
+                      ? "bg-switch"
                       : "bg-line ring-1 ring-pl ring-inset"
                 }`}
               >
                 <span
                   aria-hidden="true"
-                  className={`absolute top-0.5 left-0.5 size-5 rounded-full bg-scr shadow-[0_1px_3px_color-mix(in_oklab,var(--ink)_30%,transparent)] transition-transform ${
+                  className={`absolute top-0.5 left-0.5 size-5 rounded-full bg-[#fffaf5] shadow-[0_1px_3px_color-mix(in_oklab,var(--ink)_30%,transparent)] transition-transform ${
                     connections ? "translate-x-4" : ""
                   }`}
                 />

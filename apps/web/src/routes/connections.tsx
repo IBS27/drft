@@ -60,12 +60,10 @@ function Connections() {
       </div>
 
       <div className="hidden min-h-dvh flex-1 flex-col lg:flex">
-        <header className="relative z-10 grid h-[72px] flex-none grid-cols-[1fr_auto_1fr] items-center px-4 md:px-5">
-          <span className="justify-self-start">
-            <BackLink />
-          </span>
+        <header className="relative z-10 flex h-[72px] flex-none items-center gap-1 px-4 md:px-5">
+          <BackLink />
           <h1 className="text-[16px] font-medium tracking-[-0.01em] text-ink">Connections</h1>
-          <span className="flex items-center gap-2.5 justify-self-end">
+          <span className="ml-auto flex items-center gap-2.5">
             {loading && (
               <span aria-label="loading" className="caret h-4 w-0.5 rounded-full bg-dot" />
             )}

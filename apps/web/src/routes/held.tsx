@@ -60,12 +60,10 @@ function Held() {
     <main className="min-h-dvh">
       <Rail activeId={null} now={now} />
       <div className="flex min-h-dvh flex-col lg:pl-72 xl:pl-80">
-        <header className="grid h-[72px] flex-none grid-cols-[1fr_auto_1fr] items-center px-4 md:px-5">
-          <span className="justify-self-start">
-            <BackLink />
-          </span>
-          <h1 className="text-[15px] font-medium text-pt">Held</h1>
-          <span className="justify-self-end">
+        <header className="flex h-[72px] flex-none items-center gap-1 px-1.5 md:px-3.5">
+          <BackLink />
+          <h1 className="text-[16px] font-medium tracking-[-0.01em] text-ink">Held</h1>
+          <span className="ml-auto">
             {cards && cards.length > 0 && <ModeSwitch mode={mode} setMode={setMode} />}
           </span>
         </header>

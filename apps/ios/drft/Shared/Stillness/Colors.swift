@@ -17,7 +17,7 @@ enum Stillness {
     )
     static let hairline = dynamic(
         light: 0xE4E0D7,
-        dark: 0x312F2B,
+        dark: 0x36342F,
         lightHighContrast: 0xB4B4AE,
         darkHighContrast: 0x52524D
     )
@@ -42,10 +42,12 @@ enum Stillness {
     /// Secondary labels: times, captions, hints.
     static let chromeLabel = dynamic(
         light: 0x6B675E,
-        dark: 0x9C988E,
+        dark: 0xAAA59B,
         lightHighContrast: 0x4B4B47,
         darkHighContrast: 0xCDCDC7
     )
+    /// An "on" switch: ink, never the accent (the web's --switch).
+    static let switchOn = dynamic(light: 0x423F38, dark: 0x8A857B)
     /// Soft elevation under raised surfaces (the web's --lift).
     static let lift = dynamic(light: 0x3A2C1C, dark: 0x000000, alpha: 0.06)
     /// The short shadow under a solid primary pill.

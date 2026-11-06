@@ -462,7 +462,10 @@ export function ConnectionsGraph({
                 const connected = degree.get(node.id) ?? 0;
                 const x = node.x ?? size.width / 2;
                 const y = node.y ?? size.height / 2;
-                const radius = nodeRadius(connected);
+                const radius =
+                  node.thought.status === "resting"
+                    ? Math.max(3.5, nodeRadius(connected) - 2)
+                    : nodeRadius(connected);
                 // At rest every connected thought that has room is named,
                 // so the map reads at a glance; while one is in hand, only
                 // its neighbourhood speaks and the rest steps back.

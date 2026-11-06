@@ -14,7 +14,7 @@ function highlight(text: string, query: string): ReactNode {
   );
   return text.split(pattern).map((part, i) =>
     i % 2 === 1 ? (
-      <mark key={i} className="bg-transparent font-semibold text-ink">
+      <mark key={i} className="bg-transparent font-medium text-ink underline decoration-dot/50 underline-offset-[3px]">
         {part}
       </mark>
     ) : (
@@ -53,6 +53,9 @@ export function FindResults({
   if (!hits) return null;
   return (
     <div role="listbox" id={listboxId} aria-label="search results">
+      <p className="px-3 pt-1 pb-1.5 text-[12.5px] text-pl" aria-hidden="true">
+        Best matches
+      </p>
       {hits.map((h, i) => (
         <HitRow
           key={h._id}

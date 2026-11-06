@@ -2,7 +2,7 @@ import { ArrowBendUpLeft, BookmarkSimple, CaretRight, Moon, Sun, X } from "@phos
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useHold } from "../features/held/useHold";
 import { ageLabel, dateLine, heldAge, returnedLabel } from "../features/thoughts/format";
 import { NotesField } from "../features/thoughts/NotesField";
@@ -41,40 +41,27 @@ function NotHere() {
 function BackHeader({
   label,
   loading = false,
-  withRail = false,
   backTo = "/",
 }: {
   label?: string;
   loading?: boolean;
-  withRail?: boolean;
   backTo?: "/" | "/held";
 }) {
+  // On the thought's own column: the way back, then when it was written.
   return (
-    // Spans the page over the fixed rail and notes columns, so only the way
-    // back takes the pointer; the rest of the bar lets clicks through.
-    <header className="pointer-events-none relative z-10 flex h-[72px] items-center px-4 md:px-5">
-      {/* With the rail on screen, the way back starts where the page does,
-          clear of the rail's own wordmark. */}
-      <span className={`pointer-events-auto ${withRail ? "lg:ml-72 xl:ml-80" : ""}`}>
-        <BackLink to={backTo} />
-      </span>
-      <span
-        className={`absolute right-0 text-center text-[14px] text-pl ${
-          withRail
-            ? "left-0 lg:left-72 xl:left-80"
-            : "left-0"
-        }`}
-      >
-        {loading ? <Skeleton className="mx-auto h-[9px] w-28" /> : (label ?? "")}
+    <header className="mx-auto flex h-[72px] w-full max-w-[688px] items-center gap-1.5 px-2.5 md:px-[30px]">
+      <BackLink to={backTo} />
+      <span className="text-[14px] text-pl">
+        {loading ? <Skeleton className="h-[9px] w-28" /> : (label ?? "")}
       </span>
     </header>
   );
 }
 
 // One column, read top to bottom: your words exactly as captured (smaller
-// the longer they run), small chips for where the thought has been (set
-// down, returned to, held), your notes on their ruled lines, what it turned
-// out to be near, and the one quiet action. On wide screens the collection
+// the longer they run), where the thought has been (returned to, set down),
+// what you can do with it (hold, let rest), your notes on their ruled
+// lines, and what it turned out to be near. On wide screens the collection
 // stays in the periphery as an edge rail.
 function ThoughtView() {
   const { thoughtId } = Route.useParams();
@@ -165,15 +152,14 @@ function ThoughtView() {
 
   return (
     <main className="flex min-h-dvh flex-col">
-      <BackHeader
-        label={view ? dateLine(view.createdAt, now) : undefined}
-        loading={view === undefined}
-        withRail
-        backTo={backTo}
-      />
       <Rail activeId={id} now={now} backTo={backTo} />
 
       <div className="flex flex-1 flex-col lg:pl-72 xl:pl-80">
+        <BackHeader
+          label={view ? dateLine(view.createdAt, now) : undefined}
+          loading={view === undefined}
+          backTo={backTo}
+        />
         {view === undefined ? (
           <ThoughtSkeleton />
         ) : view === null ? (
@@ -220,10 +206,19 @@ function ThoughtView() {
                     )}
                   </span>
                 )}
-                {view.status === "open" && (
-                  <HoldChip thoughtId={view._id} heldAt={view.heldAt} now={now} />
-                )}
               </div>
+
+              {/* What you can do with it, together: hold it close, or let
+                  it rest (wake it, once it has). */}
+              <StatusFooter
+                thoughtId={view._id}
+                status={view.status}
+                hold={
+                  view.status === "open" ? (
+                    <HoldChip thoughtId={view._id} heldAt={view.heldAt} now={now} />
+                  ) : null
+                }
+              />
 
               {view.status === "resting" && view.restingNote && (
                 <p className="mt-3 max-w-[44ch] text-[15px] leading-[1.6] text-pl">
@@ -322,7 +317,7 @@ function ThoughtView() {
               )}
             </div>
 
-            <StatusFooter thoughtId={view._id} status={view.status} />
+            <div className="pb-16" />
           </section>
         )}
       </div>
@@ -362,8 +357,8 @@ function ThoughtSkeleton() {
   );
 }
 
-// One quiet action, and the way back from it: "Let it rest" as an outlined
-// vermilion pill, an optional single line about where it landed, and
+// The thought's actions, in one row under it: Hold (passed in) and "Let it
+// rest" as quiet pills, an optional single line about where it landed, and
 // "Wake" to reverse it, since some thoughts wake up.
 //
 // Both transitions land in the view the moment they're clicked, which is why
@@ -373,7 +368,9 @@ function ThoughtSkeleton() {
 function StatusFooter({
   thoughtId,
   status,
+  hold,
 }: {
+  hold: ReactNode;
   thoughtId: Id<"thoughts">;
   status: "open" | "resting";
 }) {
@@ -443,10 +440,10 @@ function StatusFooter({
 
   // The outlined vermilion pill both resting actions wear.
   const outline =
-    "inline-flex h-10 items-center gap-2 rounded-full bg-scr px-[18px] text-[14.5px] font-medium text-pt ring-1 ring-line ring-inset transition-[background-color,color,box-shadow,scale] hover:bg-tint hover:text-ink hover:ring-dot-edge active:scale-[0.98]";
+    "inline-flex h-9 items-center gap-2 rounded-full bg-scr px-4 text-[14px] font-medium text-pt ring-1 ring-line ring-inset transition-[background-color,color,box-shadow,scale] hover:bg-tint hover:text-ink hover:ring-dot-edge active:scale-[0.98]";
 
   return (
-    <footer className="flex w-full flex-col items-start gap-3 pt-10 pb-16">
+    <div className="mt-5 flex w-full flex-col items-start gap-3">
       {leaving ? null : status === "resting" ? (
         <button
           type="button"
@@ -461,6 +458,7 @@ function StatusFooter({
         </button>
       ) : asking ? (
         <>
+          {hold}
           <input
             value={note}
             onChange={(e) => setNote(e.target.value)}
@@ -491,10 +489,13 @@ function StatusFooter({
           </div>
         </>
       ) : (
-        <button type="button" onClick={() => setAsking(true)} className={outline}>
-          <Moon aria-hidden="true" className="text-[16px]" />
-          Let it rest
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          {hold}
+          <button type="button" onClick={() => setAsking(true)} className={outline}>
+            <Moon aria-hidden="true" className="text-[15px]" />
+            Let it rest
+          </button>
+        </div>
       )}
       {failed && (
         <span role="status" className="text-[13px] text-dot-ink">
@@ -503,7 +504,7 @@ function StatusFooter({
             : "Couldn't wake it. Try again."}
         </span>
       )}
-    </footer>
+    </div>
   );
 }
 
@@ -535,8 +536,8 @@ function HoldChip({
       title={held ? "Let go (h)" : "Hold (h)"}
       className={
         held
-          ? "inline-flex h-7 items-center gap-1.5 rounded-full bg-scr px-3 text-[13px] font-medium text-pt ring-1 ring-line ring-inset transition-shadow hover:ring-dot-edge"
-          : "inline-flex h-7 items-center gap-1.5 rounded-full bg-scr px-3 text-[13px] font-medium text-pt ring-1 ring-line ring-inset transition-[color,box-shadow,background-color] hover:bg-tint hover:text-ink hover:ring-dot-edge [@media(hover:none)]:h-9 [@media(hover:none)]:px-3.5"
+          ? "inline-flex h-9 items-center gap-2 rounded-full bg-scr px-4 text-[14px] font-medium text-pt ring-1 ring-line ring-inset transition-shadow hover:ring-dot-edge"
+          : "inline-flex h-9 items-center gap-2 rounded-full bg-scr px-4 text-[14px] font-medium text-pt ring-1 ring-line ring-inset transition-[color,box-shadow,background-color] hover:bg-tint hover:text-ink hover:ring-dot-edge"
       }
     >
       <BookmarkSimple

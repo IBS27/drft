@@ -212,6 +212,13 @@ struct ThoughtView: View {
                     .padding(.top, 12)
             }
 
+            // What you can do with it, right under it.
+            if thought.status == .open {
+                restControls
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.top, 20)
+            }
+
             let connections = displayedConnections(for: thought)
             if !connections.isEmpty {
                 relatedThoughts(
@@ -223,13 +230,6 @@ struct ThoughtView: View {
             if let setAside {
                 setAsideStatus(setAside)
                     .padding(.top, 12)
-            }
-
-            if thought.status == .open {
-                restControls
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.top, 40)
-                    .padding(.bottom, 34)
             }
 
             Spacer(minLength: 34)
@@ -309,7 +309,7 @@ struct ThoughtView: View {
         .padding(8)
         .frame(width: width)
         .emberSurface()
-        .padding(.top, 36)
+        .padding(.top, 32)
     }
 
     private func setAsideStatus(_ state: SetAsideState) -> some View {
