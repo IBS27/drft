@@ -147,8 +147,8 @@ export function NotesField({
   }, [text]);
 
   return (
-    <div className="group mt-9 flex w-full max-w-[36ch] flex-col gap-2.5 xl:fixed xl:inset-y-0 xl:right-0 xl:mt-0 xl:w-80 xl:max-w-none xl:overflow-y-auto xl:border-l xl:border-line xl:bg-scr xl:px-[22px] xl:pt-6 xl:pb-10">
-      <div className="flex h-6 items-center justify-between gap-3 pl-[18px]">
+    <div className="group mt-10 flex w-full max-w-[540px] flex-col gap-2.5 rounded-[14px] bg-scr px-4 pt-4 pb-1 shadow-lift ring-1 ring-line ring-inset xl:fixed xl:inset-y-0 xl:right-0 xl:mt-0 xl:w-80 xl:max-w-none xl:overflow-y-auto xl:rounded-none xl:border-l xl:border-line xl:px-[22px] xl:pt-6 xl:pb-10 xl:shadow-none xl:ring-0">
+      <div className="flex h-6 items-center justify-between gap-3 pl-1 xl:pl-[18px]">
         <label
           htmlFor="thought-notes"
           className="text-[14px] font-medium text-pt transition-colors group-focus-within:text-ink"

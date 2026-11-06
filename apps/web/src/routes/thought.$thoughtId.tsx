@@ -229,7 +229,7 @@ function ThoughtView() {
                   Rows are parted by hairlines that give way to the hover
                   tint, the row's own and the one beneath it. */}
               {view.connections.length > 0 && (
-                <div className="mt-12 w-full max-w-[540px] rounded-[14px] bg-scr p-2 shadow-lift ring-1 ring-line ring-inset">
+                <div className="mt-5 w-full max-w-[540px] rounded-[14px] bg-scr p-2 shadow-lift ring-1 ring-line ring-inset xl:mt-12">
                   <h2 className="flex items-center gap-2 px-3 pt-2 pb-2 text-[14px] font-medium text-pt">
                     Related thoughts
                     <Badge>{view.connections.length}</Badge>
