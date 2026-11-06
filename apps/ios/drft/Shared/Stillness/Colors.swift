@@ -58,6 +58,8 @@ enum Stillness {
     static let lift = dynamic(light: 0x3A2C1C, dark: 0x000000, alpha: 0.06)
     /// The short shadow under a solid primary pill.
     static let shadow = dynamic(light: 0x3A2C1C, dark: 0x000000, alpha: 0.2)
+    /// The lightest wash of the accent: today's returned thought at rest.
+    static let nowWash = dynamic(light: 0xF4EAE4, dark: 0x251B16)
     /// Soft wash for whatever is "now" (Back today, chips, pressed rows).
     static let nowTint = dynamic(light: 0xF1E5DD, dark: 0x2F1E17)
     /// The stronger wash: badges, the open row.

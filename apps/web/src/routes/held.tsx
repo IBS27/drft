@@ -96,13 +96,13 @@ function EmptyHeld() {
       <h2 className="mt-5 text-[19px] font-medium tracking-[-0.01em] text-ink">
         Nothing held yet
       </h2>
-      <p className="mt-2 max-w-[32ch] text-[15px] leading-relaxed text-pretty text-pl">
+      <p className="mt-2 max-w-[32ch] text-[15px] leading-relaxed text-balance text-pl">
         Hold a thought from its page<span className="[@media(hover:none)]:hidden"> (or press h)</span>{" "}
         to keep it close here.
       </p>
       <Link
         to="/"
-        className="mt-5 text-[14px] font-medium text-pt underline decoration-line underline-offset-4 transition-colors hover:text-ink lg:hidden"
+        className="mt-5 text-[14px] font-medium text-pt underline decoration-line underline-offset-4 transition-colors hover:text-ink"
       >
         Back to thoughts
       </Link>

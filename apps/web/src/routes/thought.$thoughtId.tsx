@@ -173,7 +173,7 @@ function ThoughtView() {
           >
             <div className="group/thought flex w-full flex-col pt-4 pb-2 md:pt-[6vh]">
               <h1
-                className={`font-[460] text-pretty whitespace-pre-wrap text-ink ${
+                className={`font-normal text-pretty whitespace-pre-wrap text-ink ${
                   view.text.length > 240
                     ? "text-[19px] leading-[1.55] tracking-[-0.008em] md:text-[21px]"
                     : view.text.length > 90

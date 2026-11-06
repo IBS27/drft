@@ -136,7 +136,9 @@ struct PillButtonStyle: ButtonStyle {
                         isPressed ? Stillness.nowEdge : Stillness.hairline,
                         lineWidth: 1
                     )
-                case .primary, .ink, .quiet:
+                case .ink:
+                    Capsule().strokeBorder(Stillness.hairline, lineWidth: 1)
+                case .primary, .quiet:
                     EmptyView()
                 }
             }

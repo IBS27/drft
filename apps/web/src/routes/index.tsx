@@ -1,5 +1,6 @@
 import {
   ArrowBendUpLeft,
+  CaretRight,
   BookmarkSimple,
   GearSix,
   MagnifyingGlass,
@@ -120,14 +121,14 @@ function Collection() {
         >
           <CaptureField now={now} />
           {pinned && (
-            <div data-capture className="mt-5 hidden w-full max-w-[640px] lg:block">
+            <div data-capture className="mt-6 hidden w-full max-w-[640px] lg:block">
               <BackToday t={pinned} prewarm={prewarm} wide />
             </div>
           )}
         </section>
 
         {hasList && (
-          <section className="mx-auto w-full max-w-2xl flex-1 px-4 pt-8 pb-10 sm:px-6 lg:hidden">
+          <section className="mx-auto w-full max-w-2xl flex-1 px-4 pt-6 pb-10 sm:px-6 lg:hidden">
             {loading ? (
               <SkeletonRows heading count={5} />
             ) : (
@@ -190,20 +191,26 @@ function BackToday({
       onFocus={() => prewarm(t._id)}
       className={
         wide
-          ? "flex flex-col gap-2 rounded-[18px] bg-tint px-10 py-6 ring-1 ring-dot/20 ring-inset transition-colors hover:bg-tint-2"
-          : "mb-1 flex flex-col gap-[5px] rounded-card bg-tint px-3.5 py-3 ring-1 ring-dot/15 ring-inset transition-colors hover:bg-tint-2"
+          ? "group/back flex items-center gap-4 rounded-[18px] bg-[color-mix(in_oklab,var(--dot)_5%,var(--pg))] px-10 py-6 ring-1 ring-dot/20 ring-inset transition-colors hover:bg-tint"
+          : "group/back mb-1 flex items-center gap-3 rounded-[18px] bg-[color-mix(in_oklab,var(--dot)_5%,var(--pg))] px-4 py-3.5 ring-1 ring-dot/20 ring-inset transition-colors hover:bg-tint"
       }
     >
-      <span className="flex items-center gap-1.5 text-[12.5px] font-medium text-dot-ink">
-        <ArrowBendUpLeft aria-hidden="true" className="text-[14px]" />
-        <span className="sr-only">returned today: </span>
-        <span aria-hidden="true">Back today</span>
+      <span className="flex min-w-0 flex-1 flex-col gap-1.5">
+        <span className="flex items-center gap-1.5 text-[12.5px] font-medium text-dot-ink">
+          <ArrowBendUpLeft aria-hidden="true" className="text-[14px]" />
+          <span className="sr-only">returned today: </span>
+          <span aria-hidden="true">Back today</span>
+        </span>
+        <span
+          className={`line-clamp-2 text-ink ${wide ? "text-[20px] leading-[1.4] tracking-[-0.01em]" : "text-[15px] leading-[1.45]"}`}
+        >
+          {t.preview}
+        </span>
       </span>
-      <span
-        className={`line-clamp-2 text-ink ${wide ? "text-[20px] leading-[1.4] tracking-[-0.01em]" : "text-[15px] leading-[1.45]"}`}
-      >
-        {t.preview}
-      </span>
+      <CaretRight
+        aria-hidden="true"
+        className="flex-none text-[15px] text-dot-ink/60 transition-transform group-hover/back:translate-x-0.5"
+      />
     </Link>
   );
 }

@@ -4,6 +4,8 @@ import { useConvexAuth, usePaginatedQuery } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
 import { useEffect, useState } from "react";
 import { ConnectionsGraph } from "../features/connections/ConnectionsGraph";
+import { localDate } from "../features/thoughts/format";
+import { useCachedQuery } from "../features/thoughts/useCachedQuery";
 import { BackLink } from "../features/ui/BackLink";
 import { PageHeader } from "../features/ui/PageHeader";
 
@@ -43,6 +45,12 @@ function Connections() {
   }, [loadMore, status]);
 
   const loading = status !== "Exhausted";
+  const [date] = useState(() => localDate(Date.now()));
+  const collection = useCachedQuery(
+    api.thoughts.collection,
+    isAuthenticated && desktop ? { date } : "skip",
+    `collection:${date}`,
+  );
 
   return (
     <main className="flex min-h-dvh flex-col">
@@ -53,7 +61,7 @@ function Connections() {
             <Graph aria-hidden="true" />
           </span>
           <p className="mt-5 text-[17px] font-medium text-ink">Connections opens on a wider screen</p>
-          <p className="mt-2 max-w-[30ch] text-[15px] leading-relaxed text-pl">
+          <p className="mt-2 max-w-[30ch] text-[15px] leading-relaxed text-balance text-pl">
             Each thought's page still shows what it's near.
           </p>
           <Link
@@ -76,7 +84,11 @@ function Connections() {
           </span>
         </header>
 
-        <ConnectionsGraph thoughts={results} loading={loading} />
+        <ConnectionsGraph
+          thoughts={results}
+          loading={loading}
+          returnedId={collection?.resurfacedId ?? null}
+        />
       </div>
     </main>
   );

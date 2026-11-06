@@ -177,9 +177,12 @@ function fitTransform(
 export function ConnectionsGraph({
   thoughts,
   loading,
+  returnedId,
 }: {
   thoughts: GraphThought[];
   loading: boolean;
+  // Today's returned thought: the one "now" on the map.
+  returnedId: string | null;
 }) {
   const navigate = useNavigate();
   const frameRef = useRef<HTMLDivElement>(null);
@@ -501,6 +504,14 @@ export function ConnectionsGraph({
                   >
                     <circle r={16} fill="transparent" />
                     {selected && <circle r={radius + 6} className="fill-dot/15" />}
+                    {node.id === returnedId && !selected && (
+                      <circle
+                        r={radius + 4}
+                        vectorEffect="non-scaling-stroke"
+                        className="fill-none stroke-dot"
+                        strokeWidth={1.5}
+                      />
+                    )}
                     <circle
                       r={radius}
                       vectorEffect="non-scaling-stroke"

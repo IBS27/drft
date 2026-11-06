@@ -289,34 +289,31 @@ struct ShelfView: View {
         Button {
             open(thought)
         } label: {
-            VStack(alignment: .leading, spacing: 5) {
-                HStack(spacing: 6) {
-                    EmberIcon(.arrowBendUpLeft, size: 14)
-                    Text("Back today")
-                        .font(.geist(12.5, .medium, relativeTo: .footnote))
-                }
-                .foregroundStyle(Stillness.nowInk)
+            HStack(spacing: 12) {
+                VStack(alignment: .leading, spacing: 5) {
+                    HStack(spacing: 6) {
+                        EmberIcon(.arrowBendUpLeft, size: 14)
+                        Text("Back today")
+                            .font(.geist(12.5, .medium, relativeTo: .footnote))
+                    }
+                    .foregroundStyle(Stillness.nowInk)
 
-                Text(thought.preview)
-                    .font(StillnessType.body)
-                    .lineSpacing(StillnessType.bodyLineSpacing)
-                    .foregroundStyle(Stillness.ink)
-                    .lineLimit(2)
-                    .multilineTextAlignment(.leading)
+                    Text(thought.preview)
+                        .font(StillnessType.body)
+                        .lineSpacing(StillnessType.bodyLineSpacing)
+                        .foregroundStyle(Stillness.ink)
+                        .lineLimit(2)
+                        .multilineTextAlignment(.leading)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+                EmberIcon(.caretRight, size: 13)
+                    .foregroundStyle(Stillness.nowInk.opacity(0.6))
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
         }
-        .buttonStyle(RowButtonStyle(
-            background: Stillness.nowTint,
-            pressedBackground: Stillness.nowTintStrong
-        ))
-        .overlay {
-            RoundedRectangle(cornerRadius: StillnessSpacing.cardRadius, style: .continuous)
-                .strokeBorder(Stillness.now.opacity(0.15), lineWidth: 1)
-                .allowsHitTesting(false)
-        }
+        .buttonStyle(BackTodayButtonStyle())
         .simultaneousGesture(
             LongPressGesture(minimumDuration: 0).onEnded { _ in
                 convexService.prewarmThought(id: thought.id)
@@ -382,5 +379,17 @@ struct ShelfView: View {
         withAnimation(.easeInOut(duration: 0.24)) {
             selectedThoughtID = nil
         }
+    }
+}
+
+/// Today's returned thought: a light wash of the accent with a faint edge,
+/// deepening while pressed.
+private struct BackTodayButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        let shape = RoundedRectangle(cornerRadius: StillnessSpacing.surfaceRadius, style: .continuous)
+        configuration.label
+            .background(configuration.isPressed ? Stillness.nowTint : Stillness.nowWash, in: shape)
+            .overlay { shape.strokeBorder(Stillness.now.opacity(0.2), lineWidth: 1) }
+            .contentShape(shape)
     }
 }
