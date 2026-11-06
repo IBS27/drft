@@ -226,9 +226,12 @@ struct ThoughtView: View {
     }
 
     private func returnedLabel(for milliseconds: Double) -> String {
-        let age = ShelfFormatting.group(for: milliseconds, now: .now) == .today
-            ? "today"
-            : ShelfFormatting.ageLabel(for: milliseconds)
+        let date = Date(timeIntervalSince1970: milliseconds / 1000)
+        let age = switch ShelfFormatting.group(for: milliseconds, now: .now) {
+        case .today: "today"
+        case .thisWeek: date.formatted(.dateTime.weekday(.wide))
+        case .earlier: ShelfFormatting.ageLabel(for: milliseconds)
+        }
         return "Returned \(age)"
     }
 

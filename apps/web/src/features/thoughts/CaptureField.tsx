@@ -162,7 +162,7 @@ export function CaptureField({ now }: { now: number }) {
           type="button"
           onClick={keep}
           disabled={!typed}
-          className="inline-flex h-[42px] items-center gap-2.5 rounded-full bg-dot pr-2 pl-5 text-[15px] font-semibold text-on-dot shadow-[0_8px_18px_-12px_color-mix(in_oklab,var(--dot)_60%,transparent)] transition-[scale,filter,background-color,color,box-shadow] duration-200 hover:brightness-105 active:scale-[0.98] disabled:bg-line disabled:text-pl disabled:shadow-none disabled:hover:brightness-100 disabled:active:scale-100 motion-reduce:transition-none"
+          className="inline-flex h-[42px] items-center gap-2.5 rounded-full bg-dot pr-2 pl-5 text-[15px] font-semibold text-on-dot shadow-[0_6px_16px_-8px_color-mix(in_oklab,var(--ink)_30%,transparent)] transition-[scale,filter,background-color,color,box-shadow] duration-200 hover:brightness-105 active:scale-[0.98] disabled:bg-line disabled:text-pl disabled:shadow-none disabled:hover:brightness-100 disabled:active:scale-100 motion-reduce:transition-none"
         >
           Keep
           <kbd className="inline-flex size-[26px] items-center justify-center rounded-full bg-on-dot/20 font-mono text-[13px] [:disabled>&]:bg-pg/70">

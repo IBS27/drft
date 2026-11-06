@@ -101,7 +101,7 @@ function Settings() {
               />
             </div>
             <div className="mt-1 text-[13px] text-pl">
-              One thought returns each morning, {timezone}
+              One thought returns each morning, {timezone.split("/").pop()?.replaceAll("_", " ")} time
             </div>
             {failed && (
               <div role="status" className="mt-1 text-[13px] text-dot-ink">

@@ -302,6 +302,7 @@ export const Rail = memo(function Rail({
       >
         {finding ? (
           <FindResults
+            query={query}
             hits={hits}
             active={active}
             setActive={setActive}
@@ -514,7 +515,7 @@ const RailRow = memo(function RailRow({
         active ? ACTIVE_BAR : "hover:bg-tint"
       }`}
     >
-      <span className="min-w-0 flex-1 truncate text-[15px] text-ink">
+      <span className="line-clamp-2 min-w-0 flex-1 text-[15px] leading-[1.4] text-ink">
         {t.preview}
       </span>
       {held && (

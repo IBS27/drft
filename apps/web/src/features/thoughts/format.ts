@@ -47,9 +47,18 @@ export function ageLabel(at: number, now: Now): string {
     : `${dayMonth} ${String(d.getFullYear()).slice(2)}`;
 }
 
+// When a thought last came back, in words: "today", "Thursday", "23 Jul".
+export function returnedLabel(at: number, now: Now): string {
+  const group = groupOf(at, now);
+  if (group === "today") return "today";
+  if (group === "this week")
+    return new Date(at).toLocaleDateString("en-US", { weekday: "long" });
+  return ageLabel(at, now);
+}
+
 // The thought view's header, set as a sentence: "Tuesday, 9:41 am", or
 // "8 Jul, 9:41 am" once the weekday alone would be ambiguous ("8 Jul 25"
-// from another year). Lists keep ageLabel's lowercase shorthand.
+// from another year). Lists keep ageLabel's shorthand.
 export function dateLine(at: number, now: Now): string {
   const d = new Date(at);
   let day: string;

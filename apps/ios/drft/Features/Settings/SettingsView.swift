@@ -1,6 +1,12 @@
 import SwiftUI
 
 struct SettingsView: View {
+    /// The device's timezone as a place ("Chicago"), not a database id.
+    private static var placeName: String {
+        (TimeZone.current.identifier.split(separator: "/").last.map(String.init) ?? "Local")
+            .replacingOccurrences(of: "_", with: " ")
+    }
+
     @ObservedObject private var authService: AuthService
     @ObservedObject private var convexService: ConvexService
     @Environment(\.dismiss) private var dismiss
@@ -56,8 +62,12 @@ struct SettingsView: View {
                             if let email = authService.email {
                                 HStack(spacing: 12) {
                                     EmberIcon(.envelopeSimple, size: 18)
+                                    Text("Signed in as")
+                                        .font(StillnessType.body)
+                                    Spacer(minLength: 8)
                                     Text(email)
-                                        .font(.geist(14, relativeTo: .subheadline))
+                                        .font(StillnessType.body)
+                                        .foregroundStyle(Stillness.ink)
                                         .lineLimit(1)
                                         .truncationMode(.middle)
                                 }
@@ -101,7 +111,7 @@ struct SettingsView: View {
                                         }
                                 }
 
-                                Text("One thought returns each morning, \(TimeZone.current.identifier)")
+                                Text("One thought returns each morning, \(Self.placeName) time")
                                     .font(StillnessType.caption)
                                     .foregroundStyle(Stillness.chromeLabel)
                                     .fixedSize(horizontal: false, vertical: true)
@@ -153,7 +163,7 @@ struct SettingsView: View {
                             } label: {
                                 Text(isDeletingAccount ? "Deleting…" : "Delete account")
                                     .font(StillnessType.body)
-                                    .foregroundStyle(Stillness.nowInk)
+                                    .foregroundStyle(Stillness.chromeText)
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .padding(.horizontal, 16)
                                     .padding(.vertical, 14)

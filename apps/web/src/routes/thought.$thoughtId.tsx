@@ -4,7 +4,7 @@ import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
 import { useEffect, useRef, useState } from "react";
 import { useHold } from "../features/held/useHold";
-import { ageLabel, dateLine, groupOf, heldAge } from "../features/thoughts/format";
+import { ageLabel, dateLine, heldAge, returnedLabel } from "../features/thoughts/format";
 import { NotesField } from "../features/thoughts/NotesField";
 import { Rail } from "../features/thoughts/Rail";
 import { useThoughtPrewarm } from "../features/thoughts/useThoughtPrewarm";
@@ -195,10 +195,7 @@ function ThoughtView() {
                 {view.lastReturnedAt && (
                   <span className="inline-flex h-7 items-center gap-1.5 rounded-full bg-tint px-3 text-[13px] font-medium text-dot-ink">
                     <ArrowBendUpLeft aria-hidden="true" className="text-[14px]" />
-                    Returned{" "}
-                    {groupOf(view.lastReturnedAt, now) === "today"
-                      ? "today"
-                      : ageLabel(view.lastReturnedAt, now)}
+                    Returned {returnedLabel(view.lastReturnedAt, now)}
                   </span>
                 )}
                 {view.status === "resting" && (

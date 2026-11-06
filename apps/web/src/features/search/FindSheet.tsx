@@ -152,6 +152,7 @@ function Sheet({ close }: { close: () => void }) {
           {query.trim() !== "" && (
             <div className="max-h-[60dvh] overflow-y-auto pb-3 max-lg:max-h-[calc(100dvh-68px)]">
               <FindResults
+                query={query}
                 hits={hits}
                 active={active}
                 setActive={setActive}

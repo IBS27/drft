@@ -137,9 +137,9 @@ struct PillButtonStyle: ButtonStyle {
                 }
             }
             .shadow(
-                color: kind == .primary && isEnabled ? Stillness.now.opacity(0.25) : .clear,
-                radius: 9,
-                y: 6
+                color: kind == .primary && isEnabled ? Stillness.ink.opacity(0.18) : .clear,
+                radius: 8,
+                y: 5
             )
             .contentShape(Capsule())
             .scaleEffect(isPressed ? 0.98 : 1)
