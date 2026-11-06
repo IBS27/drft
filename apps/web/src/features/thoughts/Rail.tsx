@@ -6,6 +6,7 @@ import {
   Graph,
   MagnifyingGlass,
   Moon,
+  PencilSimpleLine,
 } from "@phosphor-icons/react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useConvexAuth } from "convex/react";
@@ -267,6 +268,14 @@ export const Rail = memo(function Rail({
             <Kbd className="bg-scr text-pt ring-1 ring-line ring-inset">⌘K</Kbd>
           </button>
         )}
+        <Link
+          to="/"
+          activeOptions={{ exact: true }}
+          className="-mt-2.5 flex h-10 items-center gap-2.5 rounded-card px-3 text-[14px] text-pt transition-colors hover:bg-tint hover:text-ink aria-[current=page]:hidden"
+        >
+          <PencilSimpleLine aria-hidden="true" className="text-[16px]" />
+          New thought
+        </Link>
       </div>
 
       <div
@@ -499,7 +508,7 @@ const RailRow = memo(function RailRow({
       onPointerDown={() => prewarm(t._id)}
       onFocus={() => prewarm(t._id)}
       aria-current={active ? "page" : undefined}
-      className={`relative flex items-baseline gap-2.5 rounded-card px-3 py-[9px] transition-colors ${
+      className={`relative flex items-baseline gap-4 rounded-card px-3 py-[9px] transition-colors ${
         active ? ACTIVE_BAR : "hover:bg-tint"
       }`}
     >

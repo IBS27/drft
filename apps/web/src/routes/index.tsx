@@ -90,19 +90,11 @@ function Collection() {
           >
             <MagnifyingGlass aria-hidden="true" />
           </button>
-          <Link
-            to="/held"
-            aria-label="Held thoughts"
-            className="flex size-11 items-center justify-center rounded-full text-[18px] text-pt transition-colors hover:bg-tint hover:text-ink lg:hidden"
-          >
-            <BookmarkSimple aria-hidden="true" />
+          <Link to="/held" className="flex h-11 items-center rounded-full px-3 text-[14.5px] font-medium text-pt transition-colors hover:bg-tint hover:text-ink lg:hidden">
+            Held
           </Link>
-          <Link
-            to="/resting"
-            aria-label="Resting thoughts"
-            className="flex size-11 items-center justify-center rounded-full text-[18px] text-pt transition-colors hover:bg-tint hover:text-ink lg:hidden"
-          >
-            <Moon aria-hidden="true" />
+          <Link to="/resting" className="flex h-11 items-center rounded-full px-3 text-[14.5px] font-medium text-pt transition-colors hover:bg-tint hover:text-ink lg:hidden">
+            Resting
           </Link>
           <Link
             to="/settings"
@@ -237,7 +229,7 @@ const ThoughtRow = memo(function ThoughtRow({
       onPointerEnter={() => prewarm(t._id)}
       onPointerDown={() => prewarm(t._id)}
       onFocus={() => prewarm(t._id)}
-      className={`flex items-baseline gap-3 rounded-card px-2.5 py-3.5 text-[16px] text-ink transition-colors hover:bg-tint ${
+      className={`flex items-baseline gap-5 rounded-card px-2.5 py-3.5 text-[16px] text-ink transition-colors hover:bg-tint ${
         divided ? "divided" : ""
       }`}
     >

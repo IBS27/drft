@@ -252,15 +252,15 @@ struct ShelfView: View {
                 Text("New thought")
             }
         }
-        .buttonStyle(PillButtonStyle(kind: .ink, height: 48, horizontalPadding: 24))
-        .padding(.top, 18)
-        .padding(.bottom, 16)
+        .buttonStyle(PillButtonStyle(kind: .ink, height: 44, horizontalPadding: 22))
+        .padding(.top, 12)
+        .padding(.bottom, 12)
         .frame(maxWidth: .infinity)
         .background {
             LinearGradient(
                 stops: [
                     .init(color: Stillness.page.opacity(0), location: 0),
-                    .init(color: Stillness.page, location: 0.38),
+                    .init(color: Stillness.page, location: 0.3),
                 ],
                 startPoint: .top,
                 endPoint: .bottom
@@ -331,7 +331,7 @@ struct ShelfView: View {
         return Button {
             open(thought)
         } label: {
-            HStack(alignment: .firstTextBaseline, spacing: 12) {
+            HStack(alignment: .firstTextBaseline, spacing: 18) {
                 Text(thought.preview)
                     .font(StillnessType.row)
                     .lineSpacing(3)

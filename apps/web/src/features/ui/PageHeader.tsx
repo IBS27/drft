@@ -5,11 +5,11 @@ import { BackLink } from "./BackLink";
 // (the arrow's glyph lines up with the content's left edge).
 export function PageHeader({ title }: { title: string }) {
   return (
-    <header className="mx-auto flex h-[72px] w-full max-w-[688px] items-center gap-1 px-1.5 md:px-[30px] lg:px-10">
+    <header className="mx-auto flex h-[72px] w-full max-w-[688px] items-center gap-1 px-1.5 md:px-[30px] lg:h-auto lg:px-10 lg:pt-12 lg:pb-5">
       <span className="lg:hidden">
         <BackLink />
       </span>
-      <h1 className="text-[16px] font-medium tracking-[-0.01em] text-ink">{title}</h1>
+      <h1 className="text-[17px] font-semibold tracking-[-0.015em] text-ink lg:text-[22px]">{title}</h1>
     </header>
   );
 }

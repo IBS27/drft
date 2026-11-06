@@ -147,25 +147,23 @@ textarea:focus-visible {
   outline: none;
 }
 
-/* Notes are written onto the page, not into a box: one hairline rule
-   per line of text, behind a vermilion margin rule like a notebook's.
-   The bottom padding keeps two empty lines below the text, fading out;
-   the field's auto-height includes it, so the lines grow with the words.
+/* Notes are written on ruled lines on a faint sheet: one hairline per
+   line of text. The bottom padding keeps an empty line below the words;
+   the field's auto-height includes it, so the lines grow with them.
    Line height is fixed in px so every wrapped line sits on its rule. */
 .ruled {
   --lh: 28px;
   line-height: var(--lh);
-  padding: 0 0 calc(var(--lh) * 2) 0;
-  background: linear-gradient(
-      to bottom,
-      transparent calc(var(--lh) - 1px),
-      var(--line) calc(var(--lh) - 1px)
-    )
-    0 0 / 100% var(--lh);
-  /* The margin rule is quiet until you write: then it is "now". */
+  padding: 4px 14px calc(var(--lh) + 8px);
+  background-image: linear-gradient(
+    to bottom,
+    transparent calc(var(--lh) - 1px),
+    var(--line) calc(var(--lh) - 1px)
+  );
+  background-size: calc(100% - 28px) var(--lh);
+  background-position: 14px 4px;
+  background-repeat: repeat-y;
   caret-color: var(--dot);
-  transition: box-shadow 150ms;
-  mask-image: linear-gradient(to bottom, #000 calc(100% - var(--lh) * 0.75), transparent);
 }
 
 /* The settings time picker's options follow the theme. */

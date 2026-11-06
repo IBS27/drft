@@ -60,18 +60,18 @@ function Held() {
     <main className="min-h-dvh">
       <Rail activeId={null} now={now} />
       <div className="flex min-h-dvh flex-col lg:pl-72 xl:pl-80">
-        <header className="flex h-[72px] flex-none items-center gap-1 px-1.5 md:px-3.5 lg:px-6">
+        <header className="mx-auto flex h-[72px] w-full max-w-[688px] flex-none items-center gap-1 px-1.5 md:px-[30px] lg:h-auto lg:px-10 lg:pt-12 lg:pb-5">
           <span className="lg:hidden">
             <BackLink />
           </span>
-          <h1 className="text-[16px] font-medium tracking-[-0.01em] text-ink">Held</h1>
+          <h1 className="text-[17px] font-semibold tracking-[-0.015em] text-ink lg:text-[22px]">Held</h1>
           <span className="ml-auto">
             {cards && cards.length > 0 && <ModeSwitch mode={mode} setMode={setMode} />}
           </span>
         </header>
         <section
           aria-busy={cards === undefined}
-          className="flex flex-1 flex-col px-4 pt-2 pb-16 md:px-6"
+          className="mx-auto flex w-full max-w-[688px] flex-1 flex-col px-4 pt-2 pb-16 md:px-10"
         >
           {cards === undefined ? (
             <BoardSkeleton />
