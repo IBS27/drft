@@ -121,7 +121,7 @@ function Collection() {
         >
           <CaptureField now={now} />
           {pinned && (
-            <div className="mt-5 hidden w-full max-w-[640px] lg:block">
+            <div data-capture className="mt-5 hidden w-full max-w-[640px] lg:block">
               <BackToday t={pinned} prewarm={prewarm} wide />
             </div>
           )}
