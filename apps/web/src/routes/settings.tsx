@@ -92,13 +92,19 @@ function Settings() {
               <label htmlFor="settings-send-time" className="text-[15px] text-ink">
                 Daily thought
               </label>
-              <input
+              <select
                 id="settings-send-time"
-                type="time"
                 value={shown}
+                disabled={!loaded}
                 onChange={(e) => change(e.target.value)}
-                className="h-9 rounded-full bg-pg px-3 text-[15px] text-ink tabular-nums ring-1 ring-line outline-none ring-inset focus:ring-dot-edge"
-              />
+                className="h-9 cursor-pointer appearance-none rounded-full bg-pg px-4 text-center text-[15px] text-ink tabular-nums ring-1 ring-line outline-none ring-inset hover:ring-dot-edge focus-visible:ring-dot-edge"
+              >
+                {timeOptions(shown).map((value) => (
+                  <option key={value} value={value}>
+                    {clockLabel(value)}
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="mt-1 text-[13px] text-pl">
               One thought returns each morning, {timezone.split("/").pop()?.replaceAll("_", " ")} time
@@ -124,13 +130,13 @@ function Settings() {
                   consent === undefined
                     ? "invisible"
                     : connections
-                      ? "bg-dot"
+                      ? "bg-ink"
                       : "bg-line ring-1 ring-pl ring-inset"
                 }`}
               >
                 <span
                   aria-hidden="true"
-                  className={`absolute top-0.5 left-0.5 size-5 rounded-full bg-[#fdfcfa] shadow-[0_1px_3px_color-mix(in_oklab,var(--ink)_30%,transparent)] transition-transform ${
+                  className={`absolute top-0.5 left-0.5 size-5 rounded-full bg-scr shadow-[0_1px_3px_color-mix(in_oklab,var(--ink)_30%,transparent)] transition-transform ${
                     connections ? "translate-x-4" : ""
                   }`}
                 />
@@ -167,6 +173,23 @@ function Settings() {
       </div>
     </main>
   );
+}
+
+// Every half hour of the day, plus the saved time if it falls between
+// (set to the minute on iOS), so the picker always shows what is stored.
+function timeOptions(current: string): string[] {
+  const options = Array.from({ length: 48 }, (_, i) => {
+    const hours = String(Math.floor(i / 2)).padStart(2, "0");
+    return `${hours}:${i % 2 === 0 ? "00" : "30"}`;
+  });
+  if (current && !options.includes(current)) options.push(current);
+  return options.sort();
+}
+
+// "08:00" reads "8:00 am", as times do everywhere else in the room.
+function clockLabel(value: string): string {
+  const [h, m] = value.split(":").map(Number);
+  return `${h % 12 === 0 ? 12 : h % 12}:${String(m).padStart(2, "0")} ${h < 12 ? "am" : "pm"}`;
 }
 
 // Settings groups its rows on quiet surfaces, divided by hairlines.

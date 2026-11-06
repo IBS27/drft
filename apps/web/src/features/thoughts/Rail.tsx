@@ -18,7 +18,6 @@ import {
   useThoughtSearch,
   type Hit,
 } from "../search/useThoughtSearch";
-import { Badge } from "../ui/Badge";
 import { Kbd } from "../ui/Kbd";
 import { Skeleton } from "../ui/Skeleton";
 import { Wordmark } from "../ui/Wordmark";
@@ -71,12 +70,6 @@ export const Rail = memo(function Rail({
     isAuthenticated ? {} : "skip",
     "resting",
   );
-  const held = useCachedQuery(
-    api.thoughts.held,
-    isAuthenticated ? {} : "skip",
-    "held",
-  );
-  const heldCount = held?.length ?? 0;
   const onHeld = useRouterState({ select: (s) => s.location.pathname === "/held" });
   const toggleHold = useHold();
   const search = backTo === "/held" ? FROM_HELD : FROM_HOME;
@@ -216,10 +209,11 @@ export const Rail = memo(function Rail({
   return (
     <nav
       aria-label="workspace"
+      data-finding={finding || undefined}
       className="fixed inset-y-0 left-0 hidden w-72 flex-col border-r border-line bg-scr lg:flex xl:w-80"
     >
-      <div className="flex flex-none flex-col gap-[18px] px-5 pt-6 pb-4">
-        <Link to="/" aria-label="drft, home" className="self-start rounded-card">
+      <div className="flex flex-none flex-col gap-[18px] px-3 pt-6 pb-4">
+        <Link to="/" aria-label="drft, home" className="self-start rounded-card px-3">
           <Wordmark />
         </Link>
         {findOpen ? (
@@ -271,34 +265,27 @@ export const Rail = memo(function Rail({
             <Kbd className="bg-scr text-pt ring-1 ring-line ring-inset">⌘K</Kbd>
           </button>
         )}
-        {(heldCount > 0 || onHeld) && (
-          <Link
+        <Link
             to="/held"
             aria-current={onHeld ? "page" : undefined}
             className={`-mt-2.5 flex h-10 items-center gap-2.5 rounded-card px-3 text-[14px] font-medium transition-colors ${
-              onHeld ? "bg-tint text-ink" : "text-pt hover:bg-tint hover:text-ink"
+              onHeld ? "bg-line/55 text-ink" : "text-pt hover:bg-line/40 hover:text-ink"
             }`}
           >
             <BookmarkSimple
               aria-hidden="true"
               weight="fill"
-              className={`text-[16px] ${onHeld ? "text-dot-ink" : ""}`}
+              className="text-[16px]"
             />
             <span className="flex-1">Held</span>
-            {heldCount > 0 && (
-              <span className="inline-flex h-[18px] items-center rounded-full px-[7px] text-[11.5px] font-medium text-pl tabular-nums ring-1 ring-line ring-inset">
-                {heldCount}
-              </span>
-            )}
           </Link>
-        )}
       </div>
 
       <div
         role="region"
         aria-label="collection"
         aria-busy={loading}
-        className="min-h-0 flex-1 overflow-y-auto px-3 pt-1 pb-4 [scrollbar-gutter:stable]"
+        className="min-h-0 flex-1 overflow-y-auto px-3 pt-1 pb-6 [mask-image:linear-gradient(to_bottom,#000_calc(100%-28px),transparent)] [scrollbar-gutter:stable]"
       >
         {finding ? (
           <FindResults
@@ -325,7 +312,7 @@ export const Rail = memo(function Rail({
             )}
             {ordered.groups.map(({ group, rows }) => (
               <div key={group}>
-                <GroupHeader group={group} count={rows.length} />
+                <GroupHeader group={group} />
                 {rows.map((t) => (
                   <RailRow
                     key={t._id}
@@ -379,14 +366,14 @@ export const Rail = memo(function Rail({
       <div className="flex flex-none flex-col gap-0.5 border-t border-line px-3 pt-2.5 pb-3.5">
         <Link
           to="/connections"
-          className="flex items-center gap-2.5 rounded-card px-3 py-2 text-[14px] text-pt transition-colors hover:bg-tint hover:text-ink aria-[current=page]:bg-tint aria-[current=page]:font-medium aria-[current=page]:text-ink"
+          className="flex items-center gap-2.5 rounded-card px-3 py-2 text-[14px] text-pt transition-colors hover:bg-tint hover:text-ink aria-[current=page]:bg-line/55 aria-[current=page]:font-medium aria-[current=page]:text-ink"
         >
           <Graph aria-hidden="true" className="text-[17px]" />
           Connections
         </Link>
         <Link
           to="/settings"
-          className="flex items-center gap-2.5 rounded-card px-3 py-2 text-[14px] text-pt transition-colors hover:bg-tint hover:text-ink aria-[current=page]:bg-tint aria-[current=page]:font-medium aria-[current=page]:text-ink"
+          className="flex items-center gap-2.5 rounded-card px-3 py-2 text-[14px] text-pt transition-colors hover:bg-tint hover:text-ink aria-[current=page]:bg-line/55 aria-[current=page]:font-medium aria-[current=page]:text-ink"
         >
           <GearSix aria-hidden="true" className="text-[17px]" />
           Settings
@@ -397,18 +384,17 @@ export const Rail = memo(function Rail({
 });
 
 
-function GroupHeader({ group, count }: { group: Group; count: number }) {
+function GroupHeader({ group }: { group: Group }) {
   return (
-    <div className="flex items-center gap-2 px-3 pt-[18px] pb-1.5 text-[13px] font-medium text-pt">
+    <div className="px-3 pt-[18px] pb-1.5 text-[13px] font-medium text-pl">
       {GROUP_LABEL[group]}
-      <Badge>{count}</Badge>
     </div>
   );
 }
 
-// The open row: a deeper tint and a vermilion bar down its left edge.
+// The open row: a neutral wash and a vermilion bar down its left edge.
 const ACTIVE_BAR =
-  "bg-tint-2 before:absolute before:inset-y-2 before:left-0 before:w-[3px] before:rounded-full before:bg-dot";
+  "bg-line/55 before:absolute before:inset-y-2 before:left-0 before:w-[3px] before:rounded-full before:bg-dot";
 
 function RailSkeleton() {
   return (
@@ -527,7 +513,7 @@ const RailRow = memo(function RailRow({
       )}
       {time && (
         <span
-          className={`flex-none text-[12.5px] tabular-nums ${active ? "text-dot-ink" : "text-pl"} ${
+          className={`flex-none text-[12.5px] tabular-nums text-pl ${
             toggleHold ? "group-hover:invisible [@media(hover:none)]:visible" : ""
           }`}
         >

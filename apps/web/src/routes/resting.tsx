@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useConvexAuth } from "convex/react";
+import { Sun } from "@phosphor-icons/react";
+import { useConvexAuth, useMutation } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
 import { useState } from "react";
 import { ageLabel } from "../features/thoughts/format";
@@ -22,6 +23,18 @@ function Resting() {
   );
   const [now] = useState(() => Date.now());
   const prewarm = useThoughtPrewarm();
+  // Waking from the list leaves it at once; Convex confirms behind it.
+  const wake = useMutation(api.thoughts.wake).withOptimisticUpdate(
+    (localStore, { thoughtId }) => {
+      const current = localStore.getQuery(api.thoughts.resting, {});
+      if (current)
+        localStore.setQuery(
+          api.thoughts.resting,
+          {},
+          current.filter((row) => row._id !== thoughtId),
+        );
+    },
+  );
 
   return (
     <main className="min-h-dvh">
@@ -43,20 +56,20 @@ function Resting() {
         ) : (
           <div className="rounded-[14px] bg-scr p-1.5 shadow-lift ring-1 ring-line ring-inset">
           {rows.map((t, i) => (
+            <div key={t._id} className={`group relative ${i > 0 ? "divided" : ""}`}>
             <Link
-              key={t._id}
               to="/thought/$thoughtId"
               params={{ thoughtId: t._id }}
               onPointerEnter={() => prewarm(t._id)}
               onPointerDown={() => prewarm(t._id)}
               onFocus={() => prewarm(t._id)}
-              className={`block rounded-card px-3.5 py-3.5 transition-colors hover:bg-tint ${i > 0 ? "divided" : ""}`}
+              className="block rounded-card py-3.5 pr-24 pl-3.5 transition-colors hover:bg-tint"
             >
               <div className="flex items-baseline gap-3">
                 <span className="line-clamp-2 min-w-0 flex-1 text-[16px] leading-[1.4] text-ink">
                   {t.preview}
                 </span>
-                <span className="flex-none text-[13px] text-pl tabular-nums">
+                <span className="flex-none text-[13px] text-pl tabular-nums transition-opacity group-hover:opacity-0 [@media(hover:none)]:hidden">
                   {t.restedAt ? ageLabel(t.restedAt, now) : ""}
                 </span>
               </div>
@@ -66,6 +79,15 @@ function Resting() {
                 </div>
               )}
             </Link>
+            <button
+              type="button"
+              onClick={() => void wake({ thoughtId: t._id }).catch(() => {})}
+              className="absolute top-3 right-3 inline-flex h-8 items-center gap-1.5 rounded-full bg-scr px-3 text-[13px] font-medium text-pt opacity-0 ring-1 ring-line ring-inset transition-[opacity,color,box-shadow] group-hover:opacity-100 hover:text-ink hover:ring-dot-edge focus-visible:opacity-100 [@media(hover:none)]:opacity-100"
+            >
+              <Sun aria-hidden="true" className="text-[14px]" />
+              Wake
+            </button>
+            </div>
           ))}
           </div>
         )}

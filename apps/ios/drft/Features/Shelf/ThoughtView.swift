@@ -154,10 +154,16 @@ struct ThoughtView: View {
 
             // Your words, exactly as captured, left-aligned as on the web's
             // phone layout.
+            // Longer thoughts step down a size, so a paragraph reads as
+            // writing rather than a headline.
             Text(thought.text)
-                .font(StillnessType.readingThought)
-                .tracking(StillnessType.readingThoughtTracking)
-                .lineSpacing(StillnessType.readingThoughtLineSpacing)
+                .font(thought.text.count > 240
+                    ? .geist(19, relativeTo: .body)
+                    : thought.text.count > 90
+                        ? .geist(23, relativeTo: .title3)
+                        : StillnessType.readingThought)
+                .tracking(thought.text.count > 90 ? -0.2 : StillnessType.readingThoughtTracking)
+                .lineSpacing(thought.text.count > 240 ? 6 : StillnessType.readingThoughtLineSpacing)
                 .multilineTextAlignment(.leading)
                 .foregroundStyle(Stillness.ink)
                 .textSelection(.enabled)
@@ -468,7 +474,7 @@ struct ThoughtView: View {
                     Text("Let it rest")
                 }
             }
-            .buttonStyle(PillButtonStyle(kind: .outline))
+            .buttonStyle(PillButtonStyle(kind: .neutral))
         }
     }
 

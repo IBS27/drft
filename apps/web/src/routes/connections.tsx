@@ -1,9 +1,10 @@
-import { ArrowLeft, Graph } from "@phosphor-icons/react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Graph } from "@phosphor-icons/react";
+import { createFileRoute } from "@tanstack/react-router";
 import { useConvexAuth, usePaginatedQuery } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
 import { useEffect, useState } from "react";
 import { ConnectionsGraph } from "../features/connections/ConnectionsGraph";
+import { BackLink } from "../features/ui/BackLink";
 import { PageHeader } from "../features/ui/PageHeader";
 
 export const Route = createFileRoute("/connections")({
@@ -55,31 +56,16 @@ function Connections() {
           <p className="mt-2 max-w-[30ch] text-[15px] leading-relaxed text-pl">
             The map of how your thoughts relate needs room. Each thought still shows its related ones.
           </p>
-          <Link
-            to="/"
-            className="mt-6 inline-flex h-10 items-center rounded-full px-[18px] text-[14.5px] font-medium text-pt ring-1 ring-line ring-inset transition-colors hover:bg-tint hover:text-ink"
-          >
-            Back to thoughts
-          </Link>
         </div>
       </div>
 
       <div className="hidden min-h-dvh flex-1 flex-col lg:flex">
-        <header className="relative z-10 grid h-[72px] flex-none grid-cols-[1fr_auto_1fr] items-center px-6">
-          <Link
-            to="/"
-            className="inline-flex h-9 items-center gap-2 justify-self-start rounded-full px-3.5 text-[14px] text-pt transition-colors hover:bg-tint hover:text-ink"
-          >
-            <ArrowLeft aria-hidden="true" className="text-[16px]" />
-            Collection
-          </Link>
+        <header className="relative z-10 grid h-[72px] flex-none grid-cols-[1fr_auto_1fr] items-center px-4 md:px-5">
+          <span className="justify-self-start">
+            <BackLink />
+          </span>
           <h1 className="text-[16px] font-medium tracking-[-0.01em] text-ink">Connections</h1>
           <span className="flex items-center gap-2.5 justify-self-end">
-            {results.length > 0 && (
-              <span className="text-[13.5px] text-pl tabular-nums">
-                {results.length} {results.length === 1 ? "thought" : "thoughts"}
-              </span>
-            )}
             {loading && (
               <span aria-label="loading" className="caret h-4 w-0.5 rounded-full bg-dot" />
             )}

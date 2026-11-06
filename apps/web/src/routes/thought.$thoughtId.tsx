@@ -9,7 +9,6 @@ import { NotesField } from "../features/thoughts/NotesField";
 import { Rail } from "../features/thoughts/Rail";
 import { useThoughtPrewarm } from "../features/thoughts/useThoughtPrewarm";
 import { BackLink } from "../features/ui/BackLink";
-import { Badge } from "../features/ui/Badge";
 import { Skeleton } from "../features/ui/Skeleton";
 import type { FunctionReturnType } from "convex/server";
 import type { Id } from "@drft/backend/convex/_generated/dataModel";
@@ -62,7 +61,7 @@ function BackHeader({
       <span
         className={`absolute right-0 text-center text-[14px] font-medium text-pt ${
           withRail
-            ? "left-0 lg:left-72 xl:right-80 xl:left-80"
+            ? "left-0 lg:left-72 xl:left-80"
             : "left-0"
         }`}
       >
@@ -72,11 +71,11 @@ function BackHeader({
   );
 }
 
-// Your words hold the center of the page, exactly as captured (left-aligned
-// on phones). Gathered around them as small chips, where the thought has
-// been: set down, returned to, held. Below, your notes on their ruled lines, then
-// what it turned out to be near, and one action waiting at the bottom edge.
-// On wide screens the collection stays in the periphery as an edge rail.
+// One column, read top to bottom: your words exactly as captured (smaller
+// the longer they run), small chips for where the thought has been (set
+// down, returned to, held), your notes on their ruled lines, what it turned
+// out to be near, and the one quiet action. On wide screens the collection
+// stays in the periphery as an edge rail.
 function ThoughtView() {
   const { thoughtId } = Route.useParams();
   const { from } = Route.useSearch();
@@ -174,7 +173,7 @@ function ThoughtView() {
       />
       <Rail activeId={id} now={now} backTo={backTo} />
 
-      <div className="flex flex-1 flex-col lg:pl-72 xl:pr-80 xl:pl-80">
+      <div className="flex flex-1 flex-col lg:pl-72 xl:pl-80">
         {view === undefined ? (
           <ThoughtSkeleton />
         ) : view === null ? (
@@ -184,14 +183,22 @@ function ThoughtView() {
         ) : (
           <section
             key={view._id}
-            className="mx-auto flex w-full max-w-[64ch] flex-1 flex-col px-6 md:items-center"
+            className="mx-auto flex w-full max-w-[688px] flex-1 flex-col px-6 md:px-10"
           >
-            <div className="group/thought flex w-full flex-col pt-6 pb-2 md:items-center md:pt-[12vh]">
-              <h1 className="max-w-[24ch] text-[27px] leading-[1.32] font-[460] tracking-[-0.024em] text-balance whitespace-pre-wrap text-ink md:text-center md:text-[38px]">
+            <div className="group/thought flex w-full flex-col pt-6 pb-2 md:pt-[9vh]">
+              <h1
+                className={`font-[460] text-pretty whitespace-pre-wrap text-ink ${
+                  view.text.length > 240
+                    ? "text-[19px] leading-[1.55] tracking-[-0.008em] md:text-[21px]"
+                    : view.text.length > 90
+                      ? "text-[23px] leading-[1.4] tracking-[-0.016em] md:text-[28px]"
+                      : "max-w-[24ch] text-[27px] leading-[1.32] tracking-[-0.024em] md:text-[38px]"
+                }`}
+              >
                 {view.text}
               </h1>
 
-              <div className="mt-[18px] flex flex-wrap gap-2 md:justify-center">
+              <div className="mt-[18px] flex flex-wrap gap-2">
                 {view.lastReturnedAt && (
                   <span className="inline-flex h-7 items-center gap-1.5 rounded-full bg-tint px-3 text-[13px] font-medium text-dot-ink">
                     <ArrowBendUpLeft aria-hidden="true" className="text-[14px]" />
@@ -215,7 +222,7 @@ function ThoughtView() {
               </div>
 
               {view.status === "resting" && view.restingNote && (
-                <p className="mt-3 max-w-[44ch] text-[15px] leading-[1.6] text-pl md:text-center">
+                <p className="mt-3 max-w-[44ch] text-[15px] leading-[1.6] text-pl">
                   {view.restingNote}
                 </p>
               )}
@@ -229,10 +236,9 @@ function ThoughtView() {
                   Rows are parted by hairlines that give way to the hover
                   tint, the row's own and the one beneath it. */}
               {view.connections.length > 0 && (
-                <div className="mt-5 w-full max-w-[540px] rounded-[14px] bg-scr p-2 shadow-lift ring-1 ring-line ring-inset xl:mt-12">
+                <div className="mt-5 w-full rounded-[14px] bg-scr p-2 shadow-lift ring-1 ring-line ring-inset">
                   <h2 className="flex items-center gap-2 px-3 pt-2 pb-2 text-[14px] font-medium text-pt">
                     Related thoughts
-                    <Badge>{view.connections.length}</Badge>
                   </h2>
                   <ul>
                     {view.connections.map((c, i) => (
@@ -329,24 +335,20 @@ function ThoughtSkeleton() {
     <section
       aria-busy="true"
       aria-label="loading thought"
-      className="mx-auto flex w-full max-w-[64ch] flex-1 flex-col px-6 md:items-center"
+      className="mx-auto flex w-full max-w-[688px] flex-1 flex-col px-6 md:px-10"
     >
-      <div className="flex w-full flex-col pt-6 pb-2 md:items-center md:pt-[12vh]">
-        <div className="flex w-full max-w-[24ch] flex-col gap-[19px] text-[27px] md:items-center md:gap-[31px] md:text-[38px]">
+      <div className="flex w-full flex-col pt-6 pb-2 md:pt-[9vh]">
+        <div className="flex w-full max-w-[24ch] flex-col gap-[19px] text-[27px] md:gap-[31px] md:text-[38px]">
           <Skeleton className="h-[18px] w-full" />
           <Skeleton className="h-[18px] w-[62%]" />
         </div>
       </div>
 
-      <div className="flex w-full justify-start pt-10 pb-16 md:justify-center">
+      <div className="flex w-full justify-start pt-10 pb-16">
         <Skeleton className="h-10 w-[124px]" />
       </div>
 
-      {/* the notes column's own panel (NotesField at xl), already standing */}
-      <div
-        aria-hidden="true"
-        className="fixed inset-y-0 right-0 hidden w-80 border-l border-line bg-scr xl:block"
-      />
+
     </section>
   );
 }
@@ -432,10 +434,10 @@ function StatusFooter({
 
   // The outlined vermilion pill both resting actions wear.
   const outline =
-    "inline-flex h-10 items-center gap-2 rounded-full px-[18px] text-[14.5px] font-medium text-dot-ink ring-[1.5px] ring-dot-edge ring-inset transition-[background-color,scale] hover:bg-tint active:scale-[0.98]";
+    "inline-flex h-10 items-center gap-2 rounded-full bg-scr px-[18px] text-[14.5px] font-medium text-pt ring-1 ring-line ring-inset transition-[background-color,color,box-shadow,scale] hover:bg-tint hover:text-ink hover:ring-dot-edge active:scale-[0.98]";
 
   return (
-    <footer className="flex w-full max-w-[48ch] flex-col items-start gap-3 pt-10 pb-16 md:items-center">
+    <footer className="flex w-full flex-col items-start gap-3 pt-10 pb-16">
       {leaving ? null : status === "resting" ? (
         <button
           type="button"

@@ -105,6 +105,14 @@ body {
   opacity: 0;
 }
 
+/* While the rail is finding, the capture sheet steps back. */
+[data-capture] {
+  transition: opacity 200ms;
+}
+:root:has(nav[data-finding]) [data-capture] {
+  opacity: 0.4;
+}
+
 /* The room's one loading signal: a blinking caret, never a spinner. */
 @keyframes caret-blink {
   0%,
@@ -155,9 +163,8 @@ textarea:focus-visible {
   );
 }
 
-/* The settings time field edits in place; the browser's clock-icon
-   popup is stock chrome the room doesn't wear (and it vanished against
-   the dark surface anyway). */
-input[type="time"]::-webkit-calendar-picker-indicator {
-  display: none;
+/* The settings time picker's options follow the theme. */
+select option {
+  background: var(--scr);
+  color: var(--ink);
 }

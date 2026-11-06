@@ -15,7 +15,6 @@ import { Rail } from "../features/thoughts/Rail";
 import { ageLabel, localDate, orderRows, GROUP_LABEL } from "../features/thoughts/format";
 import { useCachedQuery } from "../features/thoughts/useCachedQuery";
 import { useThoughtPrewarm } from "../features/thoughts/useThoughtPrewarm";
-import { Badge } from "../features/ui/Badge";
 import { SkeletonRows } from "../features/ui/Skeleton";
 import { Wordmark } from "../features/ui/Wordmark";
 import type { Id } from "@drft/backend/convex/_generated/dataModel";
@@ -56,11 +55,6 @@ function Collection() {
     isAuthenticated ? {} : "skip",
     "resting",
   );
-  const held = useCachedQuery(
-    api.thoughts.held,
-    isAuthenticated ? {} : "skip",
-    "held",
-  );
 
   // One prewarm cache for the whole list, not one per row.
   const prewarm = useThoughtPrewarm();
@@ -77,7 +71,6 @@ function Collection() {
   // settles without moving under you.
   const hasList = loading || thoughts.length > 0;
 
-  const count = thoughts.length;
 
   return (
     <main className="flex min-h-dvh flex-col">
@@ -89,13 +82,6 @@ function Collection() {
           <Wordmark />
         </span>
         <span className="flex items-center gap-0.5">
-          {count > 0 && (
-            <span className="mr-1.5 lg:mr-0">
-              <span className="text-[13.5px] text-pl tabular-nums">
-                {count} {count === 1 ? "thought" : "thoughts"}
-              </span>
-            </span>
-          )}
           <button
             type="button"
             onClick={openSearch}
@@ -104,15 +90,13 @@ function Collection() {
           >
             <MagnifyingGlass aria-hidden="true" />
           </button>
-          {held && held.length > 0 && (
-            <Link
-              to="/held"
-              aria-label="Held thoughts"
-              className="flex size-9 items-center justify-center rounded-full text-[18px] text-pt transition-colors hover:bg-tint hover:text-ink lg:hidden"
-            >
-              <BookmarkSimple aria-hidden="true" />
-            </Link>
-          )}
+          <Link
+            to="/held"
+            aria-label="Held thoughts"
+            className="flex size-9 items-center justify-center rounded-full text-[18px] text-pt transition-colors hover:bg-tint hover:text-ink lg:hidden"
+          >
+            <BookmarkSimple aria-hidden="true" />
+          </Link>
           <Link
             to="/settings"
             aria-label="Settings"
@@ -139,7 +123,7 @@ function Collection() {
         </section>
 
         {hasList && (
-          <section className="mx-auto w-full max-w-2xl flex-1 px-3.5 pt-8 pb-10 lg:hidden">
+          <section className="mx-auto w-full max-w-2xl flex-1 px-4 pt-8 pb-10 sm:px-6 lg:hidden">
             {loading ? (
               <SkeletonRows heading count={5} />
             ) : (
@@ -147,9 +131,8 @@ function Collection() {
                 {pinned && <BackToday t={pinned} prewarm={prewarm} />}
                 {groups.map(({ group, rows }) => (
                   <div key={group}>
-                    <h2 className="flex items-center gap-2 px-2.5 pt-[18px] pb-1 text-[13px] font-medium text-pt">
+                    <h2 className="px-2.5 pt-[18px] pb-1 text-[13px] font-medium text-pl">
                       {GROUP_LABEL[group]}
-                      <Badge>{rows.length}</Badge>
                     </h2>
                     {rows.map((t, i) => (
                       <ThoughtRow

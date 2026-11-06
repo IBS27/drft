@@ -376,7 +376,7 @@ private struct EmberSwitchStyle: ToggleStyle {
 
                 ZStack(alignment: configuration.isOn ? .trailing : .leading) {
                     Capsule()
-                        .fill(configuration.isOn ? Stillness.now : Stillness.hairline)
+                        .fill(configuration.isOn ? Stillness.ink : Stillness.hairline)
                         .overlay {
                             if !configuration.isOn {
                                 Capsule().strokeBorder(Stillness.chromeLabel, lineWidth: 1)
@@ -384,7 +384,7 @@ private struct EmberSwitchStyle: ToggleStyle {
                         }
 
                     Circle()
-                        .fill(Stillness.page)
+                        .fill(Stillness.surface)
                         .frame(width: 20, height: 20)
                         .shadow(color: Stillness.ink.opacity(0.3), radius: 1.5, y: 1)
                         .padding(2)

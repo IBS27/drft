@@ -10,11 +10,10 @@ const NOTES_LIMIT = 20_000;
 
 // Your own writing next to the thought: one field, no save button. What you
 // type is the truth while you type it — the server is only told, a moment
-// after you pause, and never talks back into a field you are in. On wide
-// screens (xl) the field lives in the right margin opposite the rail, so
-// the thought never moves however much is written; narrower, it folds in
-// under the thought. Either way it is written onto ruled lines (`.ruled`
-// in index.css), which grow with the field. A quiet status beside the label
+// after you pause, and never talks back into a field you are in. It sits
+// on a card under the thought, in the same column as everything else, and
+// is written onto ruled lines (`.ruled` in index.css), which grow with the
+// field. A quiet status beside the label
 // says "Saving…" while words wait to be sent and "Saved" once the latest
 // ones are; it only reports, and never holds up a save.
 export function NotesField({
@@ -129,8 +128,7 @@ export function NotesField({
     };
   }, []);
 
-  // Grows with its content, and re-measures when its width changes (the
-  // column is a different width on each side of xl); the page scrolls,
+  // Grows with its content, and re-measures when its width changes; the page scrolls,
   // never the field. The measure includes the ruled padding below the
   // text, so there are always empty lines left to write on.
   useLayoutEffect(() => {
@@ -147,8 +145,8 @@ export function NotesField({
   }, [text]);
 
   return (
-    <div className="group mt-10 flex w-full max-w-[540px] flex-col gap-2.5 rounded-[14px] bg-scr px-4 pt-4 pb-1 shadow-lift ring-1 ring-line ring-inset xl:fixed xl:inset-y-0 xl:right-0 xl:mt-0 xl:w-80 xl:max-w-none xl:overflow-y-auto xl:rounded-none xl:border-l xl:border-line xl:px-[22px] xl:pt-6 xl:pb-10 xl:shadow-none xl:ring-0">
-      <div className="flex h-6 items-center justify-between gap-3 pl-1 xl:pl-[18px]">
+    <div className="group mt-9 flex w-full flex-col gap-2.5 rounded-[14px] bg-scr px-4 pt-4 pb-1 shadow-lift ring-1 ring-line ring-inset">
+      <div className="flex h-6 items-center justify-between gap-3 pl-1">
         <label
           htmlFor="thought-notes"
           className="text-[14px] font-medium text-pt transition-colors group-focus-within:text-ink"

@@ -1,3 +1,4 @@
+import { Moon } from "@phosphor-icons/react";
 import { useEffect, useRef, type ReactNode } from "react";
 import type { Id } from "@drft/backend/convex/_generated/dataModel";
 import { ageLabel, firstLine } from "../thoughts/format";
@@ -25,7 +26,7 @@ function highlight(text: string, query: string): ReactNode {
 // Hits wear the collection's own row clothes (first line, age, the same
 // tinted highlight) so finding never looks like a different place, only
 // the collection answering to fewer names. Resting thoughts carry a small
-// "Set down" tag.
+// moon.
 export function FindResults({
   query,
   hits,
@@ -123,9 +124,7 @@ function HitRow({
         {highlight(firstLine(hit.text), query)}
       </span>
       {hit.status === "resting" && (
-        <span className="inline-flex h-[22px] flex-none items-center rounded-full px-[9px] text-[12px] text-pt ring-1 ring-line ring-inset">
-          Set down
-        </span>
+        <Moon aria-label="set down" className="flex-none text-[13px] text-pl" />
       )}
       <span
         className="flex-none text-[12.5px] text-pl tabular-nums"

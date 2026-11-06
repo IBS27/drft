@@ -90,7 +90,7 @@ function Held() {
 function EmptyHeld() {
   return (
     <div className="flex flex-1 flex-col items-center justify-center px-6 pb-24 text-center">
-      <span className="flex size-12 items-center justify-center rounded-full bg-tint text-[22px] text-dot-ink">
+      <span className="flex size-12 items-center justify-center rounded-full bg-line/70 text-[22px] text-pt">
         <BookmarkSimple aria-hidden="true" weight="fill" />
       </span>
       <h2 className="mt-5 text-[19px] font-medium tracking-[-0.01em] text-ink">
