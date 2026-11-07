@@ -127,7 +127,7 @@ function Collection() {
         </section>
 
         {hasList && (
-          <section className="mx-auto w-full max-w-2xl flex-1 px-4 pt-6 pb-10 sm:px-6 lg:hidden">
+          <section className="mx-auto w-full max-w-2xl flex-1 px-4 pt-4 pb-10 sm:px-6 lg:hidden">
             {loading ? (
               <SkeletonRows heading count={5} />
             ) : (

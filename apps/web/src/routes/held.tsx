@@ -134,7 +134,7 @@ function ModeSwitch({
       className="inline-flex rounded-full p-[3px] ring-1 ring-line ring-inset"
     >
       {option("recent", "Recent")}
-      {option("together", "Together")}
+      {option("together", "By connection")}
     </span>
   );
 }

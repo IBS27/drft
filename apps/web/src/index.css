@@ -163,3 +163,11 @@ select option {
   background: var(--scr);
   color: var(--ink);
 }
+
+/* While you're finding, capture steps back so the results lead. */
+[data-capture] {
+  transition: opacity 160ms ease;
+}
+:root:has(nav[data-finding]) [data-capture] {
+  opacity: 0.5;
+}

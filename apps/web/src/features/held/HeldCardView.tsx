@@ -79,7 +79,7 @@ export const HeldCardView = memo(function HeldCardView({
             {notes}
           </p>
         )}
-        <span className="mt-3 flex items-center gap-2 text-[13.5px] text-pl">
+        <span className="mt-2.5 flex items-center gap-2 text-[13px] text-pl">
           <span className="flex-1 whitespace-nowrap tabular-nums">Held {age.long}</span>
           {links > 0 && (
             <span title="Echoes another held thought" className="inline-flex items-center gap-1.5 whitespace-nowrap">
