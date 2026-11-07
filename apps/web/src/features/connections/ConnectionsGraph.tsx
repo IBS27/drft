@@ -157,6 +157,23 @@ function placeLabels(
     const y = node.y ?? 0;
     return { id: node.id, box: { x0: x - r, y0: y - r, x1: x + r, y1: y + r } };
   });
+  // Points along every edge, so a label never sits on a line.
+  const edgePoints: { x: number; y: number; ends: [string, string] }[] = [];
+  for (const link of links) {
+    const a = byId.get(link.sourceId);
+    const b = byId.get(link.targetId);
+    if (!a || !b) continue;
+    const dx = (b.x ?? 0) - (a.x ?? 0);
+    const dy = (b.y ?? 0) - (a.y ?? 0);
+    const steps = Math.max(1, Math.ceil(Math.hypot(dx, dy) / 6));
+    for (let i = 1; i < steps; i += 1) {
+      edgePoints.push({
+        x: (a.x ?? 0) + (dx * i) / steps,
+        y: (a.y ?? 0) + (dy * i) / steps,
+        ends: [link.sourceId, link.targetId],
+      });
+    }
+  }
   const placed: Box[] = [];
   const result = new Map<string, LabelSide>();
   const order = [...nodes]
@@ -174,7 +191,14 @@ function placeLabels(
       const box = labelBox(node.x ?? 0, node.y ?? 0, r, lines, side);
       const hits =
         placed.filter((other) => overlaps(box, other)).length * 2 +
-        nodeBoxes.filter((n) => n.id !== node.id && overlaps(box, n.box)).length;
+        nodeBoxes.filter((n) => n.id !== node.id && overlaps(box, n.box)).length +
+        (edgePoints.some(
+          (p) =>
+            !p.ends.includes(node.id) &&
+            p.x > box.x0 && p.x < box.x1 && p.y > box.y0 && p.y < box.y1,
+        )
+          ? 1
+          : 0);
       if (!best || hits < best.hits) best = { side, box, hits };
       if (hits === 0) break;
     }
