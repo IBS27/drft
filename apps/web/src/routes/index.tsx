@@ -124,6 +124,11 @@ function Collection() {
           }
         >
           <CaptureField now={now} />
+          {pinned && (
+            <div data-capture className="mt-6 hidden w-full max-w-[608px] lg:block">
+              <BackToday t={pinned} prewarm={prewarm} wide />
+            </div>
+          )}
         </section>
 
         {hasList && (
@@ -164,9 +169,11 @@ function Collection() {
 function BackToday({
   t,
   prewarm,
+  wide = false,
 }: {
   t: Row;
   prewarm: (thoughtId: Id<"thoughts">) => void;
+  wide?: boolean;
 }) {
   return (
     <Link
@@ -175,7 +182,9 @@ function BackToday({
       onPointerEnter={() => prewarm(t._id)}
       onPointerDown={() => prewarm(t._id)}
       onFocus={() => prewarm(t._id)}
-      className="group/back mb-1 flex items-center gap-3 rounded-[14px] bg-(--back-wash) px-4 py-3.5 ring-1 ring-(--back-edge) ring-inset transition-colors hover:bg-tint"
+      className={`group/back flex items-center rounded-[14px] bg-(--back-wash) ring-1 ring-(--back-edge) ring-inset transition-colors hover:bg-tint ${
+        wide ? "gap-4 px-10 py-6" : "mb-1 gap-3 px-4 py-3.5"
+      }`}
     >
       <span className="flex min-w-0 flex-1 flex-col gap-1.5">
         <span className="flex items-center gap-1.5 text-[12.5px] font-medium text-dot-ink">
@@ -183,7 +192,11 @@ function BackToday({
           <span className="sr-only">returned today: </span>
           <span aria-hidden="true">Back today</span>
         </span>
-        <span className="line-clamp-2 text-[15px] leading-[1.45] text-ink">{t.preview}</span>
+        <span
+          className={`line-clamp-2 text-ink ${wide ? "text-[20px] leading-[1.4] tracking-[-0.01em]" : "text-[15px] leading-[1.45]"}`}
+        >
+          {t.preview}
+        </span>
       </span>
       <CaretRight
         aria-hidden="true"
@@ -218,7 +231,7 @@ const ThoughtRow = memo(function ThoughtRow({
         divided ? "divided" : ""
       }`}
     >
-      <span className="line-clamp-2 min-w-0 flex-1 leading-[1.4]">{t.preview}</span>
+      <span className="line-clamp-3 min-w-0 flex-1 leading-[1.4]">{t.preview}</span>
       <span className="inline-flex min-w-[48px] flex-none items-baseline justify-end gap-1 text-[13px] text-pl tabular-nums">
         {t.heldAt !== undefined && (
           <BookmarkSimple weight="fill" aria-label="held" className="translate-y-[1px] text-[11px] text-pt" />

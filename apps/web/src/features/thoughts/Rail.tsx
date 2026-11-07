@@ -8,7 +8,7 @@ import {
   Moon,
   PencilSimpleLine,
 } from "@phosphor-icons/react";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useConvexAuth } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
 import { memo, useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
@@ -73,6 +73,8 @@ export const Rail = memo(function Rail({
     "resting",
   );
   const toggleHold = useHold();
+  // On home the day's thought has the main column; the rail doesn't repeat it.
+  const onHome = useRouterState({ select: (s) => s.location.pathname === "/" });
   const search = backTo === "/held" ? FROM_HELD : FROM_HOME;
   const [restingOpen, setRestingOpen] = useState(false);
   const navigate = useNavigate();
@@ -289,7 +291,7 @@ export const Rail = memo(function Rail({
         <Link
           to="/"
           activeOptions={{ exact: true }}
-          className="-mt-2.5 flex h-10 items-center gap-2.5 rounded-card px-3 text-[14px] text-pt transition-colors hover:bg-tint hover:text-ink aria-[current=page]:bg-line/55 aria-[current=page]:font-medium aria-[current=page]:text-ink"
+          className="-mt-2.5 flex h-10 items-center gap-2.5 rounded-card px-3 text-[14px] text-pt transition-colors hover:bg-tint hover:text-ink"
         >
           <PencilSimpleLine aria-hidden="true" className="text-[16px]" />
           New thought
@@ -318,7 +320,7 @@ export const Rail = memo(function Rail({
           <RailSkeleton />
         ) : (
           <>
-            {ordered.pinned && (
+            {ordered.pinned && !onHome && (
               <BackToday
                 t={ordered.pinned}
                 active={ordered.pinned._id === activeId}

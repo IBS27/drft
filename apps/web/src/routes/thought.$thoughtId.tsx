@@ -534,7 +534,8 @@ function HoldChip({
       title={held ? "Let go (h)" : "Hold (h)"}
       className={
         held
-          ? "inline-flex h-9 items-center gap-2 rounded-full bg-line/70 px-4 text-[14px] font-medium text-ink shadow-[inset_0_1px_2px_color-mix(in_oklab,var(--ink)_12%,transparent)] transition-shadow hover:ring-1 hover:ring-dot-edge hover:ring-inset"
+          ? // A state, set quietly in words like iOS; still a way to let go.
+            "-ml-3 inline-flex h-9 items-center gap-2 rounded-full px-3 text-[14px] font-medium text-pt transition-colors hover:bg-tint hover:text-ink"
           : "inline-flex h-9 items-center gap-2 rounded-full bg-scr px-4 text-[14px] font-medium text-pt ring-1 ring-line ring-inset transition-[color,box-shadow,background-color] hover:bg-tint hover:text-ink hover:ring-dot-edge"
       }
     >
