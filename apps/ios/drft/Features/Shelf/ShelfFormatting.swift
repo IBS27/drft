@@ -89,7 +89,7 @@ enum ShelfFormatting {
         }
 
         // Set as a sentence, like the web's thought header: "Tuesday, 9:41 am".
-        return "\(day), \(time(for: date).lowercased())"
+        return "\(day) · \(time(for: date).lowercased())"
     }
 
     static func ageLabel(for milliseconds: Double, now: Date = .now) -> String {

@@ -219,24 +219,15 @@ struct ThoughtView: View {
                 HStack(spacing: 8) {
                     // Held is set on the web; here it is shown, not changed.
                     if let heldAt = thought.heldAt {
-                        // The web's pressed chip, without the press: a soft
-                        // fill and no edge, with how long beside it.
-                        HStack(spacing: 8) {
-                            HStack(spacing: 6) {
-                                EmberIcon(.bookmarkSimpleFill, size: 13)
-                                Text("Held")
-                            }
-                            .font(StillnessType.control)
-                            .foregroundStyle(Stillness.ink)
-                            .padding(.horizontal, 16)
-                            .frame(minHeight: 44)
-                            .background(Stillness.hairline.opacity(0.6), in: Capsule())
-
-                            Text(heldAge(heldAt))
-                                .font(.geist(14.5, .regular, relativeTo: .subheadline))
-                                .foregroundStyle(Stillness.chromeLabel)
-                                .padding(.trailing, 6)
+                        // Read-only here, so it reads as a fact, not a control:
+                        // only "Let it rest" looks pressable.
+                        HStack(spacing: 6) {
+                            EmberIcon(.bookmarkSimpleFill, size: 13)
+                            Text("Held · \(heldAge(heldAt))")
                         }
+                        .font(.geist(14.5, .regular, relativeTo: .subheadline))
+                        .foregroundStyle(Stillness.chromeLabel)
+                        .padding(.trailing, 10)
                         .accessibilityElement(children: .combine)
                     }
                     restControls

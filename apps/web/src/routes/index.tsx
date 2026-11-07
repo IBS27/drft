@@ -24,6 +24,9 @@ export const Route = createFileRoute("/")({ component: Collection });
 
 const NO_ROWS: Row[] = [];
 
+const HEADER_ICON =
+  "flex size-11 items-center justify-center rounded-full text-[17px] text-pt transition-colors hover:text-ink lg:hidden [&>svg]:box-content [&>svg]:size-[17px] [&>svg]:rounded-full [&>svg]:bg-scr [&>svg]:p-[7.5px] [&>svg]:ring-1 [&>svg]:ring-line";
+
 type Row = {
   _id: Id<"thoughts">;
   preview: string;
@@ -78,15 +81,23 @@ function Collection() {
           <Wordmark />
         </span>
         <span className="flex items-center gap-0.5">
+          {/* Held and Resting share the header on phones, so capture sits
+              right under it. */}
+          <Link to="/held" aria-label="Held" className={HEADER_ICON}>
+            <BookmarkSimple aria-hidden="true" />
+          </Link>
+          <Link to="/resting" aria-label="Resting" className={HEADER_ICON}>
+            <Moon aria-hidden="true" />
+          </Link>
           <button
             type="button"
             onClick={openSearch}
             aria-label="Find a thought"
-            className="flex size-11 items-center justify-center rounded-full text-[17px] text-pt transition-colors hover:text-ink lg:hidden [&>svg]:box-content [&>svg]:size-[17px] [&>svg]:rounded-full [&>svg]:bg-scr [&>svg]:p-[7.5px] [&>svg]:ring-1 [&>svg]:ring-line"
+            className={HEADER_ICON}
           >
             <MagnifyingGlass aria-hidden="true" />
           </button>
-          <Link to="/settings" aria-label="Settings" className="flex size-11 items-center justify-center rounded-full text-[17px] text-pt transition-colors hover:text-ink lg:hidden [&>svg]:box-content [&>svg]:size-[17px] [&>svg]:rounded-full [&>svg]:bg-scr [&>svg]:p-[7.5px] [&>svg]:ring-1 [&>svg]:ring-line">
+          <Link to="/settings" aria-label="Settings" className={HEADER_ICON}>
             <GearSix aria-hidden="true" />
           </Link>
         </span>
@@ -94,24 +105,6 @@ function Collection() {
 
       <Rail activeId={null} now={now} />
 
-        {/* The other places, by name, within reach under the header. */}
-        <nav aria-label="places" className="flex gap-2 overflow-x-auto px-5 pt-1 pb-1 [scrollbar-width:none] lg:hidden">
-          {(
-            [
-              ["/held", "Held", BookmarkSimple],
-              ["/resting", "Resting", Moon],
-            ] as const
-          ).map(([to, name, Icon]) => (
-            <Link
-              key={to}
-              to={to}
-              className="inline-flex h-9 flex-none items-center gap-1.5 rounded-full bg-scr px-3.5 text-[13.5px] font-medium text-pt ring-1 ring-line ring-inset transition-colors hover:bg-tint hover:text-ink"
-            >
-              <Icon aria-hidden="true" className="text-[14px]" />
-              {name}
-            </Link>
-          ))}
-        </nav>
 
       <div className="flex flex-1 flex-col lg:pl-72 xl:pl-80">
         {/* Capture is the first thing on screen, before any query answers:

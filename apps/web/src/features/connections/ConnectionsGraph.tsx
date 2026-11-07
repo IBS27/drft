@@ -639,7 +639,7 @@ export function ConnectionsGraph({
           </svg>
 
           {!active && (
-            <div className="pointer-events-none absolute inset-x-7 bottom-6 flex items-center justify-between text-[13px] text-pl">
+            <div className="pointer-events-none absolute right-[max(28px,calc(50%-304px))] bottom-6 left-[max(28px,calc(50%-304px))] flex items-center justify-between gap-3 text-[13px] text-pl">
               <p className="flex items-center rounded-full bg-scr/90 px-4 py-2 ring-1 ring-line ring-inset backdrop-blur">
               {returnedId && (
                 <span className="mr-3 inline-flex items-center gap-1.5">

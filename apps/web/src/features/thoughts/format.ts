@@ -56,8 +56,8 @@ export function returnedLabel(at: number, now: Now): string {
   return ageLabel(at, now);
 }
 
-// The thought view's header, set as a sentence: "Tuesday, 9:41 am", or
-// "8 Jul, 9:41 am" once the weekday alone would be ambiguous ("8 Jul 25"
+// The thought view's header, in the composer's form: "Tuesday · 9:41 am",
+// or "8 Jul · 9:41 am" once the weekday alone would be ambiguous ("8 Jul 25"
 // from another year). Lists keep ageLabel's shorthand.
 export function dateLine(at: number, now: Now): string {
   const d = new Date(at);
@@ -70,7 +70,7 @@ export function dateLine(at: number, now: Now): string {
   } else {
     day = d.toLocaleDateString("en-US", { weekday: "long" });
   }
-  return `${day}, ${time(d)}`;
+  return `${day} · ${time(d)}`;
 }
 
 export const firstLine = (text: string) => text.split("\n")[0];

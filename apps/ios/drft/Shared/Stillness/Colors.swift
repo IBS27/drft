@@ -55,7 +55,7 @@ enum Stillness {
     static let inkPill = dynamic(light: 0x2F2C27, dark: 0x4D4943)
     static let onInkPill = dynamic(light: 0xF5F3EE, dark: 0xFBF9F5)
     /// An "on" switch: ink, never the accent (the web's --switch).
-    static let switchOn = dynamic(light: 0x2F2C27, dark: 0xB8B2A6)
+    static let switchOn = dynamic(light: 0x2F2C27, dark: 0xDCD6CB)
     /// The switch knob: the opposite of its track (the web's --knob).
     static let switchKnob = dynamic(light: 0xFBFAF7, dark: 0x201F1C)
     /// Soft elevation under raised surfaces (the web's --lift).

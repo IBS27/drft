@@ -8,7 +8,7 @@ import {
   Moon,
   PencilSimpleLine,
 } from "@phosphor-icons/react";
-import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useConvexAuth } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
 import { memo, useCallback, useEffect, useId, useMemo, useState } from "react";
@@ -73,8 +73,6 @@ export const Rail = memo(function Rail({
     "resting",
   );
   const toggleHold = useHold();
-  // On home the day's thought has the main column; the rail doesn't repeat it.
-  const onHome = useRouterState({ select: (s) => s.location.pathname === "/" });
   const search = backTo === "/held" ? FROM_HELD : FROM_HOME;
   const [restingOpen, setRestingOpen] = useState(false);
   const navigate = useNavigate();
@@ -282,7 +280,7 @@ export const Rail = memo(function Rail({
         role="region"
         aria-label="collection"
         aria-busy={loading}
-        className="min-h-0 flex-1 overflow-y-auto px-3 pt-1 pb-10 [scrollbar-width:none] [mask-image:linear-gradient(to_bottom,#000_calc(100%-28px),transparent)]"
+        className="min-h-0 flex-1 overflow-y-auto px-3 pt-1 pb-14 [scrollbar-width:none] [mask-image:linear-gradient(to_bottom,#000_calc(100%-24px),transparent)]"
       >
         {finding ? (
           <FindResults
@@ -299,7 +297,7 @@ export const Rail = memo(function Rail({
           <RailSkeleton />
         ) : (
           <>
-            {ordered.pinned && !onHome && (
+            {ordered.pinned && (
               <BackToday
                 t={ordered.pinned}
                 active={ordered.pinned._id === activeId}
@@ -309,7 +307,7 @@ export const Rail = memo(function Rail({
             )}
             {ordered.groups.map(({ group, rows }, gi) => (
               <div key={group}>
-                <GroupHeader group={group} first={gi === 0 && !(ordered.pinned && !onHome)} />
+                <GroupHeader group={group} first={gi === 0 && !ordered.pinned} />
                 {rows.map((t, i) => (
                   <RailRow
                     key={t._id}
