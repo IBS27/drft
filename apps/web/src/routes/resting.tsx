@@ -50,11 +50,11 @@ function Resting() {
             Nothing is resting.
           </p>
         ) : (
-          <div className="rounded-[14px] bg-scr p-1.5 ring-1 ring-line ring-inset">
+          <div className="border-t border-line">
           {rows.map((t, i) => (
             <div
               key={t._id}
-              className={`flex items-center gap-2 rounded-card pr-2.5 transition-colors hover:bg-tint ${i > 0 ? "divided" : ""}`}
+              className={`-mx-2.5 flex items-center gap-2 rounded-card pr-2.5 transition-colors hover:bg-tint ${i > 0 ? "divided" : ""}`}
             >
               <Link
                 to="/thought/$thoughtId"

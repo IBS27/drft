@@ -124,7 +124,7 @@ export function CaptureField({ now }: { now: number }) {
   // in the middle, and the one action at its foot. The sheet is there
   // before you type, so it is always clear where words go.
   return (
-    <div data-capture className="flex w-full max-w-[608px] flex-col rounded-[14px] bg-scr px-4 pt-4 pb-3.5 shadow-lift ring-1 ring-line ring-inset sm:px-10 sm:pt-9 sm:pb-7">
+    <div data-capture className="flex w-full max-w-[608px] flex-col rounded-[14px] bg-scr px-4 pt-4 pb-3.5 shadow-lift ring-1 ring-line ring-inset sm:px-10 sm:pt-8 sm:pb-7">
       <span className="text-[14px] text-pl tabular-nums">
         {day} · {clock}
       </span>
@@ -142,7 +142,7 @@ export function CaptureField({ now }: { now: number }) {
         rows={1}
         aria-label="A thought"
         placeholder="Write a thought…"
-        className="mt-3 min-h-[36px] w-full resize-none overflow-hidden bg-transparent text-[24px] leading-[1.42] tracking-[-0.014em] text-ink caret-dot outline-none placeholder:text-pl sm:mt-6 sm:min-h-[96px] sm:text-[30px]"
+        className="mt-3 min-h-[36px] w-full resize-none overflow-hidden bg-transparent text-[24px] leading-[1.42] tracking-[-0.014em] text-ink caret-dot outline-none placeholder:text-pl sm:mt-5 sm:min-h-[64px] sm:text-[30px]"
       />
       <div className="mt-4 flex h-[42px] items-center justify-between gap-4">
         {kept ? (

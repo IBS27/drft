@@ -14,7 +14,7 @@ function highlight(text: string, query: string): ReactNode {
   );
   return text.split(pattern).map((part, i) =>
     i % 2 === 1 ? (
-      <mark key={i} className="bg-transparent font-medium text-ink">
+      <mark key={i} className="rounded-[3px] bg-tint-2 px-px text-ink">
         {part}
       </mark>
     ) : (
@@ -120,7 +120,7 @@ function HitRow({
       onMouseMove={activate}
       className={`relative flex w-full items-center gap-2.5 rounded-card px-3 py-2.5 text-left transition-colors [--inset:12px] ${
         divided ? "divided" : ""
-      } ${active ? "bg-line/45 ring-1 ring-line ring-inset" : ""}`}
+      } ${active ? "bg-line/50" : ""}`}
     >
       <span
         className={`line-clamp-2 min-w-0 flex-1 text-[15px] leading-[1.4] ${active ? "text-ink" : "text-pt"}`}

@@ -46,8 +46,8 @@ type RailThought = {
 // tinted "Back today" strip; the open thought is held by a deeper tint and
 // a vermilion bar.
 // Held thoughts carry a small bookmark; hovering a row offers to hold it
-// or let go without opening it. Held, Resting, Connections and Settings
-// share the footer.
+// or let go without opening it. Held, Resting and Connections sit under
+// New thought; Settings is the gear beside the wordmark.
 // Also owns the collection's keyboard: j/k move between thoughts (j enters
 // the top from home), Esc returns to the door — home, or the Held page
 // when the thought was opened from there.
@@ -216,9 +216,18 @@ export const Rail = memo(function Rail({
       className="fixed inset-y-0 left-0 hidden w-72 flex-col border-r border-line bg-scr lg:flex xl:w-80"
     >
       <div className="flex flex-none flex-col gap-[18px] px-3 pt-6 pb-4">
-        <Link to="/" aria-label="drft, home" className="self-start rounded-card px-3">
-          <Wordmark />
-        </Link>
+        <div className="flex items-center justify-between">
+          <Link to="/" aria-label="drft, home" className="rounded-card px-3">
+            <Wordmark />
+          </Link>
+          <Link
+            to="/settings"
+            aria-label="Settings"
+            className="-my-1.5 flex size-8 items-center justify-center rounded-full text-[17px] text-pl transition-colors hover:bg-tint hover:text-ink aria-[current=page]:bg-line/55 aria-[current=page]:text-ink"
+          >
+            <GearSix aria-hidden="true" />
+          </Link>
+        </div>
         {findOpen ? (
           <div
             data-rail-find
@@ -268,21 +277,33 @@ export const Rail = memo(function Rail({
             <Kbd className="bg-scr text-pt ring-1 ring-line ring-inset">⌘K</Kbd>
           </button>
         )}
-        <Link
-          to="/"
-          activeOptions={{ exact: true }}
-          className="-mt-2.5 flex h-10 items-center gap-2.5 rounded-card px-3 text-[14px] text-pt transition-colors hover:bg-tint hover:text-ink"
-        >
-          <PencilSimpleLine aria-hidden="true" className="text-[16px]" />
-          New thought
-        </Link>
+        {/* The places sit with the controls, so the collection runs on to
+            the bottom edge like any list that keeps going. */}
+        <div className="-mt-2.5 flex flex-col">
+          <Link to="/" activeOptions={{ exact: true }} className={PLACE_BASE}>
+            <PencilSimpleLine aria-hidden="true" className="text-[16px]" />
+            New thought
+          </Link>
+          <Link to="/held" className={PLACE}>
+            <BookmarkSimple aria-hidden="true" className="text-[16px]" />
+            Held
+          </Link>
+          <Link to="/resting" className={PLACE}>
+            <Moon aria-hidden="true" className="text-[16px]" />
+            Resting
+          </Link>
+          <Link to="/connections" className={PLACE}>
+            <Graph aria-hidden="true" className="text-[16px]" />
+            Connections
+          </Link>
+        </div>
       </div>
 
       <div
         role="region"
         aria-label="collection"
         aria-busy={loading}
-        className="min-h-0 flex-1 overflow-y-auto px-3 pt-1 pb-14 [scrollbar-width:none] [mask-image:linear-gradient(to_bottom,#000_calc(100%-32px),transparent)]"
+        className="min-h-0 flex-1 overflow-y-auto border-t border-line px-3 pt-1 pb-10 [scrollbar-width:none] [mask-image:linear-gradient(to_bottom,#000_calc(100%-40px),transparent)]"
       >
         {finding ? (
           <FindResults
@@ -361,36 +382,6 @@ export const Rail = memo(function Rail({
         )}
       </div>
 
-      <div className="flex flex-none flex-col gap-0.5 border-t border-line px-3 pt-2.5 pb-3.5">
-        <Link
-          to="/held"
-          className="flex items-center gap-2.5 rounded-card px-3 py-2 text-[14px] text-pt transition-colors hover:bg-tint hover:text-ink aria-[current=page]:bg-line/55 aria-[current=page]:font-medium aria-[current=page]:text-ink"
-        >
-          <BookmarkSimple aria-hidden="true" className="text-[17px]" />
-          Held
-        </Link>
-        <Link
-          to="/resting"
-          className="flex items-center gap-2.5 rounded-card px-3 py-2 text-[14px] text-pt transition-colors hover:bg-tint hover:text-ink aria-[current=page]:bg-line/55 aria-[current=page]:font-medium aria-[current=page]:text-ink"
-        >
-          <Moon aria-hidden="true" className="text-[17px]" />
-          Resting
-        </Link>
-        <Link
-          to="/connections"
-          className="flex items-center gap-2.5 rounded-card px-3 py-2 text-[14px] text-pt transition-colors hover:bg-tint hover:text-ink aria-[current=page]:bg-line/55 aria-[current=page]:font-medium aria-[current=page]:text-ink"
-        >
-          <Graph aria-hidden="true" className="text-[17px]" />
-          Connections
-        </Link>
-        <Link
-          to="/settings"
-          className="flex items-center gap-2.5 rounded-card px-3 py-2 text-[14px] text-pt transition-colors hover:bg-tint hover:text-ink aria-[current=page]:bg-line/55 aria-[current=page]:font-medium aria-[current=page]:text-ink"
-        >
-          <GearSix aria-hidden="true" className="text-[17px]" />
-          Settings
-        </Link>
-      </div>
     </nav>
   );
 });
@@ -405,6 +396,12 @@ function GroupHeader({ group, first }: { group: Group; first: boolean }) {
     </div>
   );
 }
+
+// A place in the rail (New thought, Held, Resting, Connections).
+// New thought is home itself, so it never wears the "you are here" wash.
+const PLACE_BASE =
+  "flex h-9 items-center gap-2.5 rounded-card px-3 text-[14px] text-pt transition-colors hover:bg-tint hover:text-ink";
+const PLACE = `${PLACE_BASE} aria-[current=page]:bg-line/55 aria-[current=page]:font-medium aria-[current=page]:text-ink`;
 
 // The open row: a neutral wash and a vermilion bar down its left edge.
 const ACTIVE_BAR =

@@ -237,11 +237,11 @@ function ThoughtView() {
               {view.connections.length > 0 && (
                 <div className="mt-8 flex w-full flex-col gap-3">
                   <h2 className="text-[14px] font-medium text-pt">Related thoughts</h2>
-                  <ul className="rounded-[14px] bg-scr p-1.5 ring-1 ring-line ring-inset">
+                  <ul className="border-t border-line">
                     {view.connections.map((c, i) => (
                       <li
                         key={c._id}
-                        className={`group relative rounded-card transition-colors hover:bg-tint ${i > 0 ? "divided" : ""}`}
+                        className={`group relative -mx-2.5 rounded-card transition-colors hover:bg-tint ${i > 0 ? "divided" : ""}`}
                       >
                         <Link
                           to="/thought/$thoughtId"

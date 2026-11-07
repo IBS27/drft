@@ -8,7 +8,6 @@ import { HeldCardView, type CardState } from "../features/held/HeldCardView";
 import {
   columnCount,
   groupTogether,
-  placeInColumns,
   type HeldCard,
   type HeldMode,
 } from "../features/held/layout";
@@ -208,12 +207,10 @@ function Board({
   return (
     <div ref={ref} className="w-full">
       {width === 0 ? null : mode === "recent" ? (
-        <div className="flex items-start gap-3">
-          {placeInColumns(cards, columns, width).map((column, i) => (
-            <div key={i} className="flex min-w-0 flex-1 flex-col gap-3">
-              {column.map(render)}
-            </div>
-          ))}
+        // A true grid, not masonry: each row's cards share one height, so
+        // the shelf's bottoms and footers line up.
+        <div className="grid gap-3" style={grid}>
+          {cards.map(render)}
         </div>
       ) : (
         <Together cards={cards} grid={grid} render={render} />
@@ -237,7 +234,7 @@ function Together({
       {groups.map((group, i) => (
         <div
           key={group[0]._id}
-          className={`grid items-start gap-3 ${i > 0 ? "mt-4 border-t border-line pt-4" : ""}`}
+          className={`grid gap-3 ${i > 0 ? "mt-4 border-t border-line pt-4" : ""}`}
           style={grid}
         >
           {group.map(render)}
@@ -248,7 +245,7 @@ function Together({
           <h2 className="pb-2.5 text-[13px] font-medium text-pl">
             {groups.length > 0 ? "Not near the others yet" : "None of these are related yet"}
           </h2>
-          <div className="grid items-start gap-3" style={grid}>
+          <div className="grid gap-3" style={grid}>
             {loose.map(render)}
           </div>
         </div>

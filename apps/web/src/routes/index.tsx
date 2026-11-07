@@ -178,7 +178,7 @@ function BackToday({
       onPointerDown={() => prewarm(t._id)}
       onFocus={() => prewarm(t._id)}
       className={`group/back flex items-center rounded-[14px] bg-(--back-wash) ring-1 ring-(--back-edge) ring-inset transition-colors hover:bg-tint ${
-        wide ? "gap-4 px-10 py-6" : "mx-4 mb-1 gap-3 px-4 py-3.5 sm:mx-0"
+        wide ? "gap-4 px-10 py-4" : "mx-4 mb-1 gap-3 px-4 py-3.5 sm:mx-0"
       }`}
     >
       <span className="flex min-w-0 flex-1 flex-col gap-1.5">
@@ -188,7 +188,7 @@ function BackToday({
           <span aria-hidden="true">Back today</span>
         </span>
         <span
-          className={`line-clamp-2 text-ink ${wide ? "text-[20px] leading-[1.4] tracking-[-0.01em]" : "text-[15px] leading-[1.45]"}`}
+          className={`line-clamp-2 text-ink ${wide ? "text-[17px] leading-[1.45] tracking-[-0.005em]" : "text-[15px] leading-[1.45]"}`}
         >
           {t.preview}
         </span>

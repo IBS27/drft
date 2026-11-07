@@ -32,21 +32,21 @@
   /* The one destructive action: a deeper red than the accent. */
   --danger: #94394a;
   /* An "on" switch: ink, never the accent. */
-  --switch: #2f2c27;
+  --switch: #4a463f;
   --knob: #fbfaf7;
-  --back-wash: color-mix(in oklab, var(--dot) 4%, var(--pg));
-  --back-edge: color-mix(in oklab, var(--dot) 26%, transparent);
+  --back-wash: color-mix(in oklab, var(--dot) 3.5%, var(--scr));
+  --back-edge: color-mix(in oklab, var(--dot) 14%, transparent);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     /* Warm charcoal, lifted off black so text doesn't glare. */
     --pg: #181715;
-    --scr: #201f1c;
+    --scr: #23221f;
     --ink: #ebe8e1;
     --mut: #a6a298;
     --faint: #969184;
-    --line: #36342f;
+    --line: #3d3b36;
     --dot: #cc4a24;
     --pt: #cdc9bf;
     --pl: #bdb8ae;
@@ -57,9 +57,9 @@
     --dot-edge: color-mix(in oklab, var(--dot) 50%, var(--line));
     /* Light ink, a step below text, so "on" is certain without glare. */
     --switch: #dcd6cb;
-    --knob: #201f1c;
-    --back-wash: color-mix(in oklab, var(--dot) 9%, var(--scr));
-    --back-edge: color-mix(in oklab, var(--dot) 28%, transparent);
+    --knob: #23221f;
+    --back-wash: color-mix(in oklab, var(--dot) 6%, var(--scr));
+    --back-edge: color-mix(in oklab, var(--dot) 18%, transparent);
     --danger: #de8a98;
   }
 }
@@ -175,7 +175,7 @@ select option {
   transition: opacity 160ms ease;
 }
 :root:has(nav[data-finding]) [data-capture] {
-  opacity: 0.85;
+  opacity: 0.5;
 }
 
 /* Map lines: quiet on paper, a step stronger in the dark so they can be traced. */

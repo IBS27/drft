@@ -58,7 +58,7 @@ export const HeldCardView = memo(function HeldCardView({
       onBlur={(e) => {
         if (!e.currentTarget.contains(e.relatedTarget)) onFocusCard(null);
       }}
-      className={`group relative rounded-card ring-inset transition-[opacity,background-color,box-shadow] duration-200 motion-reduce:transition-none ${STATE_CLASS[state]}`}
+      className={`group relative flex flex-col rounded-card ring-inset transition-[opacity,background-color,box-shadow] duration-200 motion-reduce:transition-none ${STATE_CLASS[state]}`}
     >
       {state === "related" && (
         <span className="absolute -top-2 left-3 rounded-full bg-pg px-1.5 text-[11.5px] leading-[17px] font-medium text-dot-ink ring-1 ring-dot-edge ring-inset">
@@ -69,17 +69,17 @@ export const HeldCardView = memo(function HeldCardView({
         to="/thought/$thoughtId"
         params={{ thoughtId: card._id }}
         search={{ from: "held" }}
-        className="block rounded-card px-4 pt-3.5 pb-3"
+        className="flex flex-1 flex-col rounded-card px-4 pt-3.5 pb-3"
       >
         <p className="line-clamp-10 pr-7 text-[16px] leading-[1.5] whitespace-pre-wrap text-ink">
           {card.text}
         </p>
         {notes && (
-          <p className="mt-2.5 line-clamp-3 pl-2.5 text-[14px] leading-[1.55] whitespace-pre-line text-pl shadow-[inset_2px_0_0_var(--line)]">
+          <p className="mt-2.5 line-clamp-2 pl-2.5 text-[14px] leading-[1.55] whitespace-pre-line text-pl shadow-[inset_2px_0_0_var(--line)]">
             {notes}
           </p>
         )}
-        <span className="mt-2.5 flex items-center gap-2 text-[13px] text-pl">
+        <span className="mt-auto flex items-center gap-2 pt-2.5 text-[13px] text-pl">
           {/* One line of facts about the card, not a separate control. */}
           <span className="whitespace-nowrap tabular-nums">
             Held {age.long}
