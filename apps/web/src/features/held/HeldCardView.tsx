@@ -71,15 +71,15 @@ export const HeldCardView = memo(function HeldCardView({
         search={{ from: "held" }}
         className="block rounded-card px-4 pt-3.5 pb-3"
       >
-        <p className="line-clamp-10 pr-7 text-[15px] leading-[1.5] whitespace-pre-wrap text-ink">
+        <p className="line-clamp-10 pr-7 text-[16px] leading-[1.5] whitespace-pre-wrap text-ink">
           {card.text}
         </p>
         {notes && (
-          <p className="mt-2.5 line-clamp-3 pl-2.5 text-[13.5px] leading-[1.55] whitespace-pre-wrap text-pl shadow-[inset_2px_0_0_var(--line)]">
+          <p className="mt-2.5 line-clamp-3 pl-2.5 text-[14.5px] leading-[1.55] whitespace-pre-wrap text-pl shadow-[inset_2px_0_0_var(--line)]">
             {notes}
           </p>
         )}
-        <span className="mt-3 flex items-center gap-2 text-[13px] text-pl">
+        <span className="mt-3 flex items-center gap-2 text-[13.5px] text-pl">
           <span className="flex-1 tabular-nums">Held {age.long}</span>
           {links > 0 && (
             <Graph aria-label="near other held thoughts" className="text-[13px]" />
