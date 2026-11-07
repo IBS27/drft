@@ -23,11 +23,13 @@ export const Route = createFileRoute("/")({ component: Collection });
 
 const NO_ROWS: Row[] = [];
 
+// Header places on phones: quiet ghost controls with full 44px targets, so
+// capture is the only framed thing at the top of the screen.
 const HEADER_PILL =
-  "inline-flex h-8 items-center rounded-full bg-scr px-3 text-[13.5px] font-medium text-pt ring-1 ring-line ring-inset transition-colors hover:bg-tint hover:text-ink lg:hidden";
+  "inline-flex h-11 items-center gap-1.5 rounded-full px-3 text-[14.5px] font-medium text-ink transition-colors hover:bg-tint lg:hidden";
 
 const HEADER_ICON =
-  "flex size-11 items-center justify-center rounded-full text-[17px] text-pt transition-colors hover:text-ink lg:hidden [&>svg]:size-[19px]";
+  "flex size-11 items-center justify-center rounded-full text-pt transition-colors hover:bg-tint hover:text-ink lg:hidden [&>svg]:size-[19px]";
 
 type Row = {
   _id: Id<"thoughts">;
@@ -78,17 +80,17 @@ function Collection() {
       {/* Below lg the rail is gone, so the header carries the way to find
           and settings; on wide screens only the count stays up here, and
           the header lets clicks through to the rail it spans. */}
-      <header className="relative z-10 flex h-14 items-center justify-between pr-3.5 pl-5 lg:pointer-events-none lg:h-12 lg:justify-end lg:pr-7">
+      <header className="relative z-10 flex h-14 items-center justify-between pr-2 pl-5 lg:pointer-events-none lg:h-8 lg:justify-end lg:pr-7">
         <span className="lg:hidden">
           <Wordmark />
         </span>
         <span className="flex items-center gap-0.5">
           {/* Held and Resting share the header on phones, by name, so
               capture sits right under it. */}
-          <Link to="/held" className={`${HEADER_PILL} mr-1.5`}>
+          <Link to="/held" className={HEADER_PILL}>
             Held
           </Link>
-          <Link to="/resting" className={`${HEADER_PILL} mr-1.5`}>
+          <Link to="/resting" className={HEADER_PILL}>
             Resting
           </Link>
           <button
@@ -178,7 +180,7 @@ function BackToday({
       onPointerDown={() => prewarm(t._id)}
       onFocus={() => prewarm(t._id)}
       className={`group/back flex items-center rounded-[14px] bg-(--back-wash) ring-1 ring-(--back-edge) ring-inset transition-colors hover:bg-tint ${
-        wide ? "gap-4 px-10 py-6" : "mx-4 mb-1 gap-3 px-4 py-3.5 sm:mx-0"
+        wide ? "gap-4 px-10 py-4" : "mx-4 mb-1 gap-3 px-4 py-3.5 sm:mx-0"
       }`}
     >
       <span className="flex min-w-0 flex-1 flex-col gap-1.5">
@@ -188,7 +190,7 @@ function BackToday({
           <span aria-hidden="true">Back today</span>
         </span>
         <span
-          className={`line-clamp-2 text-ink ${wide ? "text-[20px] leading-[1.4] tracking-[-0.01em]" : "text-[15px] leading-[1.45]"}`}
+          className={`line-clamp-2 text-ink ${wide ? "text-[17px] leading-[1.45] tracking-[-0.005em]" : "text-[15px] leading-[1.45]"}`}
         >
           {t.preview}
         </span>
@@ -226,10 +228,10 @@ const ThoughtRow = memo(function ThoughtRow({
         divided ? "divided" : ""
       }`}
     >
-      <span className="line-clamp-3 min-w-0 flex-1 leading-[1.4]">{t.preview}</span>
-      <span className="inline-flex min-w-[48px] flex-none items-baseline justify-end gap-1 text-[13px] text-pl tabular-nums">
+      <span className="line-clamp-2 min-w-0 flex-1 leading-[1.4] text-balance">{t.preview}</span>
+      <span className="inline-flex min-w-[4.5rem] flex-none items-baseline justify-end gap-1 text-[13px] text-pl tabular-nums">
         {t.heldAt !== undefined && (
-          <BookmarkSimple weight="fill" aria-label="held" className="translate-y-[1px] text-[11px] text-pt" />
+          <BookmarkSimple weight="fill" aria-label="held" className="translate-y-[1px] text-[10px] text-faint" />
         )}
         {ageLabel(t.createdAt, now)}
       </span>

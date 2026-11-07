@@ -124,7 +124,7 @@ export function CaptureField({ now }: { now: number }) {
   // in the middle, and the one action at its foot. The sheet is there
   // before you type, so it is always clear where words go.
   return (
-    <div data-capture className="flex w-full max-w-[608px] flex-col rounded-[14px] bg-scr px-4 pt-4 pb-3.5 shadow-lift ring-1 ring-line ring-inset sm:px-10 sm:pt-9 sm:pb-7">
+    <div data-capture className="flex w-full max-w-[608px] flex-col rounded-[14px] bg-scr px-4 pt-4 pb-3.5 shadow-lift ring-1 ring-line ring-inset sm:px-10 sm:pt-8 sm:pb-7">
       <span className="text-[14px] text-pl tabular-nums">
         {day} · {clock}
       </span>
@@ -142,7 +142,7 @@ export function CaptureField({ now }: { now: number }) {
         rows={1}
         aria-label="A thought"
         placeholder="Write a thought…"
-        className="mt-3 min-h-[36px] w-full resize-none overflow-hidden bg-transparent text-[24px] leading-[1.42] tracking-[-0.014em] text-ink caret-dot outline-none placeholder:text-pl sm:mt-6 sm:min-h-[96px] sm:text-[30px]"
+        className="mt-3 min-h-[36px] w-full resize-none overflow-hidden bg-transparent text-[24px] leading-[1.42] tracking-[-0.014em] text-ink caret-dot outline-none placeholder:text-ph sm:mt-5 sm:min-h-0 sm:text-[30px]"
       />
       <div className="mt-4 flex h-[42px] items-center justify-between gap-4">
         {kept ? (
@@ -155,14 +155,14 @@ export function CaptureField({ now }: { now: number }) {
           </span>
         ) : (
           <span className="text-[13px] text-pl">
-            {coarsePointer ? "" : typed ? "Shift ↵ for a new line" : "Unfinished is fine"}
+            {typed ? (coarsePointer ? "" : "Shift ↵ for a new line") : "Unfinished is fine"}
           </span>
         )}
         <button
           type="button"
           onClick={keep}
           disabled={!typed}
-          className="inline-flex h-[42px] items-center gap-2.5 rounded-full bg-dot px-5 text-[15px] font-semibold text-on-dot shadow-[0_3px_10px_-6px_color-mix(in_oklab,var(--ink)_25%,transparent)] transition-[scale,filter,background-color,color,box-shadow] duration-200 hover:brightness-105 active:scale-[0.98] disabled:bg-transparent disabled:text-pl disabled:shadow-none disabled:ring-1 disabled:ring-line disabled:ring-inset disabled:hover:brightness-100 disabled:active:scale-100 motion-reduce:transition-none"
+          className="inline-flex h-[42px] items-center gap-2.5 rounded-full bg-dot px-5 text-[15px] font-semibold text-on-dot shadow-[0_3px_10px_-6px_color-mix(in_oklab,var(--ink)_25%,transparent)] transition-[scale,filter,background-color,color,box-shadow] duration-200 hover:brightness-105 active:scale-[0.98] disabled:bg-transparent disabled:font-medium disabled:text-mut disabled:shadow-none disabled:ring-1 disabled:ring-line disabled:ring-inset disabled:hover:brightness-100 disabled:active:scale-100 motion-reduce:transition-none"
         >
           Keep
           {!coarsePointer && (

@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Moon, Sun } from "@phosphor-icons/react";
+import { Sun } from "@phosphor-icons/react";
 import { useConvexAuth, useMutation } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
 import { useState } from "react";
@@ -42,7 +42,7 @@ function Resting() {
       <div className="flex min-h-dvh flex-col lg:pl-72 xl:pl-80">
       <PageHeader title="Resting" description="Set down for now. Any of them can wake." />
 
-      <section className="mx-auto w-full max-w-[688px] flex-1 px-4 pt-0 pb-16 md:px-10">
+      <section className="mx-auto w-full max-w-[688px] flex-1 px-5 pt-0 pb-16 md:px-10">
         {rows === undefined ? (
           <SkeletonRows count={4} />
         ) : rows.length === 0 ? (
@@ -50,11 +50,11 @@ function Resting() {
             Nothing is resting.
           </p>
         ) : (
-          <div className="rounded-[14px] bg-scr p-1.5 ring-1 ring-line ring-inset">
+          <div className="border-t border-line">
           {rows.map((t, i) => (
             <div
               key={t._id}
-              className={`flex items-center gap-2 rounded-card pr-2.5 transition-colors hover:bg-tint ${i > 0 ? "divided" : ""}`}
+              className={`-mx-2.5 flex items-center gap-2 rounded-card pr-2.5 transition-colors hover:bg-tint ${i > 0 ? "divided" : ""}`}
             >
               <Link
                 to="/thought/$thoughtId"
@@ -62,15 +62,14 @@ function Resting() {
                 onPointerEnter={() => prewarm(t._id)}
                 onPointerDown={() => prewarm(t._id)}
                 onFocus={() => prewarm(t._id)}
-                className="block min-w-0 flex-1 rounded-card py-3.5 pl-3.5"
+                className="block min-w-0 flex-1 rounded-card py-3.5 pl-2.5"
               >
-                <span className="line-clamp-2 text-[16px] leading-[1.4] text-ink">
+                <span className="line-clamp-2 text-[16px] leading-[1.4] text-balance text-ink">
                   {t.preview}
                 </span>
                 <span className="mt-1 flex items-center gap-1.5 text-[13px] text-pl">
                   {t.restedAt && (
                     <span className="inline-flex flex-none items-center gap-1 tabular-nums">
-                      <Moon aria-hidden="true" className="text-[12px]" />
                       Set down {ageLabel(t.restedAt, now)}
                     </span>
                   )}

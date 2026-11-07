@@ -3,12 +3,10 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useConvexAuth } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
 import type { Id } from "@drft/backend/convex/_generated/dataModel";
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { HeldCardView, type CardState } from "../features/held/HeldCardView";
 import {
-  columnCount,
   groupTogether,
-  placeInColumns,
   type HeldCard,
   type HeldMode,
 } from "../features/held/layout";
@@ -67,7 +65,7 @@ function Held() {
         />
         <section
           aria-busy={cards === undefined}
-          className="mx-auto flex w-full max-w-[688px] flex-1 flex-col px-4 pt-2 pb-16 md:px-10"
+          className="mx-auto flex w-full max-w-[688px] flex-1 flex-col px-5 pt-1 pb-16 md:px-10 lg:pt-0"
         >
           {cards === undefined ? (
             <BoardSkeleton />
@@ -118,7 +116,7 @@ function ModeSwitch({
       type="button"
       aria-pressed={mode === value}
       onClick={() => setMode(value)}
-      className={`h-7 rounded-full px-3 text-[13px] transition-colors ${
+      className={`relative h-7 rounded-full px-3 text-[13px] transition-colors before:absolute before:inset-x-0 before:-inset-y-2 before:content-[''] ${
         mode === value
           ? "bg-line/70 font-medium text-ink"
           : "text-pl hover:text-ink"
@@ -139,19 +137,6 @@ function ModeSwitch({
   );
 }
 
-function useWidth() {
-  const ref = useRef<HTMLDivElement>(null);
-  const [width, setWidth] = useState(0);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const observer = new ResizeObserver(([entry]) => setWidth(entry.contentRect.width));
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-  return [ref, width] as const;
-}
-
 function Board({
   cards,
   mode,
@@ -161,8 +146,6 @@ function Board({
   mode: HeldMode;
   now: number;
 }) {
-  const [ref, width] = useWidth();
-  const columns = width > 0 ? Math.min(2, columnCount(width)) : 1;
   const toggle = useHold();
   const prewarm = useThoughtPrewarm();
   const [focusId, setFocusId] = useState<Id<"thoughts"> | null>(null);
@@ -203,32 +186,20 @@ function Board({
     />
   );
 
-  const grid = { gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` };
-
+  // One column, like Resting and Related: each card is as tall as its
+  // words, and nothing is left ragged beside it.
   return (
-    <div ref={ref} className="w-full">
-      {width === 0 ? null : mode === "recent" ? (
-        <div className="flex items-start gap-3">
-          {placeInColumns(cards, columns, width).map((column, i) => (
-            <div key={i} className="flex min-w-0 flex-1 flex-col gap-3">
-              {column.map(render)}
-            </div>
-          ))}
-        </div>
-      ) : (
-        <Together cards={cards} grid={grid} render={render} />
-      )}
+    <div className="flex w-full flex-col border-t border-line">
+      {mode === "recent" ? cards.map(render) : <Together cards={cards} render={render} />}
     </div>
   );
 }
 
 function Together({
   cards,
-  grid,
   render,
 }: {
   cards: HeldCard[];
-  grid: { gridTemplateColumns: string };
   render: (card: HeldCard) => ReactNode;
 }) {
   const { groups, loose } = useMemo(() => groupTogether(cards), [cards]);
@@ -237,18 +208,17 @@ function Together({
       {groups.map((group, i) => (
         <div
           key={group[0]._id}
-          className={`grid items-start gap-3 ${i > 0 ? "mt-4 border-t border-line pt-4" : ""}`}
-          style={grid}
+          className={`flex flex-col ${i > 0 ? "mt-6 border-t border-line" : ""}`}
         >
           {group.map(render)}
         </div>
       ))}
       {loose.length > 0 && (
-        <div className={groups.length > 0 ? "mt-4 border-t border-line pt-3" : ""}>
+        <div className={groups.length > 0 ? "mt-6 border-t border-line pt-3" : ""}>
           <h2 className="pb-2.5 text-[13px] font-medium text-pl">
             {groups.length > 0 ? "Not near the others yet" : "None of these are related yet"}
           </h2>
-          <div className="grid items-start gap-3" style={grid}>
+          <div className="flex flex-col">
             {loose.map(render)}
           </div>
         </div>
@@ -260,7 +230,7 @@ function Together({
 // The table before its cards arrive: a few cards' worth of quiet lines.
 function BoardSkeleton() {
   return (
-    <div role="status" aria-label="loading held thoughts" className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+    <div role="status" aria-label="loading held thoughts" className="flex flex-col gap-3">
       {["w-[82%]", "w-[64%]", "w-[74%]"].map((width) => (
         <div key={width} className="flex flex-col gap-3 rounded-card bg-scr px-4 py-4 ring-1 ring-line ring-inset">
           <Skeleton className={`h-[10px] ${width}`} />

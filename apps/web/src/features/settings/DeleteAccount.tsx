@@ -53,7 +53,7 @@ export function DeleteAccount() {
       >
         <span className="flex flex-col gap-0.5">
           Delete account
-          <span className="text-[13.5px] text-pl">Removes your thoughts and notes for good.</span>
+          <span className="text-[13.5px] text-pl">Removes your thoughts and notes for good</span>
         </span>
         <CaretRight aria-hidden="true" className="text-[15px] opacity-70" />
       </button>

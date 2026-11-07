@@ -11,13 +11,13 @@ import type { ToggleHold } from "./useHold";
 export type CardState = "rest" | "focus" | "related" | "dim";
 
 const STATE_CLASS: Record<CardState, string> = {
-  rest: "bg-scr ring-1 ring-line",
-  focus: "bg-tint ring-1 ring-dot-edge",
-  related: "bg-scr ring-[1.5px] ring-dot-edge",
-  dim: "bg-scr ring-1 ring-line opacity-40",
+  rest: "hover:bg-tint",
+  focus: "bg-tint",
+  related: "bg-tint/60",
+  dim: "opacity-40",
 };
 
-// One held thought on the table: your words in full (very long ones stop
+// One held thought in the list (rows, like Resting and Related): your words in full (very long ones stop
 // at ten lines; the thought page has the rest), the start of your notes
 // behind the notebook's vermilion margin rule, how long it's been held,
 // and how many of the other held thoughts it's related to. Its one
@@ -40,7 +40,9 @@ export const HeldCardView = memo(function HeldCardView({
   prewarm: (id: Id<"thoughts">) => void;
 }) {
   const age = heldAge(card.heldAt, now);
-  const notes = excerpt(card.notes.trim());
+  // The notes' first paragraph, clamped by the browser at a line end, so
+  // the preview never strands a lone word ("on a…").
+  const notes = card.notes.trim().split(/\n\s*\n|\n/)[0]?.trim() ?? "";
   return (
     <article
       data-hold-id={card._id}
@@ -58,10 +60,10 @@ export const HeldCardView = memo(function HeldCardView({
       onBlur={(e) => {
         if (!e.currentTarget.contains(e.relatedTarget)) onFocusCard(null);
       }}
-      className={`group relative rounded-card ring-inset transition-[opacity,background-color,box-shadow] duration-200 motion-reduce:transition-none ${STATE_CLASS[state]}`}
+      className={`group divided relative -mx-2.5 rounded-card transition-[opacity,background-color] duration-200 first:before:hidden motion-reduce:transition-none ${STATE_CLASS[state]}`}
     >
       {state === "related" && (
-        <span className="absolute -top-2 left-3 rounded-full bg-pg px-1.5 text-[11.5px] leading-[17px] font-medium text-dot-ink ring-1 ring-dot-edge ring-inset">
+        <span className="absolute top-2 right-11 rounded-full bg-pg px-1.5 text-[11.5px] leading-[17px] font-medium text-dot-ink ring-1 ring-dot-edge ring-inset">
           Related
         </span>
       )}
@@ -69,13 +71,13 @@ export const HeldCardView = memo(function HeldCardView({
         to="/thought/$thoughtId"
         params={{ thoughtId: card._id }}
         search={{ from: "held" }}
-        className="block rounded-card px-4 pt-3.5 pb-3"
+        className="block rounded-card px-2.5 py-4"
       >
-        <p className="line-clamp-10 pr-7 text-[16px] leading-[1.5] whitespace-pre-wrap text-ink">
+        <p className="line-clamp-10 text-[16px] leading-[1.45] text-pretty whitespace-pre-wrap text-ink [@media(hover:hover)]:pr-8">
           {card.text}
         </p>
         {notes && (
-          <p className="mt-2.5 line-clamp-3 pl-2.5 text-[14px] leading-[1.55] whitespace-pre-line text-pl shadow-[inset_2px_0_0_var(--line)]">
+          <p className="mt-2 line-clamp-2 pl-2.5 text-[14px] leading-[1.55] text-pretty text-pt shadow-[inset_2px_0_0_var(--line)] md:line-clamp-1">
             {notes}
           </p>
         )}
@@ -92,20 +94,10 @@ export const HeldCardView = memo(function HeldCardView({
         onClick={() => toggle(card._id, card.heldAt, { notice: true })}
         aria-label="Let go"
         title="Let go (h)"
-        className="absolute top-2.5 right-2.5 flex size-7 items-center justify-center rounded-full bg-line/70 text-[13px] text-pt opacity-0 hover:bg-tint hover:text-ink transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 focus-visible:opacity-100"
+        className="absolute top-3.5 right-2 flex size-7 items-center justify-center rounded-full bg-line/70 text-[13px] text-pt opacity-0 hover:bg-tint hover:text-ink transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 focus-visible:opacity-100"
       >
         <BookmarkSimple aria-hidden="true" weight="fill" />
       </button>
     </article>
   );
 });
-
-// The start of the notes, cut at a word and never after a stop, so the
-// ellipsis is the only mark at the end ("Tuesday…", not "Tuesday.…").
-const EXCERPT_LIMIT = 100;
-function excerpt(notes: string): string {
-  if (notes.length <= EXCERPT_LIMIT) return notes;
-  const cut = notes.slice(0, EXCERPT_LIMIT);
-  const word = cut.slice(0, Math.max(cut.lastIndexOf(" "), cut.lastIndexOf("\n")));
-  return `${word.replace(/[\s.,;:!?—–-]+$/, "")}…`;
-}

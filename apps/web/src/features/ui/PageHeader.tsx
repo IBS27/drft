@@ -11,16 +11,21 @@ export function PageHeader({
   aside,
 }: {
   title: string;
-  description?: string;
+  description?: ReactNode;
   aside?: ReactNode;
 }) {
   return (
-    <header className="relative z-10 mx-auto flex min-h-[72px] w-full max-w-[688px] flex-none flex-wrap items-center gap-x-1 py-3 pr-4 pl-1.5 md:px-[30px] lg:min-h-0 lg:px-10 lg:pt-12 lg:pb-5">
+    <header className="relative z-10 mx-auto flex min-h-[72px] w-full max-w-[688px] flex-none flex-wrap content-start items-center gap-x-1 py-3 pr-5 pl-2.5 md:px-[30px] lg:min-h-0 lg:px-10 lg:pt-8 lg:pb-5">
       <span className="lg:hidden">
         <BackLink />
       </span>
       <h1 className="text-[17px] font-semibold tracking-[-0.015em] text-ink lg:text-[22px]">{title}</h1>
-      {aside && <span className="ml-auto flex flex-none items-center gap-2.5">{aside}</span>}
+      {/* On a phone it drops below the description, so the title leads. */}
+      {aside && (
+        <span className="ml-auto flex flex-none items-center gap-2.5 max-lg:order-last max-lg:mt-4 max-lg:ml-2.5">
+          {aside}
+        </span>
+      )}
       {/* Its own line, on the content's edge rather than the title's. */}
       {description && (
         <p className="mt-1 w-full pl-2.5 text-[14px] text-pl lg:pl-0 lg:text-[15px]">{description}</p>

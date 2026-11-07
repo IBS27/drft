@@ -49,7 +49,7 @@ function BackHeader({
 }) {
   // On the thought's own column: the way back, then when it was written.
   return (
-    <header className="mx-auto flex h-[72px] w-full max-w-[688px] items-center gap-1.5 px-1.5 md:px-[30px]">
+    <header className="mx-auto flex h-[72px] w-full max-w-[688px] items-center gap-1.5 px-2.5 md:px-[30px]">
       <BackLink to={backTo} />
       <span className="text-[14px] text-pl">
         {loading ? <Skeleton className="h-[9px] w-28" /> : (label ?? "")}
@@ -169,9 +169,9 @@ function ThoughtView() {
         ) : (
           <section
             key={view._id}
-            className="mx-auto flex w-full max-w-[688px] flex-1 flex-col px-4 md:px-10"
+            className="mx-auto flex w-full max-w-[688px] flex-1 flex-col px-5 md:px-10"
           >
-            <div className="group/thought flex w-full flex-col pt-4 pb-2 md:pt-[6vh]">
+            <div className="group/thought flex w-full flex-col pt-4 pb-2 md:pt-2">
               <h1
                 className={`font-normal text-pretty whitespace-pre-wrap text-ink ${
                   view.text.length > 240
@@ -237,11 +237,11 @@ function ThoughtView() {
               {view.connections.length > 0 && (
                 <div className="mt-8 flex w-full flex-col gap-3">
                   <h2 className="text-[14px] font-medium text-pt">Related thoughts</h2>
-                  <ul className="rounded-[14px] bg-scr p-1.5 ring-1 ring-line ring-inset">
+                  <ul className="border-t border-line">
                     {view.connections.map((c, i) => (
                       <li
                         key={c._id}
-                        className={`group relative rounded-card transition-colors hover:bg-tint ${i > 0 ? "divided" : ""}`}
+                        className={`group relative -mx-2.5 rounded-card transition-colors hover:bg-tint ${i > 0 ? "divided" : ""}`}
                       >
                         <Link
                           to="/thought/$thoughtId"
@@ -258,9 +258,9 @@ function ThoughtView() {
                             prewarm(id);
                             prewarm(c.otherId);
                           }}
-                          className="grid w-full grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-3 rounded-card py-[13px] pr-2.5 pl-3 text-left"
+                          className="grid w-full grid-cols-[minmax(0,1fr)_auto_auto] items-baseline gap-x-2.5 rounded-card py-3.5 pr-2.5 pl-2.5 text-left"
                         >
-                          <span className="text-[15px] leading-[1.45] whitespace-pre-wrap text-ink">
+                          <span className="pr-2.5 text-[16px] leading-[1.45] text-balance whitespace-pre-wrap text-ink">
                             {c.otherText}
                           </span>
                           {c.otherStatus === "resting" ? (
@@ -275,7 +275,7 @@ function ThoughtView() {
                           )}
                           <CaretRight
                             aria-hidden="true"
-                            className="text-[13px] text-pl transition-opacity group-hover:opacity-0 [@media(hover:none)]:group-hover:opacity-100"
+                            className="translate-y-[2px] text-[13px] text-pl transition-opacity group-hover:opacity-0 [@media(hover:none)]:group-hover:opacity-100"
                           />
                         </Link>
                         <button
@@ -337,9 +337,9 @@ function ThoughtSkeleton() {
     <section
       aria-busy="true"
       aria-label="loading thought"
-      className="mx-auto flex w-full max-w-[688px] flex-1 flex-col px-4 md:px-10"
+      className="mx-auto flex w-full max-w-[688px] flex-1 flex-col px-5 md:px-10"
     >
-      <div className="flex w-full flex-col pt-4 pb-2 md:pt-[6vh]">
+      <div className="flex w-full flex-col pt-4 pb-2 md:pt-2">
         <div className="flex w-full max-w-[24ch] flex-col gap-[19px] text-[27px] md:gap-[31px] md:text-[38px]">
           <Skeleton className="h-[18px] w-full" />
           <Skeleton className="h-[18px] w-[62%]" />
@@ -467,7 +467,7 @@ function StatusFooter({
             autoFocus
             aria-label="Where it landed (optional)"
             placeholder="Where it landed (optional)"
-            className="h-11 w-full max-w-[40ch] rounded-card bg-scr px-4 text-[15px] text-ink ring-1 ring-line ring-inset outline-none transition-shadow placeholder:text-pl focus:ring-dot-edge"
+            className="h-11 w-full max-w-[40ch] rounded-card bg-scr px-4 text-[15px] text-ink ring-1 ring-line ring-inset outline-none transition-shadow placeholder:text-ph focus:ring-dot-edge"
           />
           <div className="flex items-center gap-2">
             <button
@@ -535,7 +535,7 @@ function HoldChip({
       className={
         held
           ? // Pressed: a soft fill, no edge, so it reads as a state you can undo.
-            "inline-flex h-9 items-center gap-2 rounded-full bg-line/60 px-4 text-[14px] font-medium text-ink transition-colors hover:bg-line"
+            "inline-flex h-9 items-center gap-2 rounded-full bg-line/60 px-4 text-[14px] font-medium text-ink ring-1 ring-line ring-inset transition-colors hover:bg-line"
           : "inline-flex h-9 items-center gap-2 rounded-full bg-scr px-4 text-[14px] font-medium text-pt ring-1 ring-line ring-inset transition-[color,box-shadow,background-color] hover:bg-tint hover:text-ink hover:ring-dot-edge"
       }
     >
@@ -545,7 +545,7 @@ function HoldChip({
         className="text-[14px]"
       />
       {held ? "Held" : "Hold"}
-      {held && <span className="font-normal text-pl tabular-nums">· {age}</span>}
+      {held && <span className="-ml-1 font-normal text-pl tabular-nums">· {age}</span>}
     </button>
   );
 }

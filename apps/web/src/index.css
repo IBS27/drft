@@ -13,11 +13,16 @@
   --ink: #26241f;
   --mut: #716d64;
   --faint: #746f66;
-  --line: #dedad0;
+  --line: #d9d5ca;
+  /* The rail sits a step below the page, so the cards in the main column
+     are the brightest things on screen. */
+  --rail: #efece6;
   --dot: #c73e1d;
   /* page-chrome text & labels — higher contrast than the mockup grays */
   --pt: #423f38;
   --pl: #5a564e;
+  /* Placeholder: clearly lighter than anything you've written. */
+  --ph: #8a857b;
   /* Soft elevation for raised surfaces (cards, the capture stage). */
   --lift: 0 1px 2px color-mix(in oklab, #3a2c1c 5%, transparent),
     0 6px 16px -10px color-mix(in oklab, #3a2c1c 12%, transparent);
@@ -32,34 +37,36 @@
   /* The one destructive action: a deeper red than the accent. */
   --danger: #94394a;
   /* An "on" switch: ink, never the accent. */
-  --switch: #2f2c27;
+  --switch: #4a463f;
   --knob: #fbfaf7;
-  --back-wash: color-mix(in oklab, var(--dot) 4%, var(--pg));
-  --back-edge: color-mix(in oklab, var(--dot) 26%, transparent);
+  --back-wash: color-mix(in oklab, var(--dot) 3.5%, var(--scr));
+  --back-edge: color-mix(in oklab, var(--dot) 16%, transparent);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     /* Warm charcoal, lifted off black so text doesn't glare. */
     --pg: #181715;
-    --scr: #201f1c;
+    --scr: #23221f;
     --ink: #ebe8e1;
     --mut: #a6a298;
     --faint: #969184;
-    --line: #36342f;
+    --line: #3d3b36;
+    --rail: #141311;
     --dot: #cc4a24;
     --pt: #cdc9bf;
     --pl: #bdb8ae;
+    --ph: #8f8a80;
     --lift: 0 1px 2px rgb(0 0 0 / 0.3), 0 10px 28px -14px rgb(0 0 0 / 0.6);
     --tint: color-mix(in oklab, var(--dot) 13%, var(--pg));
     --tint-2: color-mix(in oklab, var(--dot) 19%, var(--pg));
     --dot-ink: color-mix(in oklab, var(--dot) 55%, var(--ink));
     --dot-edge: color-mix(in oklab, var(--dot) 50%, var(--line));
     /* Light ink, a step below text, so "on" is certain without glare. */
-    --switch: #dcd6cb;
-    --knob: #201f1c;
-    --back-wash: color-mix(in oklab, var(--dot) 9%, var(--scr));
-    --back-edge: color-mix(in oklab, var(--dot) 28%, transparent);
+    --switch: #a6a298;
+    --knob: #23221f;
+    --back-wash: color-mix(in oklab, var(--dot) 4%, var(--pg));
+    --back-edge: color-mix(in oklab, var(--dot) 22%, transparent);
     --danger: #de8a98;
   }
 }
@@ -71,9 +78,11 @@
   --color-mut: var(--mut);
   --color-faint: var(--faint);
   --color-line: var(--line);
+  --color-rail: var(--rail);
   --color-dot: var(--dot);
   --color-pt: var(--pt);
   --color-pl: var(--pl);
+  --color-ph: var(--ph);
   --color-knob: var(--knob);
   --color-tint: var(--tint);
   --color-tint-2: var(--tint-2);
@@ -117,10 +126,16 @@ body {
   transition: opacity 150ms;
 }
 .divided:hover::before,
-:hover + .divided::before,
-[aria-selected="true"].divided::before,
-[aria-selected="true"] + .divided::before {
+:hover + .divided::before {
   opacity: 0;
+}
+/* A keyboard selection fills its row, so its hairlines step aside; on touch
+   nothing is selected and the rows keep their lines. */
+@media (pointer: fine) {
+  [aria-selected="true"].divided::before,
+  [aria-selected="true"] + .divided::before {
+    opacity: 0;
+  }
 }
 
 /* While the rail is finding, its own "you are here" quiets, so only the
@@ -159,7 +174,7 @@ textarea:focus-visible {
    when empty, growing with the words. */
 .notes-field {
   line-height: 1.6;
-  padding: 12px 44px 12px 18px;
+  padding: 12px 44px 12px 16px;
   min-height: calc(1.6em * 2 + 24px);
   caret-color: var(--dot);
 }
@@ -175,15 +190,11 @@ select option {
   transition: opacity 160ms ease;
 }
 :root:has(nav[data-finding]) [data-capture] {
-  opacity: 0.85;
+  opacity: 0.75;
 }
 
-/* Map lines: quiet on paper, a step stronger in the dark so they can be traced. */
+/* Map lines: one hairline, a step darker than the rules so it reads as a
+   line on paper, quiet under the names. */
 .map-edge {
-  opacity: 0.4;
-}
-@media (prefers-color-scheme: dark) {
-  .map-edge {
-    opacity: 0.6;
-  }
+  stroke: color-mix(in oklab, var(--line) 85%, var(--mut));
 }

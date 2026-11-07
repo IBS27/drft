@@ -40,6 +40,7 @@ export function NotesField({
   const [text, setText] = useState(notes);
   const [failed, setFailed] = useState(false);
   const [status, setStatus] = useState<"idle" | "saving" | "saved">("idle");
+  const [editing, setEditing] = useState(false);
   const field = useRef<HTMLTextAreaElement>(null);
   const focused = useRef(false);
   // The last text the server accepted (null after a failure: unknown, so
@@ -140,7 +141,9 @@ export function NotesField({
     const observer = new ResizeObserver(fit);
     observer.observe(el);
     return () => observer.disconnect();
-  }, [text]);
+  }, [text, editing]);
+
+  const reading = !editing && text.trim() !== "";
 
   return (
     <div className="group mt-8 flex w-full flex-col gap-3">
@@ -167,6 +170,25 @@ export function NotesField({
       </div>
       {/* The pencil sits in the field it edits, and steps away once you're in. */}
       <div className="relative">
+      {/* Reading: the notes as paragraphs. The field stays in the page (and
+          in the tab order) underneath, so the label, Tab and a click all
+          land in it. */}
+      {reading && (
+        <div
+          aria-hidden="true"
+          onMouseDown={(e) => {
+            e.preventDefault();
+            field.current?.focus();
+          }}
+          className="notes-field cursor-text space-y-1.5 rounded-card bg-scr text-[15px] text-ink ring-1 ring-line ring-inset transition-shadow hover:ring-pl/30"
+        >
+          {text.split("\n").map((line, i) => (
+            <p key={i} className="min-h-[1.6em] whitespace-pre-wrap">
+              {line}
+            </p>
+          ))}
+        </div>
+      )}
       <textarea
         id="thought-notes"
         ref={field}
@@ -176,9 +198,11 @@ export function NotesField({
         onChange={(e) => change(e.target.value)}
         onFocus={() => {
           focused.current = true;
+          setEditing(true);
         }}
         onBlur={() => {
           focused.current = false;
+          setEditing(false);
           // Whitespace alone is nothing — the server keeps no row for it —
           // so once the field is left, it shows nothing too. Sent as its own
           // write, so a failure is still caught and offered for retry.
@@ -189,12 +213,19 @@ export function NotesField({
           save();
         }}
         placeholder="Write around it…"
-        className="notes-field w-full resize-none overflow-hidden rounded-card bg-scr text-[15px] text-ink ring-1 ring-line outline-none ring-inset transition-shadow placeholder:text-pl hover:ring-pl/30 focus:ring-pl/50"
+        className={`notes-field w-full resize-none overflow-hidden rounded-card bg-scr ${reading ? "sr-only" : ""} text-[15px] text-ink ring-1 ring-line outline-none ring-inset transition-shadow placeholder:text-ph hover:ring-pl/30 focus:ring-pl/50`}
       />
-      <PencilSimpleLine
+      {/* A real target for the pencil (the whole field is one too); out of
+          the tab order, since the field itself takes focus. */}
+      <button
+        type="button"
+        tabIndex={-1}
         aria-hidden="true"
-        className="pointer-events-none absolute top-[15px] right-4 text-[16px] text-pt transition-opacity group-focus-within:opacity-0"
-      />
+        onClick={() => field.current?.focus()}
+        className="absolute top-1.5 right-1.5 flex size-8 items-center justify-center rounded-full text-[16px] text-pt transition-[opacity,background-color,color] group-focus-within:pointer-events-none group-focus-within:opacity-0 hover:bg-tint hover:text-ink"
+      >
+        <PencilSimpleLine />
+      </button>
       </div>
       {failed && (
         <div

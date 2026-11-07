@@ -102,7 +102,10 @@ struct ThoughtView: View {
                             .animation(.easeOut(duration: 0.24), value: isLeaving)
                     }
                 }
-                .padding(.horizontal, 8)
+                // The arrow's tip (2pt inside its 20pt icon, centred in a
+                // 44pt tap frame) lands on the 24pt gutter.
+                .padding(.leading, StillnessSpacing.gutter - 14)
+                .padding(.trailing, 8)
                 .frame(height: 56)
 
                 GeometryReader { geometry in
@@ -216,7 +219,9 @@ struct ThoughtView: View {
 
             // What you can do with it, right under it.
             if thought.status == .open {
-                HStack(spacing: 8) {
+                // On the pill's own baseline: the label is centred in the
+                // pill, so Held sits on its centreline at any text size.
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
                     // Held is set on the web; here it is shown, not changed.
                     if let heldAt = thought.heldAt {
                         // Read-only here, so it reads as a fact, not a control:
@@ -297,7 +302,8 @@ struct ThoughtView: View {
         _ connections: [ConvexService.Connection],
         width: CGFloat
     ) -> some View {
-        // A heading above its surface, as Notes and Related read on the web.
+        // Secondary navigation, not another card: a plain divided list on
+        // the page, its text on the title's left edge.
         VStack(alignment: .leading, spacing: 10) {
             Text("Related thoughts")
                 .font(StillnessType.groupLabel)
@@ -306,13 +312,11 @@ struct ThoughtView: View {
 
             VStack(alignment: .leading, spacing: 0) {
                 ForEach(Array(connections.enumerated()), id: \.element._id) { index, connection in
-                    if index > 0 {
-                        Hairline()
-                    }
+                    Hairline(thickness: Hairline.separatorThickness)
 
                     RelatedThoughtRow(
                         connection: connection,
-                        width: max(0, width - 12),
+                        width: width,
                         metadata: connection.otherStatus == .resting
                             ? nil
                             : ShelfFormatting.ageLabel(
@@ -326,9 +330,7 @@ struct ThoughtView: View {
                     )
                 }
             }
-            .padding(6)
             .frame(width: width)
-            .emberSurface()
         }
         .frame(width: width, alignment: .leading)
         .padding(.top, 32)
@@ -568,40 +570,43 @@ private struct RelatedThoughtRow: View {
     private let actionWidth: CGFloat = 112
 
     var body: some View {
-        HStack(alignment: .center, spacing: 12) {
-            Text(connection.otherText)
+        // The date and chevron sit on the first line, in one fixed column,
+        // so a two-line thought doesn't float them between its lines.
+        HStack(alignment: .firstTextBaseline, spacing: 12) {
+            WordTruncatedText(text: connection.otherText)
                 .font(StillnessType.body)
                 .lineSpacing(StillnessType.bodyLineSpacing)
                 .foregroundStyle(Stillness.ink)
                 .multilineTextAlignment(.leading)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-            if let metadata {
-                Text(metadata)
-                    .font(StillnessType.caption)
-                    .monospacedDigit()
-                    .foregroundStyle(Stillness.chromeLabel)
-                    .lineLimit(1)
-            } else {
-                HStack(spacing: 4) {
-                    EmberIcon(.moon, size: 13)
-                    Text("Set down")
+            HStack(alignment: .firstTextBaseline, spacing: 12) {
+                if let metadata {
+                    Text(metadata)
+                        .monospacedDigit()
+                } else {
+                    HStack(alignment: .firstTextBaseline, spacing: 4) {
+                        CaptionLineIcon(icon: .moon, size: 13)
+                        Text("Set down")
+                    }
                 }
-                .font(StillnessType.caption)
-                .foregroundStyle(Stillness.chromeLabel)
-                .lineLimit(1)
-            }
 
-            EmberIcon(.caretRight, size: 12)
-                .foregroundStyle(Stillness.faint)
+                CaptionLineIcon(icon: .caretRight, size: 12)
+                    .foregroundStyle(Stillness.faint)
+            }
+            .font(StillnessType.caption)
+            .foregroundStyle(Stillness.chromeLabel)
+            .lineLimit(1)
+            .frame(minWidth: 96, alignment: .trailing)
         }
-        .padding(.vertical, 13)
-        .padding(.horizontal, 10)
+        .padding(.vertical, 14)
+        .padding(.trailing, 2)
         .contentShape(Rectangle())
         .onTapGesture(perform: onOpen)
         .frame(width: width, alignment: .leading)
         .fixedSize(horizontal: false, vertical: true)
-        .background(Stillness.surface)
+        // The page itself, so the row covers its swipe action at rest.
+        .background(Stillness.page)
         // One element per row; without this each text child carried the
         // row's label and VoiceOver read every related thought twice. The
         // swipe-revealed button below stays out; Set aside is the named

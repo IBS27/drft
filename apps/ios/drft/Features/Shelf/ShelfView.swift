@@ -164,7 +164,7 @@ struct ShelfView: View {
                                 sectionHeader(section)
                                 ForEach(Array(section.thoughts.enumerated()), id: \.element.id) { index, thought in
                                     if index > 0 {
-                                        Hairline()
+                                        Hairline(thickness: Hairline.separatorThickness)
                                             .padding(.horizontal, 16)
                                     }
                                     thoughtRow(thought)
@@ -173,15 +173,17 @@ struct ShelfView: View {
                         }
                         .padding(.horizontal, 8)
                         .padding(.top, 8)
-                        // Room for the fade, so the last row ends clear of it.
-                        .padding(.bottom, 28)
+                        // Past the band and its fade (the inset below), so
+                        // the last row always scrolls fully clear of both.
+                        .padding(.bottom, Self.bandFade + 4)
                     }
                     .scrollIndicators(.hidden)
-                }
-                // A bounded band at the bottom: the list ends above it, so
-                // no row ever sits under the button.
-                .safeAreaInset(edge: .bottom, spacing: 0) {
-                    catchThoughtAffordance
+                    // A bounded band at the bottom, inset into the scroll
+                    // view itself: the list scrolls to end above it, so no
+                    // row ever sits under the button.
+                    .safeAreaInset(edge: .bottom, spacing: 0) {
+                        catchThoughtAffordance
+                    }
                 }
             }
 
@@ -241,41 +243,55 @@ struct ShelfView: View {
                 convexService: convexService
             )
             .presentationBackground(Stillness.page)
-            .presentationDragIndicator(.hidden)
-            .presentationDetents([.large])
+            .presentationDragIndicator(.visible)
         }
     }
 
-    // A quiet ink pill on the thumb side, in its own band below the list.
+    /// The fade's height above the New thought band: short, so no whole
+    /// row at rest sits ghosted in it.
+    private static let bandFade: CGFloat = 28
+
+    // A quiet surface pill on the thumb side, in its own opaque band below
+    // the list: rows end at the band's edge, never under the pill.
     private var catchThoughtAffordance: some View {
         Button {
             onCatchThought()
         } label: {
             HStack(spacing: 8) {
-                EmberIcon(.plus, size: 16)
+                EmberIcon(.pencilSimpleLine, size: 16)
                 Text("New thought")
             }
         }
-        .buttonStyle(PillButtonStyle(kind: .neutral, height: 44, horizontalPadding: 20))
-        // Lifted a touch, so it sits above the list rather than in it.
-        .shadow(color: Stillness.lift, radius: 10, y: 4)
-        .padding(.top, 12)
+        .buttonStyle(PillButtonStyle(
+            kind: .neutral,
+            height: 44,
+            horizontalPadding: 20,
+            edge: Stillness.floatEdge
+        ))
+        // Lifted off the page so it holds its shape over rows in either theme.
+        .shadow(color: Stillness.floatLift, radius: 6, y: 2)
         .padding(.bottom, 12)
-        .padding(.trailing, 20)
+        .padding(.trailing, StillnessSpacing.gutter)
         // On the thumb side, so it sits beside the list rather than on it.
         .frame(maxWidth: .infinity, alignment: .trailing)
         .background {
             Stillness.page
                 .ignoresSafeArea(edges: .bottom)
-                // Rows soften as they reach the band instead of meeting an edge.
+                // A rising fade above the band: a row passing beneath thins
+                // out gradually rather than being sliced at the band's edge.
                 .overlay(alignment: .top) {
                     LinearGradient(
-                        colors: [Stillness.page.opacity(0), Stillness.page],
+                        stops: [
+                            .init(color: Stillness.page.opacity(0), location: 0),
+                            .init(color: Stillness.page.opacity(0.45), location: 0.5),
+                            // Solid only at the band's edge.
+                            .init(color: Stillness.page, location: 1),
+                        ],
                         startPoint: .top,
                         endPoint: .bottom
                     )
-                    .frame(height: 20)
-                    .offset(y: -20)
+                    .frame(height: Self.bandFade)
+                    .offset(y: -Self.bandFade)
                 }
                 .allowsHitTesting(false)
         }
@@ -290,8 +306,8 @@ struct ShelfView: View {
         }
         .padding(.horizontal, 16)
         // Closer to its own rows than to the group before.
-        .padding(.top, 36)
-        .padding(.bottom, 2)
+        .padding(.top, 28)
+        .padding(.bottom, 4.5)
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(.isHeader)
     }
@@ -302,7 +318,7 @@ struct ShelfView: View {
             open(thought)
         } label: {
             HStack(spacing: 12) {
-                VStack(alignment: .leading, spacing: 5) {
+                VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 6) {
                         EmberIcon(.arrowBendUpLeft, size: 14)
                         Text("Back today")
@@ -310,27 +326,23 @@ struct ShelfView: View {
                     }
                     .foregroundStyle(Stillness.nowInk)
 
-                    Text(thought.preview)
+                    WordTruncatedText(text: thought.preview)
                         .font(StillnessType.body)
                         .lineSpacing(StillnessType.bodyLineSpacing)
                         .foregroundStyle(Stillness.ink)
-                        .lineLimit(2)
                         .multilineTextAlignment(.leading)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
 
                 EmberIcon(.caretRight, size: 13)
-                    .foregroundStyle(Stillness.nowInk.opacity(0.6))
+                    .foregroundStyle(Stillness.nowInk.opacity(0.7))
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 14)
+            .padding(.vertical, 12)
         }
-        .buttonStyle(BackTodayButtonStyle())
-        .simultaneousGesture(
-            LongPressGesture(minimumDuration: 0).onEnded { _ in
-                convexService.prewarmThought(id: thought.id)
-            }
-        )
+        .buttonStyle(BackTodayButtonStyle {
+            convexService.prewarmThought(id: thought.id)
+        })
         .accessibilityLabel("Returned today: \(thought.preview)")
     }
 
@@ -340,36 +352,11 @@ struct ShelfView: View {
         return Button {
             open(thought)
         } label: {
-            HStack(alignment: .firstTextBaseline, spacing: 18) {
-                Text(thought.preview)
-                    .font(StillnessType.row)
-                    .lineSpacing(3)
-                    .foregroundStyle(Stillness.ink)
-                    .lineLimit(2)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-
-                HStack(alignment: .firstTextBaseline, spacing: 4) {
-                    if thought.heldAt != nil {
-                        EmberIcon(.bookmarkSimpleFill, size: 11)
-                            .foregroundStyle(Stillness.chromeText)
-                            .accessibilityLabel("held")
-                    }
-                    Text(age)
-                        .font(StillnessType.caption)
-                        .monospacedDigit()
-                        .foregroundStyle(Stillness.chromeLabel)
-                        .lineLimit(1)
-                }
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 14)
+            ShelfRowLabel(thought: thought, age: age)
         }
-        .buttonStyle(RowButtonStyle())
-        .simultaneousGesture(
-            LongPressGesture(minimumDuration: 0).onEnded { _ in
-                convexService.prewarmThought(id: thought.id)
-            }
-        )
+        .buttonStyle(RowButtonStyle {
+            convexService.prewarmThought(id: thought.id)
+        })
         .accessibilityLabel("\(thought.preview), \(age)")
     }
 
@@ -401,14 +388,63 @@ struct ShelfView: View {
     }
 }
 
+/// A shelf row: the thought on up to two lines, its age in one column.
+private struct ShelfRowLabel: View {
+    /// How far Geist's descenders reach below the baseline (0.15em of the
+    /// 16pt row font), scaled with it.
+    @ScaledMetric(relativeTo: .body) private var descenderDepth: CGFloat = 2.4
+    @State private var lastLineDescends = true
+
+    let thought: ConvexService.CollectionThought
+    let age: String
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 20) {
+            WordTruncatedText(text: thought.preview, onLastLineDescends: { lastLineDescends = $0 })
+                .font(StillnessType.row)
+                .lineSpacing(3)
+                .foregroundStyle(Stillness.ink)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            HStack(alignment: .firstTextBaseline, spacing: 4) {
+                if thought.heldAt != nil {
+                    // A quiet mark beside the date, never heavier than it.
+                    EmberIcon(.bookmarkSimpleFill, size: 10)
+                        .foregroundStyle(Stillness.faint)
+                }
+                Text(age)
+                    .font(StillnessType.caption)
+                    .monospacedDigit()
+                    .foregroundStyle(Stillness.chromeLabel)
+                    .lineLimit(1)
+            }
+            // One date column, so every thought wraps at the same edge.
+            .frame(minWidth: 72, alignment: .trailing)
+        }
+        .padding(.horizontal, 16)
+        // Geist's line box carries more room above the capitals than below
+        // the descenders; this evens the ink, so a divider sits as far under
+        // the last line's lowest ink as above the next row's capitals. A
+        // last line with nothing below the baseline ("tide tables") ends
+        // higher, so the divider comes up by the descenders' depth.
+        .padding(.top, 11.5)
+        .padding(.bottom, lastLineDescends ? 13.5 : 13.5 - descenderDepth)
+    }
+}
+
 /// Today's returned thought: a light wash of the accent with a faint edge,
 /// deepening while pressed.
 private struct BackTodayButtonStyle: ButtonStyle {
+    let onPress: () -> Void
+
     func makeBody(configuration: Configuration) -> some View {
         let shape = RoundedRectangle(cornerRadius: StillnessSpacing.surfaceRadius, style: .continuous)
         configuration.label
             .background(configuration.isPressed ? Stillness.nowTint : Stillness.nowWash, in: shape)
             .overlay { shape.strokeBorder(Stillness.nowWashEdge, lineWidth: 1) }
             .contentShape(shape)
+            .onChange(of: configuration.isPressed) { _, isPressed in
+                if isPressed { onPress() }
+            }
     }
 }

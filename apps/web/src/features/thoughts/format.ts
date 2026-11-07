@@ -116,3 +116,12 @@ export function heldAge(heldAt: number, now: Now): { short: string; long: string
   if (days < 365) return unit(Math.floor(days / 30), "mo", "month");
   return unit(Math.floor(days / 365), "y", "year");
 }
+
+// The start of a text, cut at a word and never after a stop, so the
+// ellipsis is the only mark at the end ("Tuesday…", not "Tuesday.…").
+export function clip(text: string, limit: number): string {
+  if (text.length <= limit) return text;
+  const cut = text.slice(0, limit);
+  const word = cut.slice(0, Math.max(cut.lastIndexOf(" "), cut.lastIndexOf("\n")));
+  return `${word.replace(/[\s.,;:!?—–-]+$/, "")}…`;
+}

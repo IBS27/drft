@@ -59,6 +59,8 @@ enum StillnessType {
 
     /// Solid vermilion actions (Keep, Allow, Set it down).
     static let primaryButton = Font.geist(15, .semibold, relativeTo: .subheadline)
+    /// The same action waiting for words (an empty Keep).
+    static let primaryButtonResting = Font.geist(15, .medium, relativeTo: .subheadline)
     /// Outlined and quiet pill controls.
     static let control = Font.geist(14.5, .medium, relativeTo: .subheadline)
 
