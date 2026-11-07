@@ -63,12 +63,19 @@ enum ShelfFormatting {
         return date >= sixDaysAgo ? .thisWeek : .earlier
     }
 
+    /// "4:21 pm" with a plain space before am/pm, as on web (the system
+    /// format uses a narrow one that reads as "4:21pm").
     static func time(for date: Date) -> String {
-        date.formatted(
+        plainSpaces(date.formatted(
             .dateTime
                 .hour(.defaultDigits(amPM: .abbreviated))
                 .minute(.twoDigits)
-        )
+        ))
+    }
+
+    static func plainSpaces(_ text: String) -> String {
+        text.replacingOccurrences(of: "\u{202F}", with: " ")
+            .replacingOccurrences(of: "\u{00A0}", with: " ")
     }
 
     static func captureLine(for milliseconds: Double, now: Date = .now) -> String {

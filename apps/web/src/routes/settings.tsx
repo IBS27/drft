@@ -73,18 +73,22 @@ function Settings() {
     <main className="min-h-dvh">
       <Rail activeId={null} now={now} />
       <div className="flex min-h-dvh flex-col lg:pl-72 xl:pl-80">
-      <PageHeader title="Settings" />
+      {/* Who you are is context, not a setting: the page's one line. */}
+      <PageHeader
+        title="Settings"
+        description={
+          <span className="flex min-w-0 items-center gap-1">
+            Signed in as
+            {email ? (
+              <span className="min-w-0 truncate text-pt">{email}</span>
+            ) : (
+              <span className="inline-block h-2 w-[20ch] max-w-full rounded-full bg-line" />
+            )}
+          </span>
+        }
+      />
 
       <section className="mx-auto flex w-full max-w-[688px] flex-1 flex-col gap-4 px-4 pt-0 pb-16 md:px-10">
-        {/* Who you are is context, not a setting: a quiet line above the cards. */}
-        <p className="-mt-1 flex min-w-0 items-center gap-1 text-[14px] text-pl">
-          Signed in as
-          {email ? (
-            <span className="min-w-0 truncate text-pt">{email}</span>
-          ) : (
-            <span className="inline-block h-2 w-[20ch] max-w-full rounded-full bg-line" />
-          )}
-        </p>
         <div className={SURFACE}>
 
           <div className="px-4 py-3.5">

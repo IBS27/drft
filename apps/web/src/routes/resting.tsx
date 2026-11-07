@@ -62,7 +62,7 @@ function Resting() {
                 onPointerEnter={() => prewarm(t._id)}
                 onPointerDown={() => prewarm(t._id)}
                 onFocus={() => prewarm(t._id)}
-                className="block min-w-0 flex-1 rounded-card py-3.5 pl-3.5"
+                className="block min-w-0 flex-1 rounded-card py-3.5 pl-2.5"
               >
                 <span className="line-clamp-2 text-[16px] leading-[1.4] text-ink">
                   {t.preview}

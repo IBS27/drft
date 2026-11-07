@@ -67,7 +67,7 @@ function Held() {
         />
         <section
           aria-busy={cards === undefined}
-          className="mx-auto flex w-full max-w-[688px] flex-1 flex-col px-4 pt-2 pb-16 md:px-10"
+          className="mx-auto flex w-full max-w-[688px] flex-1 flex-col px-4 pt-1 pb-16 md:px-10 lg:pt-0"
         >
           {cards === undefined ? (
             <BoardSkeleton />

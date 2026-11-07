@@ -171,7 +171,7 @@ function ThoughtView() {
             key={view._id}
             className="mx-auto flex w-full max-w-[688px] flex-1 flex-col px-4 md:px-10"
           >
-            <div className="group/thought flex w-full flex-col pt-4 pb-2 md:pt-[6vh]">
+            <div className="group/thought flex w-full flex-col pt-4 pb-2 md:pt-2">
               <h1
                 className={`font-normal text-pretty whitespace-pre-wrap text-ink ${
                   view.text.length > 240
@@ -258,7 +258,7 @@ function ThoughtView() {
                             prewarm(id);
                             prewarm(c.otherId);
                           }}
-                          className="grid w-full grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-3 rounded-card py-[13px] pr-2.5 pl-3 text-left"
+                          className="grid w-full grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-3 rounded-card py-[13px] pr-2.5 pl-2.5 text-left"
                         >
                           <span className="text-[15px] leading-[1.45] whitespace-pre-wrap text-ink">
                             {c.otherText}
@@ -339,7 +339,7 @@ function ThoughtSkeleton() {
       aria-label="loading thought"
       className="mx-auto flex w-full max-w-[688px] flex-1 flex-col px-4 md:px-10"
     >
-      <div className="flex w-full flex-col pt-4 pb-2 md:pt-[6vh]">
+      <div className="flex w-full flex-col pt-4 pb-2 md:pt-2">
         <div className="flex w-full max-w-[24ch] flex-col gap-[19px] text-[27px] md:gap-[31px] md:text-[38px]">
           <Skeleton className="h-[18px] w-full" />
           <Skeleton className="h-[18px] w-[62%]" />

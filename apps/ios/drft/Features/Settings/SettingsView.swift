@@ -303,9 +303,9 @@ struct SettingsView: View {
     }
 
     private var dailyThoughtTimeText: String {
-        dailyThoughtTime
-            .formatted(date: .omitted, time: .shortened)
-            .lowercased()
+        ShelfFormatting.plainSpaces(
+            dailyThoughtTime.formatted(date: .omitted, time: .shortened)
+        ).lowercased()
     }
 
     private static var defaultDailyThoughtTime: Date {

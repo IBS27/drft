@@ -27,7 +27,7 @@ const HEADER_PILL =
   "inline-flex h-8 items-center rounded-full bg-scr px-3 text-[13.5px] font-medium text-pt ring-1 ring-line ring-inset transition-colors hover:bg-tint hover:text-ink lg:hidden";
 
 const HEADER_ICON =
-  "flex size-11 items-center justify-center rounded-full text-[17px] text-pt transition-colors hover:text-ink lg:hidden [&>svg]:size-[19px]";
+  "relative flex size-11 items-center justify-center rounded-full text-pt transition-colors before:absolute before:inset-1.5 before:rounded-full before:bg-scr before:ring-1 before:ring-line before:ring-inset before:transition-colors hover:text-ink hover:before:bg-tint lg:hidden [&>svg]:relative [&>svg]:size-[17px]";
 
 type Row = {
   _id: Id<"thoughts">;
@@ -227,7 +227,7 @@ const ThoughtRow = memo(function ThoughtRow({
       }`}
     >
       <span className="line-clamp-3 min-w-0 flex-1 leading-[1.4]">{t.preview}</span>
-      <span className="inline-flex min-w-[48px] flex-none items-baseline justify-end gap-1 text-[13px] text-pl tabular-nums">
+      <span className="inline-flex min-w-16 flex-none items-baseline justify-end gap-1 text-[13px] text-pl tabular-nums">
         {t.heldAt !== undefined && (
           <BookmarkSimple weight="fill" aria-label="held" className="translate-y-[1px] text-[11px] text-pt" />
         )}

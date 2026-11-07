@@ -360,6 +360,8 @@ struct ShelfView: View {
                         .foregroundStyle(Stillness.chromeLabel)
                         .lineLimit(1)
                 }
+                // One date column, so every thought wraps at the same edge.
+                .frame(minWidth: 64, alignment: .trailing)
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 14)
