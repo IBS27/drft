@@ -68,11 +68,13 @@ enum Stillness {
     /// The switch knob: the surface colour, a raised knob on either track
     /// (the web's --knob).
     static let switchKnob = dynamic(light: 0xFBFAF7, dark: 0x23221F)
-    /// A hairline ring that lifts the dark knob off its track; none in the light.
+    /// The dark knob's ring: the secondary-label colour, so its outline reads
+    /// at once on the pale "on" track; none in the light.
     static let switchKnobRing = Color(uiColor: UIColor { traits in
-        traits.userInterfaceStyle == .dark
-            ? color(0x3D3B36, alpha: 1)
-            : .clear
+        guard traits.userInterfaceStyle == .dark else { return .clear }
+        return traits.accessibilityContrast == .high
+            ? color(0xCDCDC7, alpha: 1)
+            : color(0xBDB8AE, alpha: 1)
     })
     /// The knob's small drop shadow: ink in the light, black in the dark.
     static let switchKnobShadow = dynamic(light: 0x26241F, dark: 0x000000, alpha: 0.3)

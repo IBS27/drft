@@ -84,65 +84,57 @@ struct SettingsView: View {
 
                         VStack(spacing: 0) {
 
-                            VStack(alignment: .leading, spacing: 4) {
-                                HStack(spacing: 16) {
-                                    Text("Daily thought")
+                            // Controls centre on the whole row (title and
+                            // description), like the chevron rows below.
+                            HStack(spacing: 16) {
+                                settingText(
+                                    "Daily thought",
+                                    detail: "One thought returns each morning, \(Self.placeName) time"
+                                )
+
+                                Spacer(minLength: 12)
+
+                                HStack(spacing: 6) {
+                                    Text(dailyThoughtTimeText)
                                         .font(StillnessType.body)
+                                        .monospacedDigit()
                                         .foregroundStyle(Stillness.ink)
-
-                                    Spacer(minLength: 12)
-
-                                    HStack(spacing: 6) {
-                                        Text(dailyThoughtTimeText)
-                                            .font(StillnessType.body)
-                                            .monospacedDigit()
-                                            .foregroundStyle(Stillness.ink)
-                                        EmberIcon(.caretDown, size: 11)
-                                            .foregroundStyle(Stillness.chromeLabel)
-                                    }
-                                        .padding(.leading, 14)
-                                        .padding(.trailing, 11)
-                                        .frame(minHeight: 36)
-                                        .background(Stillness.page, in: Capsule())
-                                        .overlay {
-                                            Capsule().strokeBorder(Stillness.hairline, lineWidth: 1)
-                                        }
-                                        .accessibilityHidden(true)
-                                        .overlay {
-                                            DatePicker(
-                                                "Daily thought",
-                                                selection: $dailyThoughtTime,
-                                                displayedComponents: .hourAndMinute
-                                            )
-                                            .labelsHidden()
-                                            .datePickerStyle(.compact)
-                                            .tint(Stillness.now)
-                                            .colorMultiply(.clear)
-                                        }
+                                    EmberIcon(.caretDown, size: 11)
+                                        .foregroundStyle(Stillness.chromeLabel)
                                 }
-
-                                Text("One thought returns each morning, \(Self.placeName) time")
-                                    .font(StillnessType.caption)
-                                    .foregroundStyle(Stillness.chromeLabel)
-                                    .fixedSize(horizontal: false, vertical: true)
+                                    .padding(.leading, 14)
+                                    .padding(.trailing, 11)
+                                    .frame(minHeight: 36)
+                                    .background(Stillness.page, in: Capsule())
+                                    .overlay {
+                                        Capsule().strokeBorder(Stillness.hairline, lineWidth: 1)
+                                    }
+                                    .accessibilityHidden(true)
+                                    .overlay {
+                                        DatePicker(
+                                            "Daily thought",
+                                            selection: $dailyThoughtTime,
+                                            displayedComponents: .hourAndMinute
+                                        )
+                                        .labelsHidden()
+                                        .datePickerStyle(.compact)
+                                        .tint(Stillness.now)
+                                        .colorMultiply(.clear)
+                                    }
                             }
                             .padding(.horizontal, 16)
                             .padding(.vertical, 14)
 
                             Hairline()
 
-                            VStack(alignment: .leading, spacing: 0) {
-                                Toggle("Connections", isOn: connections)
-                                    .toggleStyle(EmberSwitchStyle())
-                                    .disabled(convexService.consent == .unknown)
-
-                                Text("Thought text is sent to OpenAI to find echoes")
-                                    .font(StillnessType.caption)
-                                    .foregroundStyle(Stillness.chromeLabel)
-                                    .fixedSize(horizontal: false, vertical: true)
+                            Toggle(isOn: connections) {
+                                settingText(
+                                    "Connections",
+                                    detail: "Thought text is sent to OpenAI to find echoes"
+                                )
                             }
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 10)
+                            .toggleStyle(EmberSwitchStyle())
+                            .disabled(convexService.consent == .unknown)
                         }
                         .emberSurface()
 
@@ -171,14 +163,11 @@ struct SettingsView: View {
                             Button {
                                 deletionIsConfirming = true
                             } label: {
-                                HStack {
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text(isDeletingAccount ? "Deleting…" : "Delete account")
-                                            .font(StillnessType.body)
-                                        Text("Removes your thoughts and notes for good.")
-                                            .font(StillnessType.caption)
-                                            .foregroundStyle(Stillness.chromeLabel)
-                                    }
+                                HStack(spacing: 16) {
+                                    settingText(
+                                        isDeletingAccount ? "Deleting…" : "Delete account",
+                                        detail: "Removes your thoughts and notes for good."
+                                    )
                                     Spacer(minLength: 12)
                                     EmberIcon(.caretRight, size: 13)
                                         .opacity(0.7)
@@ -200,6 +189,8 @@ struct SettingsView: View {
                             }
                         }
                         .emberSurface()
+                        // Set apart from the everyday settings, as on web.
+                        .padding(.top, 24)
 
                         // Right under the last card, not stranded at the
                         // foot of the sheet.
@@ -276,6 +267,20 @@ struct SettingsView: View {
     private var fittedDetent: PresentationDetent {
         let measured = headerHeight + contentHeight
         return .height(contentHeight > 0 ? ceil(measured) : Self.estimatedHeight)
+    }
+
+    /// A setting's name over its one-line description, a fixed 4pt apart
+    /// whatever the trailing control.
+    private func settingText(_ title: String, detail: String) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title)
+                .font(StillnessType.body)
+                .foregroundStyle(Stillness.ink)
+            Text(detail)
+                .font(StillnessType.caption)
+                .foregroundStyle(Stillness.chromeLabel)
+                .fixedSize(horizontal: false, vertical: true)
+        }
     }
 
     private func linkRow(_ title: String, icon: PhosphorIcon) -> some View {
@@ -406,8 +411,6 @@ private struct EmberSwitchStyle: ToggleStyle {
         } label: {
             HStack(spacing: 16) {
                 configuration.label
-                    .font(StillnessType.body)
-                    .foregroundStyle(Stillness.ink)
 
                 Spacer(minLength: 12)
 
@@ -432,7 +435,8 @@ private struct EmberSwitchStyle: ToggleStyle {
                 .animation(.easeOut(duration: 0.18), value: configuration.isOn)
                 .accessibilityHidden(true)
             }
-            .frame(minHeight: 44)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)

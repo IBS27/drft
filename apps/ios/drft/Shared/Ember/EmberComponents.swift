@@ -15,6 +15,7 @@ enum PhosphorIcon: String {
     case googleLogoFill = "ph-google-logo-fill"
     case graph = "ph-graph"
     case moon = "ph-moon"
+    case pencilSimpleLine = "ph-pencil-simple-line"
     case plus = "ph-plus"
     case signOut = "ph-sign-out"
     case waveform = "ph-waveform"
@@ -46,6 +47,22 @@ struct EmberIcon: View {
             .scaledToFit()
             .frame(width: size, height: size)
             .accessibilityHidden(true)
+    }
+}
+
+/// An icon centred on the capitals of a caption line (Geist's cap height is
+/// 0.71em), carrying that line's baseline: it lines up with the first line
+/// of the text beside it at any type size.
+struct CaptionLineIcon: View {
+    @ScaledMetric(relativeTo: .footnote) private var halfCapHeight: CGFloat = 13 * 0.71 / 2
+
+    let icon: PhosphorIcon
+    var size: CGFloat = 12
+
+    var body: some View {
+        EmberIcon(icon, size: size)
+            .alignmentGuide(.firstTextBaseline) { $0[VerticalAlignment.center] + halfCapHeight }
+            .alignmentGuide(.lastTextBaseline) { $0[VerticalAlignment.center] + halfCapHeight }
     }
 }
 

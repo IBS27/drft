@@ -570,7 +570,9 @@ private struct RelatedThoughtRow: View {
     private let actionWidth: CGFloat = 112
 
     var body: some View {
-        HStack(alignment: .center, spacing: 12) {
+        // The date and chevron sit on the first line, in one fixed column,
+        // so a two-line thought doesn't float them between its lines.
+        HStack(alignment: .firstTextBaseline, spacing: 12) {
             WordTruncatedText(text: connection.otherText)
                 .font(StillnessType.body)
                 .lineSpacing(StillnessType.bodyLineSpacing)
@@ -578,24 +580,24 @@ private struct RelatedThoughtRow: View {
                 .multilineTextAlignment(.leading)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-            if let metadata {
-                Text(metadata)
-                    .font(StillnessType.caption)
-                    .monospacedDigit()
-                    .foregroundStyle(Stillness.chromeLabel)
-                    .lineLimit(1)
-            } else {
-                HStack(spacing: 4) {
-                    EmberIcon(.moon, size: 13)
-                    Text("Set down")
+            HStack(alignment: .firstTextBaseline, spacing: 12) {
+                if let metadata {
+                    Text(metadata)
+                        .monospacedDigit()
+                } else {
+                    HStack(alignment: .firstTextBaseline, spacing: 4) {
+                        CaptionLineIcon(icon: .moon, size: 13)
+                        Text("Set down")
+                    }
                 }
-                .font(StillnessType.caption)
-                .foregroundStyle(Stillness.chromeLabel)
-                .lineLimit(1)
-            }
 
-            EmberIcon(.caretRight, size: 12)
-                .foregroundStyle(Stillness.faint)
+                CaptionLineIcon(icon: .caretRight, size: 12)
+                    .foregroundStyle(Stillness.faint)
+            }
+            .font(StillnessType.caption)
+            .foregroundStyle(Stillness.chromeLabel)
+            .lineLimit(1)
+            .frame(minWidth: 96, alignment: .trailing)
         }
         .padding(.vertical, 14)
         .padding(.trailing, 2)

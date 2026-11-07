@@ -254,11 +254,13 @@ struct ShelfView: View {
             onCatchThought()
         } label: {
             HStack(spacing: 8) {
-                EmberIcon(.plus, size: 16)
+                EmberIcon(.pencilSimpleLine, size: 16)
                 Text("New thought")
             }
         }
         .buttonStyle(PillButtonStyle(kind: .neutral, height: 44, horizontalPadding: 20))
+        // Lifted off the page in the light so it holds its shape over rows.
+        .shadow(color: Stillness.lift, radius: 6, y: 2)
         .padding(.bottom, 12)
         .padding(.trailing, StillnessSpacing.gutter)
         // On the thumb side, so it sits beside the list rather than on it.
@@ -290,7 +292,7 @@ struct ShelfView: View {
         .padding(.horizontal, 16)
         // Closer to its own rows than to the group before.
         .padding(.top, 28)
-        .padding(.bottom, 2)
+        .padding(.bottom, 4.5)
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(.isHeader)
     }
@@ -344,9 +346,9 @@ struct ShelfView: View {
 
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
                     if thought.heldAt != nil {
-                        EmberIcon(.bookmarkSimpleFill, size: 11)
-                            .foregroundStyle(Stillness.chromeText)
-                            .accessibilityLabel("held")
+                        // A quiet mark beside the date, never heavier than it.
+                        EmberIcon(.bookmarkSimpleFill, size: 10)
+                            .foregroundStyle(Stillness.faint)
                     }
                     Text(age)
                         .font(StillnessType.caption)
@@ -358,7 +360,11 @@ struct ShelfView: View {
                 .frame(minWidth: 72, alignment: .trailing)
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 14)
+            // Geist's line box carries more room above the ascenders than
+            // below the descenders; this evens the ink, so a divider sits as
+            // far from a second line's descenders as from the next row.
+            .padding(.top, 11.5)
+            .padding(.bottom, 13.5)
         }
         .buttonStyle(RowButtonStyle {
             convexService.prewarmThought(id: thought.id)
