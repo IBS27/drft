@@ -247,8 +247,9 @@ struct ShelfView: View {
         }
     }
 
-    /// The fade's height above the New thought band.
-    private static let bandFade: CGFloat = 52
+    /// The fade's height above the New thought band: short, so no whole
+    /// row at rest sits ghosted in it.
+    private static let bandFade: CGFloat = 28
 
     // A quiet surface pill on the thumb side, in its own opaque band below
     // the list: rows end at the band's edge, never under the pill.
@@ -282,11 +283,9 @@ struct ShelfView: View {
                     LinearGradient(
                         stops: [
                             .init(color: Stillness.page.opacity(0), location: 0),
-                            .init(color: Stillness.page.opacity(0.3), location: 0.35),
-                            .init(color: Stillness.page.opacity(0.8), location: 0.7),
-                            // Solid just before the band, so no glyph tips
-                            // show at its edge.
-                            .init(color: Stillness.page, location: 0.88),
+                            .init(color: Stillness.page.opacity(0.45), location: 0.5),
+                            // Solid only at the band's edge.
+                            .init(color: Stillness.page, location: 1),
                         ],
                         startPoint: .top,
                         endPoint: .bottom

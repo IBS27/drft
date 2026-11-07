@@ -18,6 +18,7 @@ struct SettingsView: View {
     @State private var isDeletingAccount = false
     @State private var deletionFailed = false
     @State private var pendingConnections: Bool?
+    @State private var timePickerSize: CGSize = .zero
     @State private var headerHeight: CGFloat = 0
     @State private var contentHeight: CGFloat = 0
     /// Opens hugging its content; the guess only stands until the first
@@ -86,16 +87,11 @@ struct SettingsView: View {
 
                         VStack(spacing: 0) {
 
-                            // Controls centre on the whole row (title and
-                            // description), like the chevron rows below.
-                            HStack(spacing: 16) {
-                                settingText(
-                                    "Daily thought",
-                                    detail: "One thought returns each morning, \(Self.placeName) time"
-                                )
-
-                                Spacer(minLength: 12)
-
+                            SettingRow(
+                                detail: "One thought returns each morning, \(Self.placeName) time"
+                            ) {
+                                Text("Daily thought")
+                            } control: {
                                 HStack(spacing: 6) {
                                     Text(dailyThoughtTimeText)
                                         .font(StillnessType.body)
@@ -104,15 +100,16 @@ struct SettingsView: View {
                                     EmberIcon(.caretDown, size: 11)
                                         .foregroundStyle(Stillness.chromeLabel)
                                 }
-                                    .padding(.leading, 14)
-                                    .padding(.trailing, 11)
-                                    .frame(minHeight: 36)
-                                    .background(Stillness.controlFill, in: Capsule())
-                                    .overlay {
-                                        Capsule().strokeBorder(Stillness.hairline, lineWidth: 1)
-                                    }
-                                    .accessibilityHidden(true)
-                                    .overlay {
+                                .padding(.leading, 14)
+                                .padding(.trailing, 11)
+                                .frame(minHeight: 36)
+                                .background(Stillness.controlFill, in: Capsule())
+                                .overlay {
+                                    Capsule().strokeBorder(Stillness.hairline, lineWidth: 1)
+                                }
+                                .accessibilityHidden(true)
+                                .overlay {
+                                    GeometryReader { pill in
                                         DatePicker(
                                             "Daily thought",
                                             selection: $dailyThoughtTime,
@@ -122,20 +119,28 @@ struct SettingsView: View {
                                         .datePickerStyle(.compact)
                                         .tint(Stillness.now)
                                         .colorMultiply(.clear)
+                                        .onGeometryChange(for: CGSize.self) { $0.size } action: {
+                                            timePickerSize = $0
+                                        }
+                                        // The invisible picker stretched over the whole
+                                        // pill and to 44pt tall, so all of it opens it.
+                                        .scaleEffect(
+                                            x: Self.stretch(timePickerSize.width, to: max(pill.size.width, 44)),
+                                            y: Self.stretch(timePickerSize.height, to: 44)
+                                        )
+                                        .frame(width: pill.size.width, height: pill.size.height)
                                     }
+                                }
                             }
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 14)
 
                             Hairline()
 
                             Toggle(isOn: connections) {
-                                settingText(
-                                    "Connections",
-                                    detail: "Thought text is sent to OpenAI to find echoes"
-                                )
+                                Text("Connections")
                             }
-                            .toggleStyle(EmberSwitchStyle())
+                            .toggleStyle(EmberSwitchStyle(
+                                detail: "Thought text is sent to OpenAI to find echoes"
+                            ))
                             .disabled(convexService.consent == .unknown)
                         }
                         .emberSurface()
@@ -366,6 +371,11 @@ struct SettingsView: View {
         ) ?? .now
     }
 
+    /// The scale that grows a length to at least the target.
+    private static func stretch(_ length: CGFloat, to target: CGFloat) -> CGFloat {
+        length > 0 ? max(1, target / length) : 1
+    }
+
     private static func date(from sendTime: String) -> Date? {
         let components = sendTime.split(separator: ":")
         guard components.count == 2,
@@ -421,15 +431,15 @@ private struct SettingsRowButtonStyle: ButtonStyle {
 private struct EmberSwitchStyle: ToggleStyle {
     @Environment(\.isEnabled) private var isEnabled
 
+    let detail: String
+
     func makeBody(configuration: Configuration) -> some View {
         Button {
             configuration.isOn.toggle()
         } label: {
-            HStack(spacing: 16) {
+            SettingRow(detail: detail) {
                 configuration.label
-
-                Spacer(minLength: 12)
-
+            } control: {
                 ZStack(alignment: configuration.isOn ? .trailing : .leading) {
                     Capsule()
                         .fill(configuration.isOn ? Stillness.switchOn : Stillness.hairline)
@@ -451,12 +461,43 @@ private struct EmberSwitchStyle: ToggleStyle {
                 .animation(.easeOut(duration: 0.18), value: configuration.isOn)
                 .accessibilityHidden(true)
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 14)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .accessibilityValue(configuration.isOn ? "on" : "off")
         .accessibilityAddTraits(.isToggle)
+    }
+}
+
+/// A setting whose control shares the title's line; the description runs
+/// full width beneath, so it never wraps beside the control.
+private struct SettingRow<Title: View, Control: View>: View {
+    let detail: String
+    @ViewBuilder let title: Title
+    @ViewBuilder let control: Control
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: 16) {
+                title
+                    .font(StillnessType.body)
+                    .foregroundStyle(Stillness.ink)
+                Spacer(minLength: 12)
+                control
+            }
+            // The time pill's height, so both rows keep one rhythm.
+            .frame(minHeight: 36)
+
+            BalancedWrap {
+                Text(detail)
+                    .font(StillnessType.caption)
+                    .foregroundStyle(Stillness.chromeLabel)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 10)
+        .padding(.bottom, 14)
     }
 }

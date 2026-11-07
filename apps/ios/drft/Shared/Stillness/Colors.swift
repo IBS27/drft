@@ -22,12 +22,13 @@ enum Stillness {
         darkHighContrast: 0x52524D
     )
     /// A step past the hairline for controls that must hold their shape on
-    /// the cream page (Speak, an empty Keep); the hairline in the dark.
+    /// the cream page (Speak, an empty Keep); in the dark the floating
+    /// edge (floatEdge), so the unfilled pills keep their shape.
     static let controlEdge = dynamic(
         light: 0xCBC6BA,
-        dark: 0x3D3B36,
+        dark: 0x4A4741,
         lightHighContrast: 0xB4B4AE,
-        darkHighContrast: 0x52524D
+        darkHighContrast: 0x5E5D58
     )
     /// A pill control sitting on a card (the time picker): the page in the
     /// light, a step off the surface; in the dark the surface mixed 10%
@@ -115,7 +116,7 @@ enum Stillness {
     static let nowWashEdge = Color(uiColor: UIColor { traits in
         traits.userInterfaceStyle == .dark
             ? UIColor(red: 0.8, green: 0.29, blue: 0.14, alpha: 0.22)
-            : UIColor(red: 0.78, green: 0.24, blue: 0.11, alpha: 0.10)
+            : UIColor(red: 0.78, green: 0.24, blue: 0.11, alpha: 0.18)
     })
     /// Soft wash for whatever is "now" (Back today, chips, pressed rows).
     static let nowTint = dynamic(light: 0xF1E5DD, dark: 0x2F1E17)
