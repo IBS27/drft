@@ -173,7 +173,8 @@ struct ShelfView: View {
                         }
                         .padding(.horizontal, 8)
                         .padding(.top, 8)
-                        .padding(.bottom, 16)
+                        // Room for the fade, so the last row ends clear of it.
+                        .padding(.bottom, 28)
                     }
                     .scrollIndicators(.hidden)
                 }
@@ -271,8 +272,8 @@ struct ShelfView: View {
                         startPoint: .top,
                         endPoint: .bottom
                     )
-                    .frame(height: 56)
-                    .offset(y: -56)
+                    .frame(height: 20)
+                    .offset(y: -20)
                 }
                 .allowsHitTesting(false)
         }

@@ -150,7 +150,6 @@ export function NotesField({
           className="inline-flex cursor-text items-center gap-1.5 text-[14px] font-medium text-pt transition-colors group-focus-within:text-ink"
         >
           Notes
-          <PencilSimpleLine aria-hidden="true" className="text-[13px] text-pl" />
         </label>
         {/* Not a live region: announcing every pause would be noise. Only
             a failure speaks up (role="status" below). While one stands,
@@ -166,6 +165,8 @@ export function NotesField({
           ) : null}
         </span>
       </div>
+      {/* The pencil sits in the field it edits, and steps away once you're in. */}
+      <div className="relative">
       <textarea
         id="thought-notes"
         ref={field}
@@ -190,6 +191,11 @@ export function NotesField({
         placeholder="Write around it…"
         className="notes-field w-full resize-none overflow-hidden rounded-card bg-scr text-[15px] text-ink ring-1 ring-line outline-none ring-inset transition-shadow placeholder:text-pl hover:ring-pl/30 focus:ring-pl/50"
       />
+      <PencilSimpleLine
+        aria-hidden="true"
+        className="pointer-events-none absolute top-[15px] right-4 text-[15px] text-pl transition-opacity group-focus-within:opacity-0"
+      />
+      </div>
       {failed && (
         <div
           role="status"
