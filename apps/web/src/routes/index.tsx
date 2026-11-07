@@ -3,7 +3,6 @@ import {
   BookmarkSimple,
   CaretRight,
   GearSix,
-  Graph,
   MagnifyingGlass,
   Moon,
 } from "@phosphor-icons/react";
@@ -101,7 +100,6 @@ function Collection() {
             [
               ["/held", "Held", BookmarkSimple],
               ["/resting", "Resting", Moon],
-              ["/connections", "Connections", Graph],
             ] as const
           ).map(([to, name, Icon]) => (
             <Link
@@ -127,7 +125,7 @@ function Collection() {
         >
           <CaptureField now={now} />
           {pinned && (
-            <div data-capture className="mt-6 hidden w-full max-w-[608px] lg:block">
+            <div className="mt-6 hidden w-full max-w-[608px] lg:block">
               <BackToday t={pinned} prewarm={prewarm} wide />
             </div>
           )}

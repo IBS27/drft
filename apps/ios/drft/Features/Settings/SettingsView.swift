@@ -36,8 +36,11 @@ struct SettingsView: View {
             VStack(spacing: 0) {
                 ZStack {
                     Text("Settings")
-                        .font(StillnessType.headerTitle)
-                        .foregroundStyle(Stillness.chromeText)
+                        .font(.geist(22, .semibold, relativeTo: .title2))
+                        .tracking(-0.3)
+                        .foregroundStyle(Stillness.ink)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.leading, 20)
                         .accessibilityAddTraits(.isHeader)
 
                     HStack {

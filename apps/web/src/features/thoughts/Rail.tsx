@@ -427,7 +427,7 @@ function GroupHeader({ group }: { group: Group }) {
 
 // The open row: a neutral wash and a vermilion bar down its left edge.
 const ACTIVE_BAR =
-  "bg-line/55 before:absolute before:inset-y-2 before:left-0 before:w-[3px] before:rounded-full before:bg-dot";
+  "bg-line/55 before:absolute before:inset-y-2 before:left-0 before:w-[3px] before:rounded-full before:bg-pt/45";
 
 function RailSkeleton() {
   return (
@@ -481,17 +481,16 @@ const BackToday = memo(function BackToday({
       onPointerDown={() => prewarm(t._id)}
       onFocus={() => prewarm(t._id)}
       aria-current={active ? "page" : undefined}
-      className={`relative mb-1 flex flex-col gap-1 rounded-card px-3 py-2.5 transition-colors ${
+      className={`relative mb-1 flex flex-col rounded-card px-3 py-[9px] transition-colors ${
         active ? ACTIVE_BAR : "hover:bg-tint"
       }`}
     >
-      <span className="flex items-center gap-1.5 text-[12.5px] font-medium text-dot-ink">
-        <ArrowBendUpLeft aria-hidden="true" className="text-[14px]" />
+      <span className="flex items-baseline gap-2">
+        <ArrowBendUpLeft aria-hidden="true" className="flex-none translate-y-[2px] text-[14px] text-dot-ink" />
         <span className="sr-only">returned today: </span>
-        <span aria-hidden="true">Back today</span>
-      </span>
-      <span className="line-clamp-2 text-[15px] leading-[1.4] text-ink">
-        {t.preview}
+        <span className="line-clamp-2 min-w-0 flex-1 text-[15px] leading-[1.4] text-ink">
+          {t.preview}
+        </span>
       </span>
     </Link>
   );

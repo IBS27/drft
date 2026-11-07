@@ -64,7 +64,10 @@ function Held() {
           <span className="lg:hidden">
             <BackLink />
           </span>
-          <h1 className="text-[17px] font-semibold tracking-[-0.015em] text-ink lg:text-[22px]">Held</h1>
+          <span className="flex flex-col">
+            <h1 className="text-[17px] font-semibold tracking-[-0.015em] text-ink lg:text-[22px]">Held</h1>
+            <span className="hidden text-[15px] text-pl lg:block">Thoughts you're keeping close.</span>
+          </span>
           <span className="ml-auto">
             {cards && cards.length > 0 && <ModeSwitch mode={mode} setMode={setMode} />}
           </span>
@@ -166,7 +169,7 @@ function Board({
   now: number;
 }) {
   const [ref, width] = useWidth();
-  const columns = width > 0 ? columnCount(width) : 1;
+  const columns = width > 0 ? Math.min(2, columnCount(width)) : 1;
   const toggle = useHold();
   const prewarm = useThoughtPrewarm();
   const [focusId, setFocusId] = useState<Id<"thoughts"> | null>(null);

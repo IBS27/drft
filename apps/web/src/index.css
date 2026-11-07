@@ -30,7 +30,7 @@
   --dot-edge: color-mix(in oklab, var(--dot) 45%, var(--line));
   --on-dot: #fffaf5;
   /* The one destructive action: a deeper red than the accent. */
-  --danger: #a1302b;
+  --danger: #94394a;
   /* An "on" switch: ink, never the accent. */
   --switch: #2f2c27;
   --back-wash: color-mix(in oklab, var(--dot) 4%, var(--pg));
@@ -57,7 +57,7 @@
     --switch: #ebe8e1;
     --back-wash: color-mix(in oklab, var(--dot) 9%, var(--pg));
     --back-edge: color-mix(in oklab, var(--dot) 22%, transparent);
-    --danger: #e0786e;
+    --danger: #de8a98;
   }
 }
 
@@ -117,19 +117,12 @@ body {
   opacity: 0;
 }
 
-/* While the rail is finding, the capture sheet steps back and the rail's
-   own "you are here" quiets, so only the focused hit looks selected. */
+/* While the rail is finding, its own "you are here" quiets, so only the
+   focused hit looks selected. */
 nav[data-finding] [aria-current="page"] {
   background: transparent !important;
   font-weight: inherit !important;
 }
-[data-capture] {
-  transition: opacity 200ms;
-}
-:root:has(nav[data-finding]) [data-capture] {
-  opacity: 0.7;
-}
-
 /* The room's one loading signal: a blinking caret, never a spinner. */
 @keyframes caret-blink {
   0%,

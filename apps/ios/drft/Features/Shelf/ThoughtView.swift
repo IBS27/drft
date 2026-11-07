@@ -171,7 +171,7 @@ struct ThoughtView: View {
                 .textSelection(.enabled)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-            if thought.lastReturnedAt != nil || thought.status == .resting || thought.heldAt != nil {
+            if thought.lastReturnedAt != nil || thought.status == .resting {
                 HStack(spacing: 8) {
                     if let lastReturnedAt = thought.lastReturnedAt {
                         // History, not a control: plain words in the accent.
@@ -185,16 +185,6 @@ struct ThoughtView: View {
                                 ? Stillness.nowInk
                                 : Stillness.chromeLabel
                         )
-                        .frame(minHeight: 28)
-                    }
-
-                    if thought.heldAt != nil {
-                        HStack(spacing: 5) {
-                            EmberIcon(.bookmarkSimpleFill, size: 12)
-                            Text("Held")
-                        }
-                        .font(StillnessType.caption)
-                        .foregroundStyle(Stillness.chromeText)
                         .frame(minHeight: 28)
                     }
 
@@ -226,9 +216,24 @@ struct ThoughtView: View {
 
             // What you can do with it, right under it.
             if thought.status == .open {
-                restControls
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.top, 20)
+                HStack(spacing: 8) {
+                    // Held is set on the web; here it is shown, not changed.
+                    if thought.heldAt != nil {
+                        HStack(spacing: 6) {
+                            EmberIcon(.bookmarkSimpleFill, size: 13)
+                            Text("Held")
+                        }
+                        .font(StillnessType.control)
+                        .foregroundStyle(Stillness.ink)
+                        .padding(.horizontal, 16)
+                        .frame(minHeight: 44)
+                        .background(Stillness.hairline.opacity(0.7), in: Capsule())
+                        .accessibilityElement(children: .combine)
+                    }
+                    restControls
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.top, 20)
             }
 
             let connections = displayedConnections(for: thought)

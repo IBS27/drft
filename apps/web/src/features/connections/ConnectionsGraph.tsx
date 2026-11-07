@@ -169,16 +169,18 @@ function placeLabels(
     const sides = counts
       ? [...allSides].sort((a, b) => counts[a] - counts[b])
       : allSides;
+    let best: { side: LabelSide; box: Box; hits: number } | null = null;
     for (const side of sides) {
       const box = labelBox(node.x ?? 0, node.y ?? 0, r, lines, side);
-      const clear =
-        placed.every((other) => !overlaps(box, other)) &&
-        nodeBoxes.every((n) => n.id === node.id || !overlaps(box, n.box));
-      if (clear) {
-        placed.push(box);
-        result.set(node.id, side);
-        break;
-      }
+      const hits =
+        placed.filter((other) => overlaps(box, other)).length * 2 +
+        nodeBoxes.filter((n) => n.id !== node.id && overlaps(box, n.box)).length;
+      if (!best || hits < best.hits) best = { side, box, hits };
+      if (hits === 0) break;
+    }
+    if (best) {
+      placed.push(best.box);
+      result.set(node.id, best.side);
     }
   }
   return result;
@@ -503,10 +505,10 @@ export function ConnectionsGraph({
                       vectorEffect="non-scaling-stroke"
                       className={`transition-[stroke,opacity] duration-200 ${
                         visible
-                          ? "stroke-dot opacity-80"
+                          ? "stroke-mut opacity-90"
                           : activeId
-                            ? "stroke-faint opacity-25"
-                            : "stroke-faint opacity-85"
+                            ? "stroke-line opacity-60"
+                            : "stroke-faint opacity-55"
                       }`}
                       strokeWidth={visible ? 1.5 : 1.1}
                     />

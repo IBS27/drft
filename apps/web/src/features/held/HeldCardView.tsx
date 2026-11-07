@@ -82,10 +82,7 @@ export const HeldCardView = memo(function HeldCardView({
         <span className="mt-3 flex items-center gap-2 text-[13px] text-pl">
           <span className="flex-1 tabular-nums">Held {age.long}</span>
           {links > 0 && (
-            <span className="inline-flex items-center gap-1">
-              <Graph aria-hidden="true" className="text-[13px]" />
-              {links === 1 ? "Near one held" : `Near ${links} held`}
-            </span>
+            <Graph aria-label="near other held thoughts" className="text-[13px]" />
           )}
         </span>
       </Link>
@@ -94,7 +91,7 @@ export const HeldCardView = memo(function HeldCardView({
         onClick={() => toggle(card._id, card.heldAt, { notice: true })}
         aria-label="Let go"
         title="Let go (h)"
-        className="absolute top-2.5 right-2.5 flex size-7 items-center justify-center rounded-full bg-line/70 text-[13px] text-pt opacity-0 hover:bg-tint hover:text-ink transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100"
+        className="absolute top-2.5 right-2.5 flex size-7 items-center justify-center rounded-full bg-line/70 text-[13px] text-pt opacity-0 hover:bg-tint hover:text-ink transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 focus-visible:opacity-100"
       >
         <BookmarkSimple aria-hidden="true" weight="fill" />
       </button>

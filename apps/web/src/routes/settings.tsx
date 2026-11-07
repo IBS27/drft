@@ -77,7 +77,7 @@ function Settings() {
 
       <section className="mx-auto flex w-full max-w-[688px] flex-1 flex-col gap-4 px-4 pt-0 pb-16 md:px-10">
         {/* Who you are is context, not a setting: a quiet line above the cards. */}
-        <p className="-mt-1 flex min-w-0 items-center gap-1.5 text-[14px] text-pl">
+        <p className="-mt-1 flex min-w-0 items-center gap-1 text-[14px] text-pl">
           Signed in as
           {email ? (
             <span className="min-w-0 truncate text-pt">{email}</span>
