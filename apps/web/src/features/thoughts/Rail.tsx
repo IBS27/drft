@@ -11,7 +11,7 @@ import {
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useConvexAuth } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
-import { memo, useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useId, useMemo, useState } from "react";
 import type { Id } from "@drft/backend/convex/_generated/dataModel";
 import { useHold, type ToggleHold } from "../held/useHold";
 import { FindResults } from "../search/FindResults";
@@ -141,26 +141,6 @@ export const Rail = memo(function Rail({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
-
-  // The list fades at its foot only while there is more below.
-  const [moreBelow, setMoreBelow] = useState(false);
-  const listRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const el = listRef.current;
-    if (!el) return;
-    const check = () =>
-      setMoreBelow(el.scrollTop + el.clientHeight < el.scrollHeight - 4);
-    check();
-    el.addEventListener("scroll", check, { passive: true });
-    const observer = new ResizeObserver(check);
-    observer.observe(el);
-    if (el.firstElementChild) observer.observe(el.firstElementChild);
-    return () => {
-      el.removeEventListener("scroll", check);
-      observer.disconnect();
-    };
-    // Re-measured when what the list holds changes.
-  }, [data, resting, findOpen, query, restingOpen]);
 
   const ordered = useMemo(() => {
     if (!data) return { pinned: null, groups: [] };
@@ -302,8 +282,7 @@ export const Rail = memo(function Rail({
         role="region"
         aria-label="collection"
         aria-busy={loading}
-        ref={listRef}
-        className={`min-h-0 flex-1 overflow-y-auto px-3 pt-1 pb-10 [scrollbar-width:none] ${moreBelow ? "[mask-image:linear-gradient(to_bottom,#000_calc(100%-40px),transparent)]" : ""}`}
+        className={`min-h-0 flex-1 overflow-y-auto px-3 pt-1 pb-10 [scrollbar-width:none]`}
       >
         {finding ? (
           <FindResults

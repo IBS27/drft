@@ -162,8 +162,13 @@ struct SettingsView: View {
                                 deletionIsConfirming = true
                             } label: {
                                 HStack {
-                                    Text(isDeletingAccount ? "Deleting…" : "Delete account")
-                                        .font(StillnessType.body)
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(isDeletingAccount ? "Deleting…" : "Delete account")
+                                            .font(StillnessType.body)
+                                        Text("Removes your thoughts and notes for good.")
+                                            .font(StillnessType.caption)
+                                            .foregroundStyle(Stillness.chromeLabel)
+                                    }
                                     Spacer(minLength: 12)
                                     EmberIcon(.caretRight, size: 13)
                                         .opacity(0.7)
