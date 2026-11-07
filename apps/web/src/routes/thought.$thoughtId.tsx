@@ -523,29 +523,36 @@ function HoldChip({
   const held = heldAt !== undefined;
   const age = held ? heldAge(heldAt, now).long : "";
   return (
-    <button
-      type="button"
-      data-hold-id={thoughtId}
-      data-held-at={heldAt ?? ""}
-      data-hold-default=""
-      onClick={() => toggle(thoughtId, heldAt)}
-      aria-pressed={held}
-      aria-label={held ? `Held ${age}. Let go` : "Hold this thought"}
-      title={held ? "Let go (h)" : "Hold (h)"}
-      className={
-        held
-          ? // Pressed: a soft fill, no edge, so it reads as a state you can undo.
-            "inline-flex h-9 items-center gap-2 rounded-full bg-line/60 px-4 text-[14px] font-medium text-ink transition-colors hover:bg-line"
-          : "inline-flex h-9 items-center gap-2 rounded-full bg-scr px-4 text-[14px] font-medium text-pt ring-1 ring-line ring-inset transition-[color,box-shadow,background-color] hover:bg-tint hover:text-ink hover:ring-dot-edge"
-      }
-    >
-      <BookmarkSimple
-        aria-hidden="true"
-        weight={held ? "fill" : "regular"}
-        className="text-[14px]"
-      />
-      {held ? "Held" : "Hold"}
-      {held && <span className="font-normal text-pl tabular-nums">{age}</span>}
-    </button>
+    <>
+      <button
+        type="button"
+        data-hold-id={thoughtId}
+        data-held-at={heldAt ?? ""}
+        data-hold-default=""
+        onClick={() => toggle(thoughtId, heldAt)}
+        aria-pressed={held}
+        aria-label={held ? `Held ${age}. Let go` : "Hold this thought"}
+        title={held ? "Let go (h)" : "Hold (h)"}
+        className={
+          held
+            ? // Pressed: a soft fill, no edge, so it reads as a state you can undo.
+              "inline-flex h-9 items-center gap-2 rounded-full bg-line/60 px-4 text-[14px] font-medium text-ink transition-colors hover:bg-line"
+            : "inline-flex h-9 items-center gap-2 rounded-full bg-scr px-4 text-[14px] font-medium text-pt ring-1 ring-line ring-inset transition-[color,box-shadow,background-color] hover:bg-tint hover:text-ink hover:ring-dot-edge"
+        }
+      >
+        <BookmarkSimple
+          aria-hidden="true"
+          weight={held ? "fill" : "regular"}
+          className="text-[14px]"
+        />
+        {held ? "Held" : "Hold"}
+      </button>
+      {/* How long, beside the control rather than inside it. */}
+      {held && (
+        <span aria-hidden="true" className="-ml-0.5 mr-1.5 text-[14px] text-pl tabular-nums">
+          {age}
+        </span>
+      )}
+    </>
   );
 }

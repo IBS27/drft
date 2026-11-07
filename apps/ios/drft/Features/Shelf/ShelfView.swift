@@ -257,6 +257,8 @@ struct ShelfView: View {
             }
         }
         .buttonStyle(PillButtonStyle(kind: .neutral, height: 44, horizontalPadding: 20))
+        // Lifted a touch, so it sits above the list rather than in it.
+        .shadow(color: Stillness.lift, radius: 10, y: 4)
         .padding(.top, 12)
         .padding(.bottom, 12)
         .padding(.trailing, 20)
