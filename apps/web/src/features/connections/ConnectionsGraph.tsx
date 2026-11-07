@@ -341,8 +341,8 @@ export function ConnectionsGraph({
           .distance(150)
           .strength(0.34),
       )
-      .force("charge", forceManyBody().strength(-190).distanceMax(440))
-      .force("collide", forceCollide(34).strength(0.95))
+      .force("charge", forceManyBody().strength(-240).distanceMax(440))
+      .force("collide", forceCollide(50).strength(0.95))
       .force("center", forceCenter(size.width / 2, size.height / 2))
       .force("x", forceX(size.width / 2).strength(0.025))
       .force("y", forceY(size.height / 2).strength(0.025))

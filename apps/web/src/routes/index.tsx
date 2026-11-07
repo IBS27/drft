@@ -140,7 +140,7 @@ function Collection() {
                 {pinned && <BackToday t={pinned} prewarm={prewarm} />}
                 {groups.map(({ group, rows }) => (
                   <div key={group}>
-                    <h2 className="px-4 pt-9 pb-0.5 text-[13px] font-medium text-pl">
+                    <h2 className="px-4 pt-7 pb-0.5 text-[13px] font-medium text-pl">
                       {GROUP_LABEL[group]}
                     </h2>
                     {rows.map((t, i) => (
