@@ -124,7 +124,7 @@ function ModeSwitch({
       onClick={() => setMode(value)}
       className={`h-7 rounded-full px-3 text-[13px] transition-colors ${
         mode === value
-          ? "bg-tint-2 font-medium text-dot-ink"
+          ? "bg-line/70 font-medium text-ink"
           : "text-pl hover:text-ink"
       }`}
     >

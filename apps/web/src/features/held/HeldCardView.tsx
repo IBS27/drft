@@ -99,7 +99,7 @@ export const HeldCardView = memo(function HeldCardView({
         onClick={() => toggle(card._id, card.heldAt, { notice: true })}
         aria-label="Let go"
         title="Let go (h)"
-        className="absolute top-2.5 right-2.5 flex size-7 items-center justify-center rounded-full bg-ink text-[13px] text-pg opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100"
+        className="absolute top-2.5 right-2.5 flex size-7 items-center justify-center rounded-full bg-line/70 text-[13px] text-pt opacity-0 hover:bg-tint hover:text-ink transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100"
       >
         <BookmarkSimple aria-hidden="true" weight="fill" />
       </button>
