@@ -271,8 +271,8 @@ struct ShelfView: View {
                         startPoint: .top,
                         endPoint: .bottom
                     )
-                    .frame(height: 28)
-                    .offset(y: -28)
+                    .frame(height: 56)
+                    .offset(y: -56)
                 }
                 .allowsHitTesting(false)
         }

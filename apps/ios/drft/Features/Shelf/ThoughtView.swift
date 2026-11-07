@@ -221,7 +221,9 @@ struct ThoughtView: View {
                     if let heldAt = thought.heldAt {
                         HStack(spacing: 6) {
                             EmberIcon(.bookmarkSimpleFill, size: 13)
-                            Text("Held \(heldAge(heldAt))")
+                                .foregroundStyle(Stillness.ink)
+                            (Text("Held ").foregroundStyle(Stillness.ink)
+                                + Text(heldAge(heldAt)).font(.geist(14.5, .regular, relativeTo: .subheadline)))
                         }
                         .font(StillnessType.control)
                         .foregroundStyle(Stillness.chromeLabel)

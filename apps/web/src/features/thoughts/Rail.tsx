@@ -530,11 +530,14 @@ const RailRow = memo(function RailRow({
       onPointerDown={() => prewarm(t._id)}
       onFocus={() => prewarm(t._id)}
       aria-current={active ? "page" : undefined}
-      className={`relative flex items-baseline gap-4 rounded-card px-3 py-[9px] transition-colors ${
+      className={`group/row relative flex items-baseline gap-4 rounded-card px-3 py-[9px] transition-colors ${
         active ? ACTIVE_BAR : "hover:bg-tint"
       }`}
     >
-      <span className="line-clamp-2 min-w-0 flex-1 text-[15px] leading-[1.4] text-ink">
+      {/* A step quieter than the page it sits beside; full ink when in hand. */}
+      <span
+        className={`line-clamp-2 min-w-0 flex-1 text-[15px] leading-[1.4] ${active ? "text-ink" : "text-pt group-hover/row:text-ink"}`}
+      >
         {t.preview}
       </span>
       {(time || held) && (

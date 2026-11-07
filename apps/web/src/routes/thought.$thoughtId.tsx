@@ -534,8 +534,8 @@ function HoldChip({
       title={held ? "Let go (h)" : "Hold (h)"}
       className={
         held
-          ? // A state, set quietly in words like iOS; still a way to let go.
-            "-ml-3 inline-flex h-9 items-center gap-2 rounded-full px-3 text-[14px] font-medium text-pt transition-colors hover:bg-tint hover:text-ink"
+          ? // Pressed: a soft fill, no edge, so it reads as a state you can undo.
+            "inline-flex h-9 items-center gap-2 rounded-full bg-line/60 px-4 text-[14px] font-medium text-ink transition-colors hover:bg-line"
           : "inline-flex h-9 items-center gap-2 rounded-full bg-scr px-4 text-[14px] font-medium text-pt ring-1 ring-line ring-inset transition-[color,box-shadow,background-color] hover:bg-tint hover:text-ink hover:ring-dot-edge"
       }
     >
