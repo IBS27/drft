@@ -297,7 +297,8 @@ struct ThoughtView: View {
         _ connections: [ConvexService.Connection],
         width: CGFloat
     ) -> some View {
-        // A heading above its surface, as Notes and Related read on the web.
+        // Secondary navigation, not another card: a plain divided list on
+        // the page, its text on the title's left edge.
         VStack(alignment: .leading, spacing: 10) {
             Text("Related thoughts")
                 .font(StillnessType.groupLabel)
@@ -306,13 +307,11 @@ struct ThoughtView: View {
 
             VStack(alignment: .leading, spacing: 0) {
                 ForEach(Array(connections.enumerated()), id: \.element._id) { index, connection in
-                    if index > 0 {
-                        Hairline()
-                    }
+                    Hairline()
 
                     RelatedThoughtRow(
                         connection: connection,
-                        width: max(0, width - 12),
+                        width: width,
                         metadata: connection.otherStatus == .resting
                             ? nil
                             : ShelfFormatting.ageLabel(
@@ -326,9 +325,7 @@ struct ThoughtView: View {
                     )
                 }
             }
-            .padding(6)
             .frame(width: width)
-            .emberSurface()
         }
         .frame(width: width, alignment: .leading)
         .padding(.top, 32)
@@ -595,13 +592,14 @@ private struct RelatedThoughtRow: View {
             EmberIcon(.caretRight, size: 12)
                 .foregroundStyle(Stillness.faint)
         }
-        .padding(.vertical, 13)
-        .padding(.horizontal, 10)
+        .padding(.vertical, 14)
+        .padding(.trailing, 2)
         .contentShape(Rectangle())
         .onTapGesture(perform: onOpen)
         .frame(width: width, alignment: .leading)
         .fixedSize(horizontal: false, vertical: true)
-        .background(Stillness.surface)
+        // The page itself, so the row covers its swipe action at rest.
+        .background(Stillness.page)
         // One element per row; without this each text child carried the
         // row's label and VoiceOver read every related thought twice. The
         // swipe-revealed button below stays out; Set aside is the named

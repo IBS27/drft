@@ -177,11 +177,12 @@ struct ShelfView: View {
                         .padding(.bottom, 28)
                     }
                     .scrollIndicators(.hidden)
-                }
-                // A bounded band at the bottom: the list ends above it, so
-                // no row ever sits under the button.
-                .safeAreaInset(edge: .bottom, spacing: 0) {
-                    catchThoughtAffordance
+                    // A bounded band at the bottom, inset into the scroll
+                    // view itself: the list scrolls to end above it, so no
+                    // row ever sits under the button.
+                    .safeAreaInset(edge: .bottom, spacing: 0) {
+                        catchThoughtAffordance
+                    }
                 }
             }
 
@@ -302,7 +303,7 @@ struct ShelfView: View {
             open(thought)
         } label: {
             HStack(spacing: 12) {
-                VStack(alignment: .leading, spacing: 5) {
+                VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 6) {
                         EmberIcon(.arrowBendUpLeft, size: 14)
                         Text("Back today")
@@ -320,17 +321,14 @@ struct ShelfView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
 
                 EmberIcon(.caretRight, size: 13)
-                    .foregroundStyle(Stillness.nowInk.opacity(0.6))
+                    .foregroundStyle(Stillness.nowInk.opacity(0.7))
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 14)
+            .padding(.vertical, 12)
         }
-        .buttonStyle(BackTodayButtonStyle())
-        .simultaneousGesture(
-            LongPressGesture(minimumDuration: 0).onEnded { _ in
-                convexService.prewarmThought(id: thought.id)
-            }
-        )
+        .buttonStyle(BackTodayButtonStyle {
+            convexService.prewarmThought(id: thought.id)
+        })
         .accessibilityLabel("Returned today: \(thought.preview)")
     }
 
@@ -366,12 +364,9 @@ struct ShelfView: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 14)
         }
-        .buttonStyle(RowButtonStyle())
-        .simultaneousGesture(
-            LongPressGesture(minimumDuration: 0).onEnded { _ in
-                convexService.prewarmThought(id: thought.id)
-            }
-        )
+        .buttonStyle(RowButtonStyle {
+            convexService.prewarmThought(id: thought.id)
+        })
         .accessibilityLabel("\(thought.preview), \(age)")
     }
 
@@ -406,11 +401,16 @@ struct ShelfView: View {
 /// Today's returned thought: a light wash of the accent with a faint edge,
 /// deepening while pressed.
 private struct BackTodayButtonStyle: ButtonStyle {
+    let onPress: () -> Void
+
     func makeBody(configuration: Configuration) -> some View {
         let shape = RoundedRectangle(cornerRadius: StillnessSpacing.surfaceRadius, style: .continuous)
         configuration.label
             .background(configuration.isPressed ? Stillness.nowTint : Stillness.nowWash, in: shape)
             .overlay { shape.strokeBorder(Stillness.nowWashEdge, lineWidth: 1) }
             .contentShape(shape)
+            .onChange(of: configuration.isPressed) { _, isPressed in
+                if isPressed { onPress() }
+            }
     }
 }

@@ -7,7 +7,7 @@ import UIKit
 /// Ember tints are the web's `color-mix(in oklab, …)` values, precomputed.
 enum Stillness {
     static let page = dynamic(light: 0xF5F3EE, dark: 0x181715)
-    static let surface = dynamic(light: 0xFBFAF7, dark: 0x201F1C)
+    static let surface = dynamic(light: 0xFBFAF7, dark: 0x23221F)
     static let ink = dynamic(light: 0x26241F, dark: 0xEBE8E1)
     static let muted = dynamic(
         light: 0x716D64,
@@ -17,7 +17,15 @@ enum Stillness {
     )
     static let hairline = dynamic(
         light: 0xDEDAD0,
-        dark: 0x36342F,
+        dark: 0x3D3B36,
+        lightHighContrast: 0xB4B4AE,
+        darkHighContrast: 0x52524D
+    )
+    /// A step past the hairline for controls that must hold their shape on
+    /// the cream page (Speak, an empty Keep); the hairline in the dark.
+    static let controlEdge = dynamic(
+        light: 0xCBC6BA,
+        dark: 0x3D3B36,
         lightHighContrast: 0xB4B4AE,
         darkHighContrast: 0x52524D
     )
@@ -55,20 +63,20 @@ enum Stillness {
     static let inkPill = dynamic(light: 0x2F2C27, dark: 0x4D4943)
     static let onInkPill = dynamic(light: 0xF5F3EE, dark: 0xFBF9F5)
     /// An "on" switch: ink, never the accent (the web's --switch).
-    static let switchOn = dynamic(light: 0x2F2C27, dark: 0xDCD6CB)
+    static let switchOn = dynamic(light: 0x4A463F, dark: 0xDCD6CB)
     /// The switch knob: the opposite of its track (the web's --knob).
-    static let switchKnob = dynamic(light: 0xFBFAF7, dark: 0x201F1C)
+    static let switchKnob = dynamic(light: 0xFBFAF7, dark: 0x23221F)
     /// Soft elevation under raised surfaces (the web's --lift).
     static let lift = dynamic(light: 0x3A2C1C, dark: 0x000000, alpha: 0.06)
     /// The short shadow under a solid primary pill.
     static let shadow = dynamic(light: 0x3A2C1C, dark: 0x000000, alpha: 0.12)
     /// The lightest wash of the accent: today's returned thought at rest.
-    static let nowWash = dynamic(light: 0xF4EAE4, dark: 0x30231D)
+    static let nowWash = dynamic(light: 0xF9F3EF, dark: 0x2D241F)
     /// Its faint edge; in the dark a neutral surface with only a hint of warmth (the web's --back-edge).
     static let nowWashEdge = Color(uiColor: UIColor { traits in
         traits.userInterfaceStyle == .dark
-            ? UIColor(red: 0.8, green: 0.29, blue: 0.14, alpha: 0.3)
-            : UIColor(red: 0.78, green: 0.24, blue: 0.11, alpha: 0.26)
+            ? UIColor(red: 0.8, green: 0.29, blue: 0.14, alpha: 0.18)
+            : UIColor(red: 0.78, green: 0.24, blue: 0.11, alpha: 0.14)
     })
     /// Soft wash for whatever is "now" (Back today, chips, pressed rows).
     static let nowTint = dynamic(light: 0xF1E5DD, dark: 0x2F1E17)

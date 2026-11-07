@@ -117,6 +117,8 @@ struct PillButtonStyle: ButtonStyle {
     let kind: Kind
     var height: CGFloat = 44
     var horizontalPadding: CGFloat = 18
+    /// The resting outline of neutral pills and a waiting primary.
+    var edge: Color = Stillness.hairline
 
     func makeBody(configuration: Configuration) -> some View {
         let isPressed = configuration.isPressed
@@ -134,14 +136,14 @@ struct PillButtonStyle: ButtonStyle {
                     Capsule().strokeBorder(Stillness.nowEdge, lineWidth: 1.5)
                 case .neutral:
                     Capsule().strokeBorder(
-                        isPressed ? Stillness.nowEdge : Stillness.hairline,
+                        isPressed ? Stillness.nowEdge : edge,
                         lineWidth: 1
                     )
                 case .ink:
                     Capsule().strokeBorder(Stillness.hairline, lineWidth: 1)
                 case .primary:
                     // Waiting for words: an outline, not a grey slab.
-                    if !isEnabled { Capsule().strokeBorder(Stillness.hairline, lineWidth: 1) }
+                    if !isEnabled { Capsule().strokeBorder(edge, lineWidth: 1) }
                 case .quiet:
                     EmptyView()
                 }
@@ -201,6 +203,10 @@ struct IconButtonStyle: ButtonStyle {
 struct RowButtonStyle: ButtonStyle {
     var background: Color = .clear
     var pressedBackground: Color = Stillness.nowTint
+    /// Runs on touch-down, e.g. to prefetch what the row opens. Read from the
+    /// press state rather than a zero-length long press, which would keep a
+    /// drag that starts on the row from scrolling its list.
+    var onPress: (() -> Void)? = nil
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
@@ -209,6 +215,9 @@ struct RowButtonStyle: ButtonStyle {
                 in: RoundedRectangle(cornerRadius: StillnessSpacing.cardRadius, style: .continuous)
             )
             .contentShape(RoundedRectangle(cornerRadius: StillnessSpacing.cardRadius, style: .continuous))
+            .onChange(of: configuration.isPressed) { _, isPressed in
+                if isPressed { onPress?() }
+            }
     }
 }
 

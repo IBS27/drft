@@ -190,17 +190,19 @@ struct SettingsView: View {
                             }
                         }
                         .emberSurface()
+
+                        // Right under the last card, not stranded at the
+                        // foot of the sheet.
+                        Text(versionText)
+                            .font(StillnessType.caption)
+                            .foregroundStyle(Stillness.chromeLabel)
+                            .frame(maxWidth: .infinity)
+                            .padding(.top, 8)
                     }
                     .padding(.horizontal, 16)
                     .padding(.top, 8)
                     .padding(.bottom, 24)
                 }
-
-                Text(versionText)
-                    .font(StillnessType.caption)
-                    .foregroundStyle(Stillness.chromeLabel)
-                    .padding(.horizontal, 16)
-                    .padding(.bottom, 18)
             }
         }
         .interactiveDismissDisabled(isDeletingAccount)

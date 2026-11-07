@@ -54,10 +54,10 @@ struct CaptureView: View {
                     .frame(maxHeight: 56)
 
                 VStack(alignment: .leading, spacing: 22) {
-                    TimelineView(.periodic(from: .now, by: 15)) { context in
-                        Text("\(context.date.formatted(.dateTime.weekday(.wide))) \(context.date.formatted(.dateTime.day())) \(context.date.formatted(.dateTime.month(.wide))) · \(timestamp(for: context.date))")
+                    // The day only: the status bar already shows the time.
+                    TimelineView(.periodic(from: .now, by: 60)) { context in
+                        Text("\(context.date.formatted(.dateTime.weekday(.wide))) \(context.date.formatted(.dateTime.day())) \(context.date.formatted(.dateTime.month(.wide)))")
                             .font(StillnessType.meta)
-                            .monospacedDigit()
                             .foregroundStyle(Stillness.chromeLabel)
                     }
 
@@ -208,7 +208,10 @@ struct CaptureView: View {
             } label: {
                 speakLabel
             }
-            .buttonStyle(PillButtonStyle(kind: model.isListening ? .outline : .neutral))
+            .buttonStyle(PillButtonStyle(
+                kind: model.isListening ? .outline : .neutral,
+                edge: Stillness.controlEdge
+            ))
             .accessibilityLabel(model.isListening ? "Stop listening" : "Speak")
 
             Spacer(minLength: 12)
@@ -218,7 +221,7 @@ struct CaptureView: View {
             } label: {
                 Text("Keep")
             }
-            .buttonStyle(PillButtonStyle(kind: .primary, horizontalPadding: 24))
+            .buttonStyle(PillButtonStyle(kind: .primary, horizontalPadding: 24, edge: Stillness.controlEdge))
             .disabled(!model.canKeep)
             .accessibilityLabel("Keep")
         }
@@ -306,9 +309,5 @@ struct CaptureView: View {
         withAnimation(.easeInOut(duration: 1.1).repeatForever(autoreverses: true)) {
             listeningPulse = true
         }
-    }
-
-    private func timestamp(for date: Date) -> String {
-        ShelfFormatting.time(for: date).lowercased()
     }
 }
