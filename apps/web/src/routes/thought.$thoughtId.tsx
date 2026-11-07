@@ -258,9 +258,9 @@ function ThoughtView() {
                             prewarm(id);
                             prewarm(c.otherId);
                           }}
-                          className="grid w-full grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-3 rounded-card py-[13px] pr-2.5 pl-2.5 text-left"
+                          className="grid w-full grid-cols-[minmax(0,1fr)_auto] items-baseline gap-4 rounded-card py-3.5 pr-2.5 pl-2.5 text-left sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:gap-3"
                         >
-                          <span className="text-[15px] leading-[1.45] whitespace-pre-wrap text-ink">
+                          <span className="text-[16px] leading-[1.45] whitespace-pre-wrap text-ink">
                             {c.otherText}
                           </span>
                           {c.otherStatus === "resting" ? (
@@ -275,7 +275,7 @@ function ThoughtView() {
                           )}
                           <CaretRight
                             aria-hidden="true"
-                            className="text-[13px] text-pl transition-opacity group-hover:opacity-0 [@media(hover:none)]:group-hover:opacity-100"
+                            className="hidden translate-y-[2px] text-[13px] text-pl transition-opacity sm:block group-hover:opacity-0 [@media(hover:none)]:group-hover:opacity-100"
                           />
                         </Link>
                         <button

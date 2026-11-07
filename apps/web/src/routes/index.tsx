@@ -231,7 +231,7 @@ const ThoughtRow = memo(function ThoughtRow({
       <span className="line-clamp-2 min-w-0 flex-1 leading-[1.4]">{t.preview}</span>
       <span className="inline-flex min-w-[4.5rem] flex-none items-baseline justify-end gap-1 text-[13px] text-pl tabular-nums">
         {t.heldAt !== undefined && (
-          <BookmarkSimple weight="fill" aria-label="held" className="translate-y-[1px] text-[11px] text-pt" />
+          <BookmarkSimple weight="fill" aria-label="held" className="translate-y-[1px] text-[10px] text-faint" />
         )}
         {ageLabel(t.createdAt, now)}
       </span>

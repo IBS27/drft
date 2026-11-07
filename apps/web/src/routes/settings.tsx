@@ -91,18 +91,28 @@ function Settings() {
       <section className="mx-auto flex w-full max-w-[688px] flex-1 flex-col gap-4 px-5 pt-0 pb-16 md:px-10">
         <div className={SURFACE}>
 
-          <div className="px-4 py-3.5">
-            <div className="flex items-center justify-between gap-4">
-              <label htmlFor="settings-send-time" className="text-[15px] text-ink">
+          {/* Words on the left, the control centred against the whole row. */}
+          <div className="flex items-center justify-between gap-4 px-4 py-3.5">
+            <div className="min-w-0">
+              <label htmlFor="settings-send-time" className="block text-[15px] text-ink">
                 Daily thought
               </label>
-              <span className="relative inline-flex items-center">
+              <div className="mt-1 text-[14px] text-pl">
+                One thought returns each morning, {timezone.split("/").pop()?.replaceAll("_", " ")} time
+              </div>
+              {failed && (
+                <div role="status" className="mt-1 text-[13px] text-dot-ink">
+                  Couldn't save. Change it again to retry.
+                </div>
+              )}
+            </div>
+              <span className="relative inline-flex flex-none items-center">
               <select
                 id="settings-send-time"
                 value={shown}
                 disabled={!loaded}
                 onChange={(e) => change(e.target.value)}
-                className="-my-1 h-8 cursor-pointer appearance-none rounded-full bg-pg pr-8 pl-3.5 text-[14px] text-ink tabular-nums ring-1 ring-line outline-none ring-inset hover:ring-pl/50 focus-visible:ring-pl/50"
+                className="h-8 cursor-pointer appearance-none rounded-full bg-pg pr-8 pl-3.5 text-[14px] text-ink tabular-nums ring-1 ring-line outline-none ring-inset hover:ring-pl/50 focus-visible:ring-pl/50"
               >
                 {timeOptions(shown).map((value) => (
                   <option key={value} value={value}>
@@ -112,20 +122,20 @@ function Settings() {
               </select>
               <CaretDown aria-hidden="true" className="pointer-events-none absolute right-3 text-[13px] text-pl" />
               </span>
-            </div>
-            <div className="mt-1 text-[14px] text-pl">
-              One thought returns each morning, {timezone.split("/").pop()?.replaceAll("_", " ")} time
-            </div>
-            {failed && (
-              <div role="status" className="mt-1 text-[13px] text-dot-ink">
-                Couldn't save. Change it again to retry.
-              </div>
-            )}
           </div>
 
-          <div className="px-4 py-3.5">
-            <div className="flex items-center justify-between gap-4">
-              <span className="text-[15px] text-ink">Connections</span>
+          <div className="flex items-center justify-between gap-4 px-4 py-3.5">
+            <div className="min-w-0">
+              <span className="block text-[15px] text-ink">Connections</span>
+              <div className="mt-1 text-[14px] text-pl">
+                Thought text is sent to OpenAI to find echoes
+              </div>
+              {connectionsFailed && (
+                <div role="status" className="mt-1 text-[13px] text-dot-ink">
+                  Couldn't save. Change it again to retry.
+                </div>
+              )}
+            </div>
               <button
                 type="button"
                 role="switch"
@@ -143,21 +153,12 @@ function Settings() {
               >
                 <span
                   aria-hidden="true"
-                  className={`absolute top-0.5 left-0.5 flex size-5 items-center justify-center rounded-full bg-knob dark:ring-1 dark:ring-line shadow-[0_1px_3px_color-mix(in_oklab,var(--ink)_30%,transparent)] transition-transform ${
+                  className={`absolute top-0.5 left-0.5 flex size-5 items-center justify-center rounded-full bg-knob dark:ring-1 dark:ring-pl/60 shadow-[0_1px_3px_color-mix(in_oklab,var(--ink)_30%,transparent)] transition-transform ${
                     connections ? "translate-x-4" : ""
                   }`}
                 >
                 </span>
               </button>
-            </div>
-            <div className="mt-1 text-[14px] text-pl">
-              Thought text is sent to OpenAI to find echoes
-            </div>
-            {connectionsFailed && (
-              <div role="status" className="mt-1 text-[13px] text-dot-ink">
-                Couldn't save. Change it again to retry.
-              </div>
-            )}
           </div>
         </div>
 

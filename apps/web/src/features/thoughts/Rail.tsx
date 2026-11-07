@@ -231,7 +231,7 @@ export const Rail = memo(function Rail({
         {findOpen ? (
           <div
             data-rail-find
-            className="flex h-10 items-center gap-2.5 rounded-card bg-scr pr-2 pl-3 ring-1 ring-pl/50 ring-inset"
+            className="flex h-10 items-center gap-2.5 rounded-card bg-pg pr-2 pl-3 shadow-[0_0_0_3px_color-mix(in_oklab,var(--dot)_14%,transparent)] ring-1 ring-dot-edge ring-inset"
           >
             <MagnifyingGlass aria-hidden="true" className="flex-none text-[16px] text-pt" />
             <input
@@ -270,7 +270,7 @@ export const Rail = memo(function Rail({
             data-rail-find
             type="button"
             onClick={() => setFindOpen(true)}
-            className="flex h-10 items-center gap-2.5 rounded-card bg-scr pr-2 pl-3 text-left text-[14px] text-pl ring-1 ring-line ring-inset transition-shadow hover:ring-pl/50"
+            className="flex h-10 items-center gap-2.5 rounded-card bg-pg pr-2 pl-3 text-left text-[14px] text-pl ring-1 ring-line ring-inset transition-shadow hover:ring-pl/50"
           >
             <MagnifyingGlass aria-hidden="true" className="flex-none text-[16px] text-pt" />
             <span className="flex-1">Find a thought</span>
@@ -523,7 +523,7 @@ const RailRow = memo(function RailRow({
           }`}
         >
           {held && (
-            <BookmarkSimple weight="fill" aria-label="held" className="translate-y-[1px] text-[10px] text-pl" />
+            <BookmarkSimple weight="fill" aria-label="held" className="translate-y-[1px] text-[10px] text-faint" />
           )}
           {time}
         </span>
