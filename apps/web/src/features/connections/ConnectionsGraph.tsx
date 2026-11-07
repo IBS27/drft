@@ -166,8 +166,10 @@ function placeLabels(
     const r = nodeRadius(degree.get(node.id) ?? 0);
     const lines = labelLines(node.thought.text);
     const counts = edgeSides.get(node.id);
+    // Names read to the right by default; another side only on a collision,
+    // nearest the side with the fewest lines.
     const sides = counts
-      ? [...allSides].sort((a, b) => counts[a] - counts[b])
+      ? ["right" as const, ...(["left", "top", "bottom"] as const).toSorted((a, b) => counts[a] - counts[b])]
       : allSides;
     let best: { side: LabelSide; box: Box; hits: number } | null = null;
     for (const side of sides) {
@@ -585,7 +587,7 @@ export function ConnectionsGraph({
                     />
                     {showLabel &&
                       (() => {
-                        // A paper backing: lines pass beneath a name, never through it.
+                        // A paper backing: lines dim beneath a name instead of crossing it.
                         const box = labelBox(0, 0, radius, labelLines(node.thought.text), side);
                         return (
                           <rect
@@ -594,7 +596,7 @@ export function ConnectionsGraph({
                             width={box.x1 - box.x0 + 4}
                             height={box.y1 - box.y0}
                             rx={5}
-                            className="pointer-events-none fill-pg"
+                            className="pointer-events-none fill-pg opacity-75"
                           />
                         );
                       })()}
@@ -603,7 +605,7 @@ export function ConnectionsGraph({
                         dominantBaseline="central"
                         textAnchor={side === "right" ? "start" : side === "left" ? "end" : "middle"}
                         paintOrder="stroke"
-                        strokeWidth={7}
+                        strokeWidth={3}
                         strokeLinejoin="round"
                         className={`pointer-events-none stroke-pg text-[13.5px] ${selected ? "fill-ink font-medium" : "fill-pt"}`}
                       >

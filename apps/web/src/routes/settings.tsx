@@ -98,7 +98,7 @@ function Settings() {
                 value={shown}
                 disabled={!loaded}
                 onChange={(e) => change(e.target.value)}
-                className="h-9 cursor-pointer appearance-none rounded-full bg-pg pr-8 pl-4 text-[15px] text-ink tabular-nums ring-1 ring-line outline-none ring-inset hover:ring-pl/50 focus-visible:ring-pl/50"
+                className="-my-1 h-8 cursor-pointer appearance-none rounded-full bg-pg pr-8 pl-3.5 text-[14px] text-ink tabular-nums ring-1 ring-line outline-none ring-inset hover:ring-pl/50 focus-visible:ring-pl/50"
               >
                 {timeOptions(shown).map((value) => (
                   <option key={value} value={value}>

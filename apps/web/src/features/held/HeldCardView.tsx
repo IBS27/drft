@@ -40,7 +40,7 @@ export const HeldCardView = memo(function HeldCardView({
   prewarm: (id: Id<"thoughts">) => void;
 }) {
   const age = heldAge(card.heldAt, now);
-  const notes = card.notes.trim();
+  const notes = excerpt(card.notes.trim());
   return (
     <article
       data-hold-id={card._id}
@@ -99,3 +99,13 @@ export const HeldCardView = memo(function HeldCardView({
     </article>
   );
 });
+
+// The start of the notes, cut at a word and never after a stop, so the
+// ellipsis is the only mark at the end ("Tuesday…", not "Tuesday.…").
+const EXCERPT_LIMIT = 100;
+function excerpt(notes: string): string {
+  if (notes.length <= EXCERPT_LIMIT) return notes;
+  const cut = notes.slice(0, EXCERPT_LIMIT);
+  const word = cut.slice(0, Math.max(cut.lastIndexOf(" "), cut.lastIndexOf("\n")));
+  return `${word.replace(/[\s.,;:!?—–-]+$/, "")}…`;
+}

@@ -24,7 +24,7 @@ export const Route = createFileRoute("/")({ component: Collection });
 const NO_ROWS: Row[] = [];
 
 const HEADER_PILL =
-  "inline-flex h-[34px] items-center rounded-full bg-scr px-3.5 text-[14px] font-medium text-pt ring-1 ring-line ring-inset transition-colors hover:bg-tint hover:text-ink lg:hidden";
+  "inline-flex h-8 items-center rounded-full bg-scr px-3 text-[13.5px] font-medium text-pt ring-1 ring-line ring-inset transition-colors hover:bg-tint hover:text-ink lg:hidden";
 
 const HEADER_ICON =
   "flex size-11 items-center justify-center rounded-full text-[17px] text-pt transition-colors hover:text-ink lg:hidden [&>svg]:size-[19px]";
