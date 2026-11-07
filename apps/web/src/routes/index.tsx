@@ -73,7 +73,7 @@ function Collection() {
       {/* Below lg the rail is gone, so the header carries the way to find
           and settings; on wide screens only the count stays up here, and
           the header lets clicks through to the rail it spans. */}
-      <header className="relative z-10 flex h-14 items-center justify-between pr-3.5 pl-[22px] lg:pointer-events-none lg:h-[72px] lg:justify-end lg:pr-7">
+      <header className="relative z-10 flex h-14 items-center justify-between pr-3.5 pl-5 lg:pointer-events-none lg:h-12 lg:justify-end lg:pr-7">
         <span className="lg:hidden">
           <Wordmark />
         </span>
@@ -95,7 +95,7 @@ function Collection() {
       <Rail activeId={null} now={now} />
 
         {/* The other places, by name, within reach under the header. */}
-        <nav aria-label="places" className="flex gap-2 overflow-x-auto px-4 pt-1 pb-1 [scrollbar-width:none] lg:hidden">
+        <nav aria-label="places" className="flex gap-2 overflow-x-auto px-5 pt-1 pb-1 [scrollbar-width:none] lg:hidden">
           {(
             [
               ["/held", "Held", BookmarkSimple],
@@ -119,7 +119,7 @@ function Collection() {
         <section
           className={
             hasList
-              ? "flex flex-col items-center px-4 pt-3 pb-2 sm:px-6 sm:pt-8 lg:flex-1 lg:justify-start lg:px-10 lg:pt-[62px] lg:pb-24"
+              ? "flex flex-col items-center px-5 pt-3 pb-2 sm:px-6 sm:pt-8 lg:flex-1 lg:justify-start lg:px-10 lg:pt-0 lg:pb-24"
               : "flex flex-1 flex-col items-center justify-center px-4 pb-24 sm:px-6"
           }
         >
@@ -132,7 +132,7 @@ function Collection() {
         </section>
 
         {hasList && (
-          <section className="mx-auto w-full max-w-2xl flex-1 px-4 pt-4 pb-10 sm:px-6 lg:hidden">
+          <section className="mx-auto w-full max-w-2xl flex-1 px-1 pt-4 pb-10 sm:px-6 lg:hidden">
             {loading ? (
               <SkeletonRows heading count={5} />
             ) : (
@@ -183,7 +183,7 @@ function BackToday({
       onPointerDown={() => prewarm(t._id)}
       onFocus={() => prewarm(t._id)}
       className={`group/back flex items-center rounded-[14px] bg-(--back-wash) ring-1 ring-(--back-edge) ring-inset transition-colors hover:bg-tint ${
-        wide ? "gap-4 px-10 py-6" : "mb-1 gap-3 px-4 py-3.5"
+        wide ? "gap-4 px-10 py-6" : "mx-4 mb-1 gap-3 px-4 py-3.5 sm:mx-0"
       }`}
     >
       <span className="flex min-w-0 flex-1 flex-col gap-1.5">

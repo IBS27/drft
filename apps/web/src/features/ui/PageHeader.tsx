@@ -15,19 +15,16 @@ export function PageHeader({
   aside?: ReactNode;
 }) {
   return (
-    <header className="relative z-10 mx-auto flex min-h-[72px] w-full max-w-[688px] flex-none items-start gap-1 py-3 pr-4 pl-1.5 md:px-[30px] lg:min-h-0 lg:px-10 lg:pt-12 lg:pb-5">
+    <header className="relative z-10 mx-auto flex min-h-[72px] w-full max-w-[688px] flex-none flex-wrap items-center gap-x-1 py-3 pr-4 pl-1.5 md:px-[30px] lg:min-h-0 lg:px-10 lg:pt-12 lg:pb-5">
       <span className="lg:hidden">
         <BackLink />
       </span>
-      <span className="flex min-w-0 flex-col gap-1 pt-[7px] lg:pt-0">
-        <h1 className="text-[17px] leading-[26px] font-semibold tracking-[-0.015em] text-ink lg:text-[22px] lg:leading-[30px]">
-          {title}
-        </h1>
-        {description && (
-          <p className={`text-[14px] text-pl lg:text-[15px] ${aside ? "hidden sm:block" : ""}`}>{description}</p>
-        )}
-      </span>
-      {aside && <span className="ml-auto flex flex-none items-center gap-2.5 self-center">{aside}</span>}
+      <h1 className="text-[17px] font-semibold tracking-[-0.015em] text-ink lg:text-[22px]">{title}</h1>
+      {aside && <span className="ml-auto flex flex-none items-center gap-2.5">{aside}</span>}
+      {/* Its own line, on the content's edge rather than the title's. */}
+      {description && (
+        <p className="mt-1 w-full pl-2.5 text-[14px] text-pl lg:pl-0 lg:text-[15px]">{description}</p>
+      )}
     </header>
   );
 }

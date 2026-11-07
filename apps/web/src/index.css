@@ -33,6 +33,7 @@
   --danger: #94394a;
   /* An "on" switch: ink, never the accent. */
   --switch: #2f2c27;
+  --knob: #fbfaf7;
   --back-wash: color-mix(in oklab, var(--dot) 4%, var(--pg));
   --back-edge: color-mix(in oklab, var(--dot) 20%, transparent);
 }
@@ -54,7 +55,9 @@
     --tint-2: color-mix(in oklab, var(--dot) 19%, var(--pg));
     --dot-ink: color-mix(in oklab, var(--dot) 55%, var(--ink));
     --dot-edge: color-mix(in oklab, var(--dot) 50%, var(--line));
-    --switch: #ebe8e1;
+    /* Mid-ink, so "on" doesn't outshine the accent in the dark. */
+    --switch: #6b665d;
+    --knob: #ebe8e1;
     --back-wash: color-mix(in oklab, var(--dot) 5%, var(--scr));
     --back-edge: color-mix(in oklab, var(--dot) 14%, transparent);
     --danger: #de8a98;
@@ -71,6 +74,7 @@
   --color-dot: var(--dot);
   --color-pt: var(--pt);
   --color-pl: var(--pl);
+  --color-knob: var(--knob);
   --color-tint: var(--tint);
   --color-tint-2: var(--tint-2);
   --color-dot-ink: var(--dot-ink);
@@ -171,5 +175,5 @@ select option {
   transition: opacity 160ms ease;
 }
 :root:has(nav[data-finding]) [data-capture] {
-  opacity: 0.72;
+  opacity: 0.85;
 }

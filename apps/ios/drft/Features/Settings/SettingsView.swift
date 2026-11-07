@@ -389,7 +389,7 @@ private struct EmberSwitchStyle: ToggleStyle {
                         }
 
                     Circle()
-                        .fill(Stillness.page)
+                        .fill(Stillness.switchKnob)
                         .frame(width: 20, height: 20)
 
                         .shadow(color: Stillness.ink.opacity(0.3), radius: 1.5, y: 1)

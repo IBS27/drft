@@ -566,8 +566,6 @@ export function ConnectionsGraph({
                   placedSide ?? (x > size.width * 0.72 ? "left" : "right");
                 const receded = activeId !== null && !selected && !neighbor;
                 const lone = connected === 0 && !selected;
-                // Unnamed at rest: a quieter dot that names itself on hover.
-                const unnamed = !activeId && placedSide === undefined && node.id !== returnedId;
                 return (
                   <g
                     key={node.id}
@@ -579,7 +577,7 @@ export function ConnectionsGraph({
                     role="link"
                     tabIndex={0}
                     aria-label={`${node.thought.text}, ${connected} connection${connected === 1 ? "" : "s"}${node.thought.status === "resting" ? ", set down" : ""}`}
-                    className={`cursor-pointer outline-none transition-opacity duration-200 ${receded ? "opacity-35" : lone ? "opacity-50" : unnamed ? "opacity-60" : ""}`}
+                    className={`cursor-pointer outline-none transition-opacity duration-200 ${receded ? "opacity-35" : lone ? "opacity-50" : ""}`}
                     onPointerEnter={() => setActiveId(node.id)}
                     onPointerLeave={() => setActiveId(null)}
                     onFocus={() => setActiveId(node.id)}
@@ -669,7 +667,7 @@ export function ConnectionsGraph({
 
               </p>
               <p className="rounded-full bg-scr/90 px-4 py-2 ring-1 ring-line ring-inset backdrop-blur">
-                Point to preview · click to open · scroll to zoom
+                Point to a dot to name it · click to open · scroll to zoom
               </p>
             </div>
           )}

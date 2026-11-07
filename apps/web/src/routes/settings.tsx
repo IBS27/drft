@@ -139,7 +139,7 @@ function Settings() {
               >
                 <span
                   aria-hidden="true"
-                  className={`absolute top-0.5 left-0.5 flex size-5 items-center justify-center rounded-full bg-pg shadow-[0_1px_3px_color-mix(in_oklab,var(--ink)_30%,transparent)] transition-transform ${
+                  className={`absolute top-0.5 left-0.5 flex size-5 items-center justify-center rounded-full bg-knob shadow-[0_1px_3px_color-mix(in_oklab,var(--ink)_30%,transparent)] transition-transform ${
                     connections ? "translate-x-4" : ""
                   }`}
                 >
