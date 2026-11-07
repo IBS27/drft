@@ -5,7 +5,7 @@ import { BackLink } from "./BackLink";
 // (the arrow's glyph lines up with the content's left edge).
 export function PageHeader({ title }: { title: string }) {
   return (
-    <header className="mx-auto flex h-[72px] w-full max-w-[688px] items-center gap-1 px-1.5 md:px-[30px] lg:h-auto lg:px-10 lg:pt-12 lg:pb-5">
+    <header className="mx-auto flex h-[72px] w-full max-w-[688px] items-center gap-1 px-1.5 md:px-[30px] lg:h-auto lg:px-10 lg:pt-12 lg:pb-3">
       <span className="lg:hidden">
         <BackLink />
       </span>

@@ -5,8 +5,8 @@ import { api } from "@drft/backend/convex/_generated/api";
 import { useEffect, useState } from "react";
 import { ConnectionsGraph } from "../features/connections/ConnectionsGraph";
 import { localDate } from "../features/thoughts/format";
+import { Rail } from "../features/thoughts/Rail";
 import { useCachedQuery } from "../features/thoughts/useCachedQuery";
-import { BackLink } from "../features/ui/BackLink";
 import { PageHeader } from "../features/ui/PageHeader";
 
 export const Route = createFileRoute("/connections")({
@@ -45,7 +45,8 @@ function Connections() {
   }, [loadMore, status]);
 
   const loading = status !== "Exhausted";
-  const [date] = useState(() => localDate(Date.now()));
+  const [now] = useState(() => Date.now());
+  const [date] = useState(() => localDate(now));
   const collection = useCachedQuery(
     api.thoughts.collection,
     isAuthenticated && desktop ? { date } : "skip",
@@ -56,7 +57,7 @@ function Connections() {
     <main className="flex min-h-dvh flex-col">
       <div className="flex min-h-dvh flex-col lg:hidden">
         <PageHeader title="Connections" />
-        <div className="flex flex-1 flex-col items-center justify-center px-8 pb-24 text-center">
+        <div className="flex flex-col items-center px-8 pt-[22vh] text-center">
           <span className="flex size-12 items-center justify-center rounded-full bg-line/70 text-[22px] text-pt">
             <Graph aria-hidden="true" />
           </span>
@@ -67,10 +68,10 @@ function Connections() {
         </div>
       </div>
 
-      <div className="hidden min-h-dvh flex-1 flex-col lg:flex">
-        <header className="relative z-10 flex h-[72px] flex-none items-center gap-1 px-4 md:px-5">
-          <BackLink />
-          <h1 className="text-[16px] font-medium tracking-[-0.01em] text-ink">Connections</h1>
+      {desktop && <Rail activeId={null} now={now} />}
+      <div className="hidden min-h-dvh flex-1 flex-col lg:flex lg:pl-72 xl:pl-80">
+        <header className="relative z-10 flex h-[72px] flex-none items-center gap-1 px-6">
+          <h1 className="text-[22px] font-semibold tracking-[-0.015em] text-ink">Connections</h1>
           <span className="ml-auto flex items-center gap-2.5">
             {loading && (
               <span aria-label="loading" className="caret h-4 w-0.5 rounded-full bg-dot" />

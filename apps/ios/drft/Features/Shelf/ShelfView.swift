@@ -163,7 +163,7 @@ struct ShelfView: View {
                                 ForEach(Array(section.thoughts.enumerated()), id: \.element.id) { index, thought in
                                     if index > 0 {
                                         Hairline()
-                                            .padding(.horizontal, 10)
+                                            .padding(.horizontal, 16)
                                     }
                                     thoughtRow(thought)
                                 }
@@ -261,7 +261,6 @@ struct ShelfView: View {
         .frame(maxWidth: .infinity, alignment: .trailing)
         .background {
             Stillness.page
-                .overlay(alignment: .top) { Hairline() }
                 .ignoresSafeArea(edges: .bottom)
                 .allowsHitTesting(false)
         }
@@ -274,7 +273,7 @@ struct ShelfView: View {
                 .font(StillnessType.groupLabel)
                 .foregroundStyle(Stillness.chromeText)
         }
-        .padding(.horizontal, 10)
+        .padding(.horizontal, 16)
         .padding(.top, 18)
         .padding(.bottom, 4)
         .accessibilityElement(children: .combine)
@@ -339,7 +338,7 @@ struct ShelfView: View {
                     .foregroundStyle(Stillness.chromeLabel)
                     .lineLimit(1)
             }
-            .padding(.horizontal, 10)
+            .padding(.horizontal, 16)
             .padding(.vertical, 14)
         }
         .buttonStyle(RowButtonStyle())

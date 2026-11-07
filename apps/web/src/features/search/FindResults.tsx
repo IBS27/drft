@@ -122,7 +122,7 @@ function HitRow({
       }`}
     >
       <span
-        className={`min-w-0 flex-1 truncate text-[15px] ${active ? "text-ink" : "text-pt"}`}
+        className={`line-clamp-2 min-w-0 flex-1 text-[15px] leading-[1.4] ${active ? "text-ink" : "text-pt"}`}
       >
         {highlight(firstLine(hit.text), query)}
       </span>

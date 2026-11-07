@@ -235,11 +235,9 @@ function ThoughtView() {
                   Rows are parted by hairlines that give way to the hover
                   tint, the row's own and the one beneath it. */}
               {view.connections.length > 0 && (
-                <div className="mt-5 w-full rounded-[14px] bg-scr p-2 ring-1 ring-line ring-inset">
-                  <h2 className="flex items-center gap-2 px-3 pt-2 pb-2 text-[14px] font-medium text-pt">
-                    Related thoughts
-                  </h2>
-                  <ul>
+                <div className="mt-8 flex w-full flex-col gap-3">
+                  <h2 className="text-[14px] font-medium text-pt">Related thoughts</h2>
+                  <ul className="rounded-[14px] bg-scr p-1.5 ring-1 ring-line ring-inset">
                     {view.connections.map((c, i) => (
                       <li
                         key={c._id}

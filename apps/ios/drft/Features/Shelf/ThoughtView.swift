@@ -282,42 +282,40 @@ struct ThoughtView: View {
         _ connections: [ConvexService.Connection],
         width: CGFloat
     ) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
-            HStack(spacing: 8) {
-                Text("Related thoughts")
-                    .font(StillnessType.groupLabel)
-                    .foregroundStyle(Stillness.chromeText)
-            }
-            .padding(.horizontal, 10)
-            .padding(.top, 6)
-            .padding(.bottom, 4)
-            .accessibilityElement(children: .combine)
-            .accessibilityAddTraits(.isHeader)
+        // A heading above its surface, as Notes and Related read on the web.
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Related thoughts")
+                .font(StillnessType.groupLabel)
+                .foregroundStyle(Stillness.chromeText)
+                .accessibilityAddTraits(.isHeader)
 
-            ForEach(Array(connections.enumerated()), id: \.element._id) { index, connection in
-                if index > 0 {
-                    Hairline()
+            VStack(alignment: .leading, spacing: 0) {
+                ForEach(Array(connections.enumerated()), id: \.element._id) { index, connection in
+                    if index > 0 {
+                        Hairline()
+                    }
+
+                    RelatedThoughtRow(
+                        connection: connection,
+                        width: max(0, width - 12),
+                        metadata: connection.otherStatus == .resting
+                            ? nil
+                            : ShelfFormatting.ageLabel(
+                                for: connection.otherCreatedAt
+                            ),
+                        onPrefetch: {
+                            convexService.prewarmThought(id: connection.otherId)
+                        },
+                        onOpen: { openRelatedThought(connection.otherId) },
+                        onSetAside: { setRelatedThoughtAside(connection, index: index) }
+                    )
                 }
-
-                RelatedThoughtRow(
-                    connection: connection,
-                    width: max(0, width - 16),
-                    metadata: connection.otherStatus == .resting
-                        ? nil
-                        : ShelfFormatting.ageLabel(
-                            for: connection.otherCreatedAt
-                        ),
-                    onPrefetch: {
-                        convexService.prewarmThought(id: connection.otherId)
-                    },
-                    onOpen: { openRelatedThought(connection.otherId) },
-                    onSetAside: { setRelatedThoughtAside(connection, index: index) }
-                )
             }
+            .padding(6)
+            .frame(width: width)
+            .emberSurface()
         }
-        .padding(8)
-        .frame(width: width)
-        .emberSurface()
+        .frame(width: width, alignment: .leading)
         .padding(.top, 32)
     }
 

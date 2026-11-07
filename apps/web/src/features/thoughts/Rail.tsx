@@ -8,7 +8,7 @@ import {
   Moon,
   PencilSimpleLine,
 } from "@phosphor-icons/react";
-import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useConvexAuth } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
 import { memo, useCallback, useEffect, useId, useMemo, useState } from "react";
@@ -47,8 +47,7 @@ type RailThought = {
 // a vermilion bar.
 // Held thoughts carry a small bookmark; hovering a row offers to hold it
 // or let go without opening it. Held, Resting, Connections and Settings
-// share the footer. On home the day's thought has the main pane, so the
-// rail leaves it out.
+// share the footer.
 // Also owns the collection's keyboard: j/k move between thoughts (j enters
 // the top from home), Esc returns to the door — home, or the Held page
 // when the thought was opened from there.
@@ -73,7 +72,6 @@ export const Rail = memo(function Rail({
     isAuthenticated ? {} : "skip",
     "resting",
   );
-  const onHome = useRouterState({ select: (s) => s.location.pathname === "/" });
   const toggleHold = useHold();
   const search = backTo === "/held" ? FROM_HELD : FROM_HOME;
   const [restingOpen, setRestingOpen] = useState(false);
@@ -299,7 +297,7 @@ export const Rail = memo(function Rail({
           <RailSkeleton />
         ) : (
           <>
-            {ordered.pinned && !onHome && (
+            {ordered.pinned && (
               <BackToday
                 t={ordered.pinned}
                 active={ordered.pinned._id === activeId}

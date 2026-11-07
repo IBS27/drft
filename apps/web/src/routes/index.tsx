@@ -51,11 +51,6 @@ function Collection() {
     isAuthenticated ? { date } : "skip",
     `collection:${date}`,
   );
-  const resting = useCachedQuery(
-    api.thoughts.resting,
-    isAuthenticated ? {} : "skip",
-    "resting",
-  );
 
   // One prewarm cache for the whole list, not one per row.
   const prewarm = useThoughtPrewarm();
@@ -87,11 +82,11 @@ function Collection() {
             type="button"
             onClick={openSearch}
             aria-label="Find a thought"
-            className="flex size-11 items-center justify-center rounded-full text-[19px] text-pt transition-colors hover:bg-tint hover:text-ink lg:hidden"
+            className="flex size-11 items-center justify-center rounded-full text-[17px] text-pt transition-colors hover:text-ink lg:hidden [&>svg]:box-content [&>svg]:size-[17px] [&>svg]:rounded-full [&>svg]:bg-scr [&>svg]:p-[7.5px] [&>svg]:ring-1 [&>svg]:ring-line"
           >
             <MagnifyingGlass aria-hidden="true" />
           </button>
-          <Link to="/settings" aria-label="Settings" className="flex size-11 items-center justify-center rounded-full text-[19px] text-pt transition-colors hover:bg-tint hover:text-ink lg:hidden">
+          <Link to="/settings" aria-label="Settings" className="flex size-11 items-center justify-center rounded-full text-[17px] text-pt transition-colors hover:text-ink lg:hidden [&>svg]:box-content [&>svg]:size-[17px] [&>svg]:rounded-full [&>svg]:bg-scr [&>svg]:p-[7.5px] [&>svg]:ring-1 [&>svg]:ring-line">
             <GearSix aria-hidden="true" />
           </Link>
         </span>
@@ -123,28 +118,10 @@ function Collection() {
               <SkeletonRows heading count={5} />
             ) : (
               <>
-                {/* The other places, by name, where the list begins. */}
-                <nav aria-label="places" className="mb-4 flex gap-2">
-                  {(
-                    [
-                      ["/held", "Held", BookmarkSimple],
-                      ["/resting", "Resting", Moon],
-                    ] as const
-                  ).map(([to, name, Icon]) => (
-                    <Link
-                      key={to}
-                      to={to}
-                      className="inline-flex h-10 items-center gap-2 rounded-full bg-scr px-4 text-[14px] font-medium text-pt ring-1 ring-line ring-inset transition-colors hover:bg-tint hover:text-ink"
-                    >
-                      <Icon aria-hidden="true" className="text-[15px]" />
-                      {name}
-                    </Link>
-                  ))}
-                </nav>
                 {pinned && <BackToday t={pinned} prewarm={prewarm} />}
                 {groups.map(({ group, rows }) => (
                   <div key={group}>
-                    <h2 className="px-2.5 pt-[18px] pb-1 text-[13px] font-medium text-pl">
+                    <h2 className="px-4 pt-[18px] pb-1 text-[13px] font-medium text-pl">
                       {GROUP_LABEL[group]}
                     </h2>
                     {rows.map((t, i) => (
@@ -163,17 +140,24 @@ function Collection() {
           </section>
         )}
 
-        {resting && resting.length > 0 && (
-          <footer className="flex items-center justify-center pb-10 lg:hidden">
+        {/* The other places, by name, at the foot of the list. */}
+        <footer className="flex items-center justify-center gap-2 px-4 pb-10 lg:hidden">
+          {(
+            [
+              ["/held", "Held", BookmarkSimple],
+              ["/resting", "Resting", Moon],
+            ] as const
+          ).map(([to, name, Icon]) => (
             <Link
-              to="/resting"
-              className="inline-flex h-10 items-center gap-2 rounded-full px-[18px] text-[14.5px] font-medium text-pt ring-1 ring-line ring-inset transition-colors hover:bg-tint hover:text-ink"
+              key={to}
+              to={to}
+              className="inline-flex h-10 items-center gap-2 rounded-full bg-scr px-4 text-[14px] font-medium text-pt ring-1 ring-line ring-inset transition-colors hover:bg-tint hover:text-ink"
             >
-              <Moon aria-hidden="true" className="text-[16px]" />
-              Resting thoughts
+              <Icon aria-hidden="true" className="text-[15px]" />
+              {name}
             </Link>
-          </footer>
-        )}
+          ))}
+        </footer>
       </div>
     </main>
   );
@@ -244,7 +228,7 @@ const ThoughtRow = memo(function ThoughtRow({
       onPointerEnter={() => prewarm(t._id)}
       onPointerDown={() => prewarm(t._id)}
       onFocus={() => prewarm(t._id)}
-      className={`flex items-baseline gap-5 rounded-card px-2.5 py-3.5 text-[16px] text-ink transition-colors hover:bg-tint ${
+      className={`flex items-baseline gap-5 rounded-card px-4 py-3.5 text-[16px] text-ink transition-colors hover:bg-tint [--inset:16px] ${
         divided ? "divided" : ""
       }`}
     >

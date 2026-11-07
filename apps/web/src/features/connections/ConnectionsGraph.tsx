@@ -127,9 +127,30 @@ const overlaps = (a: Box, b: Box) =>
 // hover instead of landing on top of something.
 function placeLabels(
   nodes: LayoutNode[],
+  links: LayoutLink[],
   degree: Map<string, number>,
 ): Map<string, LabelSide> {
-  const sides: LabelSide[] = ["right", "left", "top", "bottom"];
+  const byId = new Map(nodes.map((node) => [node.id, node]));
+  // Which way each node's edges leave it, so its label can sit opposite.
+  const edgeSides = new Map<string, Record<LabelSide, number>>();
+  for (const link of links) {
+    for (const [from, to] of [
+      [link.sourceId, link.targetId],
+      [link.targetId, link.sourceId],
+    ]) {
+      const a = byId.get(from);
+      const b = byId.get(to);
+      if (!a || !b) continue;
+      const dx = (b.x ?? 0) - (a.x ?? 0);
+      const dy = (b.y ?? 0) - (a.y ?? 0);
+      const side: LabelSide =
+        Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? "right" : "left") : dy > 0 ? "bottom" : "top";
+      const counts = edgeSides.get(from) ?? { right: 0, left: 0, top: 0, bottom: 0 };
+      counts[side] += 1;
+      edgeSides.set(from, counts);
+    }
+  }
+  const allSides: LabelSide[] = ["right", "left", "top", "bottom"];
   const nodeBoxes = nodes.map((node) => {
     const r = nodeRadius(degree.get(node.id) ?? 0) + 3;
     const x = node.x ?? 0;
@@ -144,6 +165,10 @@ function placeLabels(
   for (const node of order) {
     const r = nodeRadius(degree.get(node.id) ?? 0);
     const lines = labelLines(node.thought.text);
+    const counts = edgeSides.get(node.id);
+    const sides = counts
+      ? [...allSides].sort((a, b) => counts[a] - counts[b])
+      : allSides;
     for (const side of sides) {
       const box = labelBox(node.x ?? 0, node.y ?? 0, r, lines, side);
       const clear =
@@ -282,7 +307,7 @@ export function ConnectionsGraph({
       .alphaDecay(0.045)
       // Labels are placed once the map has mostly settled, and again when
       // it comes to rest.
-      .on("end", () => setLabelSides(placeLabels(layout.nodes, linkDegree)))
+      .on("end", () => setLabelSides(placeLabels(layout.nodes, layout.links, linkDegree)))
       .on("tick", () => {
         tick += 1;
         for (const node of layout.nodes) {
@@ -313,7 +338,7 @@ export function ConnectionsGraph({
         ) {
           setTransform(fitTransform(layout.nodes, size.width, size.height));
         }
-        if (tick === 56) setLabelSides(placeLabels(layout.nodes, linkDegree));
+        if (tick === 56) setLabelSides(placeLabels(layout.nodes, layout.links, linkDegree));
       });
     return () => {
       simulation.stop();
@@ -510,7 +535,7 @@ export function ConnectionsGraph({
                     role="link"
                     tabIndex={0}
                     aria-label={`${node.thought.text}, ${connected} connection${connected === 1 ? "" : "s"}${node.thought.status === "resting" ? ", set down" : ""}`}
-                    className={`cursor-pointer outline-none transition-opacity duration-200 ${receded ? "opacity-35" : lone ? "opacity-25" : ""}`}
+                    className={`cursor-pointer outline-none transition-opacity duration-200 ${receded ? "opacity-35" : lone ? "opacity-50" : ""}`}
                     onPointerEnter={() => setActiveId(node.id)}
                     onPointerLeave={() => setActiveId(null)}
                     onFocus={() => setActiveId(node.id)}
@@ -594,6 +619,10 @@ export function ConnectionsGraph({
               <span className="ml-3 inline-flex items-center gap-1.5">
                 <span className="inline-block size-2 rounded-full ring-1 ring-faint" />
                 Set down
+              </span>
+              <span className="ml-3 inline-flex items-center gap-1.5">
+                <span className="inline-block size-1.5 rounded-full bg-pl/60" />
+                On its own
               </span>
               </p>
               <p className="rounded-full bg-scr/90 px-4 py-2 ring-1 ring-line ring-inset backdrop-blur">

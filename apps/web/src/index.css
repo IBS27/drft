@@ -106,8 +106,8 @@ body {
   content: "";
   position: absolute;
   top: 0;
-  left: 10px;
-  right: 10px;
+  left: var(--inset, 10px);
+  right: var(--inset, 10px);
   height: 1px;
   background: var(--line);
   transition: opacity 150ms;
@@ -117,7 +117,12 @@ body {
   opacity: 0;
 }
 
-/* While the rail is finding, the capture sheet steps back. */
+/* While the rail is finding, the capture sheet steps back and the rail's
+   own "you are here" quiets, so only the focused hit looks selected. */
+nav[data-finding] [aria-current="page"] {
+  background: transparent !important;
+  font-weight: inherit !important;
+}
 [data-capture] {
   transition: opacity 200ms;
 }

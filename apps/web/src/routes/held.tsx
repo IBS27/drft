@@ -1,5 +1,5 @@
 import { BookmarkSimple } from "@phosphor-icons/react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useConvexAuth } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
 import type { Id } from "@drft/backend/convex/_generated/dataModel";
@@ -60,7 +60,7 @@ function Held() {
     <main className="min-h-dvh">
       <Rail activeId={null} now={now} />
       <div className="flex min-h-dvh flex-col lg:pl-72 xl:pl-80">
-        <header className="mx-auto flex h-[72px] w-full max-w-[688px] flex-none items-center gap-1 px-1.5 md:px-[30px] lg:h-auto lg:px-10 lg:pt-12 lg:pb-5">
+        <header className="mx-auto flex h-[72px] w-full max-w-[688px] flex-none items-center gap-1 px-1.5 md:px-[30px] lg:h-auto lg:px-10 lg:pt-12 lg:pb-3">
           <span className="lg:hidden">
             <BackLink />
           </span>
@@ -89,7 +89,7 @@ function Held() {
 // Nothing held yet: say what the page is for and how a thought gets here.
 function EmptyHeld() {
   return (
-    <div className="flex flex-col items-center px-6 pt-20 pb-24 text-center">
+    <div className="flex flex-col items-center px-6 pt-[14vh] pb-24 text-center">
       <span className="flex size-12 items-center justify-center rounded-full bg-line/70 text-[22px] text-pt">
         <BookmarkSimple aria-hidden="true" weight="fill" />
       </span>
@@ -100,12 +100,6 @@ function EmptyHeld() {
         Hold a thought from its page<span className="[@media(hover:none)]:hidden"> (or press h)</span>{" "}
         to keep it close here.
       </p>
-      <Link
-        to="/"
-        className="mt-5 hidden text-[14px] font-medium text-pt underline decoration-line underline-offset-4 transition-colors hover:text-ink lg:inline"
-      >
-        Back to thoughts
-      </Link>
     </div>
   );
 }
