@@ -198,10 +198,10 @@ function fitTransform(
   const ys = nodes.map((node) => node.y ?? height / 2);
   // Labels sit mostly to the right of their nodes: allow for them so the
   // map, as seen, is centred.
-  const minX = Math.min(...xs) - 60;
-  const maxX = Math.max(...xs) + 140;
-  const minY = Math.min(...ys) - 20;
-  const maxY = Math.max(...ys) + 20;
+  const minX = Math.min(...xs) - 150;
+  const maxX = Math.max(...xs) + 160;
+  const minY = Math.min(...ys) - 30;
+  const maxY = Math.max(...ys) + 30;
   const graphWidth = Math.max(1, maxX - minX);
   const graphHeight = Math.max(1, maxY - minY);
   const scale = Math.min(

@@ -274,8 +274,8 @@ struct ShelfView: View {
                 .foregroundStyle(Stillness.chromeText)
         }
         .padding(.horizontal, 16)
-        .padding(.top, 18)
-        .padding(.bottom, 4)
+        .padding(.top, 28)
+        .padding(.bottom, 8)
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(.isHeader)
     }

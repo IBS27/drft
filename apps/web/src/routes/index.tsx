@@ -95,6 +95,26 @@ function Collection() {
 
       <Rail activeId={null} now={now} />
 
+        {/* The other places, by name, within reach under the header. */}
+        <nav aria-label="places" className="flex gap-2 overflow-x-auto px-4 pt-1 pb-1 [scrollbar-width:none] lg:hidden">
+          {(
+            [
+              ["/held", "Held", BookmarkSimple],
+              ["/resting", "Resting", Moon],
+              ["/connections", "Connections", Graph],
+            ] as const
+          ).map(([to, name, Icon]) => (
+            <Link
+              key={to}
+              to={to}
+              className="inline-flex h-9 flex-none items-center gap-1.5 rounded-full bg-scr px-3.5 text-[13.5px] font-medium text-pt ring-1 ring-line ring-inset transition-colors hover:bg-tint hover:text-ink"
+            >
+              <Icon aria-hidden="true" className="text-[14px]" />
+              {name}
+            </Link>
+          ))}
+        </nav>
+
       <div className="flex flex-1 flex-col lg:pl-72 xl:pl-80">
         {/* Capture is the first thing on screen, before any query answers:
             the field is focused and typeable at 0ms. */}
@@ -122,7 +142,7 @@ function Collection() {
                 {pinned && <BackToday t={pinned} prewarm={prewarm} />}
                 {groups.map(({ group, rows }) => (
                   <div key={group}>
-                    <h2 className="px-4 pt-[18px] pb-1 text-[13px] font-medium text-pl">
+                    <h2 className="px-4 pt-7 pb-2 text-[13px] font-medium text-pl">
                       {GROUP_LABEL[group]}
                     </h2>
                     {rows.map((t, i) => (
@@ -141,25 +161,6 @@ function Collection() {
           </section>
         )}
 
-        {/* The other places, by name, at the foot of the list. */}
-        <footer className="flex flex-wrap items-center justify-center gap-2 px-4 pb-10 lg:hidden">
-          {(
-            [
-              ["/held", "Held", BookmarkSimple],
-              ["/resting", "Resting", Moon],
-              ["/connections", "Connections", Graph],
-            ] as const
-          ).map(([to, name, Icon]) => (
-            <Link
-              key={to}
-              to={to}
-              className="inline-flex h-10 items-center gap-2 rounded-full bg-scr px-4 text-[14px] font-medium text-pt ring-1 ring-line ring-inset transition-colors hover:bg-tint hover:text-ink"
-            >
-              <Icon aria-hidden="true" className="text-[15px]" />
-              {name}
-            </Link>
-          ))}
-        </footer>
       </div>
     </main>
   );

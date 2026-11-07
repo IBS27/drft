@@ -1,4 +1,4 @@
-import { Check } from "@phosphor-icons/react";
+import { Check, PencilSimpleLine } from "@phosphor-icons/react";
 import { useMutation } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
@@ -147,9 +147,10 @@ export function NotesField({
       <div className="flex h-6 items-center justify-between gap-3">
         <label
           htmlFor="thought-notes"
-          className="text-[14px] font-medium text-pt transition-colors group-focus-within:text-ink"
+          className="inline-flex cursor-text items-center gap-1.5 text-[14px] font-medium text-pt transition-colors group-focus-within:text-ink"
         >
           Notes
+          <PencilSimpleLine aria-hidden="true" className="text-[13px] text-pl" />
         </label>
         {/* Not a live region: announcing every pause would be noise. Only
             a failure speaks up (role="status" below). While one stands,

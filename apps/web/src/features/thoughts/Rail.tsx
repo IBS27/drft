@@ -396,7 +396,7 @@ export const Rail = memo(function Rail({
 
 function GroupHeader({ group }: { group: Group }) {
   return (
-    <div className="px-3 pt-[18px] pb-1.5 text-[13px] font-medium text-pl">
+    <div className="px-3 pt-6 pb-1.5 text-[13px] font-medium text-pl">
       {GROUP_LABEL[group]}
     </div>
   );
