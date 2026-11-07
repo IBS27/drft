@@ -80,6 +80,20 @@ enum Stillness {
     static let switchKnobShadow = dynamic(light: 0x26241F, dark: 0x000000, alpha: 0.3)
     /// Soft elevation under raised surfaces (the web's --lift).
     static let lift = dynamic(light: 0x3A2C1C, dark: 0x000000, alpha: 0.06)
+    /// A control floating over a list (New thought): the hairline in the
+    /// light, a step brighter in the dark, where the lift alone can't show.
+    static let floatEdge = dynamic(
+        light: 0xD9D5CA,
+        dark: 0x4A4741,
+        lightHighContrast: 0xB4B4AE,
+        darkHighContrast: 0x5E5D58
+    )
+    /// Its shadow: the light's soft lift, deeper in the dark so it reads.
+    static let floatLift = Color(uiColor: UIColor { traits in
+        traits.userInterfaceStyle == .dark
+            ? color(0x000000, alpha: 0.45)
+            : color(0x3A2C1C, alpha: 0.06)
+    })
     /// The short shadow under a solid primary pill.
     static let shadow = dynamic(light: 0x3A2C1C, dark: 0x000000, alpha: 0.12)
     /// The lightest wash of the accent: today's returned thought at rest.

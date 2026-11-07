@@ -173,9 +173,9 @@ struct ShelfView: View {
                         }
                         .padding(.horizontal, 8)
                         .padding(.top, 8)
-                        // Past the band (the inset below) by 24pt, so the
-                        // last row always scrolls fully clear of the pill.
-                        .padding(.bottom, 24)
+                        // Past the band and its fade (the inset below), so
+                        // the last row always scrolls fully clear of both.
+                        .padding(.bottom, Self.bandFade + 4)
                     }
                     .scrollIndicators(.hidden)
                     // A bounded band at the bottom, inset into the scroll
@@ -247,6 +247,9 @@ struct ShelfView: View {
         }
     }
 
+    /// The fade's height above the New thought band.
+    private static let bandFade: CGFloat = 52
+
     // A quiet surface pill on the thumb side, in its own opaque band below
     // the list: rows end at the band's edge, never under the pill.
     private var catchThoughtAffordance: some View {
@@ -258,9 +261,14 @@ struct ShelfView: View {
                 Text("New thought")
             }
         }
-        .buttonStyle(PillButtonStyle(kind: .neutral, height: 44, horizontalPadding: 20))
-        // Lifted off the page in the light so it holds its shape over rows.
-        .shadow(color: Stillness.lift, radius: 6, y: 2)
+        .buttonStyle(PillButtonStyle(
+            kind: .neutral,
+            height: 44,
+            horizontalPadding: 20,
+            edge: Stillness.floatEdge
+        ))
+        // Lifted off the page so it holds its shape over rows in either theme.
+        .shadow(color: Stillness.floatLift, radius: 6, y: 2)
         .padding(.bottom, 12)
         .padding(.trailing, StillnessSpacing.gutter)
         // On the thumb side, so it sits beside the list rather than on it.
@@ -268,15 +276,23 @@ struct ShelfView: View {
         .background {
             Stillness.page
                 .ignoresSafeArea(edges: .bottom)
-                // A short soft edge above the band, not a long fade over rows.
+                // A rising fade above the band: a row passing beneath thins
+                // out gradually rather than being sliced at the band's edge.
                 .overlay(alignment: .top) {
                     LinearGradient(
-                        colors: [Stillness.page.opacity(0), Stillness.page],
+                        stops: [
+                            .init(color: Stillness.page.opacity(0), location: 0),
+                            .init(color: Stillness.page.opacity(0.3), location: 0.35),
+                            .init(color: Stillness.page.opacity(0.8), location: 0.7),
+                            // Solid just before the band, so no glyph tips
+                            // show at its edge.
+                            .init(color: Stillness.page, location: 0.88),
+                        ],
                         startPoint: .top,
                         endPoint: .bottom
                     )
-                    .frame(height: 16)
-                    .offset(y: -16)
+                    .frame(height: Self.bandFade)
+                    .offset(y: -Self.bandFade)
                 }
                 .allowsHitTesting(false)
         }
@@ -337,34 +353,7 @@ struct ShelfView: View {
         return Button {
             open(thought)
         } label: {
-            HStack(alignment: .firstTextBaseline, spacing: 20) {
-                WordTruncatedText(text: thought.preview)
-                    .font(StillnessType.row)
-                    .lineSpacing(3)
-                    .foregroundStyle(Stillness.ink)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-
-                HStack(alignment: .firstTextBaseline, spacing: 4) {
-                    if thought.heldAt != nil {
-                        // A quiet mark beside the date, never heavier than it.
-                        EmberIcon(.bookmarkSimpleFill, size: 10)
-                            .foregroundStyle(Stillness.faint)
-                    }
-                    Text(age)
-                        .font(StillnessType.caption)
-                        .monospacedDigit()
-                        .foregroundStyle(Stillness.chromeLabel)
-                        .lineLimit(1)
-                }
-                // One date column, so every thought wraps at the same edge.
-                .frame(minWidth: 72, alignment: .trailing)
-            }
-            .padding(.horizontal, 16)
-            // Geist's line box carries more room above the ascenders than
-            // below the descenders; this evens the ink, so a divider sits as
-            // far from a second line's descenders as from the next row.
-            .padding(.top, 11.5)
-            .padding(.bottom, 13.5)
+            ShelfRowLabel(thought: thought, age: age)
         }
         .buttonStyle(RowButtonStyle {
             convexService.prewarmThought(id: thought.id)
@@ -397,6 +386,50 @@ struct ShelfView: View {
         withAnimation(.easeInOut(duration: 0.24)) {
             selectedThoughtID = nil
         }
+    }
+}
+
+/// A shelf row: the thought on up to two lines, its age in one column.
+private struct ShelfRowLabel: View {
+    /// How far Geist's descenders reach below the baseline (0.15em of the
+    /// 16pt row font), scaled with it.
+    @ScaledMetric(relativeTo: .body) private var descenderDepth: CGFloat = 2.4
+    @State private var lastLineDescends = true
+
+    let thought: ConvexService.CollectionThought
+    let age: String
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 20) {
+            WordTruncatedText(text: thought.preview, onLastLineDescends: { lastLineDescends = $0 })
+                .font(StillnessType.row)
+                .lineSpacing(3)
+                .foregroundStyle(Stillness.ink)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            HStack(alignment: .firstTextBaseline, spacing: 4) {
+                if thought.heldAt != nil {
+                    // A quiet mark beside the date, never heavier than it.
+                    EmberIcon(.bookmarkSimpleFill, size: 10)
+                        .foregroundStyle(Stillness.faint)
+                }
+                Text(age)
+                    .font(StillnessType.caption)
+                    .monospacedDigit()
+                    .foregroundStyle(Stillness.chromeLabel)
+                    .lineLimit(1)
+            }
+            // One date column, so every thought wraps at the same edge.
+            .frame(minWidth: 72, alignment: .trailing)
+        }
+        .padding(.horizontal, 16)
+        // Geist's line box carries more room above the capitals than below
+        // the descenders; this evens the ink, so a divider sits as far under
+        // the last line's lowest ink as above the next row's capitals. A
+        // last line with nothing below the baseline ("tide tables") ends
+        // higher, so the divider comes up by the descenders' depth.
+        .padding(.top, 11.5)
+        .padding(.bottom, lastLineDescends ? 13.5 : 13.5 - descenderDepth)
     }
 }
 

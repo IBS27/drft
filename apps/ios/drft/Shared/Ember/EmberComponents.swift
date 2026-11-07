@@ -142,8 +142,14 @@ struct PillButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         let isPressed = configuration.isPressed
 
-        configuration.label
-            .font(kind == .primary || kind == .ink ? StillnessType.primaryButton : StillnessType.control)
+        // Sized by its solid label, so a resting primary in the lighter
+        // weight keeps its width when it lights up.
+        ZStack {
+            if kind == .primary {
+                configuration.label.font(StillnessType.primaryButton).hidden()
+            }
+            configuration.label.font(font)
+        }
             .lineLimit(1)
             .foregroundStyle(foreground)
             .padding(.horizontal, horizontalPadding)
@@ -180,9 +186,19 @@ struct PillButtonStyle: ButtonStyle {
             .animation(.easeOut(duration: 0.15), value: isEnabled)
     }
 
+    private var font: Font {
+        switch kind {
+        // Waiting for words, a primary rests in muted medium, so the turn to
+        // solid vermilion lands as a change of weight as well as colour.
+        case .primary: isEnabled ? StillnessType.primaryButton : StillnessType.primaryButtonResting
+        case .ink: StillnessType.primaryButton
+        case .outline, .neutral, .line, .quiet: StillnessType.control
+        }
+    }
+
     private var foreground: Color {
         switch kind {
-        case .primary: isEnabled ? Stillness.onNow : Stillness.chromeLabel
+        case .primary: isEnabled ? Stillness.onNow : Stillness.muted
         case .ink: Stillness.onInkPill
         case .outline: Stillness.nowInk
         case .neutral, .line, .quiet: Stillness.chromeText

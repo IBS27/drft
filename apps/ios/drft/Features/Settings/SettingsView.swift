@@ -166,13 +166,11 @@ struct SettingsView: View {
                                 HStack(spacing: 16) {
                                     settingText(
                                         isDeletingAccount ? "Deleting…" : "Delete account",
-                                        detail: "Removes your thoughts and notes for good."
+                                        detail: "Removes your thoughts and notes for good"
                                     )
                                     Spacer(minLength: 12)
-                                    EmberIcon(.caretRight, size: 13)
-                                        .opacity(0.7)
+                                    trailingGlyph(.caretRight)
                                 }
-                                .foregroundStyle(Stillness.ink)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .padding(.horizontal, 16)
                                 .padding(.vertical, 14)
@@ -291,12 +289,26 @@ struct SettingsView: View {
 
             Spacer(minLength: 12)
 
-            EmberIcon(icon, size: 16)
-                .foregroundStyle(Stillness.chromeLabel)
+            trailingGlyph(icon)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
         .contentShape(Rectangle())
+    }
+
+    /// Every row's trailing mark (↗, sign out, ›) in one colour at one
+    /// optical size (about 14pt): Phosphor draws the sign-out door large in
+    /// its box and the arrow and chevron small, so each is nudged until
+    /// their ink stands about 10pt tall.
+    private func trailingGlyph(_ icon: PhosphorIcon) -> some View {
+        let size: CGFloat = switch icon {
+        case .signOut: 13
+        case .arrowUpRight, .caretRight: 15
+        default: 14
+        }
+        return EmberIcon(icon, size: size)
+            .frame(width: 16, height: 16)
+            .foregroundStyle(Stillness.chromeLabel)
     }
 
     private func deleteAccount() {

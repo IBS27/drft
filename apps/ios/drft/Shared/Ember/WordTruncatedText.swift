@@ -10,6 +10,10 @@ import SwiftUI
 struct WordTruncatedText: View {
     let text: String
     var lineLimit = 2
+    /// Told whether the last shown line has ink below the baseline (g, p,
+    /// y, a comma…), so a row can sit its divider the same distance under
+    /// "tide tables" as under "plan…".
+    var onLastLineDescends: ((Bool) -> Void)? = nil
 
     var body: some View {
         LineBudgetLayout {
@@ -32,6 +36,10 @@ struct WordTruncatedText: View {
                     .lineLimit(lineLimit)
             }
         }
+        .onPreferenceChange(Text.LayoutKey.self) { layouts in
+            guard let onLastLineDescends, let layout = layouts.last?.layout else { return }
+            onLastLineDescends(Self.lastLineDescends(in: layout, of: text))
+        }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text(text))
     }
@@ -41,6 +49,34 @@ struct WordTruncatedText: View {
             .lineLimit(nil)
             .fixedSize(horizontal: false, vertical: true)
             .hidden()
+            // Only the shown text's layout is reported.
+            .transformPreference(Text.LayoutKey.self) { $0 = [] }
+    }
+
+    /// Geist's glyphs that reach below the baseline.
+    private static let descenders = Set("gjpqy,;()[]{}/\\|@$_Q".utf16)
+
+    /// Whether any character on the shown text's last line descends. The
+    /// shown text is `text` or a prefix of it plus "…", so offsets index
+    /// `text` either way; a closing "…" never descends and is skipped.
+    /// Anything outside ASCII counts as descending, keeping the full room.
+    private static func lastLineDescends(in layout: Text.Layout, of text: String) -> Bool {
+        let indices = layout.flatMap { line in line.flatMap(\.characterIndices) }
+        guard let first = indices.min(),
+              let last = indices.max(),
+              let lastLine = layout.last
+        else { return true }
+
+        let units = Array(text.utf16)
+        let isTruncated = first.distance(to: last) + 1 < units.count
+        for index in lastLine.flatMap(\.characterIndices) {
+            let offset = first.distance(to: index)
+            if isTruncated, index == last { continue }
+            guard offset < units.count else { return true }
+            let unit = units[offset]
+            if unit > 0x7F || descenders.contains(unit) { return true }
+        }
+        return false
     }
 
     /// Short words that read as unfinished right before an ellipsis.
