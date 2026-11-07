@@ -51,9 +51,9 @@ export function DeleteAccount() {
         onClick={() => setStep("confirming")}
         className="flex w-full items-center justify-between rounded-[13px] px-4 py-3.5 text-left text-[15px] text-ink transition-colors hover:bg-tint"
       >
-        <span className="flex flex-col gap-0.5 font-medium">
+        <span className="flex flex-col gap-0.5">
           Delete account
-          <span className="text-[13.5px] font-normal text-pl">Removes your thoughts and notes for good.</span>
+          <span className="text-[13.5px] text-pl">Removes your thoughts and notes for good.</span>
         </span>
         <CaretRight aria-hidden="true" className="text-[15px] opacity-70" />
       </button>

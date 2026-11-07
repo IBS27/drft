@@ -24,11 +24,13 @@ export const Route = createFileRoute("/")({ component: Collection });
 
 const NO_ROWS: Row[] = [];
 
+// Header places on phones: quiet ghost controls with full 44px targets, so
+// capture is the only framed thing at the top of the screen.
 const HEADER_PILL =
-  "inline-flex h-8 items-center gap-1.5 rounded-full bg-scr pr-3 pl-2.5 text-[13.5px] font-medium text-pt ring-1 ring-line ring-inset transition-colors hover:bg-tint hover:text-ink lg:hidden";
+  "inline-flex h-11 items-center gap-1.5 rounded-full px-3 text-[14px] font-medium text-pt transition-colors hover:bg-tint hover:text-ink lg:hidden";
 
 const HEADER_ICON =
-  "relative flex size-11 items-center justify-center rounded-full text-pt transition-colors before:absolute before:inset-1.5 before:rounded-full before:bg-scr before:ring-1 before:ring-line before:ring-inset before:transition-colors hover:text-ink hover:before:bg-tint lg:hidden [&>svg]:relative [&>svg]:size-[17px]";
+  "flex size-11 items-center justify-center rounded-full text-pt transition-colors hover:bg-tint hover:text-ink lg:hidden [&>svg]:size-[19px]";
 
 type Row = {
   _id: Id<"thoughts">;
@@ -79,19 +81,19 @@ function Collection() {
       {/* Below lg the rail is gone, so the header carries the way to find
           and settings; on wide screens only the count stays up here, and
           the header lets clicks through to the rail it spans. */}
-      <header className="relative z-10 flex h-14 items-center justify-between pr-3.5 pl-5 lg:pointer-events-none lg:h-12 lg:justify-end lg:pr-7">
+      <header className="relative z-10 flex h-14 items-center justify-between pr-2 pl-5 lg:pointer-events-none lg:h-12 lg:justify-end lg:pr-7">
         <span className="lg:hidden">
           <Wordmark />
         </span>
         <span className="flex items-center gap-0.5">
           {/* Held and Resting share the header on phones, by name, so
               capture sits right under it. */}
-          <Link to="/held" className={`${HEADER_PILL} mr-1.5`}>
-            <BookmarkSimple aria-hidden="true" className="text-[14px]" />
+          <Link to="/held" className={HEADER_PILL}>
+            <BookmarkSimple aria-hidden="true" className="text-[16px]" />
             Held
           </Link>
-          <Link to="/resting" className={`${HEADER_PILL} mr-1.5`}>
-            <Moon aria-hidden="true" className="text-[14px]" />
+          <Link to="/resting" className={HEADER_PILL}>
+            <Moon aria-hidden="true" className="text-[16px]" />
             Resting
           </Link>
           <button
@@ -230,7 +232,7 @@ const ThoughtRow = memo(function ThoughtRow({
       }`}
     >
       <span className="line-clamp-2 min-w-0 flex-1 leading-[1.4]">{t.preview}</span>
-      <span className="inline-flex min-w-16 flex-none items-baseline justify-end gap-1 text-[13px] text-pl tabular-nums">
+      <span className="inline-flex min-w-[4.5rem] flex-none items-baseline justify-end gap-1 text-[13px] text-pl tabular-nums">
         {t.heldAt !== undefined && (
           <BookmarkSimple weight="fill" aria-label="held" className="translate-y-[1px] text-[11px] text-pt" />
         )}

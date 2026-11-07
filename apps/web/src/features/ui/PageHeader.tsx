@@ -15,7 +15,7 @@ export function PageHeader({
   aside?: ReactNode;
 }) {
   return (
-    <header className="relative z-10 mx-auto flex min-h-[72px] w-full max-w-[688px] flex-none flex-wrap items-center gap-x-1 py-3 pr-4 pl-1.5 md:px-[30px] lg:min-h-0 lg:px-10 lg:pt-12 lg:pb-5">
+    <header className="relative z-10 mx-auto flex min-h-[72px] w-full max-w-[688px] flex-none flex-wrap content-start items-center gap-x-1 py-3 pr-4 pl-1.5 md:px-[30px] lg:min-h-0 lg:px-10 lg:pt-12 lg:pb-5">
       <span className="lg:hidden">
         <BackLink />
       </span>

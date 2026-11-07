@@ -2,7 +2,7 @@ import { BookmarkSimple } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
 import type { Id } from "@drft/backend/convex/_generated/dataModel";
 import { memo } from "react";
-import { heldAge } from "../thoughts/format";
+import { clip, heldAge } from "../thoughts/format";
 import type { HeldCard } from "./layout";
 import type { ToggleHold } from "./useHold";
 
@@ -40,7 +40,8 @@ export const HeldCardView = memo(function HeldCardView({
   prewarm: (id: Id<"thoughts">) => void;
 }) {
   const age = heldAge(card.heldAt, now);
-  const notes = excerpt(card.notes.trim());
+  // One flowing line: a cut after a line break would end on "timetable.…".
+  const notes = clip(card.notes.trim().replace(/\s*\n+\s*/g, " "), 100);
   return (
     <article
       data-hold-id={card._id}
@@ -99,13 +100,3 @@ export const HeldCardView = memo(function HeldCardView({
     </article>
   );
 });
-
-// The start of the notes, cut at a word and never after a stop, so the
-// ellipsis is the only mark at the end ("Tuesday…", not "Tuesday.…").
-const EXCERPT_LIMIT = 100;
-function excerpt(notes: string): string {
-  if (notes.length <= EXCERPT_LIMIT) return notes;
-  const cut = notes.slice(0, EXCERPT_LIMIT);
-  const word = cut.slice(0, Math.max(cut.lastIndexOf(" "), cut.lastIndexOf("\n")));
-  return `${word.replace(/[\s.,;:!?—–-]+$/, "")}…`;
-}

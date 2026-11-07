@@ -120,7 +120,7 @@ function HitRow({
       onMouseMove={activate}
       className={`relative flex w-full items-center gap-2.5 rounded-card px-3 py-2.5 text-left transition-colors [--inset:12px] ${
         divided ? "divided" : ""
-      } ${active ? "bg-line/50" : ""}`}
+      } ${active ? "[@media(pointer:fine)]:bg-line/50" : ""}`}
     >
       <span
         className={`line-clamp-2 min-w-0 flex-1 text-[15px] leading-[1.4] ${active ? "text-ink" : "text-pt"}`}

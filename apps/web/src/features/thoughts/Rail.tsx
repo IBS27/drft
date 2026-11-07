@@ -23,7 +23,7 @@ import {
 import { Kbd } from "../ui/Kbd";
 import { Skeleton } from "../ui/Skeleton";
 import { Wordmark } from "../ui/Wordmark";
-import { ageLabel, localDate, orderRows, type Group, GROUP_LABEL } from "./format";
+import { ageLabel, clip, localDate, orderRows, type Group, GROUP_LABEL } from "./format";
 import { useCachedQuery } from "./useCachedQuery";
 import { useThoughtPrewarm } from "./useThoughtPrewarm";
 
@@ -333,10 +333,9 @@ export const Rail = memo(function Rail({
             {ordered.groups.map(({ group, rows }, gi) => (
               <div key={group}>
                 <GroupHeader group={group} first={gi === 0 && !(ordered.pinned && !onHome)} />
-                {rows.map((t, i) => (
+                {rows.map((t) => (
                   <RailRow
                     key={t._id}
-                    divided={i > 0}
                     t={t}
                     time={ageLabel(t.createdAt, now)}
                     active={t._id === activeId}
@@ -481,7 +480,6 @@ const BackToday = memo(function BackToday({
 // lets go (h does the same on the focused or hovered row). Resting rows
 // can't be held.
 const RailRow = memo(function RailRow({
-  divided = false,
   t,
   time,
   active,
@@ -490,7 +488,6 @@ const RailRow = memo(function RailRow({
   heldAt,
   toggleHold,
 }: {
-  divided?: boolean;
   t: { _id: Id<"thoughts">; preview: string };
   time: string;
   active: boolean;
@@ -509,15 +506,15 @@ const RailRow = memo(function RailRow({
       onPointerDown={() => prewarm(t._id)}
       onFocus={() => prewarm(t._id)}
       aria-current={active ? "page" : undefined}
-      className={`group/row relative flex items-baseline gap-4 rounded-card px-3 py-[9px] transition-colors ${
+      className={`group/row relative flex items-baseline gap-4 rounded-card px-3 py-2 transition-colors ${
         active ? ACTIVE_BAR : "hover:bg-tint"
       }`}
     >
       {/* A step quieter than the page it sits beside; full ink when in hand. */}
       <span
-        className={`line-clamp-2 min-w-0 flex-1 text-[14.5px] leading-[1.45] ${active ? "text-ink" : "text-pt group-hover/row:text-ink"}`}
+        className={`line-clamp-2 min-w-0 flex-1 text-[14px] leading-[1.45] ${active ? "text-ink" : "text-pt group-hover/row:text-ink"}`}
       >
-        {t.preview}
+        {clip(t.preview, 58)}
       </span>
       {(time || held) && (
         <span
@@ -536,7 +533,7 @@ const RailRow = memo(function RailRow({
   if (!toggleHold) return link;
   return (
     <div
-      className={`group relative [--inset:12px] ${divided ? "divided" : ""}`}
+      className="group relative"
       data-hold-id={t._id}
       data-held-at={heldAt ?? ""}
       data-hold-notice=""
