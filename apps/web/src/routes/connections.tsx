@@ -77,6 +77,7 @@ function Connections() {
       {desktop && <Rail activeId={null} now={now} />}
       <div className="hidden min-h-dvh flex-1 flex-col lg:flex lg:pl-72 xl:pl-80">
         <PageHeader
+          wide
           title="Connections"
           description="Thoughts that echo each other."
           aside={
@@ -84,6 +85,7 @@ function Connections() {
           }
         />
 
+        {/* The map shares the header's wide column (see ConnectionsGraph's COLUMN). */}
         <ConnectionsGraph
           thoughts={results}
           loading={loading}

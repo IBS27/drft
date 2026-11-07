@@ -28,14 +28,11 @@ type Box = { x0: number; y0: number; x1: number; y1: number };
 type Point = { x: number; y: number };
 type ViewTransform = { x: number; y: number; scale: number };
 
-// How a name is set. The thoughts the map turns on (well connected, or back
-// today) are the places to start reading, so they're named larger and darker.
+// How a name is set. Every name is set alike; only the thought back today
+// is named a little firmer, as the legend's first entry says.
 type Voice = { size: number; weight: number; leading: number };
-const PLAIN: Voice = { size: 13, weight: 400, leading: 17 };
-const HUB: Voice = { size: 15, weight: 500, leading: 20 };
-const TODAY = HUB;
-// Links that make a thought one the map turns on.
-const HUB_DEGREE = 3;
+const PLAIN: Voice = { size: 13.5, weight: 400, leading: 18 };
+const TODAY: Voice = { ...PLAIN, weight: 500 };
 
 // A dot and its name, as they sit on screen. Names always read to the
 // right of their dot, so a glance down any column reads one way.
@@ -60,25 +57,38 @@ const MAX_SCALE = 3.2;
 
 // Names and dots keep their size on screen; zoom changes only the spacing.
 const LABEL_GAP = 7;
-// A line of a name holds about 24 characters, in ems so larger names keep it.
-const LABEL_EMS = 13.4;
+// A line of a name holds about 28 characters.
+const LABEL_EMS = 15.2;
 // The paper-coloured outline drawn behind each letter (its stroke width).
 const HALO = 4;
 // The air a line keeps from a stranger's dot and name, and from its own
 // end's name.
-const EDGE_CLEAR = 6;
-const OWN_CLEAR = 3;
+const EDGE_CLEAR = 8;
+const OWN_CLEAR = 5;
 // The least air between one dot-and-name and the next.
-const CLEARANCE = 12;
+const CLEARANCE = 20;
+// The page's content column, which the title, the map and its legend share
+// (the page header's wide column: its width, less its padding).
+const COLUMN = 1040;
+const GUTTER = 40;
 // The map's room: just below the subtitle, as other pages' content sits
-// below theirs, and clear of the footer row. A map shorter than the room
-// keeps to its top.
-const FRAME = { top: 12, bottom: 76, left: 40, right: 40 };
+// below theirs, with room under it for the legend, LEGEND_GAP below the map.
+// A map shorter than the room keeps to its top.
+const FRAME = { top: 16, bottom: 76 };
+const LEGEND_GAP = 32;
+// The most a clear gutter between side-by-side groups widens to span the
+// column, so spreading never leaves a void.
+const MAX_SPREAD = 96;
+// Dots this close in x read as one column; several of them as a string.
+// Within `ALIGN_REACH` ideal lines of each other, they're discouraged.
+const ALIGN = 24;
+const ALIGN_REACH = 3;
 // How much room a group's dots and names get to spread through.
 const PACKING = 1.9;
 // The shapes a group is laid out in (width over height); a large group keeps
 // the first, a small one offers each so the groups can fill the room together.
-const CLUSTER_ASPECTS = [1.2, 0.6, 2.4];
+// None is much taller than wide: a tall group lays out single file.
+const CLUSTER_ASPECTS = [1.2, 2.4, 0.85];
 const SMALL_CLUSTER = 40;
 // The air between groups, widest first, narrowed only to fit the room.
 const CLUSTER_GAPS = [104, 84, 68, 52, 40];
@@ -175,12 +185,8 @@ function nodeRadius(connected: number): number {
   return connected >= 4 ? 5.5 : connected >= 2 ? 4 : 3;
 }
 
-function voiceOf(connected: number, returned: boolean): Voice {
-  return returned ? TODAY : connected >= HUB_DEGREE ? HUB : PLAIN;
-}
-
 function shape(thought: GraphThought, connected: number, returned: boolean): Shape {
-  const voice = voiceOf(connected, returned);
+  const voice = returned ? TODAY : PLAIN;
   const lines = labelLines(thought.text, voice);
   return {
     r: nodeRadius(connected),
@@ -446,9 +452,31 @@ function segmentsCross(a: Point, b: Point, c: Point, d: Point): boolean {
 }
 
 // What each flaw costs while a layout is refined: a line under a name or
-// through a dot, and names crowding, are not allowed to stay; lines crossing
-// and long lines are only discouraged.
-const COST = { hit: 400, crowd: 400, cross: 24, bundle: 12, bend: 14, length: 3 };
+// through a dot, and names crowding, are not allowed to stay; lines crossing,
+// long lines and dots stacked in one column are only discouraged.
+const COST = { hit: 400, crowd: 400, cross: 24, bundle: 12, bend: 14, length: 3, align: 10, run: 16 };
+
+// How upright a line `dx` across and `dy` down stands: 1 when plumb, 0 once
+// it leans as far across as RUN_LEAN of its height.
+const RUN_LEAN = 0.8;
+const upright = (dx: number, dy: number) => Math.max(0, 1 - Math.abs(dx) / (Math.abs(dy) * RUN_LEAN || 1e-9));
+
+// What a dot costs for carrying a line on straight through it, one in from
+// above and one out below: three dots stacked single file.
+function straightRun(lines: Point[]): number {
+  let cost = 0;
+  for (let a = 0; a < lines.length; a += 1)
+    for (let b = a + 1; b < lines.length; b += 1)
+      if (lines[a].y * lines[b].y < 0)
+        cost += COST.run * upright(lines[a].x, lines[a].y) * upright(lines[b].x, lines[b].y);
+  return cost;
+}
+
+// How much two dots read as one column: 1 when level in x and near, falling
+// to 0 at ALIGN apart across or `reach` apart down.
+function alignment(dx: number, dy: number, reach: number): number {
+  return Math.max(0, 1 - Math.abs(dx) / ALIGN) * Math.max(0, 1 - Math.abs(dy) / reach);
+}
 // Lines leaving one dot closer in angle than this read as one line.
 const BUNDLE = 0.22;
 
@@ -518,10 +546,19 @@ function refine(nodes: LayoutNode[], pairs: Pair[], { ideal, seed, room, hold, h
     }
     return cost;
   };
+  // The way each line leaves dot `v`.
+  const runAt = (v: number): number =>
+    straightRun(
+      incident[v].map((e) => {
+        const o = ends[e][0] === v ? ends[e][1] : ends[e][0];
+        return { x: xs[o] - xs[v], y: ys[o] - ys[v] };
+      }),
+    );
   // Everything that costs and depends on where dot `i` sits.
   const local = (i: number): number => {
-    let cost = 0;
+    let cost = runAt(i);
     for (const e of incident[i]) {
+      cost += runAt(ends[e][0] === i ? ends[e][1] : ends[e][0]);
       const [a, b] = ends[e];
       cost += bundled(a, e) + bundled(b, e);
       for (let j = 0; j < count; j += 1) if (hits(e, j)) cost += COST.hit;
@@ -538,6 +575,7 @@ function refine(nodes: LayoutNode[], pairs: Pair[], { ideal, seed, room, hold, h
     const mine = at(airs[i], xs[i], ys[i]);
     for (let j = 0; j < count; j += 1) {
       if (j === i) continue;
+      cost += COST.align * alignment(xs[i] - xs[j], ys[i] - ys[j], ideal * ALIGN_REACH);
       const other = at(airs[j], xs[j], ys[j]);
       const ox = Math.min(mine.x1, other.x1) - Math.max(mine.x0, other.x0);
       const oy = Math.min(mine.y1, other.y1) - Math.max(mine.y0, other.y0);
@@ -651,9 +689,36 @@ function refine(nodes: LayoutNode[], pairs: Pair[], { ideal, seed, room, hold, h
 type Layout = {
   nodes: LayoutNode[];
   links: LayoutLink[];
-  // The view that frames the whole map: centred across the room, at its top.
+  // The view that frames the whole map: across the column, at its top.
   fit: ViewTransform;
+  // Where the fitted map's dots and names end, down the frame.
+  bottom: number;
 };
+
+// The page's content column across a frame `width` wide.
+function columnOf(width: number): { x0: number; x1: number } {
+  const x0 = (width - Math.min(width, COLUMN)) / 2 + GUTTER;
+  return { x0, x1: width - x0 };
+}
+
+// Spans the groups across `width` by widening the clear gutters between
+// groups that sit side by side, each by at most MAX_SPREAD.
+function spread(placed: Placed[], width: number) {
+  const runs: [number, number][] = [];
+  for (const p of [...placed].sort((a, b) => a.x0 - b.x0)) {
+    const last = runs[runs.length - 1];
+    if (last && p.x0 < last[1]) last[1] = Math.max(last[1], p.x1);
+    else runs.push([p.x0, p.x1]);
+  }
+  const extra = width - (runs[runs.length - 1][1] - runs[0][0]);
+  if (runs.length < 2 || extra <= 0) return;
+  const step = Math.min(MAX_SPREAD, extra / (runs.length - 1));
+  for (const p of placed) {
+    const shift = runs.findIndex(([x0, x1]) => p.x0 >= x0 && p.x1 <= x1) * step;
+    p.x0 += shift;
+    p.x1 += shift;
+  }
+}
 
 // A group of thoughts that echo one another, laid out on its own: its dots
 // sit relative to its own top-left corner, and `w`/`h` is what its dots and
@@ -725,15 +790,25 @@ function linesCross([a, b]: Pair, [c, d]: Pair): boolean {
 
 // How cleanly a run came out: names still touching, lines through a
 // stranger's dot or name, lines through their own end's name, lines crossing
-// each other, and length.
+// each other, dots stacked in one column, and length.
 function untidiness(nodes: LayoutNode[], pairs: Pair[], spacing: number): number {
   const wholes = nodes.map((n) => at(grow(nodeBox(n), CLEARANCE / 2 - 1), n.x ?? 0, n.y ?? 0));
   let total = 0;
   wholes.forEach((a, i) =>
     wholes.forEach((b, k) => {
-      if (i < k && overlaps(a, b)) total += 20;
+      if (i >= k) return;
+      if (overlaps(a, b)) total += 20;
+      const [p, q] = [pos(nodes[i]), pos(nodes[k])];
+      total += 2 * alignment(p.x - q.x, p.y - q.y, spacing * 0.45 * ALIGN_REACH);
     }),
   );
+  const out = new Map<LayoutNode, Point[]>();
+  for (const [s, t] of pairs) {
+    const [a, b] = [pos(s), pos(t)];
+    out.set(s, [...(out.get(s) ?? []), { x: b.x - a.x, y: b.y - a.y }]);
+    out.set(t, [...(out.get(t) ?? []), { x: a.x - b.x, y: a.y - b.y }]);
+  }
+  for (const lines of out.values()) total += straightRun(lines) / 8;
   pairs.forEach((pair, i) => {
     const [s, t] = pair;
     const a = pos(s);
@@ -987,13 +1062,58 @@ function pack(groups: Group[], gap: number, room: { w: number; h: number }, lead
   return placed;
 }
 
+// Every flaw a finished map shows: lines under a name or through a dot,
+// and dots-and-names crowding.
+function flawCount(nodes: LayoutNode[], pairs: Pair[]): number {
+  const wholes = nodes.map((n) => at(grow(nodeBox(n), EDGE_CLEAR), n.x ?? 0, n.y ?? 0));
+  const airs = nodes.map((n) => at(grow(nodeBox(n), CLEARANCE / 2), n.x ?? 0, n.y ?? 0));
+  let count = 0;
+  for (const [s, t] of pairs) {
+    const line = bend(pos(s), ownName(s), pos(t), ownName(t));
+    if (!line.clear) count += 1;
+    nodes.forEach((n, j) => {
+      if (n !== s && n !== t && bendCrosses(line, wholes[j])) count += 1;
+    });
+  }
+  airs.forEach((a, i) => {
+    for (let j = i + 1; j < airs.length; j += 1) if (overlaps(a, airs[j])) count += 1;
+  });
+  return count;
+}
+
+// Spreads the dots (not their names) across, from the leftmost, until the
+// map spans `width`, or as near as it can without a new flaw.
+function stretch(nodes: LayoutNode[], pairs: Pair[], width: number) {
+  const box = extent(nodes);
+  if (box.x1 - box.x0 >= width - 0.5) return;
+  const left = Math.min(...nodes.map((n) => n.x ?? 0));
+  const xs = nodes.map((n) => n.x ?? 0);
+  const apply = (k: number) => nodes.forEach((n, i) => (n.x = left + (xs[i] - left) * k));
+  // The stretch that spans the width exactly, found by halving.
+  let [lo, hi] = [1, 1.3];
+  for (let step = 0; step < 24; step += 1) {
+    const k = (lo + hi) / 2;
+    apply(k);
+    const spanned = extent(nodes);
+    if (spanned.x1 - spanned.x0 > width) hi = k;
+    else lo = k;
+  }
+  const before = (apply(1), flawCount(nodes, pairs));
+  for (let k = lo; k > 1.001; k = 1 + (k - 1) / 2) {
+    apply(k);
+    if (flawCount(nodes, pairs) <= before) return;
+  }
+  apply(1);
+}
+
 // Places the groups in the room: as far apart as the room allows, then
 // framed and centred. A map too large for the room starts zoomed out (and
 // names wait for zooming in).
 function computeLayout(groups: Group[], links: LayoutLink[], width: number, height: number): Layout {
-  if (groups.length === 0) return { nodes: [], links, fit: { x: 0, y: 0, scale: 1 } };
+  if (groups.length === 0) return { nodes: [], links, fit: { x: 0, y: 0, scale: 1 }, bottom: 0 };
+  const column = columnOf(width);
   const room = {
-    w: Math.max(200, width - FRAME.left - FRAME.right),
+    w: Math.max(200, column.x1 - column.x0),
     h: Math.max(200, height - FRAME.top - FRAME.bottom),
   };
   // The largest group leads in each of its shapes, and the rest pack around
@@ -1020,22 +1140,24 @@ function computeLayout(groups: Group[], links: LayoutLink[], width: number, heig
       Math.abs(Math.log(bw / bh / (room.w / room.h))) * 4 +
       (1 - filled / (bw * bh)) * 6 +
       imbalance(placed) * 6 +
-      (1 - Math.min(1, (bw * bh) / (room.w * room.h))) * 3;
+      (1 - Math.min(1, (bw * bh) / (room.w * room.h))) * 3 +
+      (1 - Math.min(1, (bw * scale) / room.w)) * 6;
     if (!best || score < best.score) best = { placed, scale, score };
   }
   const { placed, scale } = best as { placed: Placed[]; scale: number };
+  spread(placed, room.w / scale);
   // Each group comes clear of its lines at full size; a map drawn smaller
   // is refined again as drawn.
   const nodes = placed.flatMap((p) =>
     p.cluster.nodes.map((n) => ({ ...n, x: (p.x0 + (n.x ?? 0)) * scale, y: (p.y0 + (n.y ?? 0)) * scale })),
   );
+  const byId = new Map(nodes.map((n) => [n.id, n]));
+  const pairs = links.flatMap<Pair>((link) => {
+    const s = byId.get(link.sourceId);
+    const t = byId.get(link.targetId);
+    return s && t ? [[s, t]] : [];
+  });
   if (scale < 1 && nodes.length <= REFINED_MAP) {
-    const byId = new Map(nodes.map((n) => [n.id, n]));
-    const pairs = links.flatMap<Pair>((link) => {
-      const s = byId.get(link.sourceId);
-      const t = byId.get(link.targetId);
-      return s && t ? [[s, t]] : [];
-    });
     const box = extent(nodes);
     const cx = (box.x0 + box.x1) / 2;
     const cy = (box.y0 + box.y1) / 2;
@@ -1047,20 +1169,23 @@ function computeLayout(groups: Group[], links: LayoutLink[], width: number, heig
       heat: 0.5,
     });
   }
+  stretch(nodes, pairs, room.w);
   for (const n of nodes) {
     n.x = (n.x ?? 0) / scale;
     n.y = (n.y ?? 0) / scale;
   }
-  // Names keep their size on screen, so the frame is measured as drawn.
+  // Names keep their size on screen, so the frame is measured as drawn. The
+  // map starts on the column's left edge, as the title does.
   const box = extent(nodes.map((n) => ({ ...n, x: (n.x ?? 0) * scale, y: (n.y ?? 0) * scale })));
   return {
     nodes,
     links,
     fit: {
       scale,
-      x: FRAME.left + (room.w - (box.x1 - box.x0)) / 2 - box.x0,
+      x: column.x0 - box.x0,
       y: FRAME.top - box.y0,
     },
+    bottom: FRAME.top + box.y1 - box.y0,
   };
 }
 
@@ -1181,11 +1306,12 @@ export function ConnectionsGraph({
   const layout = useMemo<Layout>(
     () =>
       size.width === 0
-        ? { nodes: [], links: [], fit: { x: 0, y: 0, scale: 1 } }
+        ? { nodes: [], links: [], fit: { x: 0, y: 0, scale: 1 }, bottom: 0 }
         : computeLayout(groups.groups, groups.links, size.width, size.height),
     [groups, size.width, size.height],
   );
   const view = userView ?? layout.fit;
+  const column = columnOf(size.width);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -1409,7 +1535,6 @@ export function ConnectionsGraph({
                   const selected = node.id === activeId;
                   const near = selected || neighbors.has(node.id);
                   const { voice } = node;
-                  const lead = voice !== PLAIN;
                   const first = -((node.lines.length - 1) * voice.leading) / 2;
                   const textX = node.r + LABEL_GAP;
                   const { x, y } = screen(node);
@@ -1423,7 +1548,7 @@ export function ConnectionsGraph({
                       strokeLinejoin="round"
                       fontSize={voice.size}
                       fontWeight={voice.weight}
-                      className={`stroke-pg transition-[fill,opacity] duration-200 ${near || lead ? "fill-ink" : "fill-pt"} ${activeId && !near ? "opacity-40" : ""}`}
+                      className={`stroke-pg transition-[fill,opacity] duration-200 ${near || node.id === returnedId ? "fill-ink" : "fill-pt"} ${activeId && !near ? "opacity-40" : ""}`}
                     >
                       {node.lines.map((line, i) => (
                         <tspan key={i} x={textX} y={first + i * voice.leading}>
@@ -1437,8 +1562,11 @@ export function ConnectionsGraph({
           </svg>
 
           {!active && (
-            <div className="pointer-events-none absolute inset-x-0 bottom-6">
-              <div className="mx-auto flex w-full max-w-[688px] items-center justify-between gap-6 px-10 text-[13px] text-pl">
+            <div
+              className="pointer-events-none absolute"
+              style={{ top: layout.bottom + LEGEND_GAP, left: column.x0, width: column.x1 - column.x0 }}
+            >
+              <div className="flex items-center justify-between gap-6 text-[13px] leading-5 text-pl">
                 <p className="flex items-center gap-4">
                   {returnedId && (
                     <span className="inline-flex items-center gap-1.5">
