@@ -397,8 +397,8 @@ private struct EmberSwitchStyle: ToggleStyle {
 
                     Circle()
                         .fill(Stillness.switchKnob)
+                        .overlay { Circle().strokeBorder(Stillness.switchKnobRing, lineWidth: 1) }
                         .frame(width: 20, height: 20)
-
                         .shadow(color: Stillness.switchKnobShadow, radius: 1.5, y: 1)
                         .padding(2)
                 }

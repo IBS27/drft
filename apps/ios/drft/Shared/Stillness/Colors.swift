@@ -63,11 +63,17 @@ enum Stillness {
     static let inkPill = dynamic(light: 0x2F2C27, dark: 0x4D4943)
     static let onInkPill = dynamic(light: 0xF5F3EE, dark: 0xFBF9F5)
     /// An "on" switch: ink, never the accent (the web's --switch). In the
-    /// dark a pale track, so "on" reads as lit rather than as a grey "off".
-    static let switchOn = dynamic(light: 0x4A463F, dark: 0xDCD6CB)
-    /// The switch knob: light on the dark track; in the dark the page colour
-    /// on the pale track (the web's --knob).
-    static let switchKnob = dynamic(light: 0xFBFAF7, dark: 0x181715)
+    /// dark a dim warm grey, lit but never the brightest thing on the page.
+    static let switchOn = dynamic(light: 0x4A463F, dark: 0xA6A298)
+    /// The switch knob: the surface colour, a raised knob on either track
+    /// (the web's --knob).
+    static let switchKnob = dynamic(light: 0xFBFAF7, dark: 0x23221F)
+    /// A hairline ring that lifts the dark knob off its track; none in the light.
+    static let switchKnobRing = Color(uiColor: UIColor { traits in
+        traits.userInterfaceStyle == .dark
+            ? color(0x3D3B36, alpha: 1)
+            : .clear
+    })
     /// The knob's small drop shadow: ink in the light, black in the dark.
     static let switchKnobShadow = dynamic(light: 0x26241F, dark: 0x000000, alpha: 0.3)
     /// Soft elevation under raised surfaces (the web's --lift).
@@ -76,11 +82,11 @@ enum Stillness {
     static let shadow = dynamic(light: 0x3A2C1C, dark: 0x000000, alpha: 0.12)
     /// The lightest wash of the accent: today's returned thought at rest.
     /// In the dark a breath of warmth over the page, not a lifted surface.
-    static let nowWash = dynamic(light: 0xF9F3EF, dark: 0x231A16)
+    static let nowWash = dynamic(light: 0xF9F3EF, dark: 0x211A17)
     /// Its faint edge; in the dark it carries the shape the wash no longer does (the web's --back-edge).
     static let nowWashEdge = Color(uiColor: UIColor { traits in
         traits.userInterfaceStyle == .dark
-            ? UIColor(red: 0.8, green: 0.29, blue: 0.14, alpha: 0.14)
+            ? UIColor(red: 0.8, green: 0.29, blue: 0.14, alpha: 0.22)
             : UIColor(red: 0.78, green: 0.24, blue: 0.11, alpha: 0.10)
     })
     /// Soft wash for whatever is "now" (Back today, chips, pressed rows).

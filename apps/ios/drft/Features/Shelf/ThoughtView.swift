@@ -102,7 +102,10 @@ struct ThoughtView: View {
                             .animation(.easeOut(duration: 0.24), value: isLeaving)
                     }
                 }
-                .padding(.horizontal, 8)
+                // The arrow's tip (2pt inside its 20pt icon, centred in a
+                // 44pt tap frame) lands on the 24pt gutter.
+                .padding(.leading, StillnessSpacing.gutter - 14)
+                .padding(.trailing, 8)
                 .frame(height: 56)
 
                 GeometryReader { geometry in

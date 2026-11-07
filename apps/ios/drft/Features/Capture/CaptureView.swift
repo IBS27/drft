@@ -82,7 +82,7 @@ struct CaptureView: View {
                         .accessibilityLabel("Thought")
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 24)
+                .padding(.horizontal, StillnessSpacing.gutter)
 
                 Spacer(minLength: 28)
             }
@@ -225,7 +225,7 @@ struct CaptureView: View {
             .disabled(!model.canKeep)
             .accessibilityLabel("Keep")
         }
-        .padding(.horizontal, 20)
+        .padding(.horizontal, StillnessSpacing.gutter)
         .padding(.bottom, 12)
         .opacity(model.isCaptureVisible ? 1 : 0)
         .animation(

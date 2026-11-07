@@ -261,7 +261,7 @@ struct ShelfView: View {
         }
         .buttonStyle(PillButtonStyle(kind: .neutral, height: 44, horizontalPadding: 20))
         .padding(.bottom, 12)
-        .padding(.trailing, 20)
+        .padding(.trailing, StillnessSpacing.gutter)
         // On the thumb side, so it sits beside the list rather than on it.
         .frame(maxWidth: .infinity, alignment: .trailing)
         .background {
@@ -290,7 +290,7 @@ struct ShelfView: View {
         }
         .padding(.horizontal, 16)
         // Closer to its own rows than to the group before.
-        .padding(.top, 36)
+        .padding(.top, 28)
         .padding(.bottom, 2)
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(.isHeader)

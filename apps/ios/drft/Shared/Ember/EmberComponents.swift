@@ -269,11 +269,11 @@ struct HomeHeader: View {
                         .font(StillnessType.control)
                         .foregroundStyle(Stillness.chromeText)
                         .padding(.horizontal, 14)
-                        .frame(height: 32)
+                        .frame(height: StillnessSpacing.headerControl)
                         .background(Stillness.surface, in: Capsule())
                         .overlay { Capsule().strokeBorder(Stillness.hairline, lineWidth: 1) }
                         .frame(minHeight: 44)
-                        .padding(.trailing, 4)
+                        .padding(.trailing, 6)
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
@@ -288,7 +288,7 @@ struct HomeHeader: View {
             Button(action: onOpenSettings) {
                 EmberIcon(.gearSix, size: 17)
                     .foregroundStyle(Stillness.chromeText)
-                    .frame(width: 32, height: 32)
+                    .frame(width: StillnessSpacing.headerControl, height: StillnessSpacing.headerControl)
                     .background(Stillness.surface, in: Circle())
                     .overlay { Circle().strokeBorder(Stillness.hairline, lineWidth: 1) }
                     .frame(width: 44, height: 44)
@@ -297,8 +297,9 @@ struct HomeHeader: View {
             .buttonStyle(.plain)
             .accessibilityLabel("Settings")
         }
-        .padding(.leading, 22)
-        .padding(.trailing, 10)
+        // The circle's edge, not its 44pt tap frame, sits on the gutter.
+        .padding(.leading, StillnessSpacing.gutter)
+        .padding(.trailing, StillnessSpacing.gutter - (44 - StillnessSpacing.headerControl) / 2)
         .frame(height: 56)
     }
 }
