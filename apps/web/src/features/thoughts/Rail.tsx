@@ -213,7 +213,7 @@ export const Rail = memo(function Rail({
     <nav
       aria-label="workspace"
       data-finding={finding || undefined}
-      className="fixed inset-y-0 left-0 hidden w-72 flex-col border-r border-line bg-scr lg:flex xl:w-80"
+      className="fixed inset-y-0 left-0 hidden w-72 flex-col border-r border-line bg-rail lg:flex xl:w-80"
     >
       <div className="flex flex-none flex-col gap-[18px] px-3 pt-6 pb-4">
         <div className="flex items-center justify-between">
@@ -231,7 +231,7 @@ export const Rail = memo(function Rail({
         {findOpen ? (
           <div
             data-rail-find
-            className="flex h-10 items-center gap-2.5 rounded-card bg-pg pr-2 pl-3 ring-1 ring-pl/50 ring-inset"
+            className="flex h-10 items-center gap-2.5 rounded-card bg-scr pr-2 pl-3 ring-1 ring-pl/50 ring-inset"
           >
             <MagnifyingGlass aria-hidden="true" className="flex-none text-[16px] text-pt" />
             <input
@@ -260,7 +260,7 @@ export const Rail = memo(function Rail({
               aria-label="close find"
               className="flex-none"
             >
-              <Kbd className="bg-scr text-pt ring-1 ring-line ring-inset transition-colors hover:text-ink">
+              <Kbd className="bg-pg text-pt ring-1 ring-line ring-inset transition-colors hover:text-ink">
                 esc
               </Kbd>
             </button>
@@ -270,11 +270,11 @@ export const Rail = memo(function Rail({
             data-rail-find
             type="button"
             onClick={() => setFindOpen(true)}
-            className="flex h-10 items-center gap-2.5 rounded-card bg-pg pr-2 pl-3 text-left text-[14px] text-pl ring-1 ring-line ring-inset transition-shadow hover:ring-pl/50"
+            className="flex h-10 items-center gap-2.5 rounded-card bg-scr pr-2 pl-3 text-left text-[14px] text-pl ring-1 ring-line ring-inset transition-shadow hover:ring-pl/50"
           >
             <MagnifyingGlass aria-hidden="true" className="flex-none text-[16px] text-pt" />
             <span className="flex-1">Find a thought</span>
-            <Kbd className="bg-scr text-pt ring-1 ring-line ring-inset">⌘K</Kbd>
+            <Kbd className="bg-pg text-pt ring-1 ring-line ring-inset">⌘K</Kbd>
           </button>
         )}
         {/* The places sit with the controls, so the collection runs on to
@@ -305,7 +305,7 @@ export const Rail = memo(function Rail({
         role="region"
         aria-label="collection"
         aria-busy={loading}
-        className="min-h-0 flex-1 overflow-y-auto px-3 pt-1 pb-10 [scrollbar-width:none] [mask-image:linear-gradient(to_bottom,#000_calc(100%-40px),transparent)]"
+        className="min-h-0 flex-1 overflow-y-auto px-3 pt-4 pb-10 [scrollbar-width:none] [mask-image:linear-gradient(to_bottom,#000_calc(100%-40px),transparent)]"
       >
         {finding ? (
           <FindResults
@@ -459,7 +459,7 @@ const BackToday = memo(function BackToday({
       onPointerDown={() => prewarm(t._id)}
       onFocus={() => prewarm(t._id)}
       aria-current={active ? "page" : undefined}
-      className={`relative mb-1 flex flex-col rounded-card px-3 py-2.5 ring-1 ring-(--back-edge) ring-inset transition-colors ${
+      className={`relative mb-2 flex flex-col rounded-card px-3 py-2.5 ring-1 ring-(--back-edge) ring-inset transition-colors ${
         active ? ACTIVE_BAR : "bg-(--back-wash) hover:bg-tint"
       }`}
     >

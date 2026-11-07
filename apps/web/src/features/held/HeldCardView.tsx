@@ -2,7 +2,7 @@ import { BookmarkSimple } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
 import type { Id } from "@drft/backend/convex/_generated/dataModel";
 import { memo } from "react";
-import { clip, heldAge } from "../thoughts/format";
+import { heldAge } from "../thoughts/format";
 import type { HeldCard } from "./layout";
 import type { ToggleHold } from "./useHold";
 
@@ -40,8 +40,9 @@ export const HeldCardView = memo(function HeldCardView({
   prewarm: (id: Id<"thoughts">) => void;
 }) {
   const age = heldAge(card.heldAt, now);
-  // One flowing line: a cut after a line break would end on "timetable.…".
-  const notes = clip(card.notes.trim().replace(/\s*\n+\s*/g, " "), 100);
+  // The notes' first paragraph, clamped by the browser at a line end, so
+  // the preview never strands a lone word ("on a…").
+  const notes = card.notes.trim().split(/\n\s*\n|\n/)[0]?.trim() ?? "";
   return (
     <article
       data-hold-id={card._id}
@@ -72,11 +73,11 @@ export const HeldCardView = memo(function HeldCardView({
         search={{ from: "held" }}
         className="block rounded-card px-2.5 py-4"
       >
-        <p className="line-clamp-10 pr-8 text-[17px] leading-[1.5] whitespace-pre-wrap text-ink">
+        <p className="line-clamp-10 pr-8 text-[17px] leading-[1.5] text-pretty whitespace-pre-wrap text-ink">
           {card.text}
         </p>
         {notes && (
-          <p className="mt-2.5 line-clamp-2 pl-2.5 text-[14px] leading-[1.55] whitespace-pre-line text-pl shadow-[inset_2px_0_0_var(--line)]">
+          <p className="mt-2.5 line-clamp-2 pl-2.5 text-[14px] leading-[1.55] text-pretty text-pt shadow-[inset_2px_0_0_var(--line)] md:line-clamp-1">
             {notes}
           </p>
         )}

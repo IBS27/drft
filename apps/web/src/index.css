@@ -13,7 +13,10 @@
   --ink: #26241f;
   --mut: #716d64;
   --faint: #746f66;
-  --line: #dedad0;
+  --line: #d9d5ca;
+  /* The rail sits a step below the page, so the cards in the main column
+     are the brightest things on screen. */
+  --rail: #efece6;
   --dot: #c73e1d;
   /* page-chrome text & labels — higher contrast than the mockup grays */
   --pt: #423f38;
@@ -49,6 +52,7 @@
     --mut: #a6a298;
     --faint: #969184;
     --line: #3d3b36;
+    --rail: #141311;
     --dot: #cc4a24;
     --pt: #cdc9bf;
     --pl: #bdb8ae;
@@ -74,6 +78,7 @@
   --color-mut: var(--mut);
   --color-faint: var(--faint);
   --color-line: var(--line);
+  --color-rail: var(--rail);
   --color-dot: var(--dot);
   --color-pt: var(--pt);
   --color-pl: var(--pl);
@@ -121,10 +126,16 @@ body {
   transition: opacity 150ms;
 }
 .divided:hover::before,
-:hover + .divided::before,
-[aria-selected="true"].divided::before,
-[aria-selected="true"] + .divided::before {
+:hover + .divided::before {
   opacity: 0;
+}
+/* A keyboard selection fills its row, so its hairlines step aside; on touch
+   nothing is selected and the rows keep their lines. */
+@media (pointer: fine) {
+  [aria-selected="true"].divided::before,
+  [aria-selected="true"] + .divided::before {
+    opacity: 0;
+  }
 }
 
 /* While the rail is finding, its own "you are here" quiets, so only the
