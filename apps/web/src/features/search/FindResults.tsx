@@ -123,7 +123,7 @@ function HitRow({
       } ${active ? "[@media(pointer:fine)]:bg-line/50" : ""}`}
     >
       <span
-        className={`line-clamp-2 min-w-0 flex-1 text-[15px] leading-[1.4] ${active ? "text-pt [@media(pointer:fine)]:text-ink" : "text-pt"}`}
+        className={`line-clamp-2 min-w-0 flex-1 text-[15px] leading-[1.4] text-balance ${active ? "text-pt [@media(pointer:fine)]:text-ink" : "text-pt"}`}
       >
         {highlight(firstLine(hit.text), query)}
       </span>
