@@ -50,7 +50,7 @@ export function SignIn() {
             type="button"
             disabled={!isLoaded || pending !== null}
             onClick={() => start(strategy)}
-            className={`grid h-12 w-full grid-cols-[22px_1fr_22px] items-center rounded-full px-5 text-[15px] font-medium text-ink ring-1 transition-[background-color,box-shadow,opacity,scale] ring-inset hover:bg-tint hover:ring-dot-edge active:scale-[0.98] disabled:cursor-default ${
+            className={`grid h-12 w-full grid-cols-[22px_1fr] items-center gap-3 rounded-full pr-5 pl-6 text-[15px] font-medium text-ink ring-1 transition-[background-color,box-shadow,opacity,scale] ring-inset hover:bg-tint hover:ring-dot-edge active:scale-[0.98] disabled:cursor-default ${
               pending === strategy ? "bg-tint ring-dot-edge" : "bg-scr shadow-lift ring-[color-mix(in_oklab,var(--line),var(--ink)_10%)]"
             } ${pending && pending !== strategy ? "opacity-40" : ""}`}
           >
@@ -59,7 +59,7 @@ export function SignIn() {
             ) : (
               <Icon aria-hidden="true" weight="fill" className="text-[19px]" />
             )}
-            <span className="text-center">{label}</span>
+            <span className="text-left">{label}</span>
             <span aria-hidden="true" />
           </button>
         ))}

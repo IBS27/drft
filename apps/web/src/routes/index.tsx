@@ -119,7 +119,7 @@ function Collection() {
         <section
           className={
             hasList
-              ? "flex flex-col items-center px-4 pt-3 pb-2 sm:px-6 sm:pt-8 lg:flex-1 lg:justify-start lg:px-10 lg:pt-[16vh] lg:pb-24"
+              ? "flex flex-col items-center px-4 pt-3 pb-2 sm:px-6 sm:pt-8 lg:flex-1 lg:justify-start lg:px-10 lg:pt-[62px] lg:pb-24"
               : "flex flex-1 flex-col items-center justify-center px-4 pb-24 sm:px-6"
           }
         >
