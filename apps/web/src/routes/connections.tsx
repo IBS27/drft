@@ -1,5 +1,5 @@
 import { Graph } from "@phosphor-icons/react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useConvexAuth, usePaginatedQuery } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
 import { useEffect, useState } from "react";
@@ -65,12 +65,6 @@ function Connections() {
           <p className="mt-2 max-w-[30ch] text-[15px] leading-relaxed text-balance text-pl">
             Open a thought to see related thoughts.
           </p>
-          <Link
-            to="/"
-            className="mt-4 inline-flex h-10 items-center rounded-full bg-scr px-5 text-[14px] font-medium text-pt ring-1 ring-line ring-inset transition-colors hover:bg-tint hover:text-ink"
-          >
-            Back to thoughts
-          </Link>
         </div>
       </div>
 

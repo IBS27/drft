@@ -354,7 +354,7 @@ struct SettingsView: View {
         let build = Bundle.main.object(
             forInfoDictionaryKey: "CFBundleVersion"
         ) as? String ?? "1"
-        return "drft \(version) · \(build)"
+        return "Version \(version) (\(build))"
     }
 }
 
