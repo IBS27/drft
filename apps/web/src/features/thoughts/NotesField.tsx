@@ -222,7 +222,7 @@ export function NotesField({
         tabIndex={-1}
         aria-hidden="true"
         onClick={() => field.current?.focus()}
-        className="absolute top-1.5 right-1.5 flex size-8 items-center justify-center rounded-full text-[16px] text-pl transition-[opacity,background-color,color] group-focus-within:pointer-events-none group-focus-within:opacity-0 hover:bg-tint hover:text-ink"
+        className="absolute top-1.5 right-1.5 flex size-8 items-center justify-center rounded-full text-[16px] text-pt transition-[opacity,background-color,color] group-focus-within:pointer-events-none group-focus-within:opacity-0 hover:bg-tint hover:text-ink"
       >
         <PencilSimpleLine />
       </button>

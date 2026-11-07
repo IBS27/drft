@@ -116,7 +116,7 @@ function ModeSwitch({
       type="button"
       aria-pressed={mode === value}
       onClick={() => setMode(value)}
-      className={`h-7 rounded-full px-3 text-[13px] transition-colors ${
+      className={`relative h-7 rounded-full px-3 text-[13px] transition-colors before:absolute before:inset-x-0 before:-inset-y-2 before:content-[''] ${
         mode === value
           ? "bg-line/70 font-medium text-ink"
           : "text-pl hover:text-ink"

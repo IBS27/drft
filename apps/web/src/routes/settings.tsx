@@ -92,11 +92,11 @@ function Settings() {
         <div className={SURFACE}>
 
           {/* Words on the left, the control centred against the whole row. */}
-          <div className="flex items-center justify-between gap-4 px-4 py-3.5">
-            <div className="min-w-0">
-              <label htmlFor="settings-send-time" className="block text-[15px] text-ink">
-                Daily thought
-              </label>
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 px-4 py-3.5">
+            <label htmlFor="settings-send-time" className="col-start-1 row-start-1 text-[15px] text-ink">
+              Daily thought
+            </label>
+            <div className="col-span-2 row-start-2 sm:col-span-1">
               <div className="mt-1 text-[14px] text-pretty text-pl">
                 One thought returns each morning, {timezone.split("/").pop()?.replaceAll("_", " ")} time
               </div>
@@ -106,7 +106,7 @@ function Settings() {
                 </div>
               )}
             </div>
-              <span className="relative inline-flex flex-none items-center">
+              <span className="relative col-start-2 row-start-1 inline-flex flex-none items-center sm:row-span-2">
               <select
                 id="settings-send-time"
                 value={shown}
@@ -124,9 +124,9 @@ function Settings() {
               </span>
           </div>
 
-          <div className="flex items-center justify-between gap-4 px-4 py-3.5">
-            <div className="min-w-0">
-              <span className="block text-[15px] text-ink">Connections</span>
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 px-4 py-3.5">
+            <span className="col-start-1 row-start-1 text-[15px] text-ink">Connections</span>
+            <div className="col-span-2 row-start-2 sm:col-span-1">
               <div className="mt-1 text-[14px] text-pretty text-pl">
                 Thought text is sent to OpenAI to find echoes
               </div>
@@ -143,7 +143,7 @@ function Settings() {
                 aria-label="Connections"
                 disabled={consent === undefined}
                 onClick={toggleConnections}
-                className={`relative h-6 w-10 flex-none rounded-full transition-colors ${
+                className={`relative col-start-2 row-start-1 h-6 w-10 flex-none rounded-full transition-colors before:absolute before:-inset-x-1 before:-inset-y-2.5 before:content-[''] sm:row-span-2 ${
                   consent === undefined
                     ? "invisible"
                     : connections

@@ -40,7 +40,7 @@
   --switch: #4a463f;
   --knob: #fbfaf7;
   --back-wash: color-mix(in oklab, var(--dot) 3.5%, var(--scr));
-  --back-edge: color-mix(in oklab, var(--dot) 10%, transparent);
+  --back-edge: color-mix(in oklab, var(--dot) 16%, transparent);
 }
 
 @media (prefers-color-scheme: dark) {
