@@ -280,7 +280,7 @@ export const Rail = memo(function Rail({
         role="region"
         aria-label="collection"
         aria-busy={loading}
-        className="min-h-0 flex-1 overflow-y-auto px-3 pt-1 pb-10 [mask-image:linear-gradient(to_bottom,#000_calc(100%-32px),transparent)] [scrollbar-width:none]"
+        className="min-h-0 flex-1 overflow-y-auto px-3 pt-1 pb-14 [mask-image:linear-gradient(to_bottom,#000_calc(100%-56px),transparent)] [scrollbar-width:none]"
       >
         {finding ? (
           <FindResults
@@ -308,9 +308,10 @@ export const Rail = memo(function Rail({
             {ordered.groups.map(({ group, rows }) => (
               <div key={group}>
                 <GroupHeader group={group} />
-                {rows.map((t) => (
+                {rows.map((t, i) => (
                   <RailRow
                     key={t._id}
+                    divided={i > 0}
                     t={t}
                     time={ageLabel(t.createdAt, now)}
                     active={t._id === activeId}
@@ -480,6 +481,7 @@ const BackToday = memo(function BackToday({
 // lets go (h does the same on the focused or hovered row). Resting rows
 // can't be held.
 const RailRow = memo(function RailRow({
+  divided = false,
   t,
   time,
   active,
@@ -488,6 +490,7 @@ const RailRow = memo(function RailRow({
   heldAt,
   toggleHold,
 }: {
+  divided?: boolean;
   t: { _id: Id<"thoughts">; preview: string };
   time: string;
   active: boolean;
@@ -534,7 +537,7 @@ const RailRow = memo(function RailRow({
   if (!toggleHold) return link;
   return (
     <div
-      className="group relative"
+      className={`group relative [--inset:12px] ${divided ? "divided" : ""}`}
       data-hold-id={t._id}
       data-held-at={heldAt ?? ""}
       data-hold-notice=""

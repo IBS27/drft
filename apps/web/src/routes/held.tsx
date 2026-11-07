@@ -89,9 +89,9 @@ function Held() {
 // Nothing held yet: say what the page is for and how a thought gets here.
 function EmptyHeld() {
   return (
-    <div className="flex flex-col items-center px-6 pt-[14vh] pb-24 text-center">
+    <div className="flex flex-col items-start pt-10 pb-24 text-left">
       <span className="flex size-12 items-center justify-center rounded-full bg-line/70 text-[22px] text-pt">
-        <BookmarkSimple aria-hidden="true" weight="fill" />
+        <BookmarkSimple aria-hidden="true" />
       </span>
       <h2 className="mt-5 text-[19px] font-medium tracking-[-0.01em] text-ink">
         Nothing held yet

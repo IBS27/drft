@@ -3,6 +3,7 @@ import {
   BookmarkSimple,
   CaretRight,
   GearSix,
+  Graph,
   MagnifyingGlass,
   Moon,
 } from "@phosphor-icons/react";
@@ -141,11 +142,12 @@ function Collection() {
         )}
 
         {/* The other places, by name, at the foot of the list. */}
-        <footer className="flex items-center justify-center gap-2 px-4 pb-10 lg:hidden">
+        <footer className="flex flex-wrap items-center justify-center gap-2 px-4 pb-10 lg:hidden">
           {(
             [
               ["/held", "Held", BookmarkSimple],
               ["/resting", "Resting", Moon],
+              ["/connections", "Connections", Graph],
             ] as const
           ).map(([to, name, Icon]) => (
             <Link

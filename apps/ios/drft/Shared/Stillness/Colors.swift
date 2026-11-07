@@ -41,8 +41,8 @@ enum Stillness {
     )
     /// Secondary labels: times, captions, hints.
     static let chromeLabel = dynamic(
-        light: 0x635F56,
-        dark: 0xB3AEA4,
+        light: 0x5A564E,
+        dark: 0xBDB8AE,
         lightHighContrast: 0x4B4B47,
         darkHighContrast: 0xCDCDC7
     )

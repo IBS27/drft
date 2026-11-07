@@ -1,3 +1,4 @@
+import { CaretRight } from "@phosphor-icons/react";
 import { useClerk, useUser } from "@clerk/clerk-react";
 import { isClerkAPIResponseError } from "@clerk/clerk-react/errors";
 import { useAction } from "convex/react";
@@ -48,9 +49,10 @@ export function DeleteAccount() {
       <button
         type="button"
         onClick={() => setStep("confirming")}
-        className="flex w-full items-center rounded-[9px] px-4 py-3.5 text-left text-[15px] text-danger transition-colors hover:bg-tint"
+        className="flex w-full items-center justify-between rounded-[13px] px-4 py-3.5 text-left text-[15px] text-danger transition-colors hover:bg-tint"
       >
         Delete account
+        <CaretRight aria-hidden="true" className="text-[15px] opacity-70" />
       </button>
     );
 

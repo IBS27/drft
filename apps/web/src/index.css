@@ -12,12 +12,12 @@
   --scr: #fbfaf7;
   --ink: #26241f;
   --mut: #716d64;
-  --faint: #8f8a7f;
+  --faint: #847e73;
   --line: #e4e0d7;
   --dot: #c73e1d;
   /* page-chrome text & labels — higher contrast than the mockup grays */
   --pt: #423f38;
-  --pl: #635f56;
+  --pl: #5a564e;
   /* Soft elevation for raised surfaces (cards, the capture stage). */
   --lift: 0 1px 2px color-mix(in oklab, #3a2c1c 5%, transparent),
     0 6px 16px -10px color-mix(in oklab, #3a2c1c 12%, transparent);
@@ -33,7 +33,7 @@
   --danger: #a1302b;
   /* An "on" switch: ink, never the accent. */
   --switch: #2f2c27;
-  --back-wash: color-mix(in oklab, var(--dot) 5%, var(--pg));
+  --back-wash: color-mix(in oklab, var(--dot) 4%, var(--pg));
   --back-edge: color-mix(in oklab, var(--dot) 20%, transparent);
 }
 
@@ -48,7 +48,7 @@
     --line: #36342f;
     --dot: #cc4a24;
     --pt: #cdc9bf;
-    --pl: #b3aea4;
+    --pl: #bdb8ae;
     --lift: 0 1px 2px rgb(0 0 0 / 0.3), 0 10px 28px -14px rgb(0 0 0 / 0.6);
     --tint: color-mix(in oklab, var(--dot) 13%, var(--pg));
     --tint-2: color-mix(in oklab, var(--dot) 19%, var(--pg));
@@ -56,7 +56,7 @@
     --dot-edge: color-mix(in oklab, var(--dot) 50%, var(--line));
     --switch: #ebe8e1;
     --back-wash: color-mix(in oklab, var(--dot) 9%, var(--pg));
-    --back-edge: color-mix(in oklab, var(--dot) 30%, transparent);
+    --back-edge: color-mix(in oklab, var(--dot) 22%, transparent);
     --danger: #e0786e;
   }
 }

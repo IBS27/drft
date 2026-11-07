@@ -1,5 +1,5 @@
 import { SignOutButton, useUser } from "@clerk/clerk-react";
-import { ArrowUpRight, CaretDown, Check, SignOut } from "@phosphor-icons/react";
+import { ArrowUpRight, CaretDown, SignOut } from "@phosphor-icons/react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
@@ -143,7 +143,6 @@ function Settings() {
                     connections ? "translate-x-4" : ""
                   }`}
                 >
-                  {connections && <Check weight="bold" className="text-[11px] text-ink" />}
                 </span>
               </button>
             </div>

@@ -163,12 +163,17 @@ struct SettingsView: View {
                             Button {
                                 deletionIsConfirming = true
                             } label: {
-                                Text(isDeletingAccount ? "Deleting…" : "Delete account")
-                                    .font(StillnessType.body)
-                                    .foregroundStyle(Stillness.danger)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .padding(.horizontal, 16)
-                                    .padding(.vertical, 14)
+                                HStack {
+                                    Text(isDeletingAccount ? "Deleting…" : "Delete account")
+                                        .font(StillnessType.body)
+                                    Spacer(minLength: 12)
+                                    EmberIcon(.caretRight, size: 13)
+                                        .opacity(0.7)
+                                }
+                                .foregroundStyle(Stillness.danger)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 14)
                             }
                             .buttonStyle(SettingsRowButtonStyle())
                             .disabled(isDeletingAccount)
@@ -388,13 +393,7 @@ private struct EmberSwitchStyle: ToggleStyle {
                     Circle()
                         .fill(Stillness.page)
                         .frame(width: 20, height: 20)
-                        .overlay {
-                            if configuration.isOn {
-                                Image(systemName: "checkmark")
-                                    .font(.system(size: 9, weight: .bold))
-                                    .foregroundStyle(Stillness.ink)
-                            }
-                        }
+
                         .shadow(color: Stillness.ink.opacity(0.3), radius: 1.5, y: 1)
                         .padding(2)
                 }

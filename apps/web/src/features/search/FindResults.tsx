@@ -117,7 +117,7 @@ function HitRow({
       onMouseMove={activate}
       className={`relative flex w-full items-center gap-2.5 rounded-card px-3 py-2.5 text-left transition-colors ${
         active
-          ? "bg-line/55 before:absolute before:inset-y-2 before:left-0 before:w-[3px] before:rounded-full before:bg-dot"
+          ? "bg-line/55 before:absolute before:inset-y-2 before:left-0 before:w-[3px] before:rounded-full before:bg-dot [@media(hover:none)]:bg-transparent [@media(hover:none)]:before:hidden"
           : ""
       }`}
     >
