@@ -14,7 +14,7 @@ function highlight(text: string, query: string): ReactNode {
   );
   return text.split(pattern).map((part, i) =>
     i % 2 === 1 ? (
-      <mark key={i} className="rounded-[3px] bg-tint-2 px-px text-ink">
+      <mark key={i} className="rounded-[3px] bg-tint-2 px-0.5 text-ink dark:bg-[color-mix(in_oklab,var(--dot)_32%,var(--pg))]">
         {part}
       </mark>
     ) : (
@@ -123,7 +123,7 @@ function HitRow({
       } ${active ? "[@media(pointer:fine)]:bg-line/50" : ""}`}
     >
       <span
-        className={`line-clamp-2 min-w-0 flex-1 text-[15px] leading-[1.4] ${active ? "text-ink" : "text-pt"}`}
+        className={`line-clamp-2 min-w-0 flex-1 text-[15px] leading-[1.4] ${active ? "text-pt [@media(pointer:fine)]:text-ink" : "text-pt"}`}
       >
         {highlight(firstLine(hit.text), query)}
       </span>

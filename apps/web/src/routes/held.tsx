@@ -65,7 +65,7 @@ function Held() {
         />
         <section
           aria-busy={cards === undefined}
-          className="mx-auto flex w-full max-w-[688px] flex-1 flex-col px-4 pt-1 pb-16 md:px-10 lg:pt-0"
+          className="mx-auto flex w-full max-w-[688px] flex-1 flex-col px-5 pt-1 pb-16 md:px-10 lg:pt-0"
         >
           {cards === undefined ? (
             <BoardSkeleton />
@@ -189,7 +189,7 @@ function Board({
   // One column, like Resting and Related: each card is as tall as its
   // words, and nothing is left ragged beside it.
   return (
-    <div className="flex w-full flex-col gap-3">
+    <div className="flex w-full flex-col border-t border-line">
       {mode === "recent" ? cards.map(render) : <Together cards={cards} render={render} />}
     </div>
   );
@@ -208,17 +208,17 @@ function Together({
       {groups.map((group, i) => (
         <div
           key={group[0]._id}
-          className={`flex flex-col gap-3 ${i > 0 ? "mt-4 border-t border-line pt-4" : ""}`}
+          className={`flex flex-col ${i > 0 ? "mt-6 border-t border-line" : ""}`}
         >
           {group.map(render)}
         </div>
       ))}
       {loose.length > 0 && (
-        <div className={groups.length > 0 ? "mt-4 border-t border-line pt-3" : ""}>
+        <div className={groups.length > 0 ? "mt-6 border-t border-line pt-3" : ""}>
           <h2 className="pb-2.5 text-[13px] font-medium text-pl">
             {groups.length > 0 ? "Not near the others yet" : "None of these are related yet"}
           </h2>
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col">
             {loose.map(render)}
           </div>
         </div>

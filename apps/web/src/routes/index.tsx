@@ -4,7 +4,6 @@ import {
   CaretRight,
   GearSix,
   MagnifyingGlass,
-  Moon,
 } from "@phosphor-icons/react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useConvexAuth } from "convex/react";
@@ -81,7 +80,7 @@ function Collection() {
       {/* Below lg the rail is gone, so the header carries the way to find
           and settings; on wide screens only the count stays up here, and
           the header lets clicks through to the rail it spans. */}
-      <header className="relative z-10 flex h-14 items-center justify-between pr-2 pl-5 lg:pointer-events-none lg:h-12 lg:justify-end lg:pr-7">
+      <header className="relative z-10 flex h-14 items-center justify-between pr-2 pl-5 lg:pointer-events-none lg:h-8 lg:justify-end lg:pr-7">
         <span className="lg:hidden">
           <Wordmark />
         </span>
@@ -89,11 +88,9 @@ function Collection() {
           {/* Held and Resting share the header on phones, by name, so
               capture sits right under it. */}
           <Link to="/held" className={HEADER_PILL}>
-            <BookmarkSimple aria-hidden="true" className="text-[16px]" />
             Held
           </Link>
           <Link to="/resting" className={HEADER_PILL}>
-            <Moon aria-hidden="true" className="text-[16px]" />
             Resting
           </Link>
           <button

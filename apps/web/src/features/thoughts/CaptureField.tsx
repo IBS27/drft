@@ -155,7 +155,7 @@ export function CaptureField({ now }: { now: number }) {
           </span>
         ) : (
           <span className="text-[13px] text-pl">
-            {coarsePointer ? "" : typed ? "Shift ↵ for a new line" : "Unfinished is fine"}
+            {typed ? (coarsePointer ? "" : "Shift ↵ for a new line") : "Unfinished is fine"}
           </span>
         )}
         <button

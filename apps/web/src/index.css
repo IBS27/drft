@@ -52,17 +52,17 @@
     --dot: #cc4a24;
     --pt: #cdc9bf;
     --pl: #bdb8ae;
-    --ph: #7a766d;
+    --ph: #8f8a80;
     --lift: 0 1px 2px rgb(0 0 0 / 0.3), 0 10px 28px -14px rgb(0 0 0 / 0.6);
     --tint: color-mix(in oklab, var(--dot) 13%, var(--pg));
     --tint-2: color-mix(in oklab, var(--dot) 19%, var(--pg));
     --dot-ink: color-mix(in oklab, var(--dot) 55%, var(--ink));
     --dot-edge: color-mix(in oklab, var(--dot) 50%, var(--line));
     /* Light ink, a step below text, so "on" is certain without glare. */
-    --switch: #dcd6cb;
-    --knob: #181715;
-    --back-wash: color-mix(in oklab, var(--dot) 6%, var(--pg));
-    --back-edge: color-mix(in oklab, var(--dot) 14%, transparent);
+    --switch: #a6a298;
+    --knob: #23221f;
+    --back-wash: color-mix(in oklab, var(--dot) 4%, var(--pg));
+    --back-edge: color-mix(in oklab, var(--dot) 22%, transparent);
     --danger: #de8a98;
   }
 }

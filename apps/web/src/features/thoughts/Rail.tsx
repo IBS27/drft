@@ -299,8 +299,8 @@ export const Rail = memo(function Rail({
         </div>
       </div>
 
-      {/* Inset like the row hairlines below it. */}
-      <div aria-hidden="true" className="mx-[22px] h-px flex-none bg-line" />
+      {/* Edge to edge with the search field and the cards below. */}
+      <div aria-hidden="true" className="mx-3 h-px flex-none bg-line" />
       <div
         role="region"
         aria-label="collection"
@@ -401,7 +401,7 @@ function GroupHeader({ group, first }: { group: Group; first: boolean }) {
 // A place in the rail (New thought, Held, Resting, Connections).
 // New thought is home itself, so it never wears the "you are here" wash.
 const PLACE_BASE =
-  "flex h-9 items-center gap-2.5 rounded-card px-3 text-[14px] text-pt transition-colors hover:bg-tint hover:text-ink";
+  "flex h-9 items-center gap-2.5 rounded-card px-3 text-[14.5px] text-ink transition-colors hover:bg-tint";
 const PLACE = `${PLACE_BASE} aria-[current=page]:bg-line/55 aria-[current=page]:font-medium aria-[current=page]:text-ink`;
 
 // The open row: a neutral wash, nothing louder.

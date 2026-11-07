@@ -88,7 +88,7 @@ function Settings() {
         }
       />
 
-      <section className="mx-auto flex w-full max-w-[688px] flex-1 flex-col gap-4 px-4 pt-0 pb-16 md:px-10">
+      <section className="mx-auto flex w-full max-w-[688px] flex-1 flex-col gap-4 px-5 pt-0 pb-16 md:px-10">
         <div className={SURFACE}>
 
           <div className="px-4 py-3.5">
@@ -143,7 +143,7 @@ function Settings() {
               >
                 <span
                   aria-hidden="true"
-                  className={`absolute top-0.5 left-0.5 flex size-5 items-center justify-center rounded-full bg-knob shadow-[0_1px_3px_color-mix(in_oklab,var(--ink)_30%,transparent)] transition-transform ${
+                  className={`absolute top-0.5 left-0.5 flex size-5 items-center justify-center rounded-full bg-knob dark:ring-1 dark:ring-line shadow-[0_1px_3px_color-mix(in_oklab,var(--ink)_30%,transparent)] transition-transform ${
                     connections ? "translate-x-4" : ""
                   }`}
                 >
