@@ -594,7 +594,7 @@ export function ConnectionsGraph({
                             width={box.x1 - box.x0 + 8}
                             height={box.y1 - box.y0 + 4}
                             rx={5}
-                            className="pointer-events-none fill-pg opacity-90"
+                            className="pointer-events-none fill-pg"
                           />
                         );
                       })()}

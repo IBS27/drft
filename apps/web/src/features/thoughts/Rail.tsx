@@ -8,7 +8,7 @@ import {
   Moon,
   PencilSimpleLine,
 } from "@phosphor-icons/react";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useConvexAuth } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
 import { memo, useCallback, useEffect, useId, useMemo, useState } from "react";
@@ -73,6 +73,8 @@ export const Rail = memo(function Rail({
     "resting",
   );
   const toggleHold = useHold();
+  // On home the day's thought has the main column; the rail doesn't repeat it.
+  const onHome = useRouterState({ select: (s) => s.location.pathname === "/" });
   const search = backTo === "/held" ? FROM_HELD : FROM_HOME;
   const [restingOpen, setRestingOpen] = useState(false);
   const navigate = useNavigate();
@@ -297,7 +299,7 @@ export const Rail = memo(function Rail({
           <RailSkeleton />
         ) : (
           <>
-            {ordered.pinned && (
+            {ordered.pinned && !onHome && (
               <BackToday
                 t={ordered.pinned}
                 active={ordered.pinned._id === activeId}
@@ -307,7 +309,7 @@ export const Rail = memo(function Rail({
             )}
             {ordered.groups.map(({ group, rows }, gi) => (
               <div key={group}>
-                <GroupHeader group={group} first={gi === 0 && !ordered.pinned} />
+                <GroupHeader group={group} first={gi === 0 && !(ordered.pinned && !onHome)} />
                 {rows.map((t, i) => (
                   <RailRow
                     key={t._id}
@@ -460,8 +462,8 @@ const BackToday = memo(function BackToday({
       onPointerDown={() => prewarm(t._id)}
       onFocus={() => prewarm(t._id)}
       aria-current={active ? "page" : undefined}
-      className={`relative mb-1 flex flex-col rounded-card px-3 py-[9px] transition-colors ${
-        active ? ACTIVE_BAR : "hover:bg-tint"
+      className={`relative mb-1 flex flex-col rounded-card px-3 py-2.5 ring-1 ring-(--back-edge) ring-inset transition-colors ${
+        active ? ACTIVE_BAR : "bg-(--back-wash) hover:bg-tint"
       }`}
     >
       <span className="flex items-center gap-1.5 text-[12.5px] font-medium text-dot-ink">

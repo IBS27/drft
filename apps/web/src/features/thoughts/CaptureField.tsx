@@ -162,7 +162,7 @@ export function CaptureField({ now }: { now: number }) {
           type="button"
           onClick={keep}
           disabled={!typed}
-          className="inline-flex h-[42px] items-center gap-2.5 rounded-full bg-dot px-5 text-[15px] font-semibold text-on-dot shadow-[0_3px_10px_-6px_color-mix(in_oklab,var(--ink)_25%,transparent)] transition-[scale,filter,background-color,color,box-shadow] duration-200 hover:brightness-105 active:scale-[0.98] disabled:bg-line disabled:text-pl disabled:shadow-none disabled:hover:brightness-100 disabled:active:scale-100 motion-reduce:transition-none"
+          className="inline-flex h-[42px] items-center gap-2.5 rounded-full bg-dot px-5 text-[15px] font-semibold text-on-dot shadow-[0_3px_10px_-6px_color-mix(in_oklab,var(--ink)_25%,transparent)] transition-[scale,filter,background-color,color,box-shadow] duration-200 hover:brightness-105 active:scale-[0.98] disabled:bg-transparent disabled:text-pl disabled:shadow-none disabled:ring-1 disabled:ring-line disabled:ring-inset disabled:hover:brightness-100 disabled:active:scale-100 motion-reduce:transition-none"
         >
           Keep
           {!coarsePointer && (

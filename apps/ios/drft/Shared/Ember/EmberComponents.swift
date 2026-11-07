@@ -139,7 +139,10 @@ struct PillButtonStyle: ButtonStyle {
                     )
                 case .ink:
                     Capsule().strokeBorder(Stillness.hairline, lineWidth: 1)
-                case .primary, .quiet:
+                case .primary:
+                    // Waiting for words: an outline, not a grey slab.
+                    if !isEnabled { Capsule().strokeBorder(Stillness.hairline, lineWidth: 1) }
+                case .quiet:
                     EmptyView()
                 }
             }
@@ -168,7 +171,7 @@ struct PillButtonStyle: ButtonStyle {
 
     private func fill(isPressed: Bool) -> Color {
         switch kind {
-        case .primary: isEnabled ? Stillness.now : Stillness.hairline
+        case .primary: isEnabled ? Stillness.now : .clear
         case .ink: Stillness.inkPill
         case .neutral: isPressed ? Stillness.nowTint : Stillness.surface
         case .outline, .quiet: isPressed ? Stillness.nowTint : .clear

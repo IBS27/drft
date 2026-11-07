@@ -4,7 +4,6 @@ import {
   CaretRight,
   GearSix,
   MagnifyingGlass,
-  Moon,
 } from "@phosphor-icons/react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useConvexAuth } from "convex/react";
@@ -23,6 +22,9 @@ import type { Id } from "@drft/backend/convex/_generated/dataModel";
 export const Route = createFileRoute("/")({ component: Collection });
 
 const NO_ROWS: Row[] = [];
+
+const HEADER_PILL =
+  "inline-flex h-[34px] items-center rounded-full bg-scr px-3.5 text-[14px] font-medium text-pt ring-1 ring-line ring-inset transition-colors hover:bg-tint hover:text-ink lg:hidden";
 
 const HEADER_ICON =
   "flex size-11 items-center justify-center rounded-full text-[17px] text-pt transition-colors hover:text-ink lg:hidden [&>svg]:box-content [&>svg]:size-[17px] [&>svg]:rounded-full [&>svg]:bg-scr [&>svg]:p-[7.5px] [&>svg]:ring-1 [&>svg]:ring-line";
@@ -81,13 +83,13 @@ function Collection() {
           <Wordmark />
         </span>
         <span className="flex items-center gap-0.5">
-          {/* Held and Resting share the header on phones, so capture sits
-              right under it. */}
-          <Link to="/held" aria-label="Held" className={HEADER_ICON}>
-            <BookmarkSimple aria-hidden="true" />
+          {/* Held and Resting share the header on phones, by name, so
+              capture sits right under it. */}
+          <Link to="/held" className={`${HEADER_PILL} mr-1.5`}>
+            Held
           </Link>
-          <Link to="/resting" aria-label="Resting" className={HEADER_ICON}>
-            <Moon aria-hidden="true" />
+          <Link to="/resting" className={`${HEADER_PILL} mr-1.5`}>
+            Resting
           </Link>
           <button
             type="button"
