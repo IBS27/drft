@@ -178,9 +178,9 @@ function placeLabels(
       if (!best || hits < best.hits) best = { side, box, hits };
       if (hits === 0) break;
     }
-    // A label lands where it fits; the busiest thoughts are always named,
-    // in their clearest spot. The rest wait for hover.
-    if (best && (best.hits === 0 || (degree.get(node.id) ?? 0) >= 3)) {
+    // The busiest thoughts choose first; a label lands only where it
+    // touches nothing. The rest wait for hover.
+    if (best && best.hits === 0) {
       placed.push(best.box);
       result.set(node.id, best.side);
     }
