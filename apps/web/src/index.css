@@ -182,12 +182,7 @@ select option {
   opacity: 0.75;
 }
 
-/* Map lines: well under the names, a step stronger in the dark so they can be traced. */
+/* Map lines: one hairline, quiet but continuous, under the names. */
 .map-edge {
-  opacity: 0.28;
-}
-@media (prefers-color-scheme: dark) {
-  .map-edge {
-    opacity: 0.4;
-  }
+  stroke: var(--line);
 }

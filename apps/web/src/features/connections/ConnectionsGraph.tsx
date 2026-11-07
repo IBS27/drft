@@ -59,13 +59,15 @@ const HALO = 3;
 const CLEARANCE = 12;
 // The map's room: below the subtitle, above the footer row.
 const FRAME = { top: 12, bottom: 72, left: 40, right: 40 };
-// How much of the room the dots and names may cover before the map zooms
-// out (and names wait for zooming in).
+// How much room a group's dots and names get to spread through, and its shape.
 const PACKING = 1.9;
+const CLUSTER_ASPECT = 1.2;
+// The air between groups, widest first, narrowed only to fit the room.
+const CLUSTER_GAPS = [104, 84, 68, 52, 40];
 // Simulation ticks over which names grow from nothing to full size.
 const GROW_TICKS = 140;
-// Fresh layouts tried for a small map; the cleanest is kept.
-const ATTEMPTS = 6;
+// Fresh layouts tried for a small group; the cleanest is kept.
+const ATTEMPTS = 12;
 
 function hash(value: string): number {
   let result = 2166136261;
@@ -91,6 +93,10 @@ function textWidth(text: string): number {
   return width;
 }
 
+const JOINING = new Set(
+  "a an the of in on at to for from with by and or but as is are was were be your my our their its that".split(" "),
+);
+
 // A thought's name: up to two lines broken at words; a longer thought ends
 // in an ellipsis after a whole word.
 function labelLines(text: string): string[] {
@@ -113,8 +119,16 @@ function labelLines(text: string): string[] {
   if (line && lines.length < 2) lines.push(line);
   if (used < words.length) {
     const last = lines[lines.length - 1].split(" ");
-    while (last.length > 1 && textWidth(`${last.join(" ")}…`) > LABEL_WIDTH) last.pop();
-    lines[lines.length - 1] = `${last.join(" ").replace(/[\s,.;:—–-]+$/, "")}…`;
+    // The cut falls after a word that carries meaning, never after a stray
+    // mark or a little joining word, and the ellipsis never follows punctuation.
+    while (
+      last.length > 1 &&
+      (textWidth(`${last.join(" ")}…`) > LABEL_WIDTH ||
+        !/[\p{L}\p{N}]/u.test(last[last.length - 1]) ||
+        JOINING.has(last[last.length - 1].toLowerCase()))
+    )
+      last.pop();
+    lines[lines.length - 1] = `${last.join(" ").replace(/[\s\p{P}\p{S}]+$/u, "")}…`;
     return lines;
   }
   // A whole thought on two lines breaks where the lines come out most even.
@@ -132,7 +146,7 @@ function labelLines(text: string): string[] {
 
 // Size says how connected a thought is.
 function nodeRadius(connected: number): number {
-  return Math.min(7, 4 + Math.max(0, connected - 1) * 0.75);
+  return Math.min(6, 3.5 + Math.max(0, connected - 1) * 0.625);
 }
 
 function shape(thought: GraphThought, connected: number): Shape {
@@ -340,11 +354,16 @@ type Layout = {
 
 type Pair = [LayoutNode, LayoutNode];
 
-// One run of the layout from the given starting points: the map takes its
+// A group of thoughts that echo one another, laid out on its own: its dots
+// sit relative to its own top-left corner, and `w`/`h` is what its dots and
+// names cover.
+type Cluster = { nodes: LayoutNode[]; w: number; h: number };
+
+// One run of the layout from the given starting points: the group takes its
 // shape from dots and lines while names grow in, names choose a side, then
 // names and lines are eased off each other and everything is pushed fully
 // apart inside the room.
-function arrange(nodes: LayoutNode[], links: LayoutLink[], room: Box, warm: boolean) {
+function arrange(nodes: LayoutNode[], links: LayoutLink[], room: Box): Pair[] {
   const byId = new Map(nodes.map((n) => [n.id, n]));
   const pairs = links.flatMap<Pair>((link) => {
     const s = byId.get(link.sourceId);
@@ -354,31 +373,30 @@ function arrange(nodes: LayoutNode[], links: LayoutLink[], room: Box, warm: bool
   const cx = (room.x0 + room.x1) / 2;
   const cy = (room.y0 + room.y1) / 2;
   const spacing = Math.sqrt(((room.x1 - room.x0) * (room.y1 - room.y0)) / nodes.length);
-  let g = warm ? 1 : 0;
+  let g = 0;
   const simulation = forceSimulation(nodes)
     .stop()
     .force(
       "link",
       forceLink<LayoutNode, LayoutLink>(links.map((link) => ({ ...link })))
         .id((n) => n.id)
-        .distance(spacing * 0.55)
-        .strength(0.6),
+        .distance(spacing * 0.45)
+        .strength(0.7),
     )
-    .force("charge", forceManyBody<LayoutNode>().strength(-spacing * 1.4))
-    // A gentle pull to the middle, matched to the room's shape so the map
-    // fills its width as much as its height.
-    .force("x", forceX<LayoutNode>(cx).strength(0.03))
-    .force("y", forceY<LayoutNode>(cy).strength(0.03 * Math.min(3, (room.x1 - room.x0) / (room.y1 - room.y0))))
+    .force("charge", forceManyBody<LayoutNode>().strength(-spacing * 1.2))
+    // A pull to the middle, matched to the room's shape so the group fills
+    // its width as much as its height.
+    .force("x", forceX<LayoutNode>(cx).strength(0.05))
+    .force("y", forceY<LayoutNode>(cy).strength(0.05 * Math.min(3, (room.x1 - room.x0) / (room.y1 - room.y0))))
     .force("lines", () => clearLines(nodes, pairs, g))
     .force("names", () => {
       separate(nodes, 0.35, g);
     })
     .force("room", () => contain(nodes, room, g))
-    .alpha(warm ? 0.25 : 1)
     .alphaDecay(0.02);
   const ticks = Math.ceil(Math.log(simulation.alphaMin()) / Math.log(1 - simulation.alphaDecay()));
   for (let tick = 1; tick <= ticks; tick += 1) {
-    if (!warm) g = Math.min(1, tick / GROW_TICKS);
+    g = Math.min(1, tick / GROW_TICKS);
     simulation.tick();
     if (tick === 160 || tick === 220 || tick === 280) chooseSides(nodes, pairs, room);
   }
@@ -406,8 +424,17 @@ function arrange(nodes: LayoutNode[], links: LayoutLink[], room: Box, warm: bool
   return pairs;
 }
 
+// Whether two lines cross away from a shared end.
+function linesCross([a, b]: Pair, [c, d]: Pair): boolean {
+  if (a === c || a === d || b === c || b === d) return false;
+  const side = (p: Point, q: Point, r: Point) => (q.x - p.x) * (r.y - p.y) - (q.y - p.y) * (r.x - p.x);
+  const [pa, pb, pc, pd] = [pos(a), pos(b), pos(c), pos(d)];
+  return side(pa, pb, pc) * side(pa, pb, pd) < 0 && side(pc, pd, pa) * side(pc, pd, pb) < 0;
+}
+
 // How cleanly a run came out: names still touching, lines through a
-// stranger's dot or name, lines through their own end's name, and length.
+// stranger's dot or name, lines through their own end's name, lines crossing
+// each other, and length.
 function untidiness(nodes: LayoutNode[], pairs: Pair[], spacing: number): number {
   const wholes = nodes.map((n) => at(grow(nodeBox(n, n.side), CLEARANCE / 2 - 1), n.x ?? 0, n.y ?? 0));
   const names = nodes.map((n) => at(labelBox(n, n.side), n.x ?? 0, n.y ?? 0));
@@ -417,104 +444,233 @@ function untidiness(nodes: LayoutNode[], pairs: Pair[], spacing: number): number
       if (i < k && overlaps(a, b)) total += 20;
     }),
   );
-  for (const [s, t] of pairs) {
+  pairs.forEach((pair, i) => {
+    const [s, t] = pair;
     const a = pos(s);
     const b = pos(t);
     total += Math.hypot(b.x - a.x, b.y - a.y) / spacing;
-    nodes.forEach((n, i) => {
+    for (let k = i + 1; k < pairs.length; k += 1) if (linesCross(pair, pairs[k])) total += 4;
+    nodes.forEach((n, j) => {
       if (n === s || n === t) {
-        if (crosses(a, b, names[i])) total += 2;
-      } else if (crosses(a, b, wholes[i])) total += 6;
+        if (crosses(a, b, names[j])) total += 2;
+      } else if (crosses(a, b, wholes[j])) total += 6;
     });
-  }
+  });
   return total;
 }
 
-// Lays the map out in screen pixels, so every name's real size takes part:
-// dots spread across the whole room until each name has its own space, clear
-// of other names, other dots and, where it can be, the lines. A fresh map is
-// laid out from a few starting points and the cleanest is kept; a map that
-// grows (a new page, a resize) starts from where its dots already rest.
-function computeLayout(
-  thoughts: GraphThought[],
-  width: number,
-  height: number,
-  remembered: ReadonlyMap<string, Point>,
-): Layout {
-  // The map is of what echoes what: thoughts with no echo yet stay off it
-  // (each one's page still says so) rather than floating as stray dots.
-  const allIds = new Set(thoughts.map((thought) => thought._id));
-  const degree = new Map<string, number>();
-  const links: LayoutLink[] = [];
-  for (const thought of thoughts)
-    for (const connection of thought.connections)
-      if (allIds.has(connection.toId)) {
-        links.push({
-          id: connection._id,
-          source: thought._id,
-          target: connection.toId,
-          sourceId: thought._id,
-          targetId: connection.toId,
-        });
-        degree.set(thought._id, (degree.get(thought._id) ?? 0) + 1);
-        degree.set(connection.toId, (degree.get(connection.toId) ?? 0) + 1);
-      }
-  const shown = thoughts.filter((thought) => degree.has(thought._id));
-  const roomWidth = Math.max(200, width - FRAME.left - FRAME.right);
-  const roomHeight = Math.max(200, height - FRAME.top - FRAME.bottom);
-  const shapes = new Map(shown.map((thought) => [thought._id, shape(thought, degree.get(thought._id) ?? 0)]));
-  if (shown.length === 0) return { nodes: [], links, fit: { x: 0, y: 0, scale: 1 } };
+// What a set of dots and names covers.
+function extent(nodes: LayoutNode[]): Box {
+  const box = { x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity };
+  for (const n of nodes) {
+    const b = at(nodeBox(n, n.side), n.x ?? 0, n.y ?? 0);
+    box.x0 = Math.min(box.x0, b.x0);
+    box.y0 = Math.min(box.y0, b.y0);
+    box.x1 = Math.max(box.x1, b.x1);
+    box.y1 = Math.max(box.y1, b.y1);
+  }
+  return box;
+}
 
-  // A crowded map lays out in a larger room and starts zoomed out.
+// Lays one group out in screen pixels, so every name's real size takes part:
+// its dots spread through a room sized to what they carry until each name
+// has its own space, clear of other names, other dots and, where it can be,
+// the lines. It's laid out from a few starting points and the cleanest kept.
+function layoutCluster(thoughts: GraphThought[], links: LayoutLink[], degree: Map<string, number>): Cluster {
+  const shapes = thoughts.map((thought) => shape(thought, degree.get(thought._id) ?? 0));
+  const boxes = shapes.map((n) => nodeBox(n, "right"));
   const needed =
-    [...shapes.values()].reduce((sum, n) => {
-      const box = nodeBox(n, "right");
-      return sum + (box.x1 - box.x0 + CLEARANCE) * (box.y1 - box.y0 + CLEARANCE);
-    }, 0) * PACKING;
-  const spread = Math.max(1, Math.sqrt(needed / (roomWidth * roomHeight)));
-  const room: Box = { x0: 0, y0: 0, x1: roomWidth * spread, y1: roomHeight * spread };
-  const spacing = Math.sqrt((room.x1 * room.y1) / shown.length);
-  const warm = shown.some((thought) => remembered.has(thought._id));
+    boxes.reduce((sum, box) => sum + (box.x1 - box.x0 + CLEARANCE) * (box.y1 - box.y0 + CLEARANCE), 0) * PACKING;
+  const width = Math.max(...boxes.map((box) => box.x1 - box.x0 + CLEARANCE), Math.sqrt(needed * CLUSTER_ASPECT));
+  const room: Box = { x0: 0, y0: 0, x1: width, y1: Math.max(...boxes.map((box) => box.y1 - box.y0), needed / width) };
+  const spacing = Math.sqrt((room.x1 * room.y1) / thoughts.length);
 
   let best: { nodes: LayoutNode[]; score: number } | undefined;
-  const attempts = warm ? 1 : shown.length <= 60 ? ATTEMPTS : shown.length <= 200 ? 2 : 1;
+  const attempts = thoughts.length <= 40 ? ATTEMPTS : thoughts.length <= 120 ? 3 : 1;
   for (let attempt = 0; attempt < attempts; attempt += 1) {
-    const nodes = shown.map<LayoutNode>((thought) => {
-      const point = remembered.get(thought._id);
+    const nodes = thoughts.map<LayoutNode>((thought, i) => {
       const value = hash(`${attempt}:${thought._id}`);
       const angle = ((value % 3_600) / 3_600) * Math.PI * 2;
-      const reach = 0.12 + (((value >>> 12) % 1_000) / 1_000) * 0.36;
+      const reach = 0.1 + (((value >>> 12) % 1_000) / 1_000) * 0.3;
       return {
         id: thought._id,
         thought,
         side: "right",
-        ...(shapes.get(thought._id) as Shape),
-        x: point?.x ?? room.x1 / 2 + Math.cos(angle) * reach * room.x1,
-        y: point?.y ?? room.y1 / 2 + Math.sin(angle) * reach * room.y1,
+        ...shapes[i],
+        x: room.x1 / 2 + Math.cos(angle) * reach * room.x1,
+        y: room.y1 / 2 + Math.sin(angle) * reach * room.y1,
       };
     });
-    const pairs = arrange(nodes, links, room, warm);
+    const pairs = arrange(nodes, links, room);
     const score = untidiness(nodes, pairs, spacing);
     if (!best || score < best.score) best = { nodes, score };
   }
   const nodes = best?.nodes ?? [];
-
-  const scale = Math.max(MIN_SCALE, 1 / spread);
-  const extent = { x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity };
+  const box = extent(nodes);
   for (const n of nodes) {
-    const box = at(nodeBox(n, n.side), (n.x ?? 0) * scale, (n.y ?? 0) * scale);
-    extent.x0 = Math.min(extent.x0, box.x0);
-    extent.y0 = Math.min(extent.y0, box.y0);
-    extent.x1 = Math.max(extent.x1, box.x1);
-    extent.y1 = Math.max(extent.y1, box.y1);
+    n.x = (n.x ?? 0) - box.x0;
+    n.y = (n.y ?? 0) - box.y0;
   }
+  return { nodes, w: box.x1 - box.x0, h: box.y1 - box.y0 };
+}
+
+// Groups already laid out, by what they hold, so a page that arrives or a
+// resize leaves unchanged groups exactly as they were.
+const clusterCache = new Map<string, Cluster>();
+
+// The map is of what echoes what: thoughts with no echo yet stay off it
+// (each one's page still says so) rather than floating as stray dots. The
+// rest fall into groups — thoughts linked to one another, directly or
+// through others — each laid out on its own.
+function layoutClusters(thoughts: GraphThought[]): { clusters: Cluster[]; links: LayoutLink[] } {
+  const allIds = new Set(thoughts.map((thought) => thought._id));
+  const degree = new Map<string, number>();
+  const links: LayoutLink[] = [];
+  const seen = new Set<string>();
+  const root = new Map<string, string>();
+  const find = (id: string): string => {
+    const parent = root.get(id) ?? id;
+    if (parent === id) return id;
+    const top = find(parent);
+    root.set(id, top);
+    return top;
+  };
+  for (const thought of thoughts)
+    for (const connection of thought.connections) {
+      const key = [thought._id, connection.toId].sort().join(":");
+      if (!allIds.has(connection.toId) || connection.toId === thought._id || seen.has(key)) continue;
+      seen.add(key);
+      links.push({
+        id: connection._id,
+        source: thought._id,
+        target: connection.toId,
+        sourceId: thought._id,
+        targetId: connection.toId,
+      });
+      degree.set(thought._id, (degree.get(thought._id) ?? 0) + 1);
+      degree.set(connection.toId, (degree.get(connection.toId) ?? 0) + 1);
+      root.set(find(thought._id), find(connection.toId));
+    }
+  const groups = new Map<string, GraphThought[]>();
+  for (const thought of thoughts) {
+    if (!degree.has(thought._id)) continue;
+    const top = find(thought._id);
+    groups.set(top, [...(groups.get(top) ?? []), thought]);
+  }
+  if (clusterCache.size > 400) clusterCache.clear();
+  const clusters = [...groups.values()].map((members) => {
+    const ids = new Set<string>(members.map((thought) => thought._id));
+    const own = links.filter((link) => ids.has(link.sourceId));
+    const key = JSON.stringify([members.map((thought) => [thought._id, thought.text]), own.map((link) => link.id)]);
+    const cached = clusterCache.get(key);
+    if (cached) return cached;
+    const cluster = layoutCluster(members, own, degree);
+    clusterCache.set(key, cluster);
+    return cluster;
+  });
+  return { clusters, links };
+}
+
+type Placed = Box & { cluster: Cluster };
+
+// Packs the groups around the largest, each set beside one already placed
+// with `gap` between them, choosing the spot that keeps the whole map most
+// compact for the room's shape and, after that, nearest its middle.
+function pack(clusters: Cluster[], gap: number, room: { w: number; h: number }): Placed[] {
+  const order = [...clusters].sort((a, b) => b.nodes.length - a.nodes.length || b.w * b.h - a.w * a.h);
+  const placed: Placed[] = [];
+  const bound = { x0: 0, y0: 0, x1: 0, y1: 0 };
+  for (const cluster of order) {
+    const { w, h } = cluster;
+    if (placed.length === 0) {
+      placed.push({ x0: -w / 2, y0: -h / 2, x1: w / 2, y1: h / 2, cluster });
+      Object.assign(bound, placed[0]);
+      continue;
+    }
+    let best: { box: Box; score: number } | undefined;
+    for (const p of placed) {
+      const xs = [p.x0, (p.x0 + p.x1 - w) / 2, p.x1 - w];
+      const ys = [p.y0, (p.y0 + p.y1 - h) / 2, p.y1 - h];
+      const spots = [
+        ...ys.flatMap((y) => [
+          { x: p.x1 + gap, y },
+          { x: p.x0 - gap - w, y },
+        ]),
+        ...xs.flatMap((x) => [
+          { x, y: p.y1 + gap },
+          { x, y: p.y0 - gap - h },
+        ]),
+      ];
+      for (const spot of spots) {
+        const box = { x0: spot.x, y0: spot.y, x1: spot.x + w, y1: spot.y + h };
+        if (placed.some((other) => overlaps(grow(box, gap - 0.5), other))) continue;
+        const bw = Math.max(bound.x1, box.x1) - Math.min(bound.x0, box.x0);
+        const bh = Math.max(bound.y1, box.y1) - Math.min(bound.y0, box.y0);
+        // The whole map's reach against the room's shape (its longer side
+        // first, then both) — least wins.
+        const across = bw / room.w;
+        const down = bh / room.h;
+        const middle = Math.hypot((box.x0 + box.x1) / 2 / room.w, (box.y0 + box.y1) / 2 / room.h);
+        const score = Math.max(across, down) * 10 + (across + down) * 3 + middle;
+        if (!best || score < best.score) best = { box, score };
+      }
+    }
+    if (!best) continue;
+    placed.push({ ...best.box, cluster });
+    bound.x0 = Math.min(bound.x0, best.box.x0);
+    bound.y0 = Math.min(bound.y0, best.box.y0);
+    bound.x1 = Math.max(bound.x1, best.box.x1);
+    bound.y1 = Math.max(bound.y1, best.box.y1);
+  }
+  // Each group then drifts toward the map's middle as far as its
+  // neighbours allow, so no corner of the map sits empty while another
+  // is crowded.
+  const middle = { x: (bound.x0 + bound.x1) / 2, y: (bound.y0 + bound.y1) / 2 };
+  for (let round = 0; round < 3; round += 1)
+    for (const p of placed)
+      for (const axis of ["y", "x"] as const) {
+        const target = axis === "x" ? middle.x - (p.x0 + p.x1) / 2 : middle.y - (p.y0 + p.y1) / 2;
+        for (let step = target; Math.abs(step) >= 1; step /= 2) {
+          const moved = axis === "x" ? { ...p, x0: p.x0 + step, x1: p.x1 + step } : { ...p, y0: p.y0 + step, y1: p.y1 + step };
+          if (placed.some((other) => other !== p && overlaps(grow(moved, gap - 0.5), other))) continue;
+          Object.assign(p, moved);
+          break;
+        }
+      }
+  return placed;
+}
+
+// Places the groups in the room: as far apart as the room allows, then
+// framed and centred. A map too large for the room starts zoomed out (and
+// names wait for zooming in).
+function computeLayout(clusters: Cluster[], links: LayoutLink[], width: number, height: number): Layout {
+  if (clusters.length === 0) return { nodes: [], links, fit: { x: 0, y: 0, scale: 1 } };
+  const room = {
+    w: Math.max(200, width - FRAME.left - FRAME.right),
+    h: Math.max(200, height - FRAME.top - FRAME.bottom),
+  };
+  let best: { placed: Placed[]; scale: number } | undefined;
+  for (const gap of CLUSTER_GAPS) {
+    const placed = pack(clusters, gap, room);
+    const bw = Math.max(...placed.map((p) => p.x1)) - Math.min(...placed.map((p) => p.x0));
+    const bh = Math.max(...placed.map((p) => p.y1)) - Math.min(...placed.map((p) => p.y0));
+    const scale = Math.max(MIN_SCALE, Math.min(1, room.w / bw, room.h / bh));
+    if (!best || scale > best.scale + 0.001) best = { placed, scale };
+    if (scale >= 1) break;
+  }
+  const { placed, scale } = best as { placed: Placed[]; scale: number };
+  const nodes = placed.flatMap((p) =>
+    p.cluster.nodes.map((n) => ({ ...n, x: p.x0 + (n.x ?? 0), y: p.y0 + (n.y ?? 0) })),
+  );
+  // Names keep their size on screen, so the frame is measured as drawn.
+  const box = extent(nodes.map((n) => ({ ...n, x: (n.x ?? 0) * scale, y: (n.y ?? 0) * scale })));
   return {
     nodes,
     links,
     fit: {
       scale,
-      x: FRAME.left + (roomWidth - (extent.x1 - extent.x0)) / 2 - extent.x0,
-      y: FRAME.top + (roomHeight - (extent.y1 - extent.y0)) / 2 - extent.y0,
+      x: FRAME.left + (room.w - (box.x1 - box.x0)) / 2 - box.x0,
+      y: FRAME.top + (room.h - (box.y1 - box.y0)) / 2 - box.y0,
     },
   };
 }
@@ -583,7 +739,6 @@ export function ConnectionsGraph({
 }) {
   const navigate = useNavigate();
   const frameRef = useRef<HTMLDivElement>(null);
-  const positions = useRef(new Map<string, Point>());
   const pan = useRef<
     { pointerId: number; origin: Point; transform: ViewTransform } | undefined
   >(undefined);
@@ -628,19 +783,20 @@ export function ConnectionsGraph({
   );
   // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed by content
   const shown = useMemo(() => thoughts, [signature]);
+  // Groups take their shape from what they hold alone; a resize only
+  // packs them again.
+  const groups = useMemo(
+    () => (fontsReady ? layoutClusters(shown) : { clusters: [], links: [] }),
+    [shown, fontsReady],
+  );
   const layout = useMemo<Layout>(
     () =>
-      size.width === 0 || !fontsReady
+      size.width === 0
         ? { nodes: [], links: [], fit: { x: 0, y: 0, scale: 1 } }
-        : computeLayout(shown, size.width, size.height, positions.current),
-    [shown, size.width, size.height, fontsReady],
+        : computeLayout(groups.clusters, groups.links, size.width, size.height),
+    [groups, size.width, size.height],
   );
   const view = userView ?? layout.fit;
-  // Where dots came to rest, so the next layout (a new page, a resize)
-  // starts from here rather than from scratch.
-  useEffect(() => {
-    for (const node of layout.nodes) positions.current.set(node.id, pos(node));
-  }, [layout]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -767,7 +923,7 @@ export function ConnectionsGraph({
   return (
     <div
       ref={frameRef}
-      className="relative min-h-0 flex-1 overflow-hidden bg-[radial-gradient(color-mix(in_oklab,var(--line)_35%,transparent)_1px,transparent_1.2px)] bg-[length:26px_26px]"
+      className="relative min-h-0 flex-1 overflow-hidden"
     >
       {thoughts.length === 0 ? (
         <div className="flex h-full items-center justify-center pb-20 text-[14px] text-pl">
@@ -803,9 +959,9 @@ export function ConnectionsGraph({
                     x2={b.x}
                     y2={b.y}
                     className={`transition-[stroke,opacity] duration-200 ${
-                      near ? "stroke-mut" : activeId ? "stroke-faint opacity-10" : "map-edge stroke-faint"
+                      near ? "stroke-mut" : activeId ? "map-edge opacity-40" : "map-edge"
                     }`}
-                    strokeWidth={near ? 1.25 : 1}
+                    strokeWidth={1}
                   />
                 );
               })}
@@ -842,10 +998,10 @@ export function ConnectionsGraph({
                     className={
                       returned
                         ? "fill-dot stroke-pg"
-                        : selected
-                          ? "fill-ink stroke-pg"
-                          : resting
-                            ? "fill-pg stroke-faint"
+                        : resting
+                          ? `fill-pg ${selected ? "stroke-ink" : "stroke-faint"}`
+                          : selected
+                            ? "fill-ink stroke-pg"
                             : "fill-mut stroke-pg"
                     }
                     strokeWidth={resting ? 1.25 : 1.5}
@@ -878,7 +1034,7 @@ export function ConnectionsGraph({
                       paintOrder="stroke"
                       strokeWidth={HALO}
                       strokeLinejoin="round"
-                      className={`stroke-pg text-[13px] transition-opacity duration-200 ${selected ? "fill-ink" : "fill-pt"} ${activeId && !near ? "opacity-25" : ""}`}
+                      className={`stroke-pg text-[13px] transition-[fill,opacity] duration-200 ${near || (!activeId && node.id === returnedId) ? "fill-ink" : "fill-mut"} ${activeId && !near ? "opacity-40" : ""}`}
                     >
                       {node.lines.map((line, i) => (
                         <tspan key={i} x={textX} y={first + i * LINE_HEIGHT}>
@@ -893,7 +1049,7 @@ export function ConnectionsGraph({
 
           {!active && (
             <div className="pointer-events-none absolute inset-x-0 bottom-6">
-              <div className="mx-auto flex w-full max-w-[688px] items-center justify-between gap-6 px-10 text-[13px] text-pl">
+              <div className="mx-auto flex w-full max-w-[688px] items-center justify-between gap-6 px-10 text-[12.5px] text-pl">
                 <p className="flex items-center gap-4">
                   {returnedId && (
                     <span className="inline-flex items-center gap-1.5">
