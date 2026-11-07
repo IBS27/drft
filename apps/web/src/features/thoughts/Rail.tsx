@@ -231,7 +231,7 @@ export const Rail = memo(function Rail({
         {findOpen ? (
           <div
             data-rail-find
-            className="flex h-10 items-center gap-2.5 rounded-card bg-pg pr-2 pl-3 shadow-[0_0_0_3px_color-mix(in_oklab,var(--dot)_14%,transparent)] ring-1 ring-dot-edge ring-inset"
+            className="flex h-10 items-center gap-2.5 rounded-card bg-pg pr-2 pl-3 ring-1 ring-dot-edge ring-inset"
           >
             <MagnifyingGlass aria-hidden="true" className="flex-none text-[16px] text-pt" />
             <input

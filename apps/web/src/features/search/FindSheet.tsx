@@ -116,7 +116,7 @@ function Sheet({ close }: { close: () => void }) {
       <div className="border-b border-line bg-scr shadow-[0_18px_40px_-28px_color-mix(in_oklab,var(--ink)_40%,transparent)] max-lg:h-dvh max-lg:border-b-0 max-lg:bg-pg max-lg:shadow-none">
         <div className="mx-auto w-full max-w-xl px-5">
           <div className="flex items-center gap-2.5 py-3">
-            <div className="flex h-11 min-w-0 flex-1 items-center gap-2.5 rounded-card bg-pg pr-2 pl-3 shadow-[0_0_0_3px_color-mix(in_oklab,var(--dot)_14%,transparent)] ring-1 ring-dot-edge ring-inset">
+            <div className="flex h-11 min-w-0 flex-1 items-center gap-2.5 rounded-card bg-pg pr-2 pl-3 ring-1 ring-dot-edge ring-inset">
               <MagnifyingGlass aria-hidden="true" className="flex-none text-[17px] text-pt" />
               <input
                 value={query}

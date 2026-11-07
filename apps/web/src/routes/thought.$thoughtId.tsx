@@ -258,9 +258,9 @@ function ThoughtView() {
                             prewarm(id);
                             prewarm(c.otherId);
                           }}
-                          className="grid w-full grid-cols-[minmax(0,1fr)_auto] items-baseline gap-4 rounded-card py-3.5 pr-2.5 pl-2.5 text-left sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:gap-3"
+                          className="grid w-full grid-cols-[minmax(0,1fr)_auto_auto] items-baseline gap-3 rounded-card py-3.5 pr-2.5 pl-2.5 text-left"
                         >
-                          <span className="text-[16px] leading-[1.45] whitespace-pre-wrap text-ink">
+                          <span className="text-[16px] leading-[1.45] text-pretty whitespace-pre-wrap text-ink">
                             {c.otherText}
                           </span>
                           {c.otherStatus === "resting" ? (
@@ -275,7 +275,7 @@ function ThoughtView() {
                           )}
                           <CaretRight
                             aria-hidden="true"
-                            className="hidden translate-y-[2px] text-[13px] text-pl transition-opacity sm:block group-hover:opacity-0 [@media(hover:none)]:group-hover:opacity-100"
+                            className="translate-y-[2px] text-[13px] text-pl transition-opacity group-hover:opacity-0 [@media(hover:none)]:group-hover:opacity-100"
                           />
                         </Link>
                         <button
@@ -535,7 +535,7 @@ function HoldChip({
       className={
         held
           ? // Pressed: a soft fill, no edge, so it reads as a state you can undo.
-            "inline-flex h-9 items-center gap-2 rounded-full bg-line/60 px-4 text-[14px] font-medium text-ink transition-colors hover:bg-line"
+            "inline-flex h-9 items-center gap-2 rounded-full bg-line/60 px-4 text-[14px] font-medium text-ink ring-1 ring-line ring-inset transition-colors hover:bg-line"
           : "inline-flex h-9 items-center gap-2 rounded-full bg-scr px-4 text-[14px] font-medium text-pt ring-1 ring-line ring-inset transition-[color,box-shadow,background-color] hover:bg-tint hover:text-ink hover:ring-dot-edge"
       }
     >

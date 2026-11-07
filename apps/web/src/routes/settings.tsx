@@ -112,7 +112,7 @@ function Settings() {
                 value={shown}
                 disabled={!loaded}
                 onChange={(e) => change(e.target.value)}
-                className="h-8 cursor-pointer appearance-none rounded-full bg-pg pr-8 pl-3.5 text-[14px] text-ink tabular-nums ring-1 ring-line outline-none ring-inset hover:ring-pl/50 focus-visible:ring-pl/50"
+                className="h-8 cursor-pointer appearance-none rounded-full bg-pg pr-8 dark:bg-[color-mix(in_oklab,var(--scr)_88%,var(--ink))] pl-3.5 text-[14px] text-ink tabular-nums ring-1 ring-line outline-none ring-inset hover:ring-pl/50 focus-visible:ring-pl/50"
               >
                 {timeOptions(shown).map((value) => (
                   <option key={value} value={value}>

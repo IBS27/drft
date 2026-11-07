@@ -64,7 +64,7 @@ function Resting() {
                 onFocus={() => prewarm(t._id)}
                 className="block min-w-0 flex-1 rounded-card py-3.5 pl-2.5"
               >
-                <span className="line-clamp-2 text-[16px] leading-[1.4] text-ink">
+                <span className="line-clamp-2 text-[16px] leading-[1.4] text-pretty text-ink">
                   {t.preview}
                 </span>
                 <span className="mt-1 flex items-center gap-1.5 text-[13px] text-pl">

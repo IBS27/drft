@@ -4,21 +4,18 @@ import { BackLink } from "./BackLink";
 // The header of every page that isn't the collection or a thought: the way
 // back, then the page's name and one line about it, on the same column as
 // the page's content (the arrow's glyph lines up with the content's left
-// edge). Anything aside, like a view switch, sits at the far end. A `wide`
-// page (the connections map) has a wider column.
+// edge). Anything aside, like a view switch, sits at the far end.
 export function PageHeader({
   title,
   description,
   aside,
-  wide = false,
 }: {
   title: string;
   description?: ReactNode;
   aside?: ReactNode;
-  wide?: boolean;
 }) {
   return (
-    <header className={`relative z-10 mx-auto flex min-h-[72px] w-full ${wide ? "max-w-[1040px]" : "max-w-[688px]"} flex-none flex-wrap content-start items-center gap-x-1 py-3 pr-5 pl-2.5 md:px-[30px] lg:min-h-0 lg:px-10 lg:pt-8 lg:pb-5`}>
+    <header className="relative z-10 mx-auto flex min-h-[72px] w-full max-w-[688px] flex-none flex-wrap content-start items-center gap-x-1 py-3 pr-5 pl-2.5 md:px-[30px] lg:min-h-0 lg:px-10 lg:pt-8 lg:pb-5">
       <span className="lg:hidden">
         <BackLink />
       </span>

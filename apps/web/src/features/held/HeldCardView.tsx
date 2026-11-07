@@ -73,7 +73,7 @@ export const HeldCardView = memo(function HeldCardView({
         search={{ from: "held" }}
         className="block rounded-card px-2.5 py-4"
       >
-        <p className="line-clamp-10 pr-8 text-[16px] leading-[1.45] whitespace-pre-wrap text-ink">
+        <p className="line-clamp-10 text-[16px] leading-[1.45] text-pretty whitespace-pre-wrap text-ink [@media(hover:hover)]:pr-8">
           {card.text}
         </p>
         {notes && (
