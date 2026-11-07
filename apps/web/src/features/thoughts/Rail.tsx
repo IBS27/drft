@@ -307,9 +307,9 @@ export const Rail = memo(function Rail({
                 search={search}
               />
             )}
-            {ordered.groups.map(({ group, rows }) => (
+            {ordered.groups.map(({ group, rows }, gi) => (
               <div key={group}>
-                <GroupHeader group={group} />
+                <GroupHeader group={group} first={gi === 0 && !(ordered.pinned && !onHome)} />
                 {rows.map((t, i) => (
                   <RailRow
                     key={t._id}
@@ -396,9 +396,11 @@ export const Rail = memo(function Rail({
 });
 
 
-function GroupHeader({ group }: { group: Group }) {
+// The first heading sits close under the controls, so the list starts at
+// the same height whether or not the day's thought is above it.
+function GroupHeader({ group, first }: { group: Group; first: boolean }) {
   return (
-    <div className="px-3 pt-6 pb-1.5 text-[13px] font-medium text-pl">
+    <div className={`px-3 pb-1.5 text-[13px] font-medium text-pl ${first ? "pt-2" : "pt-6"}`}>
       {GROUP_LABEL[group]}
     </div>
   );

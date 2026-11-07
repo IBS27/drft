@@ -55,7 +55,7 @@ struct CaptureView: View {
 
                 VStack(alignment: .leading, spacing: 22) {
                     TimelineView(.periodic(from: .now, by: 15)) { context in
-                        Text("\(context.date.formatted(.dateTime.weekday(.wide).day().month(.wide))) · \(timestamp(for: context.date))")
+                        Text("\(context.date.formatted(.dateTime.weekday(.wide))) \(context.date.formatted(.dateTime.day())) \(context.date.formatted(.dateTime.month(.wide))) · \(timestamp(for: context.date))")
                             .font(StillnessType.meta)
                             .monospacedDigit()
                             .foregroundStyle(Stillness.chromeLabel)

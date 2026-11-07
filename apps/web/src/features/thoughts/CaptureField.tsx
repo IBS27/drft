@@ -116,7 +116,8 @@ export function CaptureField({ now }: { now: number }) {
   const clock = date
     .toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
     .toLowerCase();
-  const day = date.toLocaleDateString([], { weekday: "long", day: "numeric", month: "long" });
+  // Day first, like every other date in drft: "Friday 6 November".
+  const day = `${date.toLocaleDateString("en-US", { weekday: "long" })} ${date.getDate()} ${date.toLocaleDateString("en-US", { month: "long" })}`;
   const typed = text.trim() !== "";
 
   // A sheet of paper at the center of the room: today on top, your words
