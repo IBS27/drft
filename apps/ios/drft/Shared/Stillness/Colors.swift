@@ -16,7 +16,7 @@ enum Stillness {
         darkHighContrast: 0xCDCDC7
     )
     static let hairline = dynamic(
-        light: 0xE4E0D7,
+        light: 0xDEDAD0,
         dark: 0x36342F,
         lightHighContrast: 0xB4B4AE,
         darkHighContrast: 0x52524D
@@ -68,7 +68,7 @@ enum Stillness {
     static let nowWashEdge = Color(uiColor: UIColor { traits in
         traits.userInterfaceStyle == .dark
             ? UIColor(red: 0.8, green: 0.29, blue: 0.14, alpha: 0.2)
-            : UIColor(red: 0.78, green: 0.24, blue: 0.11, alpha: 0.2)
+            : UIColor(red: 0.78, green: 0.24, blue: 0.11, alpha: 0.26)
     })
     /// Soft wash for whatever is "now" (Back today, chips, pressed rows).
     static let nowTint = dynamic(light: 0xF1E5DD, dark: 0x2F1E17)

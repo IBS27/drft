@@ -13,7 +13,7 @@
   --ink: #26241f;
   --mut: #716d64;
   --faint: #746f66;
-  --line: #e4e0d7;
+  --line: #dedad0;
   --dot: #c73e1d;
   /* page-chrome text & labels — higher contrast than the mockup grays */
   --pt: #423f38;
@@ -35,7 +35,7 @@
   --switch: #2f2c27;
   --knob: #fbfaf7;
   --back-wash: color-mix(in oklab, var(--dot) 4%, var(--pg));
-  --back-edge: color-mix(in oklab, var(--dot) 20%, transparent);
+  --back-edge: color-mix(in oklab, var(--dot) 26%, transparent);
 }
 
 @media (prefers-color-scheme: dark) {
