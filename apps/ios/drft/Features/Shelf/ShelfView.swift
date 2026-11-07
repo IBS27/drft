@@ -154,8 +154,9 @@ struct ShelfView: View {
                     ScrollView {
                         LazyVStack(alignment: .leading, spacing: 0) {
                             if let returnedThought = layout.returnedThought {
+                                // Edges on the dividers' line, like an inset group.
                                 backToday(returnedThought)
-                                    .padding(.horizontal, 4)
+                                    .padding(.horizontal, 16)
                                     .padding(.bottom, 4)
                             }
 
@@ -263,6 +264,16 @@ struct ShelfView: View {
         .background {
             Stillness.page
                 .ignoresSafeArea(edges: .bottom)
+                // Rows soften as they reach the band instead of meeting an edge.
+                .overlay(alignment: .top) {
+                    LinearGradient(
+                        colors: [Stillness.page.opacity(0), Stillness.page],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    .frame(height: 28)
+                    .offset(y: -28)
+                }
                 .allowsHitTesting(false)
         }
         .accessibilityLabel("New thought")
@@ -307,8 +318,7 @@ struct ShelfView: View {
                 EmberIcon(.caretRight, size: 13)
                     .foregroundStyle(Stillness.nowInk.opacity(0.6))
             }
-            // Text stays on the rows' line: the card's 4pt inset plus 12.
-            .padding(.horizontal, 12)
+            .padding(.horizontal, 16)
             .padding(.vertical, 14)
         }
         .buttonStyle(BackTodayButtonStyle())

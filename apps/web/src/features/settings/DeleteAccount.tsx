@@ -49,7 +49,7 @@ export function DeleteAccount() {
       <button
         type="button"
         onClick={() => setStep("confirming")}
-        className="flex w-full items-center justify-between rounded-[13px] px-4 py-3.5 text-left text-[15px] text-danger transition-colors hover:bg-tint"
+        className="flex w-full items-center justify-between rounded-[13px] px-4 py-3.5 text-left text-[15px] text-ink transition-colors hover:bg-tint"
       >
         Delete account
         <CaretRight aria-hidden="true" className="text-[15px] opacity-70" />
@@ -72,7 +72,7 @@ export function DeleteAccount() {
           type="button"
           disabled={step === "deleting"}
           onClick={() => void confirm()}
-          className="inline-flex h-10 items-center rounded-full bg-dot px-5 text-[14.5px] font-semibold text-on-dot transition-[filter,scale,opacity] hover:brightness-105 active:scale-[0.98] disabled:opacity-60"
+          className="inline-flex h-10 items-center rounded-full bg-danger px-5 text-[14.5px] font-semibold text-pg transition-[filter,scale,opacity] hover:brightness-105 active:scale-[0.98] disabled:opacity-60"
         >
           {step === "deleting" ? "Deleting…" : "Delete everything"}
         </button>

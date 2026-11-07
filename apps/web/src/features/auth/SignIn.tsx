@@ -60,7 +60,6 @@ export function SignIn() {
               <Icon aria-hidden="true" weight="fill" className="text-[19px]" />
             )}
             <span className="text-left">{label}</span>
-            <span aria-hidden="true" />
           </button>
         ))}
       </div>

@@ -15,8 +15,8 @@ export function PageHeader({
   aside?: ReactNode;
 }) {
   return (
-    <header className="relative z-10 mx-auto flex min-h-[72px] w-full max-w-[688px] flex-none items-center gap-1 py-3 pr-4 pl-1.5 md:px-[30px] lg:min-h-0 lg:px-10 lg:pt-12 lg:pb-5">
-      <span className="self-start lg:hidden">
+    <header className="relative z-10 mx-auto flex min-h-[72px] w-full max-w-[688px] flex-none items-start gap-1 py-3 pr-4 pl-1.5 md:px-[30px] lg:min-h-0 lg:px-10 lg:pt-12 lg:pb-5">
+      <span className="lg:hidden">
         <BackLink />
       </span>
       <span className="flex min-w-0 flex-col gap-1 pt-[7px] lg:pt-0">
@@ -27,7 +27,7 @@ export function PageHeader({
           <p className={`text-[14px] text-pl lg:text-[15px] ${aside ? "hidden sm:block" : ""}`}>{description}</p>
         )}
       </span>
-      {aside && <span className="ml-auto flex flex-none items-center gap-2.5">{aside}</span>}
+      {aside && <span className="ml-auto flex flex-none items-center gap-2.5 self-center">{aside}</span>}
     </header>
   );
 }

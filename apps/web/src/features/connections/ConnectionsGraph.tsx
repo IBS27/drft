@@ -535,7 +535,7 @@ export function ConnectionsGraph({
                           ? "stroke-mut opacity-90"
                           : activeId
                             ? "stroke-line opacity-60"
-                            : "stroke-faint opacity-55"
+                            : "stroke-faint opacity-40"
                       }`}
                       strokeWidth={visible ? 1.5 : 1.1}
                     />

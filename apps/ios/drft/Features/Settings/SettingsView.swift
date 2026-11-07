@@ -40,7 +40,7 @@ struct SettingsView: View {
                         .tracking(-0.3)
                         .foregroundStyle(Stillness.ink)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.leading, 20)
+                        .padding(.leading, 8)
                         .accessibilityAddTraits(.isHeader)
 
                     HStack {
@@ -168,7 +168,7 @@ struct SettingsView: View {
                                     EmberIcon(.caretRight, size: 13)
                                         .opacity(0.7)
                                 }
-                                .foregroundStyle(Stillness.danger)
+                                .foregroundStyle(Stillness.ink)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .padding(.horizontal, 16)
                                 .padding(.vertical, 14)
