@@ -23,7 +23,9 @@ export function PageHeader({
         <h1 className="text-[17px] leading-[26px] font-semibold tracking-[-0.015em] text-ink lg:text-[22px] lg:leading-[30px]">
           {title}
         </h1>
-        {description && <p className="text-[14px] text-pl lg:text-[15px]">{description}</p>}
+        {description && (
+          <p className={`text-[14px] text-pl lg:text-[15px] ${aside ? "hidden sm:block" : ""}`}>{description}</p>
+        )}
       </span>
       {aside && <span className="ml-auto flex flex-none items-center gap-2.5">{aside}</span>}
     </header>

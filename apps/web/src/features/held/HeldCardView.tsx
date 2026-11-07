@@ -80,11 +80,11 @@ export const HeldCardView = memo(function HeldCardView({
           </p>
         )}
         <span className="mt-3 flex items-center gap-2 text-[13.5px] text-pl">
-          <span className="flex-1 tabular-nums">Held {age.long}</span>
+          <span className="flex-1 whitespace-nowrap tabular-nums">Held {age.long}</span>
           {links > 0 && (
-            <span className="inline-flex items-center gap-1.5">
+            <span title="Echoes another held thought" className="inline-flex items-center gap-1.5 whitespace-nowrap">
               <Graph aria-hidden="true" className="text-[13px]" />
-              Echoes another held thought
+              Echoes another
             </span>
           )}
         </span>
