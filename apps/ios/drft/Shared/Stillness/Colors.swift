@@ -62,20 +62,22 @@ enum Stillness {
     /// both themes rather than an inverted pill.
     static let inkPill = dynamic(light: 0x2F2C27, dark: 0x4D4943)
     static let onInkPill = dynamic(light: 0xF5F3EE, dark: 0xFBF9F5)
-    /// An "on" switch: ink, never the accent (the web's --switch).
-    static let switchOn = dynamic(light: 0x4A463F, dark: 0xDCD6CB)
-    /// The switch knob: the opposite of its track (the web's --knob).
-    static let switchKnob = dynamic(light: 0xFBFAF7, dark: 0x23221F)
+    /// An "on" switch: ink, never the accent (the web's --switch). In the
+    /// dark a mid grey, so the light knob reads as on rather than inverted.
+    static let switchOn = dynamic(light: 0x4A463F, dark: 0x5C5850)
+    /// The switch knob: light in both themes, like the system switch (the web's --knob).
+    static let switchKnob = dynamic(light: 0xFBFAF7, dark: 0xEBE8E1)
     /// Soft elevation under raised surfaces (the web's --lift).
     static let lift = dynamic(light: 0x3A2C1C, dark: 0x000000, alpha: 0.06)
     /// The short shadow under a solid primary pill.
     static let shadow = dynamic(light: 0x3A2C1C, dark: 0x000000, alpha: 0.12)
     /// The lightest wash of the accent: today's returned thought at rest.
-    static let nowWash = dynamic(light: 0xF9F3EF, dark: 0x2D241F)
-    /// Its faint edge; in the dark a neutral surface with only a hint of warmth (the web's --back-edge).
+    /// In the dark a breath of warmth over the page, not a lifted surface.
+    static let nowWash = dynamic(light: 0xF9F3EF, dark: 0x231A16)
+    /// Its faint edge; in the dark it carries the shape the wash no longer does (the web's --back-edge).
     static let nowWashEdge = Color(uiColor: UIColor { traits in
         traits.userInterfaceStyle == .dark
-            ? UIColor(red: 0.8, green: 0.29, blue: 0.14, alpha: 0.18)
+            ? UIColor(red: 0.8, green: 0.29, blue: 0.14, alpha: 0.32)
             : UIColor(red: 0.78, green: 0.24, blue: 0.11, alpha: 0.14)
     })
     /// Soft wash for whatever is "now" (Back today, chips, pressed rows).

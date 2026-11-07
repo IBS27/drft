@@ -183,7 +183,7 @@ struct CaptureView: View {
                 convexService: convexService
             )
                 .presentationBackground(Stillness.page)
-                .presentationDragIndicator(.hidden)
+                .presentationDragIndicator(.visible)
                 .presentationDetents([.large])
         }
     }
@@ -286,7 +286,8 @@ struct CaptureView: View {
             }
         } else {
             HStack(spacing: 8) {
-                EmberIcon(.microphone, size: 16)
+                // A voice glyph, not a microphone: the keyboard's own dictation key sits just below.
+                EmberIcon(.waveform, size: 16)
                 Text("Speak")
             }
         }

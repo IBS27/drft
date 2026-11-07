@@ -14,10 +14,10 @@ enum PhosphorIcon: String {
     case githubLogoFill = "ph-github-logo-fill"
     case googleLogoFill = "ph-google-logo-fill"
     case graph = "ph-graph"
-    case microphone = "ph-microphone"
     case moon = "ph-moon"
     case plus = "ph-plus"
     case signOut = "ph-sign-out"
+    case waveform = "ph-waveform"
     case x = "ph-x"
 }
 
@@ -184,6 +184,8 @@ struct PillButtonStyle: ButtonStyle {
 /// A round icon control in page chrome: back, settings.
 struct IconButtonStyle: ButtonStyle {
     var diameter: CGFloat = 40
+    /// A standing circle on the surface, like a system sheet's close button.
+    var filled = false
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
@@ -191,7 +193,12 @@ struct IconButtonStyle: ButtonStyle {
             .frame(width: max(diameter, 44), height: max(diameter, 44))
             .background {
                 Circle()
-                    .fill(configuration.isPressed ? Stillness.nowTint : .clear)
+                    .fill(configuration.isPressed ? Stillness.nowTint : (filled ? Stillness.surface : .clear))
+                    .overlay {
+                        if filled {
+                            Circle().strokeBorder(Stillness.hairline, lineWidth: 1)
+                        }
+                    }
                     .frame(width: diameter, height: diameter)
             }
             .contentShape(Circle())

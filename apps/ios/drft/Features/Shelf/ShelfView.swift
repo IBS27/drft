@@ -242,7 +242,7 @@ struct ShelfView: View {
                 convexService: convexService
             )
             .presentationBackground(Stillness.page)
-            .presentationDragIndicator(.hidden)
+            .presentationDragIndicator(.visible)
             .presentationDetents([.large])
         }
     }

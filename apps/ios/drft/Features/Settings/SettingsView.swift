@@ -49,9 +49,9 @@ struct SettingsView: View {
                         Button {
                             dismiss()
                         } label: {
-                            EmberIcon(.x, size: 18)
+                            EmberIcon(.x, size: 14)
                         }
-                        .buttonStyle(IconButtonStyle())
+                        .buttonStyle(IconButtonStyle(diameter: 30, filled: true))
                         .accessibilityLabel("Close settings")
                     }
                 }
