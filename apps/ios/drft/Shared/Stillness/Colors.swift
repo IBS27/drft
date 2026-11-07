@@ -16,7 +16,7 @@ enum Stillness {
         darkHighContrast: 0xCDCDC7
     )
     static let hairline = dynamic(
-        light: 0xDEDAD0,
+        light: 0xD9D5CA,
         dark: 0x3D3B36,
         lightHighContrast: 0xB4B4AE,
         darkHighContrast: 0x52524D

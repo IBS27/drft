@@ -219,7 +219,9 @@ struct ThoughtView: View {
 
             // What you can do with it, right under it.
             if thought.status == .open {
-                HStack(spacing: 8) {
+                // On the pill's own baseline: the label is centred in the
+                // pill, so Held sits on its centreline at any text size.
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
                     // Held is set on the web; here it is shown, not changed.
                     if let heldAt = thought.heldAt {
                         // Read-only here, so it reads as a fact, not a control:
@@ -310,7 +312,7 @@ struct ThoughtView: View {
 
             VStack(alignment: .leading, spacing: 0) {
                 ForEach(Array(connections.enumerated()), id: \.element._id) { index, connection in
-                    Hairline()
+                    Hairline(thickness: Hairline.separatorThickness)
 
                     RelatedThoughtRow(
                         connection: connection,
@@ -569,7 +571,7 @@ private struct RelatedThoughtRow: View {
 
     var body: some View {
         HStack(alignment: .center, spacing: 12) {
-            Text(connection.otherText)
+            WordTruncatedText(text: connection.otherText)
                 .font(StillnessType.body)
                 .lineSpacing(StillnessType.bodyLineSpacing)
                 .foregroundStyle(Stillness.ink)

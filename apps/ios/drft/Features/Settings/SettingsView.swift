@@ -18,6 +18,13 @@ struct SettingsView: View {
     @State private var isDeletingAccount = false
     @State private var deletionFailed = false
     @State private var pendingConnections: Bool?
+    @State private var headerHeight: CGFloat = 0
+    @State private var contentHeight: CGFloat = 0
+    /// Opens hugging its content; the guess only stands until the first
+    /// measurement, which lands before the sheet is on screen.
+    @State private var detent = PresentationDetent.height(Self.estimatedHeight)
+
+    private static let estimatedHeight: CGFloat = 640
 
     init(authService: AuthService, convexService: ConvexService) {
         self.authService = authService
@@ -58,6 +65,9 @@ struct SettingsView: View {
                 .padding(.horizontal, 8)
                 .padding(.top, 8)
                 .frame(minHeight: 64)
+                .onGeometryChange(for: CGFloat.self) { $0.size.height } action: {
+                    headerHeight = $0
+                }
 
                 ScrollView {
                     VStack(spacing: 16) {
@@ -197,13 +207,23 @@ struct SettingsView: View {
                             .font(StillnessType.caption)
                             .foregroundStyle(Stillness.chromeLabel)
                             .frame(maxWidth: .infinity)
-                            .padding(.top, 8)
+                            .padding(.top, -4)
                     }
                     .padding(.horizontal, 16)
                     .padding(.top, 8)
-                    .padding(.bottom, 24)
+                    .padding(.bottom, 16)
+                    .onGeometryChange(for: CGFloat.self) { $0.size.height } action: {
+                        contentHeight = $0
+                    }
                 }
+                .scrollBounceBehavior(.basedOnSize)
             }
+        }
+        .presentationDetents([fittedDetent, .large], selection: $detent)
+        .onChange(of: fittedDetent) { oldDetent, newDetent in
+            // Follow the content (an error line appearing) unless the
+            // sheet was pulled up to full height.
+            if detent == oldDetent { detent = newDetent }
         }
         .interactiveDismissDisabled(isDeletingAccount)
         // The one irreversible act in the product: asked once, plainly.
@@ -251,6 +271,11 @@ struct SettingsView: View {
                 }
             }
         }
+    }
+
+    private var fittedDetent: PresentationDetent {
+        let measured = headerHeight + contentHeight
+        return .height(contentHeight > 0 ? ceil(measured) : Self.estimatedHeight)
     }
 
     private func linkRow(_ title: String, icon: PhosphorIcon) -> some View {

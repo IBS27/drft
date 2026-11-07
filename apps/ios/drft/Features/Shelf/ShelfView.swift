@@ -164,7 +164,7 @@ struct ShelfView: View {
                                 sectionHeader(section)
                                 ForEach(Array(section.thoughts.enumerated()), id: \.element.id) { index, thought in
                                     if index > 0 {
-                                        Hairline()
+                                        Hairline(thickness: Hairline.separatorThickness)
                                             .padding(.horizontal, 16)
                                     }
                                     thoughtRow(thought)
@@ -244,7 +244,6 @@ struct ShelfView: View {
             )
             .presentationBackground(Stillness.page)
             .presentationDragIndicator(.visible)
-            .presentationDetents([.large])
         }
     }
 
@@ -310,11 +309,10 @@ struct ShelfView: View {
                     }
                     .foregroundStyle(Stillness.nowInk)
 
-                    Text(thought.preview)
+                    WordTruncatedText(text: thought.preview)
                         .font(StillnessType.body)
                         .lineSpacing(StillnessType.bodyLineSpacing)
                         .foregroundStyle(Stillness.ink)
-                        .lineLimit(2)
                         .multilineTextAlignment(.leading)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -338,11 +336,10 @@ struct ShelfView: View {
             open(thought)
         } label: {
             HStack(alignment: .firstTextBaseline, spacing: 20) {
-                Text(thought.preview)
+                WordTruncatedText(text: thought.preview)
                     .font(StillnessType.row)
                     .lineSpacing(3)
                     .foregroundStyle(Stillness.ink)
-                    .lineLimit(2)
                     .frame(maxWidth: .infinity, alignment: .leading)
 
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
