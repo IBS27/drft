@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Moon, Sun } from "@phosphor-icons/react";
+import { Sun } from "@phosphor-icons/react";
 import { useConvexAuth, useMutation } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
 import { useState } from "react";
@@ -70,7 +70,6 @@ function Resting() {
                 <span className="mt-1 flex items-center gap-1.5 text-[13px] text-pl">
                   {t.restedAt && (
                     <span className="inline-flex flex-none items-center gap-1 tabular-nums">
-                      <Moon aria-hidden="true" className="text-[12px]" />
                       Set down {ageLabel(t.restedAt, now)}
                     </span>
                   )}

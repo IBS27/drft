@@ -258,9 +258,9 @@ function ThoughtView() {
                             prewarm(id);
                             prewarm(c.otherId);
                           }}
-                          className="grid w-full grid-cols-[minmax(0,1fr)_auto_auto] items-baseline gap-3 rounded-card py-3.5 pr-2.5 pl-2.5 text-left"
+                          className="grid w-full grid-cols-[minmax(0,1fr)_auto_auto] items-baseline gap-x-2.5 rounded-card py-3.5 pr-2.5 pl-2.5 text-left"
                         >
-                          <span className="text-[16px] leading-[1.45] text-pretty whitespace-pre-wrap text-ink">
+                          <span className="pr-2.5 text-[16px] leading-[1.45] text-pretty whitespace-pre-wrap text-ink">
                             {c.otherText}
                           </span>
                           {c.otherStatus === "resting" ? (

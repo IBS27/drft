@@ -1311,7 +1311,9 @@ export function ConnectionsGraph({
     [groups, size.width, size.height],
   );
   const view = userView ?? layout.fit;
-  const column = columnOf(size.width);
+  // The legend keeps to the page title's column (688px, 40px padding), so the
+  // page has one left edge even where the map spreads wider.
+  const titleX0 = (size.width - Math.min(size.width, 688)) / 2 + 40;
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -1564,7 +1566,7 @@ export function ConnectionsGraph({
           {!active && (
             <div
               className="pointer-events-none absolute"
-              style={{ top: layout.bottom + LEGEND_GAP, left: column.x0, width: column.x1 - column.x0 }}
+              style={{ top: layout.bottom + LEGEND_GAP, left: titleX0, width: size.width - 2 * titleX0 }}
             >
               <div className="flex items-center justify-between gap-6 text-[13px] leading-5 text-pl">
                 <p className="flex items-center gap-4">

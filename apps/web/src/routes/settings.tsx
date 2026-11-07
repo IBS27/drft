@@ -97,7 +97,7 @@ function Settings() {
               <label htmlFor="settings-send-time" className="block text-[15px] text-ink">
                 Daily thought
               </label>
-              <div className="mt-1 text-[14px] text-pl">
+              <div className="mt-1 text-[14px] text-pretty text-pl">
                 One thought returns each morning, {timezone.split("/").pop()?.replaceAll("_", " ")} time
               </div>
               {failed && (
@@ -127,7 +127,7 @@ function Settings() {
           <div className="flex items-center justify-between gap-4 px-4 py-3.5">
             <div className="min-w-0">
               <span className="block text-[15px] text-ink">Connections</span>
-              <div className="mt-1 text-[14px] text-pl">
+              <div className="mt-1 text-[14px] text-pretty text-pl">
                 Thought text is sent to OpenAI to find echoes
               </div>
               {connectionsFailed && (

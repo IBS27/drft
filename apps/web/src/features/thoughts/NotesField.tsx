@@ -191,10 +191,17 @@ export function NotesField({
         placeholder="Write around it…"
         className="notes-field w-full resize-none overflow-hidden rounded-card bg-scr text-[15px] text-ink ring-1 ring-line outline-none ring-inset transition-shadow placeholder:text-ph hover:ring-pl/30 focus:ring-pl/50"
       />
-      <PencilSimpleLine
+      {/* A real target for the pencil (the whole field is one too); out of
+          the tab order, since the field itself takes focus. */}
+      <button
+        type="button"
+        tabIndex={-1}
         aria-hidden="true"
-        className="pointer-events-none absolute top-[15px] right-4 text-[16px] text-pt transition-opacity group-focus-within:opacity-0"
-      />
+        onClick={() => field.current?.focus()}
+        className="absolute top-1.5 right-1.5 flex size-8 items-center justify-center rounded-full text-[16px] text-pl transition-[opacity,background-color,color] group-focus-within:pointer-events-none group-focus-within:opacity-0 hover:bg-tint hover:text-ink"
+      >
+        <PencilSimpleLine />
+      </button>
       </div>
       {failed && (
         <div

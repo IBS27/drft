@@ -26,7 +26,7 @@ const NO_ROWS: Row[] = [];
 // Header places on phones: quiet ghost controls with full 44px targets, so
 // capture is the only framed thing at the top of the screen.
 const HEADER_PILL =
-  "inline-flex h-11 items-center gap-1.5 rounded-full px-3 text-[14px] font-medium text-pt transition-colors hover:bg-tint hover:text-ink lg:hidden";
+  "inline-flex h-11 items-center gap-1.5 rounded-full px-3 text-[14.5px] font-medium text-ink transition-colors hover:bg-tint lg:hidden";
 
 const HEADER_ICON =
   "flex size-11 items-center justify-center rounded-full text-pt transition-colors hover:bg-tint hover:text-ink lg:hidden [&>svg]:size-[19px]";

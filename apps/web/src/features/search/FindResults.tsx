@@ -14,7 +14,7 @@ function highlight(text: string, query: string): ReactNode {
   );
   return text.split(pattern).map((part, i) =>
     i % 2 === 1 ? (
-      <mark key={i} className="rounded-[3px] bg-tint-2 px-0.5 text-ink dark:bg-[color-mix(in_oklab,var(--dot)_32%,var(--pg))]">
+      <mark key={i} className="rounded-[3px] bg-tint-2 px-0.5 text-ink dark:bg-[color-mix(in_oklab,var(--dot)_24%,var(--pg))]">
         {part}
       </mark>
     ) : (
@@ -118,7 +118,7 @@ function HitRow({
       onPointerEnter={() => prewarm(hit._id)}
       onFocus={() => prewarm(hit._id)}
       onMouseMove={activate}
-      className={`relative flex w-full items-center gap-2.5 rounded-card px-3 py-2.5 text-left transition-colors [--inset:12px] ${
+      className={`relative flex w-full items-baseline gap-2.5 rounded-card px-3 py-2.5 text-left transition-colors [--inset:12px] ${
         divided ? "divided" : ""
       } ${active ? "[@media(pointer:fine)]:bg-line/50" : ""}`}
     >
@@ -128,7 +128,7 @@ function HitRow({
         {highlight(firstLine(hit.text), query)}
       </span>
       {hit.status === "resting" && (
-        <Moon aria-label="set down" className="flex-none text-[13px] text-pl" />
+        <Moon aria-label="set down" className="flex-none translate-y-[2px] text-[13px] text-pl" />
       )}
       <span
         className="flex-none text-[12.5px] text-pl tabular-nums"

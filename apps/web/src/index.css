@@ -22,7 +22,7 @@
   --pt: #423f38;
   --pl: #5a564e;
   /* Placeholder: clearly lighter than anything you've written. */
-  --ph: #969187;
+  --ph: #8a857b;
   /* Soft elevation for raised surfaces (cards, the capture stage). */
   --lift: 0 1px 2px color-mix(in oklab, #3a2c1c 5%, transparent),
     0 6px 16px -10px color-mix(in oklab, #3a2c1c 12%, transparent);
