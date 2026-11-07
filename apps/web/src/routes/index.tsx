@@ -240,7 +240,7 @@ const ThoughtRow = memo(function ThoughtRow({
           className="flex-none self-center text-[13px] text-pt"
         />
       )}
-      <span className="flex-none text-[13px] text-pl tabular-nums">
+      <span className="min-w-[48px] flex-none text-right text-[13px] text-pl tabular-nums">
         {ageLabel(t.createdAt, now)}
       </span>
     </Link>

@@ -296,11 +296,11 @@ export function ConnectionsGraph({
         "link",
         forceLink<LayoutNode, LayoutLink>(layout.links)
           .id((node) => node.id)
-          .distance(124)
+          .distance(150)
           .strength(0.34),
       )
-      .force("charge", forceManyBody().strength(-130).distanceMax(380))
-      .force("collide", forceCollide(26).strength(0.9))
+      .force("charge", forceManyBody().strength(-190).distanceMax(440))
+      .force("collide", forceCollide(34).strength(0.95))
       .force("center", forceCenter(size.width / 2, size.height / 2))
       .force("x", forceX(size.width / 2).strength(0.025))
       .force("y", forceY(size.height / 2).strength(0.025))
@@ -626,7 +626,7 @@ export function ConnectionsGraph({
               </span>
               </p>
               <p className="rounded-full bg-scr/90 px-4 py-2 ring-1 ring-line ring-inset backdrop-blur">
-                Point at a thought to read it · scroll to zoom
+                Point to preview · click to open · scroll to zoom
               </p>
             </div>
           )}

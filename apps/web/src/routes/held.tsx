@@ -1,5 +1,5 @@
 import { BookmarkSimple } from "@phosphor-icons/react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useConvexAuth } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
 import type { Id } from "@drft/backend/convex/_generated/dataModel";
@@ -100,6 +100,12 @@ function EmptyHeld() {
         Hold a thought from its page<span className="[@media(hover:none)]:hidden"> (or press h)</span>{" "}
         to keep it close here.
       </p>
+      <Link
+        to="/"
+        className="mt-5 text-[14px] font-medium text-pt underline decoration-line underline-offset-4 transition-colors hover:text-ink lg:hidden"
+      >
+        Back to thoughts
+      </Link>
     </div>
   );
 }
