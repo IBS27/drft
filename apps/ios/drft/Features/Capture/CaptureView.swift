@@ -75,14 +75,14 @@ struct CaptureView: View {
                         .lineSpacing(StillnessType.captureThoughtLineSpacing)
                         .multilineTextAlignment(.leading)
                         .foregroundStyle(Stillness.ink)
-                        .tint(Stillness.now)
+                        .tint(Stillness.caret)
                         .focused($inputIsFocused)
                         .lineLimit(1...(dynamicTypeSize.isAccessibilitySize ? 8 : 5))
                         .submitLabel(.return)
                         .accessibilityLabel("Thought")
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 28)
+                .padding(.horizontal, 24)
 
                 Spacer(minLength: 28)
             }

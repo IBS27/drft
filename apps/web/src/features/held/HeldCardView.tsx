@@ -1,9 +1,8 @@
-import { BookmarkSimple, LinkSimple, NotePencil } from "@phosphor-icons/react";
+import { BookmarkSimple, Graph } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
 import type { Id } from "@drft/backend/convex/_generated/dataModel";
 import { memo } from "react";
 import { heldAge } from "../thoughts/format";
-import { Badge } from "../ui/Badge";
 import type { HeldCard } from "./layout";
 import type { ToggleHold } from "./useHold";
 
@@ -76,21 +75,17 @@ export const HeldCardView = memo(function HeldCardView({
           {card.text}
         </p>
         {notes && (
-          <p className="mt-2.5 line-clamp-3 pl-2.5 text-[13.5px] leading-[1.55] whitespace-pre-wrap text-pl shadow-[inset_2px_0_0_color-mix(in_oklab,var(--dot)_70%,transparent)]">
+          <p className="mt-2.5 line-clamp-3 pl-2.5 text-[13.5px] leading-[1.55] whitespace-pre-wrap text-pl shadow-[inset_2px_0_0_var(--line)]">
             {notes}
           </p>
         )}
-        <span className="mt-3 flex items-center gap-2 text-[12.5px] text-pl">
-          <span className="flex-1 tabular-nums">held {age.short}</span>
-          {notes && <NotePencil aria-label="has notes" className="text-[14px]" />}
+        <span className="mt-3 flex items-center gap-2 text-[13px] text-pl">
+          <span className="flex-1 tabular-nums">Held {age.long}</span>
           {links > 0 && (
-            <Badge>
-              <LinkSimple aria-hidden="true" className="mr-0.5 text-[11px]" />
-              {links}
-              <span className="sr-only">
-                {links === 1 ? " held thought related" : " held thoughts related"}
-              </span>
-            </Badge>
+            <span className="inline-flex items-center gap-1">
+              <Graph aria-hidden="true" className="text-[13px]" />
+              {links === 1 ? "Near one held" : `Near ${links} held`}
+            </span>
           )}
         </span>
       </Link>

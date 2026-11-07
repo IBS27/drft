@@ -169,7 +169,7 @@ struct ShelfView: View {
                                 }
                             }
                         }
-                        .padding(.horizontal, 14)
+                        .padding(.horizontal, 8)
                         .padding(.top, 8)
                         .padding(.bottom, 16)
                     }
@@ -253,7 +253,7 @@ struct ShelfView: View {
                 Text("New thought")
             }
         }
-        .buttonStyle(PillButtonStyle(kind: .ink, height: 44, horizontalPadding: 22))
+        .buttonStyle(PillButtonStyle(kind: .neutral, height: 44, horizontalPadding: 20))
         .padding(.top, 12)
         .padding(.bottom, 12)
         .padding(.trailing, 20)
@@ -332,11 +332,18 @@ struct ShelfView: View {
                     .lineLimit(2)
                     .frame(maxWidth: .infinity, alignment: .leading)
 
-                Text(age)
-                    .font(StillnessType.caption)
-                    .monospacedDigit()
-                    .foregroundStyle(Stillness.chromeLabel)
-                    .lineLimit(1)
+                HStack(alignment: .firstTextBaseline, spacing: 4) {
+                    if thought.heldAt != nil {
+                        EmberIcon(.bookmarkSimpleFill, size: 11)
+                            .foregroundStyle(Stillness.chromeText)
+                            .accessibilityLabel("held")
+                    }
+                    Text(age)
+                        .font(StillnessType.caption)
+                        .monospacedDigit()
+                        .foregroundStyle(Stillness.chromeLabel)
+                        .lineLimit(1)
+                }
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 14)

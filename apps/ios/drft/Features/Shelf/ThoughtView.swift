@@ -171,7 +171,7 @@ struct ThoughtView: View {
                 .textSelection(.enabled)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-            if thought.lastReturnedAt != nil || thought.status == .resting {
+            if thought.lastReturnedAt != nil || thought.status == .resting || thought.heldAt != nil {
                 HStack(spacing: 8) {
                     if let lastReturnedAt = thought.lastReturnedAt {
                         // History, not a control: plain words in the accent.
@@ -185,6 +185,16 @@ struct ThoughtView: View {
                                 ? Stillness.nowInk
                                 : Stillness.chromeLabel
                         )
+                        .frame(minHeight: 28)
+                    }
+
+                    if thought.heldAt != nil {
+                        HStack(spacing: 5) {
+                            EmberIcon(.bookmarkSimpleFill, size: 12)
+                            Text("Held")
+                        }
+                        .font(StillnessType.caption)
+                        .foregroundStyle(Stillness.chromeText)
                         .frame(minHeight: 28)
                     }
 

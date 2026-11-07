@@ -76,7 +76,7 @@ function Connections() {
 
       {desktop && <Rail activeId={null} now={now} />}
       <div className="hidden min-h-dvh flex-1 flex-col lg:flex lg:pl-72 xl:pl-80">
-        <header className="relative z-10 flex h-[72px] flex-none items-center gap-1 px-6">
+        <header className="relative z-10 flex flex-none items-center gap-1 px-10 pt-12 pb-3">
           <h1 className="text-[22px] font-semibold tracking-[-0.015em] text-ink">Connections</h1>
           <span className="ml-auto flex items-center gap-2.5">
             {loading && (

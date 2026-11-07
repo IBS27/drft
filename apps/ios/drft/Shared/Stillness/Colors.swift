@@ -46,6 +46,8 @@ enum Stillness {
         lightHighContrast: 0x4B4B47,
         darkHighContrast: 0xCDCDC7
     )
+    /// The text caret: the accent, brighter in the dark so it can be seen.
+    static let caret = dynamic(light: 0xC73E1D, dark: 0xF06A40)
     /// The one destructive action: a deeper red than the accent.
     static let danger = dynamic(light: 0xA1302B, dark: 0xE0786E)
     /// A standing solid action that isn't "now" (New thought): warm dark in

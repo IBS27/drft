@@ -27,6 +27,8 @@ final class ConvexService: ObservableObject {
         let _id: String
         let preview: String
         let createdAt: Double
+        /// Set while the thought is held on the web; the phone only shows it.
+        var heldAt: Double? = nil
 
         var id: String { _id }
     }
@@ -44,6 +46,7 @@ final class ConvexService: ObservableObject {
         let restingNote: String?
         let restedAt: Double?
         let lastReturnedAt: Double?
+        var heldAt: Double? = nil
         let connections: [Connection]
     }
 

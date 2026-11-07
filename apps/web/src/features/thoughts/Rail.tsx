@@ -8,10 +8,10 @@ import {
   Moon,
   PencilSimpleLine,
 } from "@phosphor-icons/react";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useConvexAuth } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
-import { memo, useCallback, useEffect, useId, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import type { Id } from "@drft/backend/convex/_generated/dataModel";
 import { useHold, type ToggleHold } from "../held/useHold";
 import { FindResults } from "../search/FindResults";
@@ -73,6 +73,8 @@ export const Rail = memo(function Rail({
     "resting",
   );
   const toggleHold = useHold();
+  // On home the day's thought has the main pane; the rail doesn't repeat it.
+  const onHome = useRouterState({ select: (s) => s.location.pathname === "/" });
   const search = backTo === "/held" ? FROM_HELD : FROM_HOME;
   const [restingOpen, setRestingOpen] = useState(false);
   const navigate = useNavigate();
@@ -139,6 +141,26 @@ export const Rail = memo(function Rail({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
+
+  // The list fades at its foot only while there is more below.
+  const [moreBelow, setMoreBelow] = useState(false);
+  const listRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = listRef.current;
+    if (!el) return;
+    const check = () =>
+      setMoreBelow(el.scrollTop + el.clientHeight < el.scrollHeight - 4);
+    check();
+    el.addEventListener("scroll", check, { passive: true });
+    const observer = new ResizeObserver(check);
+    observer.observe(el);
+    if (el.firstElementChild) observer.observe(el.firstElementChild);
+    return () => {
+      el.removeEventListener("scroll", check);
+      observer.disconnect();
+    };
+    // Re-measured when what the list holds changes.
+  }, [data, resting, findOpen, query, restingOpen]);
 
   const ordered = useMemo(() => {
     if (!data) return { pinned: null, groups: [] };
@@ -280,7 +302,8 @@ export const Rail = memo(function Rail({
         role="region"
         aria-label="collection"
         aria-busy={loading}
-        className="min-h-0 flex-1 overflow-y-auto px-3 pt-1 pb-14 [mask-image:linear-gradient(to_bottom,#000_calc(100%-56px),transparent)] [scrollbar-width:none]"
+        ref={listRef}
+        className={`min-h-0 flex-1 overflow-y-auto px-3 pt-1 pb-6 [scrollbar-width:none] ${moreBelow ? "[mask-image:linear-gradient(to_bottom,#000_calc(100%-40px),transparent)]" : ""}`}
       >
         {finding ? (
           <FindResults
@@ -297,7 +320,7 @@ export const Rail = memo(function Rail({
           <RailSkeleton />
         ) : (
           <>
-            {ordered.pinned && (
+            {ordered.pinned && !onHome && (
               <BackToday
                 t={ordered.pinned}
                 active={ordered.pinned._id === activeId}
@@ -516,19 +539,15 @@ const RailRow = memo(function RailRow({
       <span className="line-clamp-2 min-w-0 flex-1 text-[15px] leading-[1.4] text-ink">
         {t.preview}
       </span>
-      {held && (
-        <BookmarkSimple
-          weight="fill"
-          aria-label="held"
-          className="flex-none self-center text-[12px] text-pt"
-        />
-      )}
-      {time && (
+      {(time || held) && (
         <span
-          className={`flex-none text-[13px] tabular-nums text-pl ${
+          className={`inline-flex flex-none items-baseline gap-1 text-[13px] tabular-nums text-pl ${
             toggleHold ? "group-hover:invisible [@media(hover:none)]:visible" : ""
           }`}
         >
+          {held && (
+            <BookmarkSimple weight="fill" aria-label="held" className="translate-y-[1px] text-[11px] text-pt" />
+          )}
           {time}
         </span>
       )}

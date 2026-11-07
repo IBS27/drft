@@ -60,7 +60,7 @@ function Held() {
     <main className="min-h-dvh">
       <Rail activeId={null} now={now} />
       <div className="flex min-h-dvh flex-col lg:pl-72 xl:pl-80">
-        <header className="mx-auto flex h-[72px] w-full max-w-[688px] flex-none items-center gap-1 px-1.5 md:px-[30px] lg:h-auto lg:px-10 lg:pt-12 lg:pb-3">
+        <header className="mx-auto flex h-[72px] w-full max-w-[688px] flex-none items-center gap-1 pr-4 pl-1.5 md:px-[30px] lg:h-auto lg:px-10 lg:pt-12 lg:pb-3">
           <span className="lg:hidden">
             <BackLink />
           </span>

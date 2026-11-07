@@ -6,6 +6,7 @@ enum PhosphorIcon: String {
     case arrowBendUpLeft = "ph-arrow-bend-up-left"
     case arrowLeft = "ph-arrow-left"
     case arrowUpRight = "ph-arrow-up-right"
+    case bookmarkSimpleFill = "ph-bookmark-simple-fill"
     case caretDown = "ph-caret-down"
     case caretRight = "ph-caret-right"
     case envelopeSimple = "ph-envelope-simple"

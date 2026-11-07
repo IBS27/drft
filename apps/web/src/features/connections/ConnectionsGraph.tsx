@@ -42,7 +42,7 @@ type Point = { x: number; y: number };
 
 const MIN_SCALE = 0.36;
 const MAX_SCALE = 3.2;
-const LINE_CHARS = 22;
+const LINE_CHARS = 24;
 
 function hash(value: string): number {
   let result = 2166136261;
@@ -208,7 +208,7 @@ function fitTransform(
     1.35,
     Math.max(
       MIN_SCALE,
-      Math.min((width - 100) / graphWidth, (height - 150) / graphHeight),
+      Math.min((width - 160) / graphWidth, (height - 190) / graphHeight),
     ),
   );
   return {
@@ -262,14 +262,25 @@ export function ConnectionsGraph({
   }, []);
 
   const layout = useMemo(() => {
-    const thoughtIds = new Set(thoughts.map((thought) => thought._id));
-    const nodes = thoughts.map<LayoutNode>((thought) => {
+    // The map is of what echoes what: thoughts with no echo yet stay off it
+    // (each one's page still says so) rather than floating as stray dots.
+    const allIds = new Set(thoughts.map((thought) => thought._id));
+    const linked = new Set<string>();
+    for (const thought of thoughts)
+      for (const connection of thought.connections)
+        if (allIds.has(connection.toId)) {
+          linked.add(thought._id);
+          linked.add(connection.toId);
+        }
+    const shown = thoughts.filter((thought) => linked.has(thought._id));
+    const thoughtIds = new Set(shown.map((thought) => thought._id));
+    const nodes = shown.map<LayoutNode>((thought) => {
       const remembered = positions.current.get(thought._id);
       const point =
         remembered ?? initialPoint(thought._id, size.width, size.height);
       return { id: thought._id, thought, x: point.x, y: point.y };
     });
-    const links = thoughts.flatMap<LayoutLink>((thought) =>
+    const links = shown.flatMap<LayoutLink>((thought) =>
       thought.connections
         .filter((connection) => thoughtIds.has(connection.toId))
         .map((connection) => ({
@@ -622,10 +633,7 @@ export function ConnectionsGraph({
                 <span className="inline-block size-2 rounded-full ring-1 ring-faint" />
                 Set down
               </span>
-              <span className="ml-3 inline-flex items-center gap-1.5">
-                <span className="inline-block size-1.5 rounded-full bg-pl/60" />
-                On its own
-              </span>
+
               </p>
               <p className="rounded-full bg-scr/90 px-4 py-2 ring-1 ring-line ring-inset backdrop-blur">
                 Point to preview · click to open · scroll to zoom
