@@ -399,7 +399,7 @@ private struct EmberSwitchStyle: ToggleStyle {
                         .fill(Stillness.switchKnob)
                         .frame(width: 20, height: 20)
 
-                        .shadow(color: Stillness.ink.opacity(0.3), radius: 1.5, y: 1)
+                        .shadow(color: Stillness.switchKnobShadow, radius: 1.5, y: 1)
                         .padding(2)
                 }
                 .frame(width: 40, height: 24)

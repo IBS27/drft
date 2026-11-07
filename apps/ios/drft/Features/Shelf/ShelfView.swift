@@ -173,8 +173,9 @@ struct ShelfView: View {
                         }
                         .padding(.horizontal, 8)
                         .padding(.top, 8)
-                        // Room for the fade, so the last row ends clear of it.
-                        .padding(.bottom, 28)
+                        // Past the band (the inset below) by 24pt, so the
+                        // last row always scrolls fully clear of the pill.
+                        .padding(.bottom, 24)
                     }
                     .scrollIndicators(.hidden)
                     // A bounded band at the bottom, inset into the scroll
@@ -247,7 +248,8 @@ struct ShelfView: View {
         }
     }
 
-    // A quiet ink pill on the thumb side, in its own band below the list.
+    // A quiet surface pill on the thumb side, in its own opaque band below
+    // the list: rows end at the band's edge, never under the pill.
     private var catchThoughtAffordance: some View {
         Button {
             onCatchThought()
@@ -258,9 +260,6 @@ struct ShelfView: View {
             }
         }
         .buttonStyle(PillButtonStyle(kind: .neutral, height: 44, horizontalPadding: 20))
-        // Lifted a touch, so it sits above the list rather than in it.
-        .shadow(color: Stillness.lift, radius: 10, y: 4)
-        .padding(.top, 12)
         .padding(.bottom, 12)
         .padding(.trailing, 20)
         // On the thumb side, so it sits beside the list rather than on it.
@@ -268,15 +267,15 @@ struct ShelfView: View {
         .background {
             Stillness.page
                 .ignoresSafeArea(edges: .bottom)
-                // Rows soften as they reach the band instead of meeting an edge.
+                // A short soft edge above the band, not a long fade over rows.
                 .overlay(alignment: .top) {
                     LinearGradient(
                         colors: [Stillness.page.opacity(0), Stillness.page],
                         startPoint: .top,
                         endPoint: .bottom
                     )
-                    .frame(height: 20)
-                    .offset(y: -20)
+                    .frame(height: 16)
+                    .offset(y: -16)
                 }
                 .allowsHitTesting(false)
         }
@@ -338,7 +337,7 @@ struct ShelfView: View {
         return Button {
             open(thought)
         } label: {
-            HStack(alignment: .firstTextBaseline, spacing: 18) {
+            HStack(alignment: .firstTextBaseline, spacing: 20) {
                 Text(thought.preview)
                     .font(StillnessType.row)
                     .lineSpacing(3)
@@ -359,7 +358,7 @@ struct ShelfView: View {
                         .lineLimit(1)
                 }
                 // One date column, so every thought wraps at the same edge.
-                .frame(minWidth: 64, alignment: .trailing)
+                .frame(minWidth: 72, alignment: .trailing)
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 14)

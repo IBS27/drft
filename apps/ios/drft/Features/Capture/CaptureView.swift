@@ -209,7 +209,7 @@ struct CaptureView: View {
                 speakLabel
             }
             .buttonStyle(PillButtonStyle(
-                kind: model.isListening ? .outline : .neutral,
+                kind: model.isListening ? .outline : .line,
                 edge: Stillness.controlEdge
             ))
             .accessibilityLabel(model.isListening ? "Stop listening" : "Speak")

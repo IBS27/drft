@@ -109,6 +109,8 @@ struct PillButtonStyle: ButtonStyle {
         case ink
         case outline
         case neutral
+        /// A neutral pill as a line only, no fill (Speak beside an empty Keep).
+        case line
         case quiet
     }
 
@@ -134,7 +136,7 @@ struct PillButtonStyle: ButtonStyle {
                 switch kind {
                 case .outline:
                     Capsule().strokeBorder(Stillness.nowEdge, lineWidth: 1.5)
-                case .neutral:
+                case .neutral, .line:
                     Capsule().strokeBorder(
                         isPressed ? Stillness.nowEdge : edge,
                         lineWidth: 1
@@ -166,8 +168,7 @@ struct PillButtonStyle: ButtonStyle {
         case .primary: isEnabled ? Stillness.onNow : Stillness.chromeLabel
         case .ink: Stillness.onInkPill
         case .outline: Stillness.nowInk
-        case .neutral: Stillness.chromeText
-        case .quiet: Stillness.chromeText
+        case .neutral, .line, .quiet: Stillness.chromeText
         }
     }
 
@@ -176,7 +177,7 @@ struct PillButtonStyle: ButtonStyle {
         case .primary: isEnabled ? Stillness.now : .clear
         case .ink: Stillness.inkPill
         case .neutral: isPressed ? Stillness.nowTint : Stillness.surface
-        case .outline, .quiet: isPressed ? Stillness.nowTint : .clear
+        case .outline, .line, .quiet: isPressed ? Stillness.nowTint : .clear
         }
     }
 }
