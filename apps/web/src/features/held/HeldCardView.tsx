@@ -82,7 +82,10 @@ export const HeldCardView = memo(function HeldCardView({
         <span className="mt-3 flex items-center gap-2 text-[13.5px] text-pl">
           <span className="flex-1 tabular-nums">Held {age.long}</span>
           {links > 0 && (
-            <Graph aria-label="near other held thoughts" className="text-[13px]" />
+            <span className="inline-flex items-center gap-1.5">
+              <Graph aria-hidden="true" className="text-[13px]" />
+              Echoes another held thought
+            </span>
           )}
         </span>
       </Link>

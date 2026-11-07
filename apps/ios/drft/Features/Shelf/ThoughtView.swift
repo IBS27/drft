@@ -224,10 +224,8 @@ struct ThoughtView: View {
                             Text("Held")
                         }
                         .font(StillnessType.control)
-                        .foregroundStyle(Stillness.ink)
-                        .padding(.horizontal, 16)
-                        .frame(minHeight: 44)
-                        .background(Stillness.hairline.opacity(0.7), in: Capsule())
+                        .foregroundStyle(Stillness.chromeLabel)
+                        .padding(.trailing, 8)
                         .accessibilityElement(children: .combine)
                     }
                     restControls
