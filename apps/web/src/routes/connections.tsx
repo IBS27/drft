@@ -57,17 +57,17 @@ function Connections() {
     <main className="flex min-h-dvh flex-col">
       <div className="flex min-h-dvh flex-col lg:hidden">
         <PageHeader title="Connections" />
-        <div className="flex flex-col items-center px-8 pt-[22vh] text-center">
+        <div className="flex flex-col items-center px-8 pt-[16vh] text-center">
           <span className="flex size-12 items-center justify-center rounded-full bg-line/70 text-[22px] text-pt">
             <Graph aria-hidden="true" />
           </span>
-          <p className="mt-5 text-[17px] font-medium text-ink">Connections opens on a wider screen</p>
+          <p className="mt-5 text-[17px] font-medium text-ink">The connections map opens on a wider screen</p>
           <p className="mt-2 max-w-[30ch] text-[15px] leading-relaxed text-balance text-pl">
-            Each thought's page still shows what it's near.
+            Open a thought to see related thoughts.
           </p>
           <Link
             to="/"
-            className="mt-5 text-[14px] font-medium text-pt underline decoration-line underline-offset-4 transition-colors hover:text-ink"
+            className="mt-4 inline-flex h-10 items-center rounded-full bg-scr px-5 text-[14px] font-medium text-pt ring-1 ring-line ring-inset transition-colors hover:bg-tint hover:text-ink"
           >
             Back to thoughts
           </Link>

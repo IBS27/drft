@@ -286,8 +286,9 @@ struct ShelfView: View {
                 .foregroundStyle(Stillness.chromeText)
         }
         .padding(.horizontal, 16)
-        .padding(.top, 28)
-        .padding(.bottom, 8)
+        // Closer to its own rows than to the group before.
+        .padding(.top, 36)
+        .padding(.bottom, 2)
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(.isHeader)
     }
