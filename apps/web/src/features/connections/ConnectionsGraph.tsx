@@ -178,7 +178,9 @@ function placeLabels(
       if (!best || hits < best.hits) best = { side, box, hits };
       if (hits === 0) break;
     }
-    if (best) {
+    // A label lands where it fits; the busiest thoughts are always named,
+    // in their clearest spot. The rest wait for hover.
+    if (best && (best.hits === 0 || (degree.get(node.id) ?? 0) >= 3)) {
       placed.push(best.box);
       result.set(node.id, best.side);
     }
@@ -320,8 +322,7 @@ export function ConnectionsGraph({
       .force("x", forceX(size.width / 2).strength(0.025))
       .force("y", forceY(size.height / 2).strength(0.025))
       .alphaDecay(0.045)
-      // Labels are placed once the map has mostly settled, and again when
-      // it comes to rest.
+      // Labels are placed as the map settles, and again when it comes to rest.
       .on("end", () => setLabelSides(placeLabels(layout.nodes, layout.links, linkDegree)))
       .on("tick", () => {
         tick += 1;
@@ -353,7 +354,8 @@ export function ConnectionsGraph({
         ) {
           setTransform(fitTransform(layout.nodes, size.width, size.height));
         }
-        if (tick === 56) setLabelSides(placeLabels(layout.nodes, layout.links, linkDegree));
+        if (tick === 24 || tick === 56)
+          setLabelSides(placeLabels(layout.nodes, layout.links, linkDegree));
       });
     return () => {
       simulation.stop();
