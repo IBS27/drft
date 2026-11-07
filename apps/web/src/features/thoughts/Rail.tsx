@@ -303,7 +303,7 @@ export const Rail = memo(function Rail({
         aria-label="collection"
         aria-busy={loading}
         ref={listRef}
-        className={`min-h-0 flex-1 overflow-y-auto px-3 pt-1 pb-6 [scrollbar-width:none] ${moreBelow ? "[mask-image:linear-gradient(to_bottom,#000_calc(100%-40px),transparent)]" : ""}`}
+        className={`min-h-0 flex-1 overflow-y-auto px-3 pt-1 pb-6 [scrollbar-width:none] ${moreBelow ? "[mask-image:linear-gradient(to_bottom,#000_calc(100%-88px),transparent)]" : ""}`}
       >
         {finding ? (
           <FindResults

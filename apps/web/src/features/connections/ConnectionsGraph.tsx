@@ -562,7 +562,7 @@ export function ConnectionsGraph({
                     transform={`translate(${x} ${y})`}
                   >
                     <circle r={16} fill="transparent" />
-                    {selected && <circle r={radius + 6} className="fill-dot/15" />}
+                    {selected && <circle r={radius + 6} className="fill-ink/10" />}
                     {node.id === returnedId && !selected && (
                       <circle r={radius + 5} className="fill-dot/15" />
                     )}
@@ -570,12 +570,14 @@ export function ConnectionsGraph({
                       r={radius}
                       vectorEffect="non-scaling-stroke"
                       className={
-                        selected || node.id === returnedId
+                        node.id === returnedId
                           ? "fill-dot stroke-pg"
+                          : selected
+                            ? "fill-ink stroke-pg"
                           : node.thought.status === "resting"
                             ? "fill-pg stroke-faint"
                             : connected > 0
-                              ? "fill-pt stroke-pg"
+                              ? "fill-mut stroke-pg"
                               : "fill-pl stroke-none"
                       }
                       strokeWidth={node.thought.status === "resting" || connected === 0 ? 1.25 : 2}
