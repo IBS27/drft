@@ -32,8 +32,8 @@ type ViewTransform = { x: number; y: number; scale: number };
 // today) are the places to start reading, so they're named larger and darker.
 type Voice = { size: number; weight: number; leading: number };
 const PLAIN: Voice = { size: 13, weight: 400, leading: 17 };
-const HUB: Voice = { size: 14, weight: 400, leading: 18 };
-const TODAY: Voice = { size: 14, weight: 500, leading: 18 };
+const HUB: Voice = { size: 15, weight: 500, leading: 20 };
+const TODAY = HUB;
 // Links that make a thought one the map turns on.
 const HUB_DEGREE = 3;
 
@@ -53,6 +53,8 @@ type LayoutLink = SimulationLinkDatum<LayoutNode> & {
   targetId: string;
 };
 
+type Pair = [LayoutNode, LayoutNode];
+
 const MIN_SCALE = 0.36;
 const MAX_SCALE = 3.2;
 
@@ -60,12 +62,17 @@ const MAX_SCALE = 3.2;
 const LABEL_GAP = 7;
 // A line of a name holds about 24 characters, in ems so larger names keep it.
 const LABEL_EMS = 13.4;
-// The paper-coloured outline around each letter, for the rare line it crosses.
-const HALO = 3;
+// The paper-coloured outline drawn behind each letter (its stroke width).
+const HALO = 4;
+// The air a line keeps from a stranger's dot and name, and from its own
+// end's name.
+const EDGE_CLEAR = 6;
+const OWN_CLEAR = 3;
 // The least air between one dot-and-name and the next.
 const CLEARANCE = 12;
-// The map's room: below the subtitle, above the footer row, with as much air
-// above it as below it.
+// The map's room: just below the subtitle, as other pages' content sits
+// below theirs, and clear of the footer row. A map shorter than the room
+// keeps to its top.
 const FRAME = { top: 12, bottom: 76, left: 40, right: 40 };
 // How much room a group's dots and names get to spread through.
 const PACKING = 1.9;
@@ -77,8 +84,13 @@ const SMALL_CLUSTER = 40;
 const CLUSTER_GAPS = [104, 84, 68, 52, 40];
 // Simulation ticks over which names grow from nothing to full size.
 const GROW_TICKS = 140;
-// Fresh layouts tried for a small group; the cleanest is kept.
+// Fresh layouts tried for a small group, and how many of the tidiest are
+// then refined; the cleanest is kept.
 const ATTEMPTS = 10;
+const FINALISTS = 3;
+// A map drawn smaller than its groups were laid out is refined again as
+// drawn, up to this many thoughts; past it, names wait for zooming in.
+const REFINED_MAP = 80;
 
 function hash(value: string): number {
   let result = 2166136261;
@@ -188,7 +200,8 @@ function nodeBox(n: Shape): Box {
 // Just the name, with its halo, relative to the dot.
 function labelBox(n: Shape): Box {
   const x = n.r + LABEL_GAP;
-  return { x0: x - HALO, y0: -n.h / 2 - HALO, x1: x + n.w + HALO, y1: n.h / 2 + HALO };
+  const halo = HALO / 2;
+  return { x0: x - halo, y0: -n.h / 2 - halo, x1: x + n.w + halo, y1: n.h / 2 + halo };
 }
 
 const at = (box: Box, x: number, y: number): Box => ({
@@ -233,6 +246,64 @@ function crosses(a: Point, b: Point, box: Box): boolean {
 }
 
 const pos = (n: LayoutNode): Point => ({ x: n.x ?? 0, y: n.y ?? 0 });
+
+// Names read to the right of their dots, so a line leaving a dot to the
+// right, near level, would run under that dot's own name. A line therefore
+// bends just as much as it must: it leaves its left-hand dot more upright
+// and comes into the other end more level. `bow` sets the bend, from 0.5
+// (straight) down to 0 (leaving straight up or down).
+const BOWS = [0.5, 0.36, 0.24, 0.12, 0];
+// Points along a bent line, for checking it against what it passes.
+const BEND_STEPS = 6;
+
+type Bend = { from: Point; via: Point; to: Point; bow: number; clear: boolean };
+
+// The name beside a dot, relative to the dot, as a line must keep off it.
+const ownName = (n: Shape): Box => grow(labelBox(n), OWN_CLEAR - HALO / 2);
+
+// Whether a line from a dot to a point `dx` right and `dy` down, bent by
+// `bow`, keeps off the dot's own `name`. The bend is a quadratic curve whose
+// x and y both grow steadily, so it's enough to see where it first reaches
+// the name's left edge.
+function passes(dx: number, dy: number, bow: number, name: Box): boolean {
+  if (dx <= name.x0) return true;
+  const k = name.x0 / dx;
+  const a = 1 - 2 * bow;
+  const t = a < 1e-9 ? k / (2 * bow) : (-2 * bow + Math.sqrt(4 * bow * bow + 4 * a * k)) / (2 * a);
+  const y = dy * ((2 * bow - 1) * t * t + 2 * (1 - bow) * t);
+  return y <= name.y0 || y >= name.y1;
+}
+
+// The line between two dots, bent as little as clears the left dot's name.
+function bend(p: Point, pName: Box, q: Point, qName: Box): Bend {
+  const [from, to, name] = p.x <= q.x ? [p, q, pName] : [q, p, qName];
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  const bow = BOWS.find((b) => passes(dx, dy, b, name));
+  const b = bow ?? 0;
+  return { from, via: { x: from.x + b * dx, y: from.y + (1 - b) * dy }, to, bow: b, clear: bow !== undefined };
+}
+
+function bendPoints({ from, via, to }: Bend): Point[] {
+  return Array.from({ length: BEND_STEPS + 1 }, (_, k) => {
+    const t = k / BEND_STEPS;
+    const u = 1 - t;
+    return {
+      x: u * u * from.x + 2 * u * t * via.x + t * t * to.x,
+      y: u * u * from.y + 2 * u * t * via.y + t * t * to.y,
+    };
+  });
+}
+
+// Whether a bent line passes through a box.
+function bendCrosses(line: Bend, box: Box): boolean {
+  const { from, via, to } = line;
+  if (Math.max(from.x, via.x, to.x) < box.x0 || Math.min(from.x, via.x, to.x) > box.x1) return false;
+  if (Math.max(from.y, via.y, to.y) < box.y0 || Math.min(from.y, via.y, to.y) > box.y1) return false;
+  const points = bendPoints(line);
+  for (let k = 1; k < points.length; k += 1) if (crosses(points[k - 1], points[k], box)) return true;
+  return false;
+}
 
 // A name partway grown in: the map takes its shape from dots and lines
 // first, then names swell to full size and push room for themselves.
@@ -286,12 +357,16 @@ function contain(nodes: LayoutNode[], room: Box, g = 1) {
   }
 }
 
-// Moves names off the lines: a stranger's name steps aside (its line's ends
-// give way), and a line running through its own end's name turns away.
-function clearLines(nodes: LayoutNode[], pairs: Array<[LayoutNode, LayoutNode]>, g = 1) {
-  // A line keeps clear of its own end's name, and of a stranger's dot and name.
-  const names = nodes.map((n) => at(grow(labelBox(sized(n, g)), 2), n.x ?? 0, n.y ?? 0));
-  const wholes = nodes.map((n) => at(grow(nodeBox(sized(n, g)), 4), n.x ?? 0, n.y ?? 0));
+// Moves names off the lines: a stranger's dot-and-name steps aside (its
+// line's ends give way), and the ends of a line no bend can lift off its own
+// end's name step apart vertically. `strength` is how much of the way each
+// call moves. Returns how many lines still ran through a name or dot.
+function clearLines(nodes: LayoutNode[], pairs: Pair[], strength: number, g = 1): number {
+  // A line's own end's name is checked at full size from the first tick, so
+  // the map grows into lines that can clear it.
+  const names = nodes.map(ownName);
+  const wholes = nodes.map((n) => at(grow(nodeBox(sized(n, g)), EDGE_CLEAR), n.x ?? 0, n.y ?? 0));
+  let hits = 0;
   for (const [s, t] of pairs) {
     const a = pos(s);
     const b = pos(t);
@@ -300,17 +375,19 @@ function clearLines(nodes: LayoutNode[], pairs: Array<[LayoutNode, LayoutNode]>,
     const sy0 = Math.min(a.y, b.y);
     const sy1 = Math.max(a.y, b.y);
     nodes.forEach((n, i) => {
-      const own = n === s || n === t;
-      const box = own ? names[i] : wholes[i];
-      if (box.x1 < sx0 || box.x0 > sx1 || box.y1 < sy0 || box.y0 > sy1) return;
-      if (!crosses(a, b, box)) return;
-      if (own) {
+      if (n === s || n === t) {
         const other = n === s ? t : s;
+        if ((n.x ?? 0) > (other.x ?? 0) || bend(pos(n), names[i], pos(other), names[i]).clear) return;
+        hits += 1;
         const dir = (other.y ?? 0) >= (n.y ?? 0) ? 1 : -1;
-        other.vy = (other.vy ?? 0) + dir * 1.2;
-        n.vy = (n.vy ?? 0) - dir * 0.6;
+        other.vy = (other.vy ?? 0) + dir * 4 * strength;
+        n.vy = (n.vy ?? 0) - dir * 4 * strength;
         return;
       }
+      const box = wholes[i];
+      if (box.x1 < sx0 || box.x0 > sx1 || box.y1 < sy0 || box.y0 > sy1) return;
+      if (!crosses(a, b, box)) return;
+      hits += 1;
       const c = { x: (box.x0 + box.x1) / 2, y: (box.y0 + box.y1) / 2 };
       const dx = b.x - a.x;
       const dy = b.y - a.y;
@@ -327,8 +404,8 @@ function clearLines(nodes: LayoutNode[], pairs: Array<[LayoutNode, LayoutNode]>,
       nx /= length;
       ny /= length;
       const need =
-        (Math.abs(nx) * (box.x1 - box.x0)) / 2 + (Math.abs(ny) * (box.y1 - box.y0)) / 2 - distance + 2;
-      const push = Math.max(0, need) * 0.25;
+        (Math.abs(nx) * (box.x1 - box.x0)) / 2 + (Math.abs(ny) * (box.y1 - box.y0)) / 2 - distance + 1;
+      const push = Math.max(0, need) * strength;
       n.vx = (n.vx ?? 0) + nx * push;
       n.vy = (n.vy ?? 0) + ny * push;
       for (const end of [s, t]) {
@@ -337,25 +414,255 @@ function clearLines(nodes: LayoutNode[], pairs: Array<[LayoutNode, LayoutNode]>,
       }
     });
   }
+  return hits;
+}
+
+// Moves each dot by what the forces asked of it.
+function settle(nodes: LayoutNode[]) {
+  for (const n of nodes) {
+    n.x = (n.x ?? 0) + (n.vx ?? 0);
+    n.y = (n.y ?? 0) + (n.vy ?? 0);
+    n.vx = 0;
+    n.vy = 0;
+  }
+}
+
+// A repeatable stream of numbers in [0, 1), so a map lays out the same way
+// every time.
+function randomFrom(seed: number): () => number {
+  let state = seed || 1;
+  return () => {
+    state = (state + 0x6d2b79f5) | 0;
+    let t = Math.imul(state ^ (state >>> 15), 1 | state);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4_294_967_296;
+  };
+}
+
+// Whether two segments cross.
+function segmentsCross(a: Point, b: Point, c: Point, d: Point): boolean {
+  const side = (p: Point, q: Point, r: Point) => (q.x - p.x) * (r.y - p.y) - (q.y - p.y) * (r.x - p.x);
+  return side(a, b, c) * side(a, b, d) < 0 && side(c, d, a) * side(c, d, b) < 0;
+}
+
+// What each flaw costs while a layout is refined: a line under a name or
+// through a dot, and names crowding, are not allowed to stay; lines crossing
+// and long lines are only discouraged.
+const COST = { hit: 400, crowd: 400, cross: 24, bundle: 12, bend: 14, length: 3 };
+// Lines leaving one dot closer in angle than this read as one line.
+const BUNDLE = 0.22;
+
+// How a refinement runs: the line length it aims for, its seed, the room it
+// keeps to and what each pixel outside costs, and how freely it moves (1 to
+// reshape a group, less to tidy a finished map in place).
+type Refinement = { ideal: number; seed: number; room: Box; hold: number; heat: number };
+
+// The last word on a layout, at the size it's drawn: no line may run under
+// a name (its own end's, which its bend can't clear, or a stranger's) or
+// pass a stranger's dot or name closer than EDGE_CLEAR, and every
+// dot-and-name keeps its air. Dots move one at a time (annealing: a worse
+// spot is sometimes taken early on, rarely later) while lines stay short,
+// straight and uncrossed; then any dot a flaw still touches tries rings of
+// spots around itself and beside each neighbour. Returns how many dots a
+// flaw still touches: none, nearly always.
+
+function refine(nodes: LayoutNode[], pairs: Pair[], { ideal, seed, room, hold, heat }: Refinement): number {
+  const count = nodes.length;
+  if (count < 2) return 0;
+  const random = randomFrom(seed);
+  const index = new Map(nodes.map((n, i) => [n, i]));
+  const ends = pairs.map(([s, t]) => [index.get(s) ?? 0, index.get(t) ?? 0] as const);
+  const incident: number[][] = nodes.map(() => []);
+  ends.forEach(([a, b], e) => {
+    incident[a].push(e);
+    incident[b].push(e);
+  });
+  const xs = nodes.map((n) => n.x ?? 0);
+  const ys = nodes.map((n) => n.y ?? 0);
+  const wholes = nodes.map((n) => grow(nodeBox(n), EDGE_CLEAR));
+  const airs = nodes.map((n) => grow(nodeBox(n), CLEARANCE / 2));
+  const names = nodes.map(ownName);
+  const point = (i: number): Point => ({ x: xs[i], y: ys[i] });
+  const lineOf = (e: number): Bend => {
+    const [a, b] = ends[e];
+    return bend(point(a), names[a], point(b), names[b]);
+  };
+  // Each line as drawn, kept current as its ends move.
+  const lines = ends.map((_, e) => lineOf(e));
+  const place = (i: number, x: number, y: number) => {
+    xs[i] = x;
+    ys[i] = y;
+    for (const e of incident[i]) lines[e] = lineOf(e);
+  };
+
+  // Whether line `e` runs under node `j`'s name: its own end's, which no
+  // bend could clear, or a stranger's dot-and-name with too little air.
+  const hits = (e: number, j: number): boolean => {
+    const [a, b] = ends[e];
+    if (j === a || j === b) return !lines[e].clear;
+    return bendCrosses(lines[e], at(wholes[j], xs[j], ys[j]));
+  };
+  const direction = (e: number, from: number) => {
+    const [a, b] = ends[e];
+    const to = a === from ? b : a;
+    return Math.atan2(ys[to] - ys[from], xs[to] - xs[from]);
+  };
+  // What line `e` costs for leaving dot `at` beside another of its lines.
+  const bundled = (at: number, e: number): number => {
+    let cost = 0;
+    const angle = direction(e, at);
+    for (const f of incident[at]) {
+      if (f === e) continue;
+      const apart = Math.abs(((direction(f, at) - angle + 3 * Math.PI) % (2 * Math.PI)) - Math.PI);
+      if (apart < BUNDLE) cost += COST.bundle * (1 - apart / BUNDLE);
+    }
+    return cost;
+  };
+  // Everything that costs and depends on where dot `i` sits.
+  const local = (i: number): number => {
+    let cost = 0;
+    for (const e of incident[i]) {
+      const [a, b] = ends[e];
+      cost += bundled(a, e) + bundled(b, e);
+      for (let j = 0; j < count; j += 1) if (hits(e, j)) cost += COST.hit;
+      const length = Math.hypot(xs[b] - xs[a], ys[b] - ys[a]) / ideal;
+      cost += COST.length * length * length + COST.bend * (1 - 2 * lines[e].bow) * length;
+      for (let f = 0; f < ends.length; f += 1) {
+        const [c, d] = ends[f];
+        if (c === a || c === b || d === a || d === b) continue;
+        if (segmentsCross(point(a), point(b), point(c), point(d))) cost += COST.cross;
+      }
+    }
+    for (let e = 0; e < ends.length; e += 1)
+      if (ends[e][0] !== i && ends[e][1] !== i && hits(e, i)) cost += COST.hit;
+    const mine = at(airs[i], xs[i], ys[i]);
+    for (let j = 0; j < count; j += 1) {
+      if (j === i) continue;
+      const other = at(airs[j], xs[j], ys[j]);
+      const ox = Math.min(mine.x1, other.x1) - Math.max(mine.x0, other.x0);
+      const oy = Math.min(mine.y1, other.y1) - Math.max(mine.y0, other.y0);
+      if (ox > 0 && oy > 0) cost += COST.crowd + Math.min(ox, oy) * 10;
+    }
+    cost +=
+      hold *
+      (Math.max(0, room.x0 - mine.x0) +
+        Math.max(0, mine.x1 - room.x1) +
+        Math.max(0, room.y0 - mine.y0) +
+        Math.max(0, mine.y1 - room.y1));
+    return cost;
+  };
+  const total = () => {
+    let cost = 0;
+    for (let i = 0; i < count; i += 1) cost += local(i);
+    return cost;
+  };
+
+  const steps = Math.min(12_000, 200 * count);
+  let temperature = 300 * heat;
+  const cooling = Math.pow(0.5 / temperature, 1 / steps);
+  let best = { cost: total(), xs: [...xs], ys: [...ys] };
+  let current = best.cost;
+  for (let step = 0; step < steps; step += 1, temperature *= cooling) {
+    const i = Math.floor(random() * count);
+    const before = local(i);
+    const ox = xs[i];
+    const oy = ys[i];
+    const reach = ideal * (0.6 * heat * (1 - step / steps) + 0.04);
+    if (incident[i].length > 0 && random() < 0.3 * heat) {
+      // Beside a neighbour, above or below it.
+      const [a, b] = ends[incident[i][Math.floor(random() * incident[i].length)]];
+      const o = a === i ? b : a;
+      const down = ideal * (0.5 + random() * 0.7) * (random() < 0.5 ? -1 : 1);
+      place(i, xs[o] + (random() - 0.5) * 2 * Math.abs(down), ys[o] + down);
+    } else {
+      place(i, ox + (random() * 2 - 1) * reach, oy + (random() * 2 - 1) * reach);
+    }
+    const delta = local(i) - before;
+    if (delta <= 0 || random() < Math.exp(-delta / temperature)) {
+      current += delta;
+      if (current < best.cost - 1e-6) best = { cost: current, xs: [...xs], ys: [...ys] };
+    } else {
+      place(i, ox, oy);
+    }
+  }
+  best.xs.forEach((x, i) => place(i, x, best.ys[i]));
+
+  // The dots any remaining flaw touches.
+  const flawed = (): Set<number> => {
+    const found = new Set<number>();
+    ends.forEach(([a, b], e) => {
+      for (let j = 0; j < count; j += 1)
+        if (hits(e, j)) {
+          found.add(a);
+          found.add(b);
+          found.add(j);
+        }
+    });
+    airs.forEach((box, i) => {
+      for (let j = i + 1; j < count; j += 1)
+        if (overlaps(at(box, xs[i], ys[i]), at(airs[j], xs[j], ys[j]))) {
+          found.add(i);
+          found.add(j);
+        }
+    });
+    return found;
+  };
+  // Then each dot a flaw still touches tries rings of spots around itself
+  // and steep spots beside each neighbour, and takes the cheapest.
+  for (let round = 0; round < 12; round += 1) {
+    const left = flawed();
+    if (left.size === 0) break;
+    for (const i of left) {
+      const ox = xs[i];
+      const oy = ys[i];
+      const spots: Point[] = [];
+      for (const radius of [6, 12, 24, 48, 96, 160])
+        for (let k = 0; k < 16; k += 1) {
+          const angle = (k / 16) * Math.PI * 2;
+          spots.push({ x: ox + Math.cos(angle) * radius, y: oy + Math.sin(angle) * radius });
+        }
+      for (const e of incident[i]) {
+        const [a, b] = ends[e];
+        const o = a === i ? b : a;
+        for (const down of [-1.2, -0.8, -0.5, 0.5, 0.8, 1.2])
+          for (const across of [-1, -0.5, -0.2, 0, 0.2, 0.5, 1])
+            spots.push({ x: xs[o] + across * ideal, y: ys[o] + down * ideal });
+      }
+      let bestCost = local(i);
+      let bestSpot = { x: ox, y: oy };
+      for (const spot of spots) {
+        place(i, spot.x, spot.y);
+        const cost = local(i);
+        if (cost < bestCost - 1e-6) {
+          bestCost = cost;
+          bestSpot = spot;
+        }
+      }
+      place(i, bestSpot.x, bestSpot.y);
+    }
+  }
+  nodes.forEach((n, i) => {
+    n.x = xs[i];
+    n.y = ys[i];
+  });
+  return flawed().size;
 }
 
 type Layout = {
   nodes: LayoutNode[];
   links: LayoutLink[];
-  // The view that frames the whole map, centred in the room.
+  // The view that frames the whole map: centred across the room, at its top.
   fit: ViewTransform;
 };
 
-type Pair = [LayoutNode, LayoutNode];
-
 // A group of thoughts that echo one another, laid out on its own: its dots
 // sit relative to its own top-left corner, and `w`/`h` is what its dots and
-// names cover.
-type Cluster = { nodes: LayoutNode[]; w: number; h: number };
+// names cover. `flaws` counts what refining couldn't clear (nearly always 0).
+type Cluster = { nodes: LayoutNode[]; w: number; h: number; flaws: number };
 
 // One run of the layout from the given starting points: the group takes its
-// shape from dots and lines while names grow in, then names and lines are eased off each other and everything is pushed fully
-// apart inside the room.
+// shape from dots and lines while names grow in, then names and lines are
+// eased off each other and everything is pushed fully apart inside the room.
 function arrange(nodes: LayoutNode[], links: LayoutLink[], room: Box): Pair[] {
   const byId = new Map(nodes.map((n) => [n.id, n]));
   const pairs = links.flatMap<Pair>((link) => {
@@ -381,7 +688,9 @@ function arrange(nodes: LayoutNode[], links: LayoutLink[], room: Box): Pair[] {
     // its width as much as its height.
     .force("x", forceX<LayoutNode>(cx).strength(0.05))
     .force("y", forceY<LayoutNode>(cy).strength(0.05 * Math.min(3, (room.x1 - room.x0) / (room.y1 - room.y0))))
-    .force("lines", () => clearLines(nodes, pairs, g))
+    .force("lines", () => {
+      clearLines(nodes, pairs, 0.2, g);
+    })
     .force("names", () => {
       separate(nodes, 0.35, g);
     })
@@ -397,15 +706,10 @@ function arrange(nodes: LayoutNode[], links: LayoutLink[], room: Box): Pair[] {
       n.vx = 0;
       n.vy = 0;
     }
-    if (lines) clearLines(nodes, pairs);
+    if (lines) clearLines(nodes, pairs, 0.25);
     const touched = separate(nodes, 0.5);
     contain(nodes, room);
-    for (const n of nodes) {
-      n.x = (n.x ?? 0) + (n.vx ?? 0);
-      n.y = (n.y ?? 0) + (n.vy ?? 0);
-      n.vx = 0;
-      n.vy = 0;
-    }
+    settle(nodes);
     return touched;
   };
   for (let pass = 1; pass <= 160; pass += 1) step(true);
@@ -416,9 +720,7 @@ function arrange(nodes: LayoutNode[], links: LayoutLink[], room: Box): Pair[] {
 // Whether two lines cross away from a shared end.
 function linesCross([a, b]: Pair, [c, d]: Pair): boolean {
   if (a === c || a === d || b === c || b === d) return false;
-  const side = (p: Point, q: Point, r: Point) => (q.x - p.x) * (r.y - p.y) - (q.y - p.y) * (r.x - p.x);
-  const [pa, pb, pc, pd] = [pos(a), pos(b), pos(c), pos(d)];
-  return side(pa, pb, pc) * side(pa, pb, pd) < 0 && side(pc, pd, pa) * side(pc, pd, pb) < 0;
+  return segmentsCross(pos(a), pos(b), pos(c), pos(d));
 }
 
 // How cleanly a run came out: names still touching, lines through a
@@ -426,7 +728,6 @@ function linesCross([a, b]: Pair, [c, d]: Pair): boolean {
 // each other, and length.
 function untidiness(nodes: LayoutNode[], pairs: Pair[], spacing: number): number {
   const wholes = nodes.map((n) => at(grow(nodeBox(n), CLEARANCE / 2 - 1), n.x ?? 0, n.y ?? 0));
-  const names = nodes.map((n) => at(labelBox(n), n.x ?? 0, n.y ?? 0));
   let total = 0;
   wholes.forEach((a, i) =>
     wholes.forEach((b, k) => {
@@ -439,10 +740,10 @@ function untidiness(nodes: LayoutNode[], pairs: Pair[], spacing: number): number
     const b = pos(t);
     total += Math.hypot(b.x - a.x, b.y - a.y) / spacing;
     for (let k = i + 1; k < pairs.length; k += 1) if (linesCross(pair, pairs[k])) total += 4;
+    const line = bend(a, ownName(s), b, ownName(t));
+    if (!line.clear) total += 10;
     nodes.forEach((n, j) => {
-      if (n === s || n === t) {
-        if (crosses(a, b, names[j])) total += 2;
-      } else if (crosses(a, b, wholes[j])) total += 6;
+      if (n !== s && n !== t && bendCrosses(line, wholes[j])) total += 6;
     });
   });
   return total;
@@ -464,8 +765,8 @@ function extent(nodes: LayoutNode[]): Box {
 // Lays one group out in screen pixels, so every name's real size takes part:
 // its dots spread through a room of the given shape, sized to what they
 // carry, until each name has its own space, clear of other names, other dots
-// and, where it can be, the lines. It's laid out from a few starting points
-// and the cleanest kept.
+// and the lines. It's laid out from a few starting points; the tidiest are
+// refined and the cleanest kept.
 function layoutCluster(thoughts: GraphThought[], links: LayoutLink[], shapes: Shape[], aspect: number): Cluster {
   const boxes = shapes.map(nodeBox);
   const needed =
@@ -474,9 +775,8 @@ function layoutCluster(thoughts: GraphThought[], links: LayoutLink[], shapes: Sh
   const room: Box = { x0: 0, y0: 0, x1: width, y1: Math.max(...boxes.map((box) => box.y1 - box.y0), needed / width) };
   const spacing = Math.sqrt((room.x1 * room.y1) / thoughts.length);
 
-  let best: { nodes: LayoutNode[]; score: number } | undefined;
   const attempts = thoughts.length <= 40 ? ATTEMPTS : thoughts.length <= 120 ? 3 : 1;
-  for (let attempt = 0; attempt < attempts; attempt += 1) {
+  const runs = Array.from({ length: attempts }, (_, attempt) => {
     const nodes = thoughts.map<LayoutNode>((thought, i) => {
       const value = hash(`${attempt}:${thought._id}`);
       const angle = ((value % 3_600) / 3_600) * Math.PI * 2;
@@ -490,8 +790,14 @@ function layoutCluster(thoughts: GraphThought[], links: LayoutLink[], shapes: Sh
       };
     });
     const pairs = arrange(nodes, links, room);
-    const score = untidiness(nodes, pairs, spacing);
-    if (!best || score < best.score) best = { nodes, score };
+    return { attempt, nodes, pairs, score: untidiness(nodes, pairs, spacing) };
+  });
+  const finalists = runs.sort((a, b) => a.score - b.score).slice(0, thoughts.length <= 40 ? FINALISTS : 1);
+  let best: { nodes: LayoutNode[]; score: number; flaws: number } | undefined;
+  for (const { attempt, nodes, pairs } of finalists) {
+    const flaws = refine(nodes, pairs, { ideal: spacing * 0.45, seed: hash(`${attempt}:${aspect}`), room, hold: 2, heat: 1 });
+    const score = flaws * 100 + untidiness(nodes, pairs, spacing);
+    if (!best || score < best.score) best = { nodes, score, flaws };
   }
   const nodes = best?.nodes ?? [];
   const box = extent(nodes);
@@ -499,7 +805,7 @@ function layoutCluster(thoughts: GraphThought[], links: LayoutLink[], shapes: Sh
     n.x = (n.x ?? 0) - box.x0;
     n.y = (n.y ?? 0) - box.y0;
   }
-  return { nodes, w: box.x1 - box.x0, h: box.y1 - box.y0 };
+  return { nodes, w: box.x1 - box.x0, h: box.y1 - box.y0, flaws: best?.flaws ?? 0 };
 }
 
 // A group of thoughts that echo one another, in each shape it was laid out
@@ -562,7 +868,10 @@ function layoutGroups(
     if (cached) return cached;
     const shapes = group.map((thought) => shape(thought, degree.get(thought._id) ?? 0, thought._id === today));
     const aspects = group.length <= SMALL_CLUSTER ? CLUSTER_ASPECTS : CLUSTER_ASPECTS.slice(0, 1);
-    const laid: Group = { size: group.length, forms: aspects.map((aspect) => layoutCluster(group, own, shapes, aspect)) };
+    const forms = aspects.map((aspect) => layoutCluster(group, own, shapes, aspect));
+    // Packing chooses among the shapes that came out clean, when any did.
+    const clean = forms.filter((form) => form.flaws === 0);
+    const laid: Group = { size: group.length, forms: clean.length > 0 ? clean : forms };
     groupCache.set(key, laid);
     return laid;
   });
@@ -715,9 +1024,33 @@ function computeLayout(groups: Group[], links: LayoutLink[], width: number, heig
     if (!best || score < best.score) best = { placed, scale, score };
   }
   const { placed, scale } = best as { placed: Placed[]; scale: number };
+  // Each group comes clear of its lines at full size; a map drawn smaller
+  // is refined again as drawn.
   const nodes = placed.flatMap((p) =>
-    p.cluster.nodes.map((n) => ({ ...n, x: p.x0 + (n.x ?? 0), y: p.y0 + (n.y ?? 0) })),
+    p.cluster.nodes.map((n) => ({ ...n, x: (p.x0 + (n.x ?? 0)) * scale, y: (p.y0 + (n.y ?? 0)) * scale })),
   );
+  if (scale < 1 && nodes.length <= REFINED_MAP) {
+    const byId = new Map(nodes.map((n) => [n.id, n]));
+    const pairs = links.flatMap<Pair>((link) => {
+      const s = byId.get(link.sourceId);
+      const t = byId.get(link.targetId);
+      return s && t ? [[s, t]] : [];
+    });
+    const box = extent(nodes);
+    const cx = (box.x0 + box.x1) / 2;
+    const cy = (box.y0 + box.y1) / 2;
+    refine(nodes, pairs, {
+      ideal: Math.sqrt((room.w * room.h) / nodes.length) * 0.45,
+      seed: nodes.length,
+      room: { x0: cx - room.w / 2, y0: cy - room.h / 2, x1: cx + room.w / 2, y1: cy + room.h / 2 },
+      hold: 40,
+      heat: 0.5,
+    });
+  }
+  for (const n of nodes) {
+    n.x = (n.x ?? 0) / scale;
+    n.y = (n.y ?? 0) / scale;
+  }
   // Names keep their size on screen, so the frame is measured as drawn.
   const box = extent(nodes.map((n) => ({ ...n, x: (n.x ?? 0) * scale, y: (n.y ?? 0) * scale })));
   return {
@@ -726,7 +1059,7 @@ function computeLayout(groups: Group[], links: LayoutLink[], width: number, heig
     fit: {
       scale,
       x: FRAME.left + (room.w - (box.x1 - box.x0)) / 2 - box.x0,
-      y: FRAME.top + (room.h - (box.y1 - box.y0)) / 2 - box.y0,
+      y: FRAME.top - box.y0,
     },
   };
 }
@@ -1005,15 +1338,12 @@ export function ConnectionsGraph({
                 const target = byId.get(link.targetId);
                 if (!source || !target) return null;
                 const near = activeId === link.sourceId || activeId === link.targetId;
-                const a = screen(source);
-                const b = screen(target);
+                const { from, via, to } = bend(screen(source), ownName(source), screen(target), ownName(target));
                 return (
-                  <line
+                  <path
                     key={link.id}
-                    x1={a.x}
-                    y1={a.y}
-                    x2={b.x}
-                    y2={b.y}
+                    d={`M${from.x} ${from.y}Q${via.x} ${via.y} ${to.x} ${to.y}`}
+                    fill="none"
                     className={`transition-[stroke,opacity] duration-200 ${
                       near ? "stroke-mut" : activeId ? "map-edge opacity-40" : "map-edge"
                     }`}
@@ -1121,7 +1451,7 @@ export function ConnectionsGraph({
                     Kept
                   </span>
                   <span className="inline-flex items-center gap-1.5">
-                    <span className="inline-block size-2 rounded-full ring-1 ring-faint ring-inset" />
+                    <span className="inline-block size-2 rounded-full border-[1.5px] border-faint" />
                     Set down
                   </span>
                 </p>

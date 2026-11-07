@@ -193,7 +193,8 @@ select option {
   opacity: 0.75;
 }
 
-/* Map lines: one hairline, quiet but continuous, under the names. */
+/* Map lines: one hairline, a step darker than the rules so it reads as a
+   line on paper, quiet under the names. */
 .map-edge {
-  stroke: var(--line);
+  stroke: color-mix(in oklab, var(--line) 85%, var(--mut));
 }
