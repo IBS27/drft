@@ -193,7 +193,7 @@ export function NotesField({
       />
       <PencilSimpleLine
         aria-hidden="true"
-        className="pointer-events-none absolute top-[15px] right-4 text-[15px] text-pl transition-opacity group-focus-within:opacity-0"
+        className="pointer-events-none absolute top-[15px] right-4 text-[16px] text-pt transition-opacity group-focus-within:opacity-0"
       />
       </div>
       {failed && (

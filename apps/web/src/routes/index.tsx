@@ -27,7 +27,7 @@ const HEADER_PILL =
   "inline-flex h-[34px] items-center rounded-full bg-scr px-3.5 text-[14px] font-medium text-pt ring-1 ring-line ring-inset transition-colors hover:bg-tint hover:text-ink lg:hidden";
 
 const HEADER_ICON =
-  "flex size-11 items-center justify-center rounded-full text-[17px] text-pt transition-colors hover:text-ink lg:hidden [&>svg]:box-content [&>svg]:size-[17px] [&>svg]:rounded-full [&>svg]:bg-scr [&>svg]:p-[7.5px] [&>svg]:ring-1 [&>svg]:ring-line";
+  "flex size-11 items-center justify-center rounded-full text-[17px] text-pt transition-colors hover:text-ink lg:hidden [&>svg]:size-[19px]";
 
 type Row = {
   _id: Id<"thoughts">;

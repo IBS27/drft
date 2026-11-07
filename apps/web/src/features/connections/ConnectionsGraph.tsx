@@ -511,7 +511,7 @@ export function ConnectionsGraph({
                           ? "stroke-mut opacity-90"
                           : activeId
                             ? "stroke-line opacity-60"
-                            : "stroke-faint opacity-40"
+                            : "map-edge stroke-faint"
                       }`}
                       strokeWidth={visible ? 1.5 : 1.1}
                     />
@@ -589,10 +589,10 @@ export function ConnectionsGraph({
                         const box = labelBox(0, 0, radius, labelLines(node.thought.text), side);
                         return (
                           <rect
-                            x={box.x0 - 4}
-                            y={box.y0 - 2}
-                            width={box.x1 - box.x0 + 8}
-                            height={box.y1 - box.y0 + 4}
+                            x={box.x0 - 2}
+                            y={box.y0}
+                            width={box.x1 - box.x0 + 4}
+                            height={box.y1 - box.y0}
                             rx={5}
                             className="pointer-events-none fill-pg"
                           />

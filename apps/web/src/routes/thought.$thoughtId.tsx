@@ -275,7 +275,7 @@ function ThoughtView() {
                           )}
                           <CaretRight
                             aria-hidden="true"
-                            className="text-[13px] text-faint transition-opacity group-hover:opacity-0 [@media(hover:none)]:group-hover:opacity-100"
+                            className="text-[13px] text-pl transition-opacity group-hover:opacity-0 [@media(hover:none)]:group-hover:opacity-100"
                           />
                         </Link>
                         <button

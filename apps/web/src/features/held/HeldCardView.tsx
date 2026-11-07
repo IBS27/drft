@@ -1,4 +1,4 @@
-import { BookmarkSimple, Graph } from "@phosphor-icons/react";
+import { BookmarkSimple } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
 import type { Id } from "@drft/backend/convex/_generated/dataModel";
 import { memo } from "react";
@@ -80,13 +80,11 @@ export const HeldCardView = memo(function HeldCardView({
           </p>
         )}
         <span className="mt-2.5 flex items-center gap-2 text-[13px] text-pl">
-          <span className="flex-1 whitespace-nowrap tabular-nums">Held {age.long}</span>
-          {links > 0 && (
-            <span title="Related to another held thought" className="inline-flex items-center gap-1.5 whitespace-nowrap text-faint">
-              <Graph aria-hidden="true" className="text-[13px]" />
-              Related
-            </span>
-          )}
+          {/* One line of facts about the card, not a separate control. */}
+          <span className="whitespace-nowrap tabular-nums">
+            Held {age.long}
+            {links > 0 && " · echoes another"}
+          </span>
         </span>
       </Link>
       <button

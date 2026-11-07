@@ -177,3 +177,13 @@ select option {
 :root:has(nav[data-finding]) [data-capture] {
   opacity: 0.85;
 }
+
+/* Map lines: quiet on paper, a step stronger in the dark so they can be traced. */
+.map-edge {
+  opacity: 0.4;
+}
+@media (prefers-color-scheme: dark) {
+  .map-edge {
+    opacity: 0.6;
+  }
+}
