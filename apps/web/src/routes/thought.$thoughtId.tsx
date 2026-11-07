@@ -467,7 +467,7 @@ function StatusFooter({
             autoFocus
             aria-label="Where it landed (optional)"
             placeholder="Where it landed (optional)"
-            className="h-11 w-full max-w-[40ch] rounded-card bg-scr px-4 text-[15px] text-ink ring-1 ring-line ring-inset outline-none transition-shadow placeholder:text-pl focus:ring-dot-edge"
+            className="h-11 w-full max-w-[40ch] rounded-card bg-scr px-4 text-[15px] text-ink ring-1 ring-line ring-inset outline-none transition-shadow placeholder:text-ph focus:ring-dot-edge"
           />
           <div className="flex items-center gap-2">
             <button

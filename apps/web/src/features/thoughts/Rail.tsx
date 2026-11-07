@@ -299,11 +299,13 @@ export const Rail = memo(function Rail({
         </div>
       </div>
 
+      {/* Inset like the row hairlines below it. */}
+      <div aria-hidden="true" className="mx-[22px] h-px flex-none bg-line" />
       <div
         role="region"
         aria-label="collection"
         aria-busy={loading}
-        className="min-h-0 flex-1 overflow-y-auto border-t border-line px-3 pt-1 pb-10 [scrollbar-width:none] [mask-image:linear-gradient(to_bottom,#000_calc(100%-40px),transparent)]"
+        className="min-h-0 flex-1 overflow-y-auto px-3 pt-1 pb-10 [scrollbar-width:none] [mask-image:linear-gradient(to_bottom,#000_calc(100%-40px),transparent)]"
       >
         {finding ? (
           <FindResults
@@ -403,9 +405,8 @@ const PLACE_BASE =
   "flex h-9 items-center gap-2.5 rounded-card px-3 text-[14px] text-pt transition-colors hover:bg-tint hover:text-ink";
 const PLACE = `${PLACE_BASE} aria-[current=page]:bg-line/55 aria-[current=page]:font-medium aria-[current=page]:text-ink`;
 
-// The open row: a neutral wash and a vermilion bar down its left edge.
-const ACTIVE_BAR =
-  "bg-line/55 before:absolute before:inset-y-2 before:left-0 before:w-[3px] before:rounded-full before:bg-pt/45";
+// The open row: a neutral wash, nothing louder.
+const ACTIVE_BAR = "bg-line/55";
 
 function RailSkeleton() {
   return (
@@ -468,7 +469,7 @@ const BackToday = memo(function BackToday({
         <span className="sr-only">returned today: </span>
         <span aria-hidden="true">Back today</span>
       </span>
-      <span className="mt-1 line-clamp-2 text-[15px] leading-[1.4] text-ink">{t.preview}</span>
+      <span className="mt-1 line-clamp-2 text-[14.5px] leading-[1.45] text-ink">{t.preview}</span>
     </Link>
   );
 });
@@ -514,18 +515,18 @@ const RailRow = memo(function RailRow({
     >
       {/* A step quieter than the page it sits beside; full ink when in hand. */}
       <span
-        className={`line-clamp-2 min-w-0 flex-1 text-[15px] leading-[1.4] ${active ? "text-ink" : "text-pt group-hover/row:text-ink"}`}
+        className={`line-clamp-2 min-w-0 flex-1 text-[14.5px] leading-[1.45] ${active ? "text-ink" : "text-pt group-hover/row:text-ink"}`}
       >
         {t.preview}
       </span>
       {(time || held) && (
         <span
-          className={`inline-flex flex-none items-baseline gap-1 text-[13px] tabular-nums text-pl ${
+          className={`inline-flex min-w-12 flex-none items-baseline justify-end gap-1 text-[12.5px] tabular-nums text-pl ${
             toggleHold ? "group-hover:invisible [@media(hover:none)]:visible" : ""
           }`}
         >
           {held && (
-            <BookmarkSimple weight="fill" aria-label="held" className="translate-y-[1px] text-[11px] text-pt" />
+            <BookmarkSimple weight="fill" aria-label="held" className="translate-y-[1px] text-[10px] text-pl" />
           )}
           {time}
         </span>

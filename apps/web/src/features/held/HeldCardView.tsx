@@ -75,7 +75,7 @@ export const HeldCardView = memo(function HeldCardView({
           {card.text}
         </p>
         {notes && (
-          <p className="mt-2.5 line-clamp-3 pl-2.5 text-[14px] leading-[1.55] whitespace-pre-line text-pl shadow-[inset_2px_0_0_var(--line)]">
+          <p className="mt-2.5 line-clamp-2 pl-2.5 text-[14px] leading-[1.55] whitespace-pre-line text-pl shadow-[inset_2px_0_0_var(--line)]">
             {notes}
           </p>
         )}

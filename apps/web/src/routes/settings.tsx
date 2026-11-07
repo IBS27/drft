@@ -174,7 +174,7 @@ function Settings() {
           </SignOutButton>
         </div>
 
-        <div className={SURFACE}>
+        <div className={`${SURFACE} mt-4`}>
           <DeleteAccount />
         </div>
       </section>

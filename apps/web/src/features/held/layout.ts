@@ -28,7 +28,7 @@ function estimate(card: HeldCard, columnWidth: number): number {
         .reduce((sum, part) => sum + Math.max(1, Math.ceil(part.length / perLine)), 0),
     );
   const notes = card.notes.trim()
-    ? 10 + lines(card.notes, 3) * 21
+    ? 10 + lines(card.notes, 2) * 21
     : 0;
   return 60 + lines(card.text, 10) * 22.5 + notes;
 }

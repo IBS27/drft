@@ -4,6 +4,7 @@ import {
   CaretRight,
   GearSix,
   MagnifyingGlass,
+  Moon,
 } from "@phosphor-icons/react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useConvexAuth } from "convex/react";
@@ -24,7 +25,7 @@ export const Route = createFileRoute("/")({ component: Collection });
 const NO_ROWS: Row[] = [];
 
 const HEADER_PILL =
-  "inline-flex h-8 items-center rounded-full bg-scr px-3 text-[13.5px] font-medium text-pt ring-1 ring-line ring-inset transition-colors hover:bg-tint hover:text-ink lg:hidden";
+  "inline-flex h-8 items-center gap-1.5 rounded-full bg-scr pr-3 pl-2.5 text-[13.5px] font-medium text-pt ring-1 ring-line ring-inset transition-colors hover:bg-tint hover:text-ink lg:hidden";
 
 const HEADER_ICON =
   "relative flex size-11 items-center justify-center rounded-full text-pt transition-colors before:absolute before:inset-1.5 before:rounded-full before:bg-scr before:ring-1 before:ring-line before:ring-inset before:transition-colors hover:text-ink hover:before:bg-tint lg:hidden [&>svg]:relative [&>svg]:size-[17px]";
@@ -86,9 +87,11 @@ function Collection() {
           {/* Held and Resting share the header on phones, by name, so
               capture sits right under it. */}
           <Link to="/held" className={`${HEADER_PILL} mr-1.5`}>
+            <BookmarkSimple aria-hidden="true" className="text-[14px]" />
             Held
           </Link>
           <Link to="/resting" className={`${HEADER_PILL} mr-1.5`}>
+            <Moon aria-hidden="true" className="text-[14px]" />
             Resting
           </Link>
           <button
@@ -226,7 +229,7 @@ const ThoughtRow = memo(function ThoughtRow({
         divided ? "divided" : ""
       }`}
     >
-      <span className="line-clamp-3 min-w-0 flex-1 leading-[1.4]">{t.preview}</span>
+      <span className="line-clamp-2 min-w-0 flex-1 leading-[1.4]">{t.preview}</span>
       <span className="inline-flex min-w-16 flex-none items-baseline justify-end gap-1 text-[13px] text-pl tabular-nums">
         {t.heldAt !== undefined && (
           <BookmarkSimple weight="fill" aria-label="held" className="translate-y-[1px] text-[11px] text-pt" />

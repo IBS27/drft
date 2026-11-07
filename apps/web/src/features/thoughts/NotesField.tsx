@@ -189,7 +189,7 @@ export function NotesField({
           save();
         }}
         placeholder="Write around it…"
-        className="notes-field w-full resize-none overflow-hidden rounded-card bg-scr text-[15px] text-ink ring-1 ring-line outline-none ring-inset transition-shadow placeholder:text-pl hover:ring-pl/30 focus:ring-pl/50"
+        className="notes-field w-full resize-none overflow-hidden rounded-card bg-scr text-[15px] text-ink ring-1 ring-line outline-none ring-inset transition-shadow placeholder:text-ph hover:ring-pl/30 focus:ring-pl/50"
       />
       <PencilSimpleLine
         aria-hidden="true"

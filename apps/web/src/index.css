@@ -18,6 +18,8 @@
   /* page-chrome text & labels — higher contrast than the mockup grays */
   --pt: #423f38;
   --pl: #5a564e;
+  /* Placeholder: clearly lighter than anything you've written. */
+  --ph: #969187;
   /* Soft elevation for raised surfaces (cards, the capture stage). */
   --lift: 0 1px 2px color-mix(in oklab, #3a2c1c 5%, transparent),
     0 6px 16px -10px color-mix(in oklab, #3a2c1c 12%, transparent);
@@ -50,16 +52,17 @@
     --dot: #cc4a24;
     --pt: #cdc9bf;
     --pl: #bdb8ae;
+    --ph: #7a766d;
     --lift: 0 1px 2px rgb(0 0 0 / 0.3), 0 10px 28px -14px rgb(0 0 0 / 0.6);
     --tint: color-mix(in oklab, var(--dot) 13%, var(--pg));
     --tint-2: color-mix(in oklab, var(--dot) 19%, var(--pg));
     --dot-ink: color-mix(in oklab, var(--dot) 55%, var(--ink));
     --dot-edge: color-mix(in oklab, var(--dot) 50%, var(--line));
     /* Light ink, a step below text, so "on" is certain without glare. */
-    --switch: #dcd6cb;
-    --knob: #23221f;
-    --back-wash: color-mix(in oklab, var(--dot) 6%, var(--scr));
-    --back-edge: color-mix(in oklab, var(--dot) 18%, transparent);
+    --switch: #5c5850;
+    --knob: #ebe8e1;
+    --back-wash: color-mix(in oklab, var(--dot) 6%, var(--pg));
+    --back-edge: color-mix(in oklab, var(--dot) 32%, transparent);
     --danger: #de8a98;
   }
 }
@@ -74,6 +77,7 @@
   --color-dot: var(--dot);
   --color-pt: var(--pt);
   --color-pl: var(--pl);
+  --color-ph: var(--ph);
   --color-knob: var(--knob);
   --color-tint: var(--tint);
   --color-tint-2: var(--tint-2);
@@ -178,12 +182,12 @@ select option {
   opacity: 0.5;
 }
 
-/* Map lines: quiet on paper, a step stronger in the dark so they can be traced. */
+/* Map lines: well under the names, a step stronger in the dark so they can be traced. */
 .map-edge {
-  opacity: 0.4;
+  opacity: 0.28;
 }
 @media (prefers-color-scheme: dark) {
   .map-edge {
-    opacity: 0.6;
+    opacity: 0.4;
   }
 }
