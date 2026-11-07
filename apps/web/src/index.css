@@ -113,7 +113,9 @@ body {
   transition: opacity 150ms;
 }
 .divided:hover::before,
-:hover + .divided::before {
+:hover + .divided::before,
+[aria-selected="true"].divided::before,
+[aria-selected="true"] + .divided::before {
   opacity: 0;
 }
 
@@ -169,5 +171,5 @@ select option {
   transition: opacity 160ms ease;
 }
 :root:has(nav[data-finding]) [data-capture] {
-  opacity: 0.5;
+  opacity: 0.72;
 }

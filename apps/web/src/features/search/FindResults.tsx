@@ -63,6 +63,7 @@ export function FindResults({
           hit={h}
           query={query}
           active={i === active}
+          divided={i > 0}
           now={now}
           go={go}
           prewarm={prewarm}
@@ -86,6 +87,7 @@ function HitRow({
   hit,
   query,
   active,
+  divided,
   now,
   go,
   prewarm,
@@ -95,6 +97,7 @@ function HitRow({
   hit: Hit;
   query: string;
   active: boolean;
+  divided: boolean;
   now: number;
   go: (hit: Hit) => void;
   prewarm: (thoughtId: Id<"thoughts">) => void;
@@ -115,11 +118,9 @@ function HitRow({
       onPointerEnter={() => prewarm(hit._id)}
       onFocus={() => prewarm(hit._id)}
       onMouseMove={activate}
-      className={`relative flex w-full items-center gap-2.5 rounded-card px-3 py-2.5 text-left transition-colors ${
-        active
-          ? "bg-line/45 ring-1 ring-line ring-inset [@media(hover:none)]:bg-transparent [@media(hover:none)]:ring-0"
-          : ""
-      }`}
+      className={`relative flex w-full items-center gap-2.5 rounded-card px-3 py-2.5 text-left transition-colors [--inset:12px] ${
+        divided ? "divided" : ""
+      } ${active ? "bg-line/45 ring-1 ring-line ring-inset" : ""}`}
     >
       <span
         className={`line-clamp-2 min-w-0 flex-1 text-[15px] leading-[1.4] ${active ? "text-ink" : "text-pt"}`}
