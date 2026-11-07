@@ -1,4 +1,4 @@
-import { Check } from "@phosphor-icons/react";
+import { Check, PencilSimpleLine } from "@phosphor-icons/react";
 import { useMutation } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
@@ -10,11 +10,9 @@ const NOTES_LIMIT = 20_000;
 
 // Your own writing next to the thought: one field, no save button. What you
 // type is the truth while you type it — the server is only told, a moment
-// after you pause, and never talks back into a field you are in. On wide
-// screens (xl) the field lives in the right margin opposite the rail, so
-// the thought never moves however much is written; narrower, it folds in
-// under the thought. Either way it is written onto ruled lines (`.ruled`
-// in index.css), which grow with the field. A quiet status beside the label
+// after you pause, and never talks back into a field you are in. It sits
+// in a plain field under the thought (`.notes-field` in index.css), in the
+// same column as everything else, growing with the words. A quiet status beside the label
 // says "Saving…" while words wait to be sent and "Saved" once the latest
 // ones are; it only reports, and never holds up a save.
 export function NotesField({
@@ -129,10 +127,8 @@ export function NotesField({
     };
   }, []);
 
-  // Grows with its content, and re-measures when its width changes (the
-  // column is a different width on each side of xl); the page scrolls,
-  // never the field. The measure includes the ruled padding below the
-  // text, so there are always empty lines left to write on.
+  // Grows with its content, and re-measures when its width changes; the page scrolls,
+  // never the field. The measure includes the field's padding.
   useLayoutEffect(() => {
     const el = field.current;
     if (!el) return;
@@ -147,11 +143,11 @@ export function NotesField({
   }, [text]);
 
   return (
-    <div className="group mt-9 flex w-full max-w-[36ch] flex-col gap-2.5 xl:fixed xl:inset-y-0 xl:right-0 xl:mt-0 xl:w-80 xl:max-w-none xl:overflow-y-auto xl:border-l xl:border-line xl:bg-scr xl:px-[22px] xl:pt-6 xl:pb-10">
-      <div className="flex h-6 items-center justify-between gap-3 pl-[18px]">
+    <div className="group mt-8 flex w-full flex-col gap-3">
+      <div className="flex h-6 items-center justify-between gap-3">
         <label
           htmlFor="thought-notes"
-          className="text-[14px] font-medium text-pt transition-colors group-focus-within:text-ink"
+          className="inline-flex cursor-text items-center gap-1.5 text-[14px] font-medium text-pt transition-colors group-focus-within:text-ink"
         >
           Notes
         </label>
@@ -169,6 +165,8 @@ export function NotesField({
           ) : null}
         </span>
       </div>
+      {/* The pencil sits in the field it edits, and steps away once you're in. */}
+      <div className="relative">
       <textarea
         id="thought-notes"
         ref={field}
@@ -190,8 +188,14 @@ export function NotesField({
           }
           save();
         }}
-        className="ruled w-full resize-none overflow-hidden text-[15px] text-ink outline-none"
+        placeholder="Write around it…"
+        className="notes-field w-full resize-none overflow-hidden rounded-card bg-scr text-[15px] text-ink ring-1 ring-line outline-none ring-inset transition-shadow placeholder:text-pl hover:ring-pl/30 focus:ring-pl/50"
       />
+      <PencilSimpleLine
+        aria-hidden="true"
+        className="pointer-events-none absolute top-[15px] right-4 text-[16px] text-pt transition-opacity group-focus-within:opacity-0"
+      />
+      </div>
       {failed && (
         <div
           role="status"

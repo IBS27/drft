@@ -1,9 +1,8 @@
-import { BookmarkSimple, LinkSimple, NotePencil } from "@phosphor-icons/react";
+import { BookmarkSimple } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
 import type { Id } from "@drft/backend/convex/_generated/dataModel";
 import { memo } from "react";
 import { heldAge } from "../thoughts/format";
-import { Badge } from "../ui/Badge";
 import type { HeldCard } from "./layout";
 import type { ToggleHold } from "./useHold";
 
@@ -41,7 +40,7 @@ export const HeldCardView = memo(function HeldCardView({
   prewarm: (id: Id<"thoughts">) => void;
 }) {
   const age = heldAge(card.heldAt, now);
-  const notes = card.notes.trim();
+  const notes = excerpt(card.notes.trim());
   return (
     <article
       data-hold-id={card._id}
@@ -72,26 +71,20 @@ export const HeldCardView = memo(function HeldCardView({
         search={{ from: "held" }}
         className="block rounded-card px-4 pt-3.5 pb-3"
       >
-        <p className="line-clamp-10 pr-7 text-[15px] leading-[1.5] whitespace-pre-wrap text-ink">
+        <p className="line-clamp-10 pr-7 text-[16px] leading-[1.5] whitespace-pre-wrap text-ink">
           {card.text}
         </p>
         {notes && (
-          <p className="mt-2.5 line-clamp-3 pl-2.5 text-[13.5px] leading-[1.55] whitespace-pre-wrap text-pl shadow-[inset_2px_0_0_color-mix(in_oklab,var(--dot)_70%,transparent)]">
+          <p className="mt-2.5 line-clamp-3 pl-2.5 text-[14px] leading-[1.55] whitespace-pre-line text-pl shadow-[inset_2px_0_0_var(--line)]">
             {notes}
           </p>
         )}
-        <span className="mt-3 flex items-center gap-2 text-[12.5px] text-pl">
-          <span className="flex-1 tabular-nums">held {age.short}</span>
-          {notes && <NotePencil aria-label="has notes" className="text-[14px]" />}
-          {links > 0 && (
-            <Badge>
-              <LinkSimple aria-hidden="true" className="mr-0.5 text-[11px]" />
-              {links}
-              <span className="sr-only">
-                {links === 1 ? " held thought related" : " held thoughts related"}
-              </span>
-            </Badge>
-          )}
+        <span className="mt-2.5 flex items-center gap-2 text-[13px] text-pl">
+          {/* One line of facts about the card, not a separate control. */}
+          <span className="whitespace-nowrap tabular-nums">
+            Held {age.long}
+            {links > 0 && " · echoes another"}
+          </span>
         </span>
       </Link>
       <button
@@ -99,10 +92,20 @@ export const HeldCardView = memo(function HeldCardView({
         onClick={() => toggle(card._id, card.heldAt, { notice: true })}
         aria-label="Let go"
         title="Let go (h)"
-        className="absolute top-2.5 right-2.5 flex size-7 items-center justify-center rounded-full bg-ink text-[13px] text-pg opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100"
+        className="absolute top-2.5 right-2.5 flex size-7 items-center justify-center rounded-full bg-line/70 text-[13px] text-pt opacity-0 hover:bg-tint hover:text-ink transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 focus-visible:opacity-100"
       >
         <BookmarkSimple aria-hidden="true" weight="fill" />
       </button>
     </article>
   );
 });
+
+// The start of the notes, cut at a word and never after a stop, so the
+// ellipsis is the only mark at the end ("Tuesday…", not "Tuesday.…").
+const EXCERPT_LIMIT = 100;
+function excerpt(notes: string): string {
+  if (notes.length <= EXCERPT_LIMIT) return notes;
+  const cut = notes.slice(0, EXCERPT_LIMIT);
+  const word = cut.slice(0, Math.max(cut.lastIndexOf(" "), cut.lastIndexOf("\n")));
+  return `${word.replace(/[\s.,;:!?—–-]+$/, "")}…`;
+}

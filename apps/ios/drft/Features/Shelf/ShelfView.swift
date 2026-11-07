@@ -147,14 +147,16 @@ struct ShelfView: View {
                 let layout = ShelfLayout(collection: model.collection, now: now)
 
                 VStack(spacing: 0) {
-                    HomeHeader(count: model.collection?.thoughts.count) {
+                    HomeHeader {
                         settingsArePresented = true
                     }
 
                     ScrollView {
                         LazyVStack(alignment: .leading, spacing: 0) {
                             if let returnedThought = layout.returnedThought {
+                                // Edges on the dividers' line, like an inset group.
                                 backToday(returnedThought)
+                                    .padding(.horizontal, 16)
                                     .padding(.bottom, 4)
                             }
 
@@ -163,18 +165,22 @@ struct ShelfView: View {
                                 ForEach(Array(section.thoughts.enumerated()), id: \.element.id) { index, thought in
                                     if index > 0 {
                                         Hairline()
+                                            .padding(.horizontal, 16)
                                     }
                                     thoughtRow(thought)
                                 }
                             }
                         }
-                        .padding(.horizontal, 14)
+                        .padding(.horizontal, 8)
                         .padding(.top, 8)
-                        .padding(.bottom, 110)
+                        // Room for the fade, so the last row ends clear of it.
+                        .padding(.bottom, 28)
                     }
                     .scrollIndicators(.hidden)
                 }
-                .overlay(alignment: .bottom) {
+                // A bounded band at the bottom: the list ends above it, so
+                // no row ever sits under the button.
+                .safeAreaInset(edge: .bottom, spacing: 0) {
                     catchThoughtAffordance
                 }
             }
@@ -240,8 +246,7 @@ struct ShelfView: View {
         }
     }
 
-    // A solid vermilion pill at the bottom edge, over a fade of the page so
-    // rows pass beneath it quietly.
+    // A quiet ink pill on the thumb side, in its own band below the list.
     private var catchThoughtAffordance: some View {
         Button {
             onCatchThought()
@@ -251,21 +256,28 @@ struct ShelfView: View {
                 Text("New thought")
             }
         }
-        .buttonStyle(PillButtonStyle(kind: .primary, height: 48, horizontalPadding: 24))
-        .padding(.top, 28)
-        .padding(.bottom, 16)
-        .frame(maxWidth: .infinity)
+        .buttonStyle(PillButtonStyle(kind: .neutral, height: 44, horizontalPadding: 20))
+        // Lifted a touch, so it sits above the list rather than in it.
+        .shadow(color: Stillness.lift, radius: 10, y: 4)
+        .padding(.top, 12)
+        .padding(.bottom, 12)
+        .padding(.trailing, 20)
+        // On the thumb side, so it sits beside the list rather than on it.
+        .frame(maxWidth: .infinity, alignment: .trailing)
         .background {
-            LinearGradient(
-                stops: [
-                    .init(color: Stillness.page.opacity(0), location: 0),
-                    .init(color: Stillness.page, location: 0.4),
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea(edges: .bottom)
-            .allowsHitTesting(false)
+            Stillness.page
+                .ignoresSafeArea(edges: .bottom)
+                // Rows soften as they reach the band instead of meeting an edge.
+                .overlay(alignment: .top) {
+                    LinearGradient(
+                        colors: [Stillness.page.opacity(0), Stillness.page],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    .frame(height: 20)
+                    .offset(y: -20)
+                }
+                .allowsHitTesting(false)
         }
         .accessibilityLabel("New thought")
     }
@@ -275,11 +287,11 @@ struct ShelfView: View {
             Text(section.group.label)
                 .font(StillnessType.groupLabel)
                 .foregroundStyle(Stillness.chromeText)
-            Badge(text: "\(section.thoughts.count)")
         }
-        .padding(.horizontal, 10)
-        .padding(.top, 18)
-        .padding(.bottom, 4)
+        .padding(.horizontal, 16)
+        // Closer to its own rows than to the group before.
+        .padding(.top, 36)
+        .padding(.bottom, 2)
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(.isHeader)
     }
@@ -289,29 +301,31 @@ struct ShelfView: View {
         Button {
             open(thought)
         } label: {
-            VStack(alignment: .leading, spacing: 5) {
-                HStack(spacing: 6) {
-                    EmberIcon(.arrowBendUpLeft, size: 14)
-                    Text("Back today")
-                        .font(.geist(12.5, .medium, relativeTo: .footnote))
-                }
-                .foregroundStyle(Stillness.nowInk)
+            HStack(spacing: 12) {
+                VStack(alignment: .leading, spacing: 5) {
+                    HStack(spacing: 6) {
+                        EmberIcon(.arrowBendUpLeft, size: 14)
+                        Text("Back today")
+                            .font(.geist(12.5, .medium, relativeTo: .footnote))
+                    }
+                    .foregroundStyle(Stillness.nowInk)
 
-                Text(thought.preview)
-                    .font(StillnessType.body)
-                    .lineSpacing(StillnessType.bodyLineSpacing)
-                    .foregroundStyle(Stillness.ink)
-                    .lineLimit(2)
-                    .multilineTextAlignment(.leading)
+                    Text(thought.preview)
+                        .font(StillnessType.body)
+                        .lineSpacing(StillnessType.bodyLineSpacing)
+                        .foregroundStyle(Stillness.ink)
+                        .lineLimit(2)
+                        .multilineTextAlignment(.leading)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+                EmberIcon(.caretRight, size: 13)
+                    .foregroundStyle(Stillness.nowInk.opacity(0.6))
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
         }
-        .buttonStyle(RowButtonStyle(
-            background: Stillness.nowTint,
-            pressedBackground: Stillness.nowTintStrong
-        ))
+        .buttonStyle(BackTodayButtonStyle())
         .simultaneousGesture(
             LongPressGesture(minimumDuration: 0).onEnded { _ in
                 convexService.prewarmThought(id: thought.id)
@@ -326,20 +340,28 @@ struct ShelfView: View {
         return Button {
             open(thought)
         } label: {
-            HStack(alignment: .firstTextBaseline, spacing: 12) {
+            HStack(alignment: .firstTextBaseline, spacing: 18) {
                 Text(thought.preview)
                     .font(StillnessType.row)
+                    .lineSpacing(3)
                     .foregroundStyle(Stillness.ink)
-                    .lineLimit(1)
+                    .lineLimit(2)
                     .frame(maxWidth: .infinity, alignment: .leading)
 
-                Text(age)
-                    .font(StillnessType.caption)
-                    .monospacedDigit()
-                    .foregroundStyle(Stillness.chromeLabel)
-                    .lineLimit(1)
+                HStack(alignment: .firstTextBaseline, spacing: 4) {
+                    if thought.heldAt != nil {
+                        EmberIcon(.bookmarkSimpleFill, size: 11)
+                            .foregroundStyle(Stillness.chromeText)
+                            .accessibilityLabel("held")
+                    }
+                    Text(age)
+                        .font(StillnessType.caption)
+                        .monospacedDigit()
+                        .foregroundStyle(Stillness.chromeLabel)
+                        .lineLimit(1)
+                }
             }
-            .padding(.horizontal, 10)
+            .padding(.horizontal, 16)
             .padding(.vertical, 14)
         }
         .buttonStyle(RowButtonStyle())
@@ -376,5 +398,17 @@ struct ShelfView: View {
         withAnimation(.easeInOut(duration: 0.24)) {
             selectedThoughtID = nil
         }
+    }
+}
+
+/// Today's returned thought: a light wash of the accent with a faint edge,
+/// deepening while pressed.
+private struct BackTodayButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        let shape = RoundedRectangle(cornerRadius: StillnessSpacing.surfaceRadius, style: .continuous)
+        configuration.label
+            .background(configuration.isPressed ? Stillness.nowTint : Stillness.nowWash, in: shape)
+            .overlay { shape.strokeBorder(Stillness.nowWashEdge, lineWidth: 1) }
+            .contentShape(shape)
     }
 }

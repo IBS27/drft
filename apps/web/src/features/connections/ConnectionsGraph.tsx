@@ -42,7 +42,7 @@ type Point = { x: number; y: number };
 
 const MIN_SCALE = 0.36;
 const MAX_SCALE = 3.2;
-const LABEL_LIMIT = 42;
+const LINE_CHARS = 24;
 
 function hash(value: string): number {
   let result = 2166136261;
@@ -65,11 +65,129 @@ function initialPoint(id: string, width: number, height: number): Point {
   };
 }
 
-function label(text: string): string {
-  const oneLine = text.replace(/\s+/g, " ").trim();
-  return oneLine.length > LABEL_LIMIT
-    ? `${oneLine.slice(0, LABEL_LIMIT - 1)}…`
-    : oneLine;
+// A thought's label: up to two short lines, broken at words, so most
+// thoughts are named in full and long ones end in an ellipsis at a word.
+function labelLines(text: string): string[] {
+  const words = text.replace(/\s+/g, " ").trim().split(" ");
+  const lines: string[] = [];
+  let line = "";
+  for (const word of words) {
+    const next = line ? `${line} ${word}` : word;
+    if (next.length <= LINE_CHARS || !line) {
+      line = next;
+      continue;
+    }
+    lines.push(line);
+    line = word;
+    if (lines.length === 2) break;
+  }
+  if (lines.length < 2 && line) lines.push(line);
+  const shown = lines.join(" ").length;
+  const full = words.join(" ").length;
+  if (shown < full) {
+    const last = lines[lines.length - 1].replace(/[\s,—–-]+$/, "");
+    lines[lines.length - 1] = `${last.slice(0, LINE_CHARS - 1)}…`;
+  }
+  return lines;
+}
+
+type LabelSide = "right" | "left" | "top" | "bottom";
+type Box = { x0: number; y0: number; x1: number; y1: number };
+
+const LINE_HEIGHT = 17;
+const LABEL_GAP = 7;
+
+function nodeRadius(connected: number): number {
+  return Math.min(9, 4.2 + connected * 1.1);
+}
+
+// Where a label sits around its node, in world units. Width is estimated
+// from the text (Geist at 13.5px averages ~6.9px a character).
+function labelBox(x: number, y: number, r: number, lines: string[], side: LabelSide): Box {
+  const w = Math.max(...lines.map((line) => line.length)) * 6.9;
+  const h = lines.length * LINE_HEIGHT;
+  switch (side) {
+    case "right":
+      return { x0: x + r + LABEL_GAP, y0: y - h / 2, x1: x + r + LABEL_GAP + w, y1: y + h / 2 };
+    case "left":
+      return { x0: x - r - LABEL_GAP - w, y0: y - h / 2, x1: x - r - LABEL_GAP, y1: y + h / 2 };
+    case "top":
+      return { x0: x - w / 2, y0: y - r - LABEL_GAP - h, x1: x + w / 2, y1: y - r - LABEL_GAP };
+    case "bottom":
+      return { x0: x - w / 2, y0: y + r + LABEL_GAP, x1: x + w / 2, y1: y + r + LABEL_GAP + h };
+  }
+}
+
+const overlaps = (a: Box, b: Box) =>
+  a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;
+
+// Greedy placement once the layout settles: the most connected thoughts
+// choose first, each taking the first side whose label clears every node
+// and every label already placed. A label with nowhere to go waits for
+// hover instead of landing on top of something.
+function placeLabels(
+  nodes: LayoutNode[],
+  links: LayoutLink[],
+  degree: Map<string, number>,
+): Map<string, LabelSide> {
+  const byId = new Map(nodes.map((node) => [node.id, node]));
+  // Which way each node's edges leave it, so its label can sit opposite.
+  const edgeSides = new Map<string, Record<LabelSide, number>>();
+  for (const link of links) {
+    for (const [from, to] of [
+      [link.sourceId, link.targetId],
+      [link.targetId, link.sourceId],
+    ]) {
+      const a = byId.get(from);
+      const b = byId.get(to);
+      if (!a || !b) continue;
+      const dx = (b.x ?? 0) - (a.x ?? 0);
+      const dy = (b.y ?? 0) - (a.y ?? 0);
+      const side: LabelSide =
+        Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? "right" : "left") : dy > 0 ? "bottom" : "top";
+      const counts = edgeSides.get(from) ?? { right: 0, left: 0, top: 0, bottom: 0 };
+      counts[side] += 1;
+      edgeSides.set(from, counts);
+    }
+  }
+  const allSides: LabelSide[] = ["right", "left", "top", "bottom"];
+  const nodeBoxes = nodes.map((node) => {
+    const r = nodeRadius(degree.get(node.id) ?? 0) + 3;
+    const x = node.x ?? 0;
+    const y = node.y ?? 0;
+    return { id: node.id, box: { x0: x - r, y0: y - r, x1: x + r, y1: y + r } };
+  });
+  const placed: Box[] = [];
+  const result = new Map<string, LabelSide>();
+  const order = [...nodes]
+    .filter((node) => (degree.get(node.id) ?? 0) > 0)
+    .sort((a, b) => (degree.get(b.id) ?? 0) - (degree.get(a.id) ?? 0));
+  for (const node of order) {
+    const r = nodeRadius(degree.get(node.id) ?? 0);
+    const lines = labelLines(node.thought.text);
+    const counts = edgeSides.get(node.id);
+    // Names read to the right by default; another side only on a collision,
+    // nearest the side with the fewest lines.
+    const sides = counts
+      ? ["right" as const, ...(["left", "top", "bottom"] as const).toSorted((a, b) => counts[a] - counts[b])]
+      : allSides;
+    let best: { side: LabelSide; box: Box; hits: number } | null = null;
+    for (const side of sides) {
+      const box = labelBox(node.x ?? 0, node.y ?? 0, r, lines, side);
+      const hits =
+        placed.filter((other) => overlaps(box, other)).length * 2 +
+        nodeBoxes.filter((n) => n.id !== node.id && overlaps(box, n.box)).length;
+      if (!best || hits < best.hits) best = { side, box, hits };
+      if (hits === 0) break;
+    }
+    // The busiest thoughts choose first; a label lands only where it
+    // touches nothing. The rest wait for hover.
+    if (best && best.hits === 0) {
+      placed.push(best.box);
+      result.set(node.id, best.side);
+    }
+  }
+  return result;
 }
 
 function endpointId(endpoint: string | number | LayoutNode): string {
@@ -84,22 +202,25 @@ function fitTransform(
   if (nodes.length === 0) return { x: 0, y: 0, scale: 1 };
   const xs = nodes.map((node) => node.x ?? width / 2);
   const ys = nodes.map((node) => node.y ?? height / 2);
-  const minX = Math.min(...xs);
-  const maxX = Math.max(...xs);
-  const minY = Math.min(...ys);
-  const maxY = Math.max(...ys);
+  // Labels sit mostly to the right of their nodes: allow for them so the
+  // map, as seen, is centred.
+  const minX = Math.min(...xs) - 150;
+  const maxX = Math.max(...xs) + 160;
+  const minY = Math.min(...ys) - 30;
+  const maxY = Math.max(...ys) + 30;
   const graphWidth = Math.max(1, maxX - minX);
   const graphHeight = Math.max(1, maxY - minY);
   const scale = Math.min(
-    1.2,
+    1.35,
     Math.max(
       MIN_SCALE,
-      Math.min((width - 100) / graphWidth, (height - 150) / graphHeight),
+      Math.min((width - 160) / graphWidth, (height - 190) / graphHeight),
     ),
   );
   return {
     x: width / 2 - ((minX + maxX) / 2) * scale,
-    y: height / 2 - ((minY + maxY) / 2) * scale,
+    // A touch above centre: the legend weighs on the bottom edge.
+    y: height * 0.46 - ((minY + maxY) / 2) * scale,
     scale,
   };
 }
@@ -107,9 +228,12 @@ function fitTransform(
 export function ConnectionsGraph({
   thoughts,
   loading,
+  returnedId,
 }: {
   thoughts: GraphThought[];
   loading: boolean;
+  // Today's returned thought: the one "now" on the map.
+  returnedId: string | null;
 }) {
   const navigate = useNavigate();
   const frameRef = useRef<HTMLDivElement>(null);
@@ -122,6 +246,9 @@ export function ConnectionsGraph({
   >(undefined);
   const [size, setSize] = useState({ width: 0, height: 0 });
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [labelSides, setLabelSides] = useState<Map<string, LabelSide>>(
+    () => new Map(),
+  );
   const [transform, setTransform] = useState<ViewTransform>({
     x: 0,
     y: 0,
@@ -142,14 +269,25 @@ export function ConnectionsGraph({
   }, []);
 
   const layout = useMemo(() => {
-    const thoughtIds = new Set(thoughts.map((thought) => thought._id));
-    const nodes = thoughts.map<LayoutNode>((thought) => {
+    // The map is of what echoes what: thoughts with no echo yet stay off it
+    // (each one's page still says so) rather than floating as stray dots.
+    const allIds = new Set(thoughts.map((thought) => thought._id));
+    const linked = new Set<string>();
+    for (const thought of thoughts)
+      for (const connection of thought.connections)
+        if (allIds.has(connection.toId)) {
+          linked.add(thought._id);
+          linked.add(connection.toId);
+        }
+    const shown = thoughts.filter((thought) => linked.has(thought._id));
+    const thoughtIds = new Set(shown.map((thought) => thought._id));
+    const nodes = shown.map<LayoutNode>((thought) => {
       const remembered = positions.current.get(thought._id);
       const point =
         remembered ?? initialPoint(thought._id, size.width, size.height);
       return { id: thought._id, thought, x: point.x, y: point.y };
     });
-    const links = thoughts.flatMap<LayoutLink>((thought) =>
+    const links = shown.flatMap<LayoutLink>((thought) =>
       thought.connections
         .filter((connection) => thoughtIds.has(connection.toId))
         .map((connection) => ({
@@ -167,21 +305,28 @@ export function ConnectionsGraph({
     if (size.width === 0 || size.height === 0 || layout.nodes.length === 0)
       return;
     let tick = 0;
+    const linkDegree = new Map<string, number>();
+    for (const link of layout.links) {
+      linkDegree.set(link.sourceId, (linkDegree.get(link.sourceId) ?? 0) + 1);
+      linkDegree.set(link.targetId, (linkDegree.get(link.targetId) ?? 0) + 1);
+    }
     const nodeById = new Map(layout.nodes.map((node) => [node.id, node]));
     const simulation = forceSimulation(layout.nodes)
       .force(
         "link",
         forceLink<LayoutNode, LayoutLink>(layout.links)
           .id((node) => node.id)
-          .distance(92)
+          .distance(150)
           .strength(0.34),
       )
-      .force("charge", forceManyBody().strength(-54).distanceMax(300))
-      .force("collide", forceCollide(13).strength(0.8))
+      .force("charge", forceManyBody().strength(-240).distanceMax(440))
+      .force("collide", forceCollide(50).strength(0.95))
       .force("center", forceCenter(size.width / 2, size.height / 2))
       .force("x", forceX(size.width / 2).strength(0.025))
       .force("y", forceY(size.height / 2).strength(0.025))
       .alphaDecay(0.045)
+      // Labels are placed as the map settles, and again when it comes to rest.
+      .on("end", () => setLabelSides(placeLabels(layout.nodes, layout.links, linkDegree)))
       .on("tick", () => {
         tick += 1;
         for (const node of layout.nodes) {
@@ -212,6 +357,8 @@ export function ConnectionsGraph({
         ) {
           setTransform(fitTransform(layout.nodes, size.width, size.height));
         }
+        if (tick === 24 || tick === 56)
+          setLabelSides(placeLabels(layout.nodes, layout.links, linkDegree));
       });
     return () => {
       simulation.stop();
@@ -317,7 +464,10 @@ export function ConnectionsGraph({
   };
 
   return (
-    <div ref={frameRef} className="relative min-h-0 flex-1 overflow-hidden">
+    <div
+      ref={frameRef}
+      className="relative min-h-0 flex-1 overflow-hidden bg-[radial-gradient(color-mix(in_oklab,var(--line)_35%,transparent)_1px,transparent_1.2px)] bg-[length:26px_26px]"
+    >
       {thoughts.length === 0 ? (
         <div className="flex h-full items-center justify-center pb-20 text-[14px] text-pl">
           {loading ? <span className="caret h-5 w-0.5 rounded-full bg-dot" /> : "No thoughts yet"}
@@ -358,8 +508,14 @@ export function ConnectionsGraph({
                       x2={target.x}
                       y2={target.y}
                       vectorEffect="non-scaling-stroke"
-                      className={`transition-colors duration-200 ${visible ? "stroke-ink/45" : "stroke-line"}`}
-                      strokeWidth={1}
+                      className={`transition-[stroke,opacity] duration-200 ${
+                        visible
+                          ? "stroke-mut opacity-90"
+                          : activeId
+                            ? "stroke-line opacity-60"
+                            : "map-edge stroke-faint"
+                      }`}
+                      strokeWidth={visible ? 1.5 : 1.1}
                     />
                   );
                 })}
@@ -371,9 +527,23 @@ export function ConnectionsGraph({
                 const connected = degree.get(node.id) ?? 0;
                 const x = node.x ?? size.width / 2;
                 const y = node.y ?? size.height / 2;
-                const radius = Math.min(6.5, 3.4 + connected * 0.55);
-                const showLabel = selected || neighbor;
-                const labelOnLeft = x > size.width * 0.72;
+                const radius =
+                  connected === 0
+                    ? 2.5
+                    : node.thought.status === "resting"
+                      ? Math.max(3.5, nodeRadius(connected) - 2)
+                      : nodeRadius(connected);
+                // At rest every connected thought that has room is named,
+                // so the map reads at a glance; while one is in hand, only
+                // its neighbourhood speaks and the rest steps back.
+                const placedSide = labelSides.get(node.id);
+                const showLabel = activeId
+                  ? selected || neighbor
+                  : placedSide !== undefined;
+                const side: LabelSide =
+                  placedSide ?? (x > size.width * 0.72 ? "left" : "right");
+                const receded = activeId !== null && !selected && !neighbor;
+                const lone = connected === 0 && !selected;
                 return (
                   <g
                     key={node.id}
@@ -385,7 +555,7 @@ export function ConnectionsGraph({
                     role="link"
                     tabIndex={0}
                     aria-label={`${node.thought.text}, ${connected} connection${connected === 1 ? "" : "s"}${node.thought.status === "resting" ? ", set down" : ""}`}
-                    className="cursor-pointer outline-none"
+                    className={`cursor-pointer outline-none transition-opacity duration-200 ${receded ? "opacity-35" : lone ? "opacity-50" : ""}`}
                     onPointerEnter={() => setActiveId(node.id)}
                     onPointerLeave={() => setActiveId(null)}
                     onFocus={() => setActiveId(node.id)}
@@ -395,26 +565,73 @@ export function ConnectionsGraph({
                     transform={`translate(${x} ${y})`}
                   >
                     <circle r={16} fill="transparent" />
+                    {selected && <circle r={radius + 6} className="fill-ink/10" />}
+                    {node.id === returnedId && !selected && (
+                      <circle r={radius + 5} className="fill-dot/15" />
+                    )}
                     <circle
                       r={radius}
                       vectorEffect="non-scaling-stroke"
                       className={
-                        selected
-                          ? "fill-dot stroke-none"
+                        node.id === returnedId
+                          ? "fill-dot stroke-pg"
+                          : selected
+                            ? "fill-ink stroke-pg"
                           : node.thought.status === "resting"
-                            ? `fill-pg stroke-faint ${neighbor ? "opacity-100" : "opacity-50"}`
-                            : `stroke-none ${neighbor ? "fill-ink opacity-90" : "fill-mut opacity-45"}`
+                            ? "fill-pg stroke-faint"
+                            : connected > 0
+                              ? "fill-mut stroke-pg"
+                              : "fill-pl stroke-none"
                       }
-                      strokeWidth={1}
+                      strokeWidth={node.thought.status === "resting" || connected === 0 ? 1.25 : 2}
                     />
+                    {showLabel &&
+                      (() => {
+                        // A paper backing: lines dim beneath a name instead of crossing it.
+                        const box = labelBox(0, 0, radius, labelLines(node.thought.text), side);
+                        return (
+                          <rect
+                            x={box.x0 - 2}
+                            y={box.y0}
+                            width={box.x1 - box.x0 + 4}
+                            height={box.y1 - box.y0}
+                            rx={5}
+                            className="pointer-events-none fill-pg opacity-75"
+                          />
+                        );
+                      })()}
                     {showLabel && (
                       <text
-                        x={labelOnLeft ? -13 : 13}
-                        y={-5}
-                        textAnchor={labelOnLeft ? "end" : "start"}
-                        className="pointer-events-none fill-pt text-[12px]"
+                        dominantBaseline="central"
+                        textAnchor={side === "right" ? "start" : side === "left" ? "end" : "middle"}
+                        paintOrder="stroke"
+                        strokeWidth={3}
+                        strokeLinejoin="round"
+                        className={`pointer-events-none stroke-pg text-[13.5px] ${selected ? "fill-ink font-medium" : "fill-pt"}`}
                       >
-                        {label(node.thought.text)}
+                        {(() => {
+                          const lines = labelLines(node.thought.text);
+                          const block = lines.length * LINE_HEIGHT;
+                          const x =
+                            side === "right"
+                              ? radius + LABEL_GAP
+                              : side === "left"
+                                ? -(radius + LABEL_GAP)
+                                : 0;
+                          // Centre of the label block, then one line per row.
+                          const cy =
+                            side === "top"
+                              ? -(radius + LABEL_GAP + block / 2)
+                              : side === "bottom"
+                                ? radius + LABEL_GAP + block / 2
+                                : 0;
+                          const first = cy - ((lines.length - 1) * LINE_HEIGHT) / 2;
+                          return lines.map((line, i) => (
+                            <tspan key={i} x={x} y={first + i * LINE_HEIGHT}>
+                              {line}
+                            </tspan>
+                          ));
+                        })()}
                       </text>
                     )}
                   </g>
@@ -423,10 +640,34 @@ export function ConnectionsGraph({
             </g>
           </svg>
 
+          {!active && (
+            <div className="pointer-events-none absolute right-[max(28px,calc(50%-304px))] bottom-6 left-[max(28px,calc(50%-304px))] flex items-center justify-between gap-3 text-[13px] text-pl">
+              <p className="flex items-center rounded-full bg-scr/90 px-4 py-2 ring-1 ring-line ring-inset backdrop-blur">
+              {returnedId && (
+                <span className="mr-3 inline-flex items-center gap-1.5">
+                  <span className="inline-block size-2 rounded-full bg-dot" />
+                  Back today
+                </span>
+              )}
+              <span className="inline-flex items-center gap-1.5">
+                <span className="inline-block size-2 rounded-full bg-pt" />
+                Kept
+              </span>
+              <span className="ml-3 inline-flex items-center gap-1.5">
+                <span className="inline-block size-2 rounded-full ring-1 ring-faint" />
+                Set down
+              </span>
+
+              </p>
+              <p className="rounded-full bg-scr/90 px-4 py-2 ring-1 ring-line ring-inset backdrop-blur">
+                Point to preview · click to open · scroll to zoom
+              </p>
+            </div>
+          )}
           {active && (
             <div
               aria-live="polite"
-              className="pointer-events-none absolute bottom-7 left-1/2 w-[min(640px,70%)] -translate-x-1/2 text-center"
+              className="pointer-events-none absolute bottom-7 left-1/2 w-[min(600px,70%)] -translate-x-1/2 rounded-[16px] bg-scr/95 px-6 py-4 text-center shadow-lift ring-1 ring-line ring-inset backdrop-blur"
             >
               <div className="text-[13px] text-pl first-letter:uppercase">
                 {dateLine(active.createdAt, Date.now())}

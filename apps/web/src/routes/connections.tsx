@@ -1,12 +1,13 @@
-import { ArrowLeft } from "@phosphor-icons/react";
+import { Graph } from "@phosphor-icons/react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useConvexAuth, usePaginatedQuery } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
 import { useEffect, useState } from "react";
 import { ConnectionsGraph } from "../features/connections/ConnectionsGraph";
-import { Badge } from "../features/ui/Badge";
+import { localDate } from "../features/thoughts/format";
+import { Rail } from "../features/thoughts/Rail";
+import { useCachedQuery } from "../features/thoughts/useCachedQuery";
 import { PageHeader } from "../features/ui/PageHeader";
-import { Wordmark } from "../features/ui/Wordmark";
 
 export const Route = createFileRoute("/connections")({
   component: Connections,
@@ -44,36 +45,50 @@ function Connections() {
   }, [loadMore, status]);
 
   const loading = status !== "Exhausted";
+  const [now] = useState(() => Date.now());
+  const [date] = useState(() => localDate(now));
+  const collection = useCachedQuery(
+    api.thoughts.collection,
+    isAuthenticated && desktop ? { date } : "skip",
+    `collection:${date}`,
+  );
 
   return (
     <main className="flex min-h-dvh flex-col">
       <div className="flex min-h-dvh flex-col lg:hidden">
         <PageHeader title="Connections" />
-        <div className="flex flex-1 items-center justify-center px-8 pb-24 text-center text-[15px] text-pt">
-          Connections is available on a larger screen.
+        <div className="flex flex-col items-center px-8 pt-[16vh] text-center">
+          <span className="flex size-12 items-center justify-center rounded-full bg-line/70 text-[22px] text-pt">
+            <Graph aria-hidden="true" />
+          </span>
+          <p className="mt-5 text-[17px] font-medium text-ink">The connections map opens on a wider screen</p>
+          <p className="mt-2 max-w-[30ch] text-[15px] leading-relaxed text-balance text-pl">
+            Open a thought to see related thoughts.
+          </p>
+          <Link
+            to="/"
+            className="mt-4 text-[14px] font-medium text-pt underline decoration-line underline-offset-4 transition-colors hover:text-ink"
+          >
+            Back to thoughts
+          </Link>
         </div>
       </div>
 
-      <div className="hidden min-h-dvh flex-1 flex-col lg:flex">
-        <header className="relative z-10 grid h-[72px] flex-none grid-cols-[1fr_auto_1fr] items-center px-6">
-          <Link
-            to="/"
-            className="inline-flex h-9 items-center gap-2 justify-self-start rounded-full px-3.5 text-[14px] text-pt transition-colors hover:bg-tint hover:text-ink"
-          >
-            <ArrowLeft aria-hidden="true" className="text-[16px]" />
-            Collection
-          </Link>
-          <Wordmark />
-          <span className="flex items-center gap-2.5 justify-self-end">
-            <span className="text-[14px] font-medium text-pt">Connections</span>
-            {results.length > 0 && <Badge size="md">{results.length}</Badge>}
-            {loading && (
-              <span aria-label="loading" className="caret h-4 w-0.5 rounded-full bg-dot" />
-            )}
-          </span>
-        </header>
+      {desktop && <Rail activeId={null} now={now} />}
+      <div className="hidden min-h-dvh flex-1 flex-col lg:flex lg:pl-72 xl:pl-80">
+        <PageHeader
+          title="Connections"
+          description="Thoughts that echo each other."
+          aside={
+            loading && <span aria-label="loading" className="caret h-4 w-0.5 rounded-full bg-dot" />
+          }
+        />
 
-        <ConnectionsGraph thoughts={results} loading={loading} />
+        <ConnectionsGraph
+          thoughts={results}
+          loading={loading}
+          returnedId={collection?.resurfacedId ?? null}
+        />
       </div>
     </main>
   );

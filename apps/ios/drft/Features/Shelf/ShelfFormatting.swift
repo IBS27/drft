@@ -89,7 +89,7 @@ enum ShelfFormatting {
         }
 
         // Set as a sentence, like the web's thought header: "Tuesday, 9:41 am".
-        return "\(day), \(time(for: date).lowercased())"
+        return "\(day) · \(time(for: date).lowercased())"
     }
 
     static func ageLabel(for milliseconds: Double, now: Date = .now) -> String {
@@ -100,7 +100,7 @@ enum ShelfFormatting {
             return time(for: date).lowercased()
         case .thisWeek:
             update(shortWeekdayFormatter)
-            return shortWeekdayFormatter.string(from: date).lowercased()
+            return shortWeekdayFormatter.string(from: date)
         case .earlier:
             let formatter =
                 calendar.component(.year, from: date)
@@ -108,7 +108,7 @@ enum ShelfFormatting {
                 ? dayMonthFormatter
                 : dayMonthYearFormatter
             update(formatter)
-            return formatter.string(from: date).lowercased()
+            return formatter.string(from: date)
         }
     }
 

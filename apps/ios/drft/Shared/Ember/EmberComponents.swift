@@ -6,6 +6,9 @@ enum PhosphorIcon: String {
     case arrowBendUpLeft = "ph-arrow-bend-up-left"
     case arrowLeft = "ph-arrow-left"
     case arrowUpRight = "ph-arrow-up-right"
+    case bookmarkSimpleFill = "ph-bookmark-simple-fill"
+    case caretDown = "ph-caret-down"
+    case caretRight = "ph-caret-right"
     case envelopeSimple = "ph-envelope-simple"
     case gearSix = "ph-gear-six"
     case githubLogoFill = "ph-github-logo-fill"
@@ -46,7 +49,7 @@ struct EmberIcon: View {
     }
 }
 
-/// A count, or a few words about one, in the accent's tint.
+/// A count, or a few words about one: a quiet fact, never the accent.
 struct Badge: View {
     enum Size {
         case small
@@ -60,11 +63,11 @@ struct Badge: View {
         Text(text)
             .font(size == .medium ? StillnessType.badgeLarge : StillnessType.badge)
             .monospacedDigit()
-            .foregroundStyle(Stillness.nowInk)
+            .foregroundStyle(Stillness.chromeLabel)
             .lineLimit(1)
             .padding(.horizontal, size == .medium ? 11 : 7)
             .frame(minHeight: size == .medium ? 26 : 18)
-            .background(Stillness.nowTintStrong, in: Capsule())
+            .background(Stillness.hairline.opacity(0.7), in: Capsule())
     }
 }
 
@@ -102,6 +105,8 @@ struct Chip<Label: View>: View {
 struct PillButtonStyle: ButtonStyle {
     enum Kind {
         case primary
+        /// Solid ink: a standing action that isn't "now" (New thought).
+        case ink
         case outline
         case neutral
         case quiet
@@ -117,7 +122,7 @@ struct PillButtonStyle: ButtonStyle {
         let isPressed = configuration.isPressed
 
         configuration.label
-            .font(kind == .primary ? StillnessType.primaryButton : StillnessType.control)
+            .font(kind == .primary || kind == .ink ? StillnessType.primaryButton : StillnessType.control)
             .lineLimit(1)
             .foregroundStyle(foreground)
             .padding(.horizontal, horizontalPadding)
@@ -132,25 +137,32 @@ struct PillButtonStyle: ButtonStyle {
                         isPressed ? Stillness.nowEdge : Stillness.hairline,
                         lineWidth: 1
                     )
-                case .primary, .quiet:
+                case .ink:
+                    Capsule().strokeBorder(Stillness.hairline, lineWidth: 1)
+                case .primary:
+                    // Waiting for words: an outline, not a grey slab.
+                    if !isEnabled { Capsule().strokeBorder(Stillness.hairline, lineWidth: 1) }
+                case .quiet:
                     EmptyView()
                 }
             }
             .shadow(
-                color: kind == .primary && isEnabled ? Stillness.now.opacity(0.4) : .clear,
-                radius: 12,
-                y: 10
+                color: (kind == .primary || kind == .ink) && isEnabled ? Stillness.shadow : .clear,
+                radius: 5,
+                y: 3
             )
             .contentShape(Capsule())
             .scaleEffect(isPressed ? 0.98 : 1)
-            .opacity(isEnabled ? 1 : 0.35)
+            // A primary action waiting for words reads as quiet, not broken.
+            .opacity(isEnabled || kind == .primary ? 1 : 0.35)
             .animation(.easeOut(duration: 0.15), value: isPressed)
             .animation(.easeOut(duration: 0.15), value: isEnabled)
     }
 
     private var foreground: Color {
         switch kind {
-        case .primary: Stillness.onNow
+        case .primary: isEnabled ? Stillness.onNow : Stillness.chromeLabel
+        case .ink: Stillness.onInkPill
         case .outline: Stillness.nowInk
         case .neutral: Stillness.chromeText
         case .quiet: Stillness.chromeText
@@ -159,7 +171,8 @@ struct PillButtonStyle: ButtonStyle {
 
     private func fill(isPressed: Bool) -> Color {
         switch kind {
-        case .primary: Stillness.now
+        case .primary: isEnabled ? Stillness.now : .clear
+        case .ink: Stillness.inkPill
         case .neutral: isPressed ? Stillness.nowTint : Stillness.surface
         case .outline, .quiet: isPressed ? Stillness.nowTint : .clear
         }
@@ -203,9 +216,9 @@ extension View {
     /// A quiet surface grouping rows: settings, the connections prompt.
     func emberSurface() -> some View {
         background(Stillness.surface)
-        .clipShape(RoundedRectangle(cornerRadius: StillnessSpacing.cardRadius, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: StillnessSpacing.surfaceRadius, style: .continuous))
         .overlay {
-            RoundedRectangle(cornerRadius: StillnessSpacing.cardRadius, style: .continuous)
+            RoundedRectangle(cornerRadius: StillnessSpacing.surfaceRadius, style: .continuous)
                 .strokeBorder(Stillness.hairline, lineWidth: 1)
         }
     }
@@ -215,6 +228,9 @@ extension View {
 /// the right. Both open settings; the wordmark keeps the tap it always had.
 struct HomeHeader: View {
     var count: Int?
+    /// Capture's way down to the shelf (the visible half of the pull-down
+    /// gesture), beside settings.
+    var onShowShelf: (() -> Void)?
     let onOpenSettings: () -> Void
 
     var body: some View {
@@ -230,15 +246,38 @@ struct HomeHeader: View {
 
             Spacer()
 
+            if let onShowShelf {
+                Button(action: onShowShelf) {
+                    Text("Thoughts")
+                        .font(StillnessType.control)
+                        .foregroundStyle(Stillness.chromeText)
+                        .padding(.horizontal, 14)
+                        .frame(height: 32)
+                        .background(Stillness.surface, in: Capsule())
+                        .overlay { Capsule().strokeBorder(Stillness.hairline, lineWidth: 1) }
+                        .frame(minHeight: 44)
+                        .padding(.trailing, 4)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Show thoughts")
+            }
+
             if let count, count > 0 {
                 Badge(text: "\(count) \(count == 1 ? "thought" : "thoughts")", size: .medium)
                     .padding(.trailing, 4)
             }
 
             Button(action: onOpenSettings) {
-                EmberIcon(.gearSix, size: 18)
+                EmberIcon(.gearSix, size: 17)
+                    .foregroundStyle(Stillness.chromeText)
+                    .frame(width: 32, height: 32)
+                    .background(Stillness.surface, in: Circle())
+                    .overlay { Circle().strokeBorder(Stillness.hairline, lineWidth: 1) }
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
             }
-            .buttonStyle(IconButtonStyle(diameter: 36))
+            .buttonStyle(.plain)
             .accessibilityLabel("Settings")
         }
         .padding(.leading, 22)

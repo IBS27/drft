@@ -40,16 +40,25 @@ export function ageLabel(at: number, now: Now): string {
   const group = groupOf(at, now);
   if (group === "today") return time(d);
   if (group === "this week")
-    return d.toLocaleDateString("en-US", { weekday: "short" }).toLowerCase();
-  const dayMonth = `${d.getDate()} ${d.toLocaleDateString("en-US", { month: "short" }).toLowerCase()}`;
+    return d.toLocaleDateString("en-US", { weekday: "short" });
+  const dayMonth = `${d.getDate()} ${d.toLocaleDateString("en-US", { month: "short" })}`;
   return d.getFullYear() === n.getFullYear()
     ? dayMonth
     : `${dayMonth} ${String(d.getFullYear()).slice(2)}`;
 }
 
-// The thought view's header, set as a sentence: "Tuesday, 9:41 am", or
-// "8 Jul, 9:41 am" once the weekday alone would be ambiguous ("8 Jul 25"
-// from another year). Lists keep ageLabel's lowercase shorthand.
+// When a thought last came back, in words: "today", "Thursday", "23 Jul".
+export function returnedLabel(at: number, now: Now): string {
+  const group = groupOf(at, now);
+  if (group === "today") return "today";
+  if (group === "this week")
+    return new Date(at).toLocaleDateString("en-US", { weekday: "long" });
+  return ageLabel(at, now);
+}
+
+// The thought view's header, in the composer's form: "Tuesday · 9:41 am",
+// or "8 Jul · 9:41 am" once the weekday alone would be ambiguous ("8 Jul 25"
+// from another year). Lists keep ageLabel's shorthand.
 export function dateLine(at: number, now: Now): string {
   const d = new Date(at);
   let day: string;
@@ -61,7 +70,7 @@ export function dateLine(at: number, now: Now): string {
   } else {
     day = d.toLocaleDateString("en-US", { weekday: "long" });
   }
-  return `${day}, ${time(d)}`;
+  return `${day} · ${time(d)}`;
 }
 
 export const firstLine = (text: string) => text.split("\n")[0];

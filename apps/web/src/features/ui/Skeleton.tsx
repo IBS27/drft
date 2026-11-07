@@ -35,7 +35,7 @@ export function SkeletonRows({
         <div
           key={i}
           className={`flex items-center gap-3 px-2.5 py-3.5 ${
-            i > 0 ? "shadow-[0_-1px_0_var(--line)]" : ""
+            i > 0 ? "divided" : ""
           }`}
         >
           <span className="flex h-6 flex-1 items-center">

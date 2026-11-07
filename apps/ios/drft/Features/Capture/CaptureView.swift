@@ -48,33 +48,40 @@ struct CaptureView: View {
             Stillness.page.ignoresSafeArea()
 
             VStack(spacing: 0) {
-                HomeHeader(onOpenSettings: openSettings)
+                HomeHeader(onShowShelf: showShelf, onOpenSettings: openSettings)
 
                 Spacer(minLength: 28)
+                    .frame(maxHeight: 56)
 
-                VStack(spacing: 22) {
+                VStack(alignment: .leading, spacing: 22) {
                     TimelineView(.periodic(from: .now, by: 15)) { context in
-                        Text(timestamp(for: context.date))
+                        Text("\(context.date.formatted(.dateTime.weekday(.wide))) \(context.date.formatted(.dateTime.day())) \(context.date.formatted(.dateTime.month(.wide))) · \(timestamp(for: context.date))")
                             .font(StillnessType.meta)
                             .monospacedDigit()
                             .foregroundStyle(Stillness.chromeLabel)
                     }
 
-                    TextField("", text: $model.text, axis: .vertical)
+                    TextField(
+                        "",
+                        text: $model.text,
+                        prompt: Text("Write a thought…")
+                            .foregroundStyle(Stillness.chromeLabel.opacity(0.75)),
+                        axis: .vertical
+                    )
                         .textFieldStyle(.plain)
                         .textInputAutocapitalization(.never)
                         .font(StillnessType.captureThought)
                         .tracking(StillnessType.captureThoughtTracking)
                         .lineSpacing(StillnessType.captureThoughtLineSpacing)
-                        .multilineTextAlignment(.center)
+                        .multilineTextAlignment(.leading)
                         .foregroundStyle(Stillness.ink)
-                        .tint(Stillness.now)
+                        .tint(Stillness.caret)
                         .focused($inputIsFocused)
                         .lineLimit(1...(dynamicTypeSize.isAccessibilitySize ? 8 : 5))
                         .submitLabel(.return)
                         .accessibilityLabel("Thought")
                 }
-                .frame(maxWidth: 345)
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 24)
 
                 Spacer(minLength: 28)
@@ -181,11 +188,19 @@ struct CaptureView: View {
         }
     }
 
+    private func showShelf() {
+        inputIsFocused = false
+        model.stopDictation()
+        onRevealShelf()
+    }
+
     private func openSettings() {
         model.stopDictation()
         settingsArePresented = true
     }
 
+    // Speak at the leading edge, Keep at the trailing edge, under the
+    // left-aligned words.
     private var actionRow: some View {
         HStack(spacing: 12) {
             Button {
@@ -196,6 +211,8 @@ struct CaptureView: View {
             .buttonStyle(PillButtonStyle(kind: model.isListening ? .outline : .neutral))
             .accessibilityLabel(model.isListening ? "Stop listening" : "Speak")
 
+            Spacer(minLength: 12)
+
             Button {
                 model.keep()
             } label: {
@@ -205,6 +222,7 @@ struct CaptureView: View {
             .disabled(!model.canKeep)
             .accessibilityLabel("Keep")
         }
+        .padding(.horizontal, 20)
         .padding(.bottom, 12)
         .opacity(model.isCaptureVisible ? 1 : 0)
         .animation(
@@ -291,6 +309,6 @@ struct CaptureView: View {
     }
 
     private func timestamp(for date: Date) -> String {
-        "\(ShelfFormatting.time(for: date).lowercased()), unfiled"
+        ShelfFormatting.time(for: date).lowercased()
     }
 }

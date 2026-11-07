@@ -1,9 +1,9 @@
 import {
   ArrowBendUpLeft,
   BookmarkSimple,
+  CaretRight,
   GearSix,
   MagnifyingGlass,
-  Moon,
 } from "@phosphor-icons/react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useConvexAuth } from "convex/react";
@@ -15,7 +15,6 @@ import { Rail } from "../features/thoughts/Rail";
 import { ageLabel, localDate, orderRows, GROUP_LABEL } from "../features/thoughts/format";
 import { useCachedQuery } from "../features/thoughts/useCachedQuery";
 import { useThoughtPrewarm } from "../features/thoughts/useThoughtPrewarm";
-import { Badge } from "../features/ui/Badge";
 import { SkeletonRows } from "../features/ui/Skeleton";
 import { Wordmark } from "../features/ui/Wordmark";
 import type { Id } from "@drft/backend/convex/_generated/dataModel";
@@ -23,6 +22,12 @@ import type { Id } from "@drft/backend/convex/_generated/dataModel";
 export const Route = createFileRoute("/")({ component: Collection });
 
 const NO_ROWS: Row[] = [];
+
+const HEADER_PILL =
+  "inline-flex h-8 items-center rounded-full bg-scr px-3 text-[13.5px] font-medium text-pt ring-1 ring-line ring-inset transition-colors hover:bg-tint hover:text-ink lg:hidden";
+
+const HEADER_ICON =
+  "flex size-11 items-center justify-center rounded-full text-[17px] text-pt transition-colors hover:text-ink lg:hidden [&>svg]:size-[19px]";
 
 type Row = {
   _id: Id<"thoughts">;
@@ -51,16 +56,6 @@ function Collection() {
     isAuthenticated ? { date } : "skip",
     `collection:${date}`,
   );
-  const resting = useCachedQuery(
-    api.thoughts.resting,
-    isAuthenticated ? {} : "skip",
-    "resting",
-  );
-  const held = useCachedQuery(
-    api.thoughts.held,
-    isAuthenticated ? {} : "skip",
-    "held",
-  );
 
   // One prewarm cache for the whole list, not one per row.
   const prewarm = useThoughtPrewarm();
@@ -77,47 +72,34 @@ function Collection() {
   // settles without moving under you.
   const hasList = loading || thoughts.length > 0;
 
-  const count = thoughts.length;
 
   return (
     <main className="flex min-h-dvh flex-col">
       {/* Below lg the rail is gone, so the header carries the way to find
           and settings; on wide screens only the count stays up here, and
           the header lets clicks through to the rail it spans. */}
-      <header className="relative z-10 flex h-14 items-center justify-between pr-3.5 pl-[22px] lg:pointer-events-none lg:h-[72px] lg:justify-end lg:pr-7">
+      <header className="relative z-10 flex h-14 items-center justify-between pr-3.5 pl-5 lg:pointer-events-none lg:h-12 lg:justify-end lg:pr-7">
         <span className="lg:hidden">
           <Wordmark />
         </span>
         <span className="flex items-center gap-0.5">
-          {count > 0 && (
-            <span className="mr-1.5 lg:mr-0">
-              <Badge size="md">
-                {count} {count === 1 ? "thought" : "thoughts"}
-              </Badge>
-            </span>
-          )}
+          {/* Held and Resting share the header on phones, by name, so
+              capture sits right under it. */}
+          <Link to="/held" className={`${HEADER_PILL} mr-1.5`}>
+            Held
+          </Link>
+          <Link to="/resting" className={`${HEADER_PILL} mr-1.5`}>
+            Resting
+          </Link>
           <button
             type="button"
             onClick={openSearch}
             aria-label="Find a thought"
-            className="flex size-9 items-center justify-center rounded-full text-[18px] text-pt transition-colors hover:bg-tint hover:text-ink lg:hidden"
+            className={HEADER_ICON}
           >
             <MagnifyingGlass aria-hidden="true" />
           </button>
-          {held && held.length > 0 && (
-            <Link
-              to="/held"
-              aria-label="Held thoughts"
-              className="flex size-9 items-center justify-center rounded-full text-[18px] text-pt transition-colors hover:bg-tint hover:text-ink lg:hidden"
-            >
-              <BookmarkSimple aria-hidden="true" />
-            </Link>
-          )}
-          <Link
-            to="/settings"
-            aria-label="Settings"
-            className="flex size-9 items-center justify-center rounded-full text-[18px] text-pt transition-colors hover:bg-tint hover:text-ink lg:hidden"
-          >
+          <Link to="/settings" aria-label="Settings" className={HEADER_ICON}>
             <GearSix aria-hidden="true" />
           </Link>
         </span>
@@ -125,21 +107,27 @@ function Collection() {
 
       <Rail activeId={null} now={now} />
 
+
       <div className="flex flex-1 flex-col lg:pl-72 xl:pl-80">
         {/* Capture is the first thing on screen, before any query answers:
             the field is focused and typeable at 0ms. */}
         <section
           className={
             hasList
-              ? "flex flex-col items-center px-6 pt-12 pb-6 lg:flex-1 lg:justify-center lg:pt-0 lg:pb-24"
-              : "flex flex-1 flex-col items-center justify-center px-6 pb-24"
+              ? "flex flex-col items-center px-5 pt-3 pb-2 sm:px-6 sm:pt-8 lg:flex-1 lg:justify-start lg:px-10 lg:pt-0 lg:pb-24"
+              : "flex flex-1 flex-col items-center justify-center px-4 pb-24 sm:px-6"
           }
         >
           <CaptureField now={now} />
+          {pinned && (
+            <div data-capture className="mt-6 hidden w-full max-w-[608px] lg:block">
+              <BackToday t={pinned} prewarm={prewarm} wide />
+            </div>
+          )}
         </section>
 
         {hasList && (
-          <section className="mx-auto w-full max-w-2xl flex-1 px-3.5 pt-8 pb-10 lg:hidden">
+          <section className="mx-auto w-full max-w-2xl flex-1 px-1 pt-4 pb-10 sm:px-6 lg:hidden">
             {loading ? (
               <SkeletonRows heading count={5} />
             ) : (
@@ -147,9 +135,8 @@ function Collection() {
                 {pinned && <BackToday t={pinned} prewarm={prewarm} />}
                 {groups.map(({ group, rows }) => (
                   <div key={group}>
-                    <h2 className="flex items-center gap-2 px-2.5 pt-[18px] pb-1 text-[13px] font-medium text-pt">
+                    <h2 className="px-4 pt-7 pb-0.5 text-[13px] font-medium text-pl">
                       {GROUP_LABEL[group]}
-                      <Badge>{rows.length}</Badge>
                     </h2>
                     {rows.map((t, i) => (
                       <ThoughtRow
@@ -167,17 +154,6 @@ function Collection() {
           </section>
         )}
 
-        {resting && resting.length > 0 && (
-          <footer className="flex items-center justify-center pb-10 lg:hidden">
-            <Link
-              to="/resting"
-              className="inline-flex h-10 items-center gap-2 rounded-full px-[18px] text-[14.5px] font-medium text-pt ring-1 ring-line ring-inset transition-colors hover:bg-tint hover:text-ink"
-            >
-              <Moon aria-hidden="true" className="text-[16px]" />
-              Resting thoughts
-            </Link>
-          </footer>
-        )}
       </div>
     </main>
   );
@@ -188,9 +164,11 @@ function Collection() {
 function BackToday({
   t,
   prewarm,
+  wide = false,
 }: {
   t: Row;
   prewarm: (thoughtId: Id<"thoughts">) => void;
+  wide?: boolean;
 }) {
   return (
     <Link
@@ -199,14 +177,26 @@ function BackToday({
       onPointerEnter={() => prewarm(t._id)}
       onPointerDown={() => prewarm(t._id)}
       onFocus={() => prewarm(t._id)}
-      className="mb-1 flex flex-col gap-[5px] rounded-card bg-tint px-3.5 py-3 transition-colors hover:bg-tint-2"
+      className={`group/back flex items-center rounded-[14px] bg-(--back-wash) ring-1 ring-(--back-edge) ring-inset transition-colors hover:bg-tint ${
+        wide ? "gap-4 px-10 py-6" : "mx-4 mb-1 gap-3 px-4 py-3.5 sm:mx-0"
+      }`}
     >
-      <span className="flex items-center gap-1.5 text-[12.5px] font-medium text-dot-ink">
-        <ArrowBendUpLeft aria-hidden="true" className="text-[14px]" />
-        <span className="sr-only">returned today: </span>
-        <span aria-hidden="true">Back today</span>
+      <span className="flex min-w-0 flex-1 flex-col gap-1.5">
+        <span className="flex items-center gap-1.5 text-[12.5px] font-medium text-dot-ink">
+          <ArrowBendUpLeft aria-hidden="true" className="text-[14px]" />
+          <span className="sr-only">returned today: </span>
+          <span aria-hidden="true">Back today</span>
+        </span>
+        <span
+          className={`line-clamp-2 text-ink ${wide ? "text-[20px] leading-[1.4] tracking-[-0.01em]" : "text-[15px] leading-[1.45]"}`}
+        >
+          {t.preview}
+        </span>
       </span>
-      <span className="line-clamp-2 text-[15px] leading-[1.45] text-ink">{t.preview}</span>
+      <CaretRight
+        aria-hidden="true"
+        className="flex-none text-[15px] text-dot-ink/60 transition-transform group-hover/back:translate-x-0.5"
+      />
     </Link>
   );
 }
@@ -232,19 +222,15 @@ const ThoughtRow = memo(function ThoughtRow({
       onPointerEnter={() => prewarm(t._id)}
       onPointerDown={() => prewarm(t._id)}
       onFocus={() => prewarm(t._id)}
-      className={`flex items-baseline gap-3 rounded-card px-2.5 py-3.5 text-[16px] text-ink transition-colors hover:bg-tint ${
-        divided ? "shadow-[0_-1px_0_var(--line)] hover:shadow-none! [a:hover+&]:shadow-none!" : ""
+      className={`flex items-baseline gap-5 rounded-card px-4 py-3.5 text-[16px] text-ink transition-colors hover:bg-tint [--inset:16px] ${
+        divided ? "divided" : ""
       }`}
     >
-      <span className="min-w-0 flex-1 truncate">{t.preview}</span>
-      {t.heldAt !== undefined && (
-        <BookmarkSimple
-          weight="fill"
-          aria-label="held"
-          className="flex-none self-center text-[13px] text-pt"
-        />
-      )}
-      <span className="flex-none text-[13px] text-pl tabular-nums">
+      <span className="line-clamp-3 min-w-0 flex-1 leading-[1.4]">{t.preview}</span>
+      <span className="inline-flex min-w-[48px] flex-none items-baseline justify-end gap-1 text-[13px] text-pl tabular-nums">
+        {t.heldAt !== undefined && (
+          <BookmarkSimple weight="fill" aria-label="held" className="translate-y-[1px] text-[11px] text-pt" />
+        )}
         {ageLabel(t.createdAt, now)}
       </span>
     </Link>

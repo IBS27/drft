@@ -1,6 +1,12 @@
 import SwiftUI
 
 struct SettingsView: View {
+    /// The device's timezone as a place ("Chicago"), not a database id.
+    private static var placeName: String {
+        (TimeZone.current.identifier.split(separator: "/").last.map(String.init) ?? "Local")
+            .replacingOccurrences(of: "_", with: " ")
+    }
+
     @ObservedObject private var authService: AuthService
     @ObservedObject private var convexService: ConvexService
     @Environment(\.dismiss) private var dismiss
@@ -30,8 +36,11 @@ struct SettingsView: View {
             VStack(spacing: 0) {
                 ZStack {
                     Text("Settings")
-                        .font(StillnessType.headerTitle)
-                        .foregroundStyle(Stillness.chromeText)
+                        .font(.geist(22, .semibold, relativeTo: .title2))
+                        .tracking(-0.3)
+                        .foregroundStyle(Stillness.ink)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.leading, 8)
                         .accessibilityAddTraits(.isHeader)
 
                     HStack {
@@ -52,22 +61,18 @@ struct SettingsView: View {
 
                 ScrollView {
                     VStack(spacing: 16) {
-                        VStack(spacing: 0) {
-                            if let email = authService.email {
-                                HStack(spacing: 12) {
-                                    EmberIcon(.envelopeSimple, size: 18)
-                                    Text(email)
-                                        .font(.geist(14, relativeTo: .subheadline))
-                                        .lineLimit(1)
-                                        .truncationMode(.middle)
-                                }
+                        // Who you are is context, not a setting: a quiet
+                        // line above the cards.
+                        if let email = authService.email {
+                            (Text("Signed in as ") + Text(email).foregroundStyle(Stillness.chromeText))
+                                .font(StillnessType.caption)
                                 .foregroundStyle(Stillness.chromeLabel)
+                                .lineLimit(1)
+                                .truncationMode(.middle)
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 14)
+                        }
 
-                                Hairline()
-                            }
+                        VStack(spacing: 0) {
 
                             VStack(alignment: .leading, spacing: 4) {
                                 HStack(spacing: 16) {
@@ -77,11 +82,16 @@ struct SettingsView: View {
 
                                     Spacer(minLength: 12)
 
-                                    Text(dailyThoughtTimeText)
-                                        .font(StillnessType.body)
-                                        .monospacedDigit()
-                                        .foregroundStyle(Stillness.ink)
-                                        .padding(.horizontal, 12)
+                                    HStack(spacing: 6) {
+                                        Text(dailyThoughtTimeText)
+                                            .font(StillnessType.body)
+                                            .monospacedDigit()
+                                            .foregroundStyle(Stillness.ink)
+                                        EmberIcon(.caretDown, size: 11)
+                                            .foregroundStyle(Stillness.chromeLabel)
+                                    }
+                                        .padding(.leading, 14)
+                                        .padding(.trailing, 11)
                                         .frame(minHeight: 36)
                                         .background(Stillness.page, in: Capsule())
                                         .overlay {
@@ -101,7 +111,7 @@ struct SettingsView: View {
                                         }
                                 }
 
-                                Text("One thought returns each morning, \(TimeZone.current.identifier)")
+                                Text("One thought returns each morning, \(Self.placeName) time")
                                     .font(StillnessType.caption)
                                     .foregroundStyle(Stillness.chromeLabel)
                                     .fixedSize(horizontal: false, vertical: true)
@@ -111,7 +121,7 @@ struct SettingsView: View {
 
                             Hairline()
 
-                            VStack(alignment: .leading, spacing: 4) {
+                            VStack(alignment: .leading, spacing: 0) {
                                 Toggle("Connections", isOn: connections)
                                     .toggleStyle(EmberSwitchStyle())
                                     .disabled(convexService.consent == .unknown)
@@ -151,12 +161,22 @@ struct SettingsView: View {
                             Button {
                                 deletionIsConfirming = true
                             } label: {
-                                Text(isDeletingAccount ? "Deleting…" : "Delete account")
-                                    .font(StillnessType.body)
-                                    .foregroundStyle(Stillness.nowInk)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .padding(.horizontal, 16)
-                                    .padding(.vertical, 14)
+                                HStack {
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(isDeletingAccount ? "Deleting…" : "Delete account")
+                                            .font(StillnessType.body)
+                                        Text("Removes your thoughts and notes for good.")
+                                            .font(StillnessType.caption)
+                                            .foregroundStyle(Stillness.chromeLabel)
+                                    }
+                                    Spacer(minLength: 12)
+                                    EmberIcon(.caretRight, size: 13)
+                                        .opacity(0.7)
+                                }
+                                .foregroundStyle(Stillness.ink)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 14)
                             }
                             .buttonStyle(SettingsRowButtonStyle())
                             .disabled(isDeletingAccount)
@@ -334,7 +354,7 @@ struct SettingsView: View {
         let build = Bundle.main.object(
             forInfoDictionaryKey: "CFBundleVersion"
         ) as? String ?? "1"
-        return "drft \(version) · \(build)"
+        return "Version \(version) (\(build))"
     }
 }
 
@@ -366,7 +386,7 @@ private struct EmberSwitchStyle: ToggleStyle {
 
                 ZStack(alignment: configuration.isOn ? .trailing : .leading) {
                     Capsule()
-                        .fill(configuration.isOn ? Stillness.now : Stillness.hairline)
+                        .fill(configuration.isOn ? Stillness.switchOn : Stillness.hairline)
                         .overlay {
                             if !configuration.isOn {
                                 Capsule().strokeBorder(Stillness.chromeLabel, lineWidth: 1)
@@ -374,8 +394,9 @@ private struct EmberSwitchStyle: ToggleStyle {
                         }
 
                     Circle()
-                        .fill(Stillness.page)
+                        .fill(Stillness.switchKnob)
                         .frame(width: 20, height: 20)
+
                         .shadow(color: Stillness.ink.opacity(0.3), radius: 1.5, y: 1)
                         .padding(2)
                 }

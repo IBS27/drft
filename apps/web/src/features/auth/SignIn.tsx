@@ -37,42 +37,59 @@ export function SignIn() {
 
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center px-6 pb-16">
-      <h1 className="inline-flex items-baseline gap-[0.44em] text-[32px] font-semibold tracking-[-0.03em] text-ink">
-        <LogoMark className="h-[0.75em]" />
-        drft
-      </h1>
-      <p className="mt-3 text-[16px] text-pt">A space for unfinished thoughts</p>
+      <span className="flex size-[76px] items-center justify-center rounded-[22px] bg-scr shadow-lift ring-1 ring-line ring-inset">
+        <LogoMark className="h-[30px] text-ink" />
+      </span>
+      <h1 className="mt-7 text-[34px] font-semibold tracking-[-0.03em] text-ink">drft</h1>
+      <p className="mt-2 text-[17px] text-pt">A space for unfinished thoughts</p>
 
-      <div className="mt-12 flex w-72 max-w-full flex-col gap-3">
+      <div className="mt-11 flex w-[300px] max-w-full flex-col gap-3">
         {PROVIDERS.map(({ strategy, label, Icon }) => (
           <button
             key={strategy}
             type="button"
             disabled={!isLoaded || pending !== null}
             onClick={() => start(strategy)}
-            className={`flex h-12 w-full items-center justify-center gap-3 rounded-full text-[15px] font-medium text-ink ring-1 transition-[background-color,box-shadow,opacity,scale] ring-inset hover:bg-tint hover:ring-dot-edge active:scale-[0.98] disabled:cursor-default ${
-              pending === strategy ? "bg-tint ring-dot-edge" : "bg-scr ring-line"
+            className={`grid h-12 w-full grid-cols-[22px_1fr] items-center gap-3 rounded-full pr-5 pl-6 text-[15px] font-medium text-ink ring-1 transition-[background-color,box-shadow,opacity,scale] ring-inset hover:bg-tint hover:ring-dot-edge active:scale-[0.98] disabled:cursor-default ${
+              pending === strategy ? "bg-tint ring-dot-edge" : "bg-scr shadow-lift ring-[color-mix(in_oklab,var(--line),var(--ink)_10%)]"
             } ${pending && pending !== strategy ? "opacity-40" : ""}`}
           >
-            <Icon aria-hidden="true" weight="fill" className="text-[18px]" />
-            {label}
+            {strategy === "oauth_google" ? (
+              <GoogleMark />
+            ) : (
+              <Icon aria-hidden="true" weight="fill" className="text-[19px]" />
+            )}
+            <span className="text-left">{label}</span>
           </button>
         ))}
       </div>
 
       <p
         role="status"
-        className={`mt-6 text-[13px] text-dot-ink ${failed ? "" : "invisible"}`}
+        className={`mt-5 text-[13px] text-dot-ink ${failed ? "" : "invisible"}`}
       >
         Couldn't sign in. Try again.
       </p>
 
       <a
         href="/privacy"
-        className="fixed bottom-6 text-[13px] text-pl transition-colors hover:text-ink"
+        className="mt-2 text-[13px] text-pl underline decoration-line underline-offset-4 transition-colors hover:text-ink"
       >
         Privacy policy
       </a>
     </main>
+  );
+}
+
+// Google's own four-colour mark, as its sign-in guidelines ask; the other
+// providers use their monochrome marks.
+function GoogleMark() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 48 48" className="size-[17px]">
+      <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+      <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+      <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
+      <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+    </svg>
   );
 }

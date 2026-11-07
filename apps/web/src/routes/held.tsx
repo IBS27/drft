@@ -1,4 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { BookmarkSimple } from "@phosphor-icons/react";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useConvexAuth } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
 import type { Id } from "@drft/backend/convex/_generated/dataModel";
@@ -15,7 +16,7 @@ import { useHold } from "../features/held/useHold";
 import { Rail } from "../features/thoughts/Rail";
 import { useCachedQuery } from "../features/thoughts/useCachedQuery";
 import { useThoughtPrewarm } from "../features/thoughts/useThoughtPrewarm";
-import { BackLink } from "../features/ui/BackLink";
+import { PageHeader } from "../features/ui/PageHeader";
 import { Skeleton } from "../features/ui/Skeleton";
 
 export const Route = createFileRoute("/held")({ component: Held });
@@ -59,31 +60,49 @@ function Held() {
     <main className="min-h-dvh">
       <Rail activeId={null} now={now} />
       <div className="flex min-h-dvh flex-col lg:pl-72 xl:pl-80">
-        <header className="grid h-[72px] flex-none grid-cols-[1fr_auto_1fr] items-center px-4 md:px-5">
-          <span className="justify-self-start">
-            <BackLink />
-          </span>
-          <h1 className="text-[15px] font-medium text-pt">Held</h1>
-          <span className="justify-self-end">
-            {cards && cards.length > 0 && <ModeSwitch mode={mode} setMode={setMode} />}
-          </span>
-        </header>
+        <PageHeader
+          title="Held"
+          description="Thoughts you're keeping close."
+          aside={cards && cards.length > 0 && <ModeSwitch mode={mode} setMode={setMode} />}
+        />
         <section
           aria-busy={cards === undefined}
-          className="flex flex-1 flex-col px-4 pt-2 pb-16 md:px-6"
+          className="mx-auto flex w-full max-w-[688px] flex-1 flex-col px-4 pt-2 pb-16 md:px-10"
         >
           {cards === undefined ? (
             <BoardSkeleton />
           ) : cards.length === 0 ? (
-            <div className="flex flex-1 items-center justify-center pb-24">
-              <span className="text-[15px] text-pl">Hold a thought to keep it here.</span>
-            </div>
+            <EmptyHeld />
           ) : (
             <Board cards={cards} mode={mode} now={now} />
           )}
         </section>
       </div>
     </main>
+  );
+}
+
+// Nothing held yet: say what the page is for and how a thought gets here.
+function EmptyHeld() {
+  return (
+    <div className="flex flex-col items-start pt-10 pb-24 text-left">
+      <span className="flex size-12 items-center justify-center rounded-full bg-line/70 text-[22px] text-pt">
+        <BookmarkSimple aria-hidden="true" />
+      </span>
+      <h2 className="mt-5 text-[19px] font-medium tracking-[-0.01em] text-ink">
+        Nothing held yet
+      </h2>
+      <p className="mt-2 max-w-[32ch] text-[15px] leading-relaxed text-balance text-pl">
+        Hold a thought from its page<span className="[@media(hover:none)]:hidden"> (or press h)</span>{" "}
+        to keep it close here.
+      </p>
+      <Link
+        to="/"
+        className="mt-5 text-[14px] font-medium text-pt underline decoration-line underline-offset-4 transition-colors hover:text-ink lg:hidden"
+      >
+        Back to thoughts
+      </Link>
+    </div>
   );
 }
 
@@ -101,7 +120,7 @@ function ModeSwitch({
       onClick={() => setMode(value)}
       className={`h-7 rounded-full px-3 text-[13px] transition-colors ${
         mode === value
-          ? "bg-tint-2 font-medium text-dot-ink"
+          ? "bg-line/70 font-medium text-ink"
           : "text-pl hover:text-ink"
       }`}
     >
@@ -115,7 +134,7 @@ function ModeSwitch({
       className="inline-flex rounded-full p-[3px] ring-1 ring-line ring-inset"
     >
       {option("recent", "Recent")}
-      {option("together", "Together")}
+      {option("together", "By connection")}
     </span>
   );
 }
@@ -143,7 +162,7 @@ function Board({
   now: number;
 }) {
   const [ref, width] = useWidth();
-  const columns = width > 0 ? columnCount(width) : 1;
+  const columns = width > 0 ? Math.min(2, columnCount(width)) : 1;
   const toggle = useHold();
   const prewarm = useThoughtPrewarm();
   const [focusId, setFocusId] = useState<Id<"thoughts"> | null>(null);

@@ -11,14 +11,30 @@ struct SignInView: View {
             Stillness.page.ignoresSafeArea()
 
             VStack(spacing: 0) {
-                Wordmark(size: .large)
+                LogoMark(height: 30)
+                    .frame(width: 76, height: 76)
+                    .background(
+                        Stillness.surface,
+                        in: RoundedRectangle(cornerRadius: 22, style: .continuous)
+                    )
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 22, style: .continuous)
+                            .strokeBorder(Stillness.hairline, lineWidth: 1)
+                    }
+                    .shadow(color: Stillness.lift, radius: 12, y: 6)
+
+                Text("drft")
+                    .font(.geist(34, .semibold, relativeTo: .largeTitle))
+                    .tracking(-1)
+                    .foregroundStyle(Stillness.ink)
+                    .padding(.top, 26)
                     .accessibilityAddTraits(.isHeader)
 
                 Text("A space for unfinished thoughts")
-                    .font(.geist(16, relativeTo: .callout))
+                    .font(.geist(17, relativeTo: .callout))
                     .foregroundStyle(Stillness.chromeText)
                     .multilineTextAlignment(.center)
-                    .padding(.top, 12)
+                    .padding(.top, 8)
 
                 VStack(spacing: 12) {
                     // Apple first: App Review expects it to be at least as prominent.
@@ -36,19 +52,18 @@ struct SignInView: View {
                     .padding(.top, 24)
                     .opacity(failed ? 1 : 0)
                     .accessibilityHidden(!failed)
+
+                Link(destination: .privacyPolicy) {
+                    Text("Privacy policy")
+                        .font(StillnessType.caption)
+                        .underline(color: Stillness.hairline)
+                        .foregroundStyle(Stillness.chromeLabel)
+                        .frame(minHeight: 44)
+                        .contentShape(Rectangle())
+                }
             }
             .padding(.horizontal, 24)
             .padding(.bottom, 64)
-        }
-        .safeAreaInset(edge: .bottom, spacing: 0) {
-            Link(destination: .privacyPolicy) {
-                Text("Privacy policy")
-                    .font(StillnessType.caption)
-                    .foregroundStyle(Stillness.chromeLabel)
-                    .frame(minHeight: 44)
-                    .contentShape(Rectangle())
-            }
-            .padding(.bottom, 8)
         }
     }
 
@@ -59,10 +74,16 @@ struct SignInView: View {
         Button {
             start(provider)
         } label: {
-            HStack(spacing: 12) {
+            // Marks in one column at the leading edge; the label centred.
+            HStack(spacing: 0) {
                 providerIcon(provider)
+                    .frame(width: 22)
+                Spacer(minLength: 8)
                 Text(label)
+                Spacer(minLength: 8)
+                Color.clear.frame(width: 22)
             }
+            .padding(.horizontal, 4)
             .frame(maxWidth: .infinity)
         }
         .buttonStyle(ProviderButtonStyle(provider: provider, pending: pending))
@@ -79,9 +100,14 @@ struct SignInView: View {
                 .frame(width: 18, height: 18)
                 .accessibilityHidden(true)
         case .google:
-            EmberIcon(.googleLogoFill, size: 18)
+            // Google's own four-colour mark, as its sign-in guidelines ask.
+            Image("google-g")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 17, height: 17)
+                .accessibilityHidden(true)
         case .github:
-            EmberIcon(.githubLogoFill, size: 18)
+            EmberIcon(.githubLogoFill, size: 20)
         default:
             EmptyView()
         }
