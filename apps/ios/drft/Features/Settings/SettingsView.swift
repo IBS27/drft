@@ -64,17 +64,12 @@ struct SettingsView: View {
                         // Who you are is context, not a setting: a quiet
                         // line above the cards.
                         if let email = authService.email {
-                            HStack(spacing: 6) {
-                                Text("Signed in as")
-                                Text(email)
-                                    .foregroundStyle(Stillness.chromeText)
-                                    .lineLimit(1)
-                                    .truncationMode(.middle)
-                            }
-                            .font(StillnessType.caption)
-                            .foregroundStyle(Stillness.chromeLabel)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.horizontal, 4)
+                            (Text("Signed in as ") + Text(email).foregroundStyle(Stillness.chromeText))
+                                .font(StillnessType.caption)
+                                .foregroundStyle(Stillness.chromeLabel)
+                                .lineLimit(1)
+                                .truncationMode(.middle)
+                                .frame(maxWidth: .infinity, alignment: .leading)
                         }
 
                         VStack(spacing: 0) {

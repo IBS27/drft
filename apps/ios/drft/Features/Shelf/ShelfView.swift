@@ -155,6 +155,7 @@ struct ShelfView: View {
                         LazyVStack(alignment: .leading, spacing: 0) {
                             if let returnedThought = layout.returnedThought {
                                 backToday(returnedThought)
+                                    .padding(.horizontal, 4)
                                     .padding(.bottom, 4)
                             }
 
@@ -306,7 +307,8 @@ struct ShelfView: View {
                 EmberIcon(.caretRight, size: 13)
                     .foregroundStyle(Stillness.nowInk.opacity(0.6))
             }
-            .padding(.horizontal, 16)
+            // Text stays on the rows' line: the card's 4pt inset plus 12.
+            .padding(.horizontal, 12)
             .padding(.vertical, 14)
         }
         .buttonStyle(BackTodayButtonStyle())

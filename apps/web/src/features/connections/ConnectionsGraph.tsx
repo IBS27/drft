@@ -217,7 +217,8 @@ function fitTransform(
   );
   return {
     x: width / 2 - ((minX + maxX) / 2) * scale,
-    y: height / 2 - ((minY + maxY) / 2) * scale,
+    // A touch above centre: the legend weighs on the bottom edge.
+    y: height * 0.46 - ((minY + maxY) / 2) * scale,
     scale,
   };
 }

@@ -8,7 +8,7 @@ import {
   Moon,
   PencilSimpleLine,
 } from "@phosphor-icons/react";
-import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useConvexAuth } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
 import { memo, useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
@@ -73,8 +73,6 @@ export const Rail = memo(function Rail({
     "resting",
   );
   const toggleHold = useHold();
-  // On home the day's thought has the main pane; the rail doesn't repeat it.
-  const onHome = useRouterState({ select: (s) => s.location.pathname === "/" });
   const search = backTo === "/held" ? FROM_HELD : FROM_HOME;
   const [restingOpen, setRestingOpen] = useState(false);
   const navigate = useNavigate();
@@ -303,7 +301,7 @@ export const Rail = memo(function Rail({
         aria-label="collection"
         aria-busy={loading}
         ref={listRef}
-        className={`min-h-0 flex-1 overflow-y-auto px-3 pt-1 pb-6 [scrollbar-width:none] ${moreBelow ? "[mask-image:linear-gradient(to_bottom,#000_calc(100%-48px),transparent)]" : ""}`}
+        className={`min-h-0 flex-1 overflow-y-auto px-3 pt-1 pb-10 [scrollbar-width:none] ${moreBelow ? "[mask-image:linear-gradient(to_bottom,#000_calc(100%-40px),transparent)]" : ""}`}
       >
         {finding ? (
           <FindResults
@@ -320,7 +318,7 @@ export const Rail = memo(function Rail({
           <RailSkeleton />
         ) : (
           <>
-            {ordered.pinned && !onHome && (
+            {ordered.pinned && (
               <BackToday
                 t={ordered.pinned}
                 active={ordered.pinned._id === activeId}
@@ -485,13 +483,12 @@ const BackToday = memo(function BackToday({
         active ? ACTIVE_BAR : "hover:bg-tint"
       }`}
     >
-      <span className="flex items-baseline gap-2">
-        <ArrowBendUpLeft aria-hidden="true" className="flex-none translate-y-[2px] text-[14px] text-dot-ink" />
+      <span className="flex items-center gap-1.5 text-[12.5px] font-medium text-dot-ink">
+        <ArrowBendUpLeft aria-hidden="true" className="text-[13px]" />
         <span className="sr-only">returned today: </span>
-        <span className="line-clamp-2 min-w-0 flex-1 text-[15px] leading-[1.4] text-ink">
-          {t.preview}
-        </span>
+        <span aria-hidden="true">Back today</span>
       </span>
+      <span className="mt-1 line-clamp-2 text-[15px] leading-[1.4] text-ink">{t.preview}</span>
     </Link>
   );
 });

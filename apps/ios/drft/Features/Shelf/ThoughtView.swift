@@ -218,10 +218,10 @@ struct ThoughtView: View {
             if thought.status == .open {
                 HStack(spacing: 8) {
                     // Held is set on the web; here it is shown, not changed.
-                    if thought.heldAt != nil {
+                    if let heldAt = thought.heldAt {
                         HStack(spacing: 6) {
                             EmberIcon(.bookmarkSimpleFill, size: 13)
-                            Text("Held")
+                            Text("Held \(heldAge(heldAt))")
                         }
                         .font(StillnessType.control)
                         .foregroundStyle(Stillness.chromeLabel)
@@ -682,4 +682,21 @@ private struct RelatedThoughtRow: View {
                 }
             }
     }
+}
+
+// How long a thought has been held, in the web's words: "today",
+// "3 days", "2 weeks".
+private func heldAge(_ heldAt: Double, now: Date = .now) -> String {
+    let calendar = Calendar.current
+    let days = calendar.dateComponents(
+        [.day],
+        from: calendar.startOfDay(for: Date(timeIntervalSince1970: heldAt / 1000)),
+        to: calendar.startOfDay(for: now)
+    ).day ?? 0
+    func unit(_ n: Int, _ word: String) -> String { "\(n) \(word)\(n == 1 ? "" : "s")" }
+    if days <= 0 { return "today" }
+    if days < 7 { return unit(days, "day") }
+    if days < 30 { return unit(days / 7, "week") }
+    if days < 365 { return unit(days / 30, "month") }
+    return unit(days / 365, "year")
 }

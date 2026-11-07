@@ -16,7 +16,7 @@ import { useHold } from "../features/held/useHold";
 import { Rail } from "../features/thoughts/Rail";
 import { useCachedQuery } from "../features/thoughts/useCachedQuery";
 import { useThoughtPrewarm } from "../features/thoughts/useThoughtPrewarm";
-import { BackLink } from "../features/ui/BackLink";
+import { PageHeader } from "../features/ui/PageHeader";
 import { Skeleton } from "../features/ui/Skeleton";
 
 export const Route = createFileRoute("/held")({ component: Held });
@@ -60,18 +60,11 @@ function Held() {
     <main className="min-h-dvh">
       <Rail activeId={null} now={now} />
       <div className="flex min-h-dvh flex-col lg:pl-72 xl:pl-80">
-        <header className="mx-auto flex h-[72px] w-full max-w-[688px] flex-none items-center gap-1 pr-4 pl-1.5 md:px-[30px] lg:h-auto lg:px-10 lg:pt-12 lg:pb-3">
-          <span className="lg:hidden">
-            <BackLink />
-          </span>
-          <span className="flex flex-col">
-            <h1 className="text-[17px] font-semibold tracking-[-0.015em] text-ink lg:text-[22px]">Held</h1>
-            <span className="hidden text-[15px] text-pl lg:block">Thoughts you're keeping close.</span>
-          </span>
-          <span className="ml-auto">
-            {cards && cards.length > 0 && <ModeSwitch mode={mode} setMode={setMode} />}
-          </span>
-        </header>
+        <PageHeader
+          title="Held"
+          description="Thoughts you're keeping close."
+          aside={cards && cards.length > 0 && <ModeSwitch mode={mode} setMode={setMode} />}
+        />
         <section
           aria-busy={cards === undefined}
           className="mx-auto flex w-full max-w-[688px] flex-1 flex-col px-4 pt-2 pb-16 md:px-10"

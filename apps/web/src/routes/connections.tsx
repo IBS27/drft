@@ -76,15 +76,13 @@ function Connections() {
 
       {desktop && <Rail activeId={null} now={now} />}
       <div className="hidden min-h-dvh flex-1 flex-col lg:flex lg:pl-72 xl:pl-80">
-        <header className="relative z-10 mx-auto flex w-full max-w-[688px] flex-none flex-col gap-1 px-10 pt-12 pb-3">
-          <h1 className="text-[22px] font-semibold tracking-[-0.015em] text-ink">Connections</h1>
-          <p className="text-[15px] text-pl">Thoughts that echo each other.</p>
-          <span className="ml-auto flex items-center gap-2.5">
-            {loading && (
-              <span aria-label="loading" className="caret h-4 w-0.5 rounded-full bg-dot" />
-            )}
-          </span>
-        </header>
+        <PageHeader
+          title="Connections"
+          description="Thoughts that echo each other."
+          aside={
+            loading && <span aria-label="loading" className="caret h-4 w-0.5 rounded-full bg-dot" />
+          }
+        />
 
         <ConnectionsGraph
           thoughts={results}
