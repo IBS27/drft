@@ -63,8 +63,9 @@ struct SettingsView: View {
                     }
                 }
                 .padding(.horizontal, 8)
-                .padding(.top, 8)
-                .frame(minHeight: 64)
+                // Clear of the grabber; the title then sits close over the
+                // "Signed in as" line, as a page title does on web.
+                .padding(.top, 20)
                 .onGeometryChange(for: CGFloat.self) { $0.size.height } action: {
                     headerHeight = $0
                 }
@@ -80,6 +81,7 @@ struct SettingsView: View {
                                 .lineLimit(1)
                                 .truncationMode(.middle)
                                 .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.bottom, 6)
                         }
 
                         VStack(spacing: 0) {
@@ -105,7 +107,7 @@ struct SettingsView: View {
                                     .padding(.leading, 14)
                                     .padding(.trailing, 11)
                                     .frame(minHeight: 36)
-                                    .background(Stillness.page, in: Capsule())
+                                    .background(Stillness.controlFill, in: Capsule())
                                     .overlay {
                                         Capsule().strokeBorder(Stillness.hairline, lineWidth: 1)
                                     }
@@ -199,7 +201,7 @@ struct SettingsView: View {
                             .padding(.top, -4)
                     }
                     .padding(.horizontal, 16)
-                    .padding(.top, 8)
+                    .padding(.top, 4)
                     .padding(.bottom, 16)
                     .onGeometryChange(for: CGFloat.self) { $0.size.height } action: {
                         contentHeight = $0
@@ -274,10 +276,12 @@ struct SettingsView: View {
             Text(title)
                 .font(StillnessType.body)
                 .foregroundStyle(Stillness.ink)
-            Text(detail)
-                .font(StillnessType.caption)
-                .foregroundStyle(Stillness.chromeLabel)
-                .fixedSize(horizontal: false, vertical: true)
+            BalancedWrap {
+                Text(detail)
+                    .font(StillnessType.caption)
+                    .foregroundStyle(Stillness.chromeLabel)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
     }
 

@@ -29,6 +29,18 @@ enum Stillness {
         lightHighContrast: 0xB4B4AE,
         darkHighContrast: 0x52524D
     )
+    /// A pill control sitting on a card (the time picker): the page in the
+    /// light, a step off the surface; in the dark the surface mixed 10%
+    /// toward ink, so it lifts off the card rather than sinking into it.
+    static let controlFill = dynamic(light: 0xF5F3EE, dark: 0x373632)
+    /// Placeholder text ("Write a thought…"): the web's --ph in the light;
+    /// elsewhere the secondary label at 75%.
+    static let placeholder = Color(uiColor: UIColor { traits in
+        if traits.userInterfaceStyle != .dark, traits.accessibilityContrast != .high {
+            return color(0x8A857B, alpha: 1)
+        }
+        return UIColor(chromeLabel).resolvedColor(with: traits).withAlphaComponent(0.75)
+    })
     static let now = dynamic(light: 0xC73E1D, dark: 0xCC4A24)
     /// Label color on a `now`-filled control: the page color, as on web.
     static let onNow = dynamic(light: 0xFFFAF5, dark: 0xFFFAF5)

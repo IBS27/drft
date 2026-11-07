@@ -21,9 +21,13 @@ struct WordTruncatedText: View {
             ruler(lines: lineLimit + 1)
 
             ViewThatFits(in: .vertical) {
-                Text(text)
-                    .lineLimit(nil)
-                    .fixedSize(horizontal: false, vertical: true)
+                // Shown whole, its lines are balanced so the last one isn't
+                // a stray word or two; a shortened one already fills them.
+                BalancedWrap {
+                    Text(text)
+                        .lineLimit(nil)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
 
                 ForEach(Self.shortenings(of: text), id: \.self) { prefix in
                     Text(prefix + "…")

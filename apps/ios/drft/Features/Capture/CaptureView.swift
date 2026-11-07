@@ -65,7 +65,7 @@ struct CaptureView: View {
                         "",
                         text: $model.text,
                         prompt: Text("Write a thought…")
-                            .foregroundStyle(Stillness.chromeLabel.opacity(0.75)),
+                            .foregroundStyle(Stillness.placeholder),
                         axis: .vertical
                     )
                         .textFieldStyle(.plain)
