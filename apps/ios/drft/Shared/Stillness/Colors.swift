@@ -63,11 +63,11 @@ enum Stillness {
     /// The short shadow under a solid primary pill.
     static let shadow = dynamic(light: 0x3A2C1C, dark: 0x000000, alpha: 0.12)
     /// The lightest wash of the accent: today's returned thought at rest.
-    static let nowWash = dynamic(light: 0xF4EAE4, dark: 0x2E1D17)
-    /// Its faint edge, stronger in the dark so the card stays warm there.
+    static let nowWash = dynamic(light: 0xF4EAE4, dark: 0x26201C)
+    /// Its faint edge; in the dark a neutral surface with only a hint of warmth (the web's --back-edge).
     static let nowWashEdge = Color(uiColor: UIColor { traits in
         traits.userInterfaceStyle == .dark
-            ? UIColor(red: 0.8, green: 0.29, blue: 0.14, alpha: 0.42)
+            ? UIColor(red: 0.8, green: 0.29, blue: 0.14, alpha: 0.2)
             : UIColor(red: 0.78, green: 0.24, blue: 0.11, alpha: 0.2)
     })
     /// Soft wash for whatever is "now" (Back today, chips, pressed rows).
