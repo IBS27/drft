@@ -81,9 +81,9 @@ struct SignInView: View {
                 Spacer(minLength: 8)
                 Text(label)
                 Spacer(minLength: 8)
-                Color.clear.frame(width: 22)
+                Color.clear.frame(width: 22, height: 0)
             }
-            .padding(.horizontal, 4)
+            .padding(.horizontal, 16)
             .frame(maxWidth: .infinity)
         }
         .buttonStyle(ProviderButtonStyle(provider: provider, pending: pending))
