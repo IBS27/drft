@@ -1,13 +1,12 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { BookmarkSimple } from "@phosphor-icons/react";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useConvexAuth } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
 import type { Id } from "@drft/backend/convex/_generated/dataModel";
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { HeldCardView, type CardState } from "../features/held/HeldCardView";
 import {
-  columnCount,
   groupTogether,
-  placeInColumns,
   type HeldCard,
   type HeldMode,
 } from "../features/held/layout";
@@ -15,7 +14,7 @@ import { useHold } from "../features/held/useHold";
 import { Rail } from "../features/thoughts/Rail";
 import { useCachedQuery } from "../features/thoughts/useCachedQuery";
 import { useThoughtPrewarm } from "../features/thoughts/useThoughtPrewarm";
-import { BackLink } from "../features/ui/BackLink";
+import { PageHeader } from "../features/ui/PageHeader";
 import { Skeleton } from "../features/ui/Skeleton";
 
 export const Route = createFileRoute("/held")({ component: Held });
@@ -59,31 +58,49 @@ function Held() {
     <main className="min-h-dvh">
       <Rail activeId={null} now={now} />
       <div className="flex min-h-dvh flex-col lg:pl-72 xl:pl-80">
-        <header className="grid h-[72px] flex-none grid-cols-[1fr_auto_1fr] items-center px-4 md:px-5">
-          <span className="justify-self-start">
-            <BackLink />
-          </span>
-          <h1 className="text-[15px] font-medium text-pt">Held</h1>
-          <span className="justify-self-end">
-            {cards && cards.length > 0 && <ModeSwitch mode={mode} setMode={setMode} />}
-          </span>
-        </header>
+        <PageHeader
+          title="Held"
+          description="Thoughts you're keeping close."
+          aside={cards && cards.length > 0 && <ModeSwitch mode={mode} setMode={setMode} />}
+        />
         <section
           aria-busy={cards === undefined}
-          className="flex flex-1 flex-col px-4 pt-2 pb-16 md:px-6"
+          className="mx-auto flex w-full max-w-[688px] flex-1 flex-col px-5 pt-1 pb-16 md:px-10 lg:pt-0"
         >
           {cards === undefined ? (
             <BoardSkeleton />
           ) : cards.length === 0 ? (
-            <div className="flex flex-1 items-center justify-center pb-24">
-              <span className="text-[15px] text-pl">Hold a thought to keep it here.</span>
-            </div>
+            <EmptyHeld />
           ) : (
             <Board cards={cards} mode={mode} now={now} />
           )}
         </section>
       </div>
     </main>
+  );
+}
+
+// Nothing held yet: say what the page is for and how a thought gets here.
+function EmptyHeld() {
+  return (
+    <div className="flex flex-col items-start pt-10 pb-24 text-left">
+      <span className="flex size-12 items-center justify-center rounded-full bg-line/70 text-[22px] text-pt">
+        <BookmarkSimple aria-hidden="true" />
+      </span>
+      <h2 className="mt-5 text-[19px] font-medium tracking-[-0.01em] text-ink">
+        Nothing held yet
+      </h2>
+      <p className="mt-2 max-w-[32ch] text-[15px] leading-relaxed text-balance text-pl">
+        Hold a thought from its page<span className="[@media(hover:none)]:hidden"> (or press h)</span>{" "}
+        to keep it close here.
+      </p>
+      <Link
+        to="/"
+        className="mt-5 text-[14px] font-medium text-pt underline decoration-line underline-offset-4 transition-colors hover:text-ink lg:hidden"
+      >
+        Back to thoughts
+      </Link>
+    </div>
   );
 }
 
@@ -99,9 +116,9 @@ function ModeSwitch({
       type="button"
       aria-pressed={mode === value}
       onClick={() => setMode(value)}
-      className={`h-7 rounded-full px-3 text-[13px] transition-colors ${
+      className={`relative h-7 rounded-full px-3 text-[13px] transition-colors before:absolute before:inset-x-0 before:-inset-y-2 before:content-[''] ${
         mode === value
-          ? "bg-tint-2 font-medium text-dot-ink"
+          ? "bg-line/70 font-medium text-ink"
           : "text-pl hover:text-ink"
       }`}
     >
@@ -115,22 +132,9 @@ function ModeSwitch({
       className="inline-flex rounded-full p-[3px] ring-1 ring-line ring-inset"
     >
       {option("recent", "Recent")}
-      {option("together", "Together")}
+      {option("together", "By connection")}
     </span>
   );
-}
-
-function useWidth() {
-  const ref = useRef<HTMLDivElement>(null);
-  const [width, setWidth] = useState(0);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const observer = new ResizeObserver(([entry]) => setWidth(entry.contentRect.width));
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-  return [ref, width] as const;
 }
 
 function Board({
@@ -142,8 +146,6 @@ function Board({
   mode: HeldMode;
   now: number;
 }) {
-  const [ref, width] = useWidth();
-  const columns = width > 0 ? columnCount(width) : 1;
   const toggle = useHold();
   const prewarm = useThoughtPrewarm();
   const [focusId, setFocusId] = useState<Id<"thoughts"> | null>(null);
@@ -184,32 +186,20 @@ function Board({
     />
   );
 
-  const grid = { gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` };
-
+  // One column, like Resting and Related: each card is as tall as its
+  // words, and nothing is left ragged beside it.
   return (
-    <div ref={ref} className="w-full">
-      {width === 0 ? null : mode === "recent" ? (
-        <div className="flex items-start gap-3">
-          {placeInColumns(cards, columns, width).map((column, i) => (
-            <div key={i} className="flex min-w-0 flex-1 flex-col gap-3">
-              {column.map(render)}
-            </div>
-          ))}
-        </div>
-      ) : (
-        <Together cards={cards} grid={grid} render={render} />
-      )}
+    <div className="flex w-full flex-col border-t border-line">
+      {mode === "recent" ? cards.map(render) : <Together cards={cards} render={render} />}
     </div>
   );
 }
 
 function Together({
   cards,
-  grid,
   render,
 }: {
   cards: HeldCard[];
-  grid: { gridTemplateColumns: string };
   render: (card: HeldCard) => ReactNode;
 }) {
   const { groups, loose } = useMemo(() => groupTogether(cards), [cards]);
@@ -218,18 +208,17 @@ function Together({
       {groups.map((group, i) => (
         <div
           key={group[0]._id}
-          className={`grid items-start gap-3 ${i > 0 ? "mt-4 border-t border-line pt-4" : ""}`}
-          style={grid}
+          className={`flex flex-col ${i > 0 ? "mt-6 border-t border-line" : ""}`}
         >
           {group.map(render)}
         </div>
       ))}
       {loose.length > 0 && (
-        <div className={groups.length > 0 ? "mt-4 border-t border-line pt-3" : ""}>
+        <div className={groups.length > 0 ? "mt-6 border-t border-line pt-3" : ""}>
           <h2 className="pb-2.5 text-[13px] font-medium text-pl">
             {groups.length > 0 ? "Not near the others yet" : "None of these are related yet"}
           </h2>
-          <div className="grid items-start gap-3" style={grid}>
+          <div className="flex flex-col">
             {loose.map(render)}
           </div>
         </div>
@@ -241,7 +230,7 @@ function Together({
 // The table before its cards arrive: a few cards' worth of quiet lines.
 function BoardSkeleton() {
   return (
-    <div role="status" aria-label="loading held thoughts" className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+    <div role="status" aria-label="loading held thoughts" className="flex flex-col gap-3">
       {["w-[82%]", "w-[64%]", "w-[74%]"].map((width) => (
         <div key={width} className="flex flex-col gap-3 rounded-card bg-scr px-4 py-4 ring-1 ring-line ring-inset">
           <Skeleton className={`h-[10px] ${width}`} />

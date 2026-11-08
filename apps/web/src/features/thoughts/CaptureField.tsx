@@ -112,13 +112,22 @@ export function CaptureField({ now }: { now: number }) {
     else queue(trimmed, ownerRef.current);
   };
 
-  const clock = new Date(now)
+  const date = new Date(now);
+  const clock = date
     .toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
     .toLowerCase();
+  // Day first, like every other date in drft: "Friday 6 November".
+  const day = `${date.toLocaleDateString("en-US", { weekday: "long" })} ${date.getDate()} ${date.toLocaleDateString("en-US", { month: "long" })}`;
+  const typed = text.trim() !== "";
 
+  // A sheet of paper at the center of the room: today on top, your words
+  // in the middle, and the one action at its foot. The sheet is there
+  // before you type, so it is always clear where words go.
   return (
-    <div className="flex w-full flex-col items-center gap-[22px]">
-      <span className="text-[13.5px] text-pl tabular-nums">{clock}, unfiled</span>
+    <div data-capture className="flex w-full max-w-[608px] flex-col rounded-[14px] bg-scr px-4 pt-4 pb-3.5 shadow-lift ring-1 ring-line ring-inset sm:px-10 sm:pt-8 sm:pb-7">
+      <span className="text-[14px] text-pl tabular-nums">
+        {day} · {clock}
+      </span>
       <textarea
         ref={areaRef}
         value={text}
@@ -132,9 +141,10 @@ export function CaptureField({ now }: { now: number }) {
         autoFocus={!coarsePointer}
         rows={1}
         aria-label="A thought"
-        className="w-full max-w-[30ch] resize-none overflow-hidden bg-transparent text-center text-[24px] leading-[1.45] tracking-[-0.012em] text-ink caret-dot outline-none sm:text-[28px]"
+        placeholder="Write a thought…"
+        className="mt-3 min-h-[36px] w-full resize-none overflow-hidden bg-transparent text-[24px] leading-[1.42] tracking-[-0.014em] text-ink caret-dot outline-none placeholder:text-ph sm:mt-5 sm:min-h-0 sm:text-[30px]"
       />
-      <div className="flex h-[42px] items-center justify-center gap-4">
+      <div className="mt-4 flex h-[42px] items-center justify-between gap-4">
         {kept ? (
           <span
             role="status"
@@ -143,23 +153,22 @@ export function CaptureField({ now }: { now: number }) {
             <Check aria-hidden="true" weight="bold" className="text-[14px]" />
             Kept
           </span>
-        ) : text.trim() ? (
-          <>
-            <button
-              type="button"
-              onClick={keep}
-              className="inline-flex h-[42px] items-center gap-2.5 rounded-full bg-dot pr-2 pl-5 text-[15px] font-semibold text-on-dot shadow-[0_10px_24px_-12px_color-mix(in_oklab,var(--dot)_70%,transparent)] transition-[scale,filter] duration-200 hover:brightness-105 active:scale-[0.98] motion-reduce:transition-none"
-            >
-              Keep
-              <kbd className="inline-flex size-[26px] items-center justify-center rounded-full bg-on-dot/20 font-mono text-[13px]">
-                ↵
-              </kbd>
-            </button>
-            {!coarsePointer && (
-              <span className="text-[13px] text-pl">Shift ↵ for a new line</span>
-            )}
-          </>
-        ) : null}
+        ) : (
+          <span className="text-[13px] text-pl">
+            {typed ? (coarsePointer ? "" : "Shift ↵ for a new line") : "Unfinished is fine"}
+          </span>
+        )}
+        <button
+          type="button"
+          onClick={keep}
+          disabled={!typed}
+          className="inline-flex h-[42px] items-center gap-2.5 rounded-full bg-dot px-5 text-[15px] font-semibold text-on-dot shadow-[0_3px_10px_-6px_color-mix(in_oklab,var(--ink)_25%,transparent)] transition-[scale,filter,background-color,color,box-shadow] duration-200 hover:brightness-105 active:scale-[0.98] disabled:bg-transparent disabled:font-medium disabled:text-mut disabled:shadow-none disabled:ring-1 disabled:ring-line disabled:ring-inset disabled:hover:brightness-100 disabled:active:scale-100 motion-reduce:transition-none"
+        >
+          Keep
+          {!coarsePointer && (
+            <kbd className="font-mono text-[13px] opacity-70">↵</kbd>
+          )}
+        </button>
       </div>
     </div>
   );

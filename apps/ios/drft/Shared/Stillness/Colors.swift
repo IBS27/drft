@@ -6,27 +6,48 @@ import UIKit
 /// accent for "now". Mirrors the tokens in apps/web/src/index.css; the
 /// Ember tints are the web's `color-mix(in oklab, …)` values, precomputed.
 enum Stillness {
-    static let page = dynamic(light: 0xFAFAF8, dark: 0x131311)
-    static let surface = dynamic(light: 0xFCFCFB, dark: 0x181816)
-    static let ink = dynamic(light: 0x2B2B28, dark: 0xEAEAE5)
+    static let page = dynamic(light: 0xF5F3EE, dark: 0x181715)
+    static let surface = dynamic(light: 0xFBFAF7, dark: 0x23221F)
+    static let ink = dynamic(light: 0x26241F, dark: 0xEBE8E1)
     static let muted = dynamic(
-        light: 0x75756F,
-        dark: 0xA0A099,
+        light: 0x716D64,
+        dark: 0xA6A298,
         lightHighContrast: 0x4B4B47,
         darkHighContrast: 0xCDCDC7
     )
     static let hairline = dynamic(
-        light: 0xE8E8E4,
-        dark: 0x2B2B28,
+        light: 0xD9D5CA,
+        dark: 0x3D3B36,
         lightHighContrast: 0xB4B4AE,
         darkHighContrast: 0x52524D
     )
-    static let now = dynamic(light: 0xC73E1D, dark: 0xD9502A)
+    /// A step past the hairline for controls that must hold their shape on
+    /// the cream page (Speak, an empty Keep); in the dark the floating
+    /// edge (floatEdge), so the unfilled pills keep their shape.
+    static let controlEdge = dynamic(
+        light: 0xCBC6BA,
+        dark: 0x4A4741,
+        lightHighContrast: 0xB4B4AE,
+        darkHighContrast: 0x5E5D58
+    )
+    /// A pill control sitting on a card (the time picker): the page in the
+    /// light, a step off the surface; in the dark the surface mixed 10%
+    /// toward ink, so it lifts off the card rather than sinking into it.
+    static let controlFill = dynamic(light: 0xF5F3EE, dark: 0x373632)
+    /// Placeholder text ("Write a thought…"): the web's --ph in the light;
+    /// elsewhere the secondary label at 75%.
+    static let placeholder = Color(uiColor: UIColor { traits in
+        if traits.userInterfaceStyle != .dark, traits.accessibilityContrast != .high {
+            return color(0x8A857B, alpha: 1)
+        }
+        return UIColor(chromeLabel).resolvedColor(with: traits).withAlphaComponent(0.75)
+    })
+    static let now = dynamic(light: 0xC73E1D, dark: 0xCC4A24)
     /// Label color on a `now`-filled control: the page color, as on web.
-    static let onNow = dynamic(light: 0xFAFAF8, dark: 0x131311)
+    static let onNow = dynamic(light: 0xFFFAF5, dark: 0xFFFAF5)
     static let faint = dynamic(
-        light: 0x75756F,
-        dark: 0xA0A099,
+        light: 0x716D64,
+        dark: 0xA6A298,
         alpha: 0.6,
         lightHighContrast: 0x4B4B47,
         darkHighContrast: 0xCDCDC7
@@ -34,26 +55,77 @@ enum Stillness {
 
     /// Page-chrome text: headers, group names, quiet controls.
     static let chromeText = dynamic(
-        light: 0x45453F,
-        dark: 0xC9C9C2,
+        light: 0x423F38,
+        dark: 0xCDC9BF,
         lightHighContrast: 0x2B2B28,
         darkHighContrast: 0xEAEAE5
     )
     /// Secondary labels: times, captions, hints.
     static let chromeLabel = dynamic(
-        light: 0x6B6B65,
-        dark: 0x97978F,
+        light: 0x5A564E,
+        dark: 0xBDB8AE,
         lightHighContrast: 0x4B4B47,
         darkHighContrast: 0xCDCDC7
     )
+    /// The text caret: the accent, brighter in the dark so it can be seen.
+    static let caret = dynamic(light: 0xC73E1D, dark: 0xF06A40)
+    /// The one destructive action: a deeper red than the accent.
+    static let danger = dynamic(light: 0x94394A, dark: 0xDE8A98)
+    /// A standing solid action that isn't "now" (New thought): warm dark in
+    /// both themes rather than an inverted pill.
+    static let inkPill = dynamic(light: 0x2F2C27, dark: 0x4D4943)
+    static let onInkPill = dynamic(light: 0xF5F3EE, dark: 0xFBF9F5)
+    /// An "on" switch: ink, never the accent (the web's --switch). In the
+    /// dark a dim warm grey, lit but never the brightest thing on the page.
+    static let switchOn = dynamic(light: 0x4A463F, dark: 0xA6A298)
+    /// The switch knob: the surface colour, a raised knob on either track
+    /// (the web's --knob).
+    static let switchKnob = dynamic(light: 0xFBFAF7, dark: 0x23221F)
+    /// The dark knob's ring: the secondary-label colour, so its outline reads
+    /// at once on the pale "on" track; none in the light.
+    static let switchKnobRing = Color(uiColor: UIColor { traits in
+        guard traits.userInterfaceStyle == .dark else { return .clear }
+        return traits.accessibilityContrast == .high
+            ? color(0xCDCDC7, alpha: 1)
+            : color(0xBDB8AE, alpha: 1)
+    })
+    /// The knob's small drop shadow: ink in the light, black in the dark.
+    static let switchKnobShadow = dynamic(light: 0x26241F, dark: 0x000000, alpha: 0.3)
+    /// Soft elevation under raised surfaces (the web's --lift).
+    static let lift = dynamic(light: 0x3A2C1C, dark: 0x000000, alpha: 0.06)
+    /// A control floating over a list (New thought): the hairline in the
+    /// light, a step brighter in the dark, where the lift alone can't show.
+    static let floatEdge = dynamic(
+        light: 0xD9D5CA,
+        dark: 0x4A4741,
+        lightHighContrast: 0xB4B4AE,
+        darkHighContrast: 0x5E5D58
+    )
+    /// Its shadow: the light's soft lift, deeper in the dark so it reads.
+    static let floatLift = Color(uiColor: UIColor { traits in
+        traits.userInterfaceStyle == .dark
+            ? color(0x000000, alpha: 0.45)
+            : color(0x3A2C1C, alpha: 0.06)
+    })
+    /// The short shadow under a solid primary pill.
+    static let shadow = dynamic(light: 0x3A2C1C, dark: 0x000000, alpha: 0.12)
+    /// The lightest wash of the accent: today's returned thought at rest.
+    /// In the dark a breath of warmth over the page, not a lifted surface.
+    static let nowWash = dynamic(light: 0xF9F3EF, dark: 0x211A17)
+    /// Its faint edge; in the dark it carries the shape the wash no longer does (the web's --back-edge).
+    static let nowWashEdge = Color(uiColor: UIColor { traits in
+        traits.userInterfaceStyle == .dark
+            ? UIColor(red: 0.8, green: 0.29, blue: 0.14, alpha: 0.22)
+            : UIColor(red: 0.78, green: 0.24, blue: 0.11, alpha: 0.18)
+    })
     /// Soft wash for whatever is "now" (Back today, chips, pressed rows).
-    static let nowTint = dynamic(light: 0xF8ECE7, dark: 0x281B16)
+    static let nowTint = dynamic(light: 0xF1E5DD, dark: 0x2F1E17)
     /// The stronger wash: badges, the open row.
-    static let nowTintStrong = dynamic(light: 0xF7E1DA, dark: 0x3A2219)
+    static let nowTintStrong = dynamic(light: 0xEFDAD1, dark: 0x3A2118)
     /// Vermilion text that stays legible on the page and on both tints.
-    static let nowInk = dynamic(light: 0xA33E25, dark: 0xE48367)
+    static let nowInk = dynamic(light: 0xA4381D, dark: 0xDA9179)
     /// The edge of outlined vermilion controls.
-    static let nowEdge = dynamic(light: 0xE0A08E, dark: 0x7F412F)
+    static let nowEdge = dynamic(light: 0xD79783, dark: 0x87422E)
 
     private static func dynamic(
         light: UInt32,

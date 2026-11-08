@@ -11,7 +11,7 @@ export function Badge({
 }) {
   return (
     <span
-      className={`inline-flex flex-none items-center rounded-full bg-tint-2 font-medium text-dot-ink tabular-nums ${
+      className={`inline-flex flex-none items-center rounded-full bg-line/70 font-medium text-pl tabular-nums ${
         size === "md" ? "h-[26px] px-[11px] text-[13px]" : "h-[18px] px-[7px] text-[11.5px]"
       }`}
     >

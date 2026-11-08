@@ -6,15 +6,19 @@ enum PhosphorIcon: String {
     case arrowBendUpLeft = "ph-arrow-bend-up-left"
     case arrowLeft = "ph-arrow-left"
     case arrowUpRight = "ph-arrow-up-right"
+    case bookmarkSimpleFill = "ph-bookmark-simple-fill"
+    case caretDown = "ph-caret-down"
+    case caretRight = "ph-caret-right"
     case envelopeSimple = "ph-envelope-simple"
     case gearSix = "ph-gear-six"
     case githubLogoFill = "ph-github-logo-fill"
     case googleLogoFill = "ph-google-logo-fill"
     case graph = "ph-graph"
-    case microphone = "ph-microphone"
     case moon = "ph-moon"
+    case pencilSimpleLine = "ph-pencil-simple-line"
     case plus = "ph-plus"
     case signOut = "ph-sign-out"
+    case waveform = "ph-waveform"
     case x = "ph-x"
 }
 
@@ -46,7 +50,23 @@ struct EmberIcon: View {
     }
 }
 
-/// A count, or a few words about one, in the accent's tint.
+/// An icon centred on the capitals of a caption line (Geist's cap height is
+/// 0.71em), carrying that line's baseline: it lines up with the first line
+/// of the text beside it at any type size.
+struct CaptionLineIcon: View {
+    @ScaledMetric(relativeTo: .footnote) private var halfCapHeight: CGFloat = 13 * 0.71 / 2
+
+    let icon: PhosphorIcon
+    var size: CGFloat = 12
+
+    var body: some View {
+        EmberIcon(icon, size: size)
+            .alignmentGuide(.firstTextBaseline) { $0[VerticalAlignment.center] + halfCapHeight }
+            .alignmentGuide(.lastTextBaseline) { $0[VerticalAlignment.center] + halfCapHeight }
+    }
+}
+
+/// A count, or a few words about one: a quiet fact, never the accent.
 struct Badge: View {
     enum Size {
         case small
@@ -60,11 +80,11 @@ struct Badge: View {
         Text(text)
             .font(size == .medium ? StillnessType.badgeLarge : StillnessType.badge)
             .monospacedDigit()
-            .foregroundStyle(Stillness.nowInk)
+            .foregroundStyle(Stillness.chromeLabel)
             .lineLimit(1)
             .padding(.horizontal, size == .medium ? 11 : 7)
             .frame(minHeight: size == .medium ? 26 : 18)
-            .background(Stillness.nowTintStrong, in: Capsule())
+            .background(Stillness.hairline.opacity(0.7), in: Capsule())
     }
 }
 
@@ -102,8 +122,12 @@ struct Chip<Label: View>: View {
 struct PillButtonStyle: ButtonStyle {
     enum Kind {
         case primary
+        /// Solid ink: a standing action that isn't "now" (New thought).
+        case ink
         case outline
         case neutral
+        /// A neutral pill as a line only, no fill (Speak beside an empty Keep).
+        case line
         case quiet
     }
 
@@ -112,12 +136,20 @@ struct PillButtonStyle: ButtonStyle {
     let kind: Kind
     var height: CGFloat = 44
     var horizontalPadding: CGFloat = 18
+    /// The resting outline of neutral pills and a waiting primary.
+    var edge: Color = Stillness.hairline
 
     func makeBody(configuration: Configuration) -> some View {
         let isPressed = configuration.isPressed
 
-        configuration.label
-            .font(kind == .primary ? StillnessType.primaryButton : StillnessType.control)
+        // Sized by its solid label, so a resting primary in the lighter
+        // weight keeps its width when it lights up.
+        ZStack {
+            if kind == .primary {
+                configuration.label.font(StillnessType.primaryButton).hidden()
+            }
+            configuration.label.font(font)
+        }
             .lineLimit(1)
             .foregroundStyle(foreground)
             .padding(.horizontal, horizontalPadding)
@@ -127,41 +159,58 @@ struct PillButtonStyle: ButtonStyle {
                 switch kind {
                 case .outline:
                     Capsule().strokeBorder(Stillness.nowEdge, lineWidth: 1.5)
-                case .neutral:
+                case .neutral, .line:
                     Capsule().strokeBorder(
-                        isPressed ? Stillness.nowEdge : Stillness.hairline,
+                        isPressed ? Stillness.nowEdge : edge,
                         lineWidth: 1
                     )
-                case .primary, .quiet:
+                case .ink:
+                    Capsule().strokeBorder(Stillness.hairline, lineWidth: 1)
+                case .primary:
+                    // Waiting for words: an outline, not a grey slab.
+                    if !isEnabled { Capsule().strokeBorder(edge, lineWidth: 1) }
+                case .quiet:
                     EmptyView()
                 }
             }
             .shadow(
-                color: kind == .primary && isEnabled ? Stillness.now.opacity(0.4) : .clear,
-                radius: 12,
-                y: 10
+                color: (kind == .primary || kind == .ink) && isEnabled ? Stillness.shadow : .clear,
+                radius: 5,
+                y: 3
             )
             .contentShape(Capsule())
             .scaleEffect(isPressed ? 0.98 : 1)
-            .opacity(isEnabled ? 1 : 0.35)
+            // A primary action waiting for words reads as quiet, not broken.
+            .opacity(isEnabled || kind == .primary ? 1 : 0.35)
             .animation(.easeOut(duration: 0.15), value: isPressed)
             .animation(.easeOut(duration: 0.15), value: isEnabled)
     }
 
+    private var font: Font {
+        switch kind {
+        // Waiting for words, a primary rests in muted medium, so the turn to
+        // solid vermilion lands as a change of weight as well as colour.
+        case .primary: isEnabled ? StillnessType.primaryButton : StillnessType.primaryButtonResting
+        case .ink: StillnessType.primaryButton
+        case .outline, .neutral, .line, .quiet: StillnessType.control
+        }
+    }
+
     private var foreground: Color {
         switch kind {
-        case .primary: Stillness.onNow
+        case .primary: isEnabled ? Stillness.onNow : Stillness.muted
+        case .ink: Stillness.onInkPill
         case .outline: Stillness.nowInk
-        case .neutral: Stillness.chromeText
-        case .quiet: Stillness.chromeText
+        case .neutral, .line, .quiet: Stillness.chromeText
         }
     }
 
     private func fill(isPressed: Bool) -> Color {
         switch kind {
-        case .primary: Stillness.now
+        case .primary: isEnabled ? Stillness.now : .clear
+        case .ink: Stillness.inkPill
         case .neutral: isPressed ? Stillness.nowTint : Stillness.surface
-        case .outline, .quiet: isPressed ? Stillness.nowTint : .clear
+        case .outline, .line, .quiet: isPressed ? Stillness.nowTint : .clear
         }
     }
 }
@@ -169,6 +218,8 @@ struct PillButtonStyle: ButtonStyle {
 /// A round icon control in page chrome: back, settings.
 struct IconButtonStyle: ButtonStyle {
     var diameter: CGFloat = 40
+    /// A standing circle on the surface, like a system sheet's close button.
+    var filled = false
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
@@ -176,7 +227,12 @@ struct IconButtonStyle: ButtonStyle {
             .frame(width: max(diameter, 44), height: max(diameter, 44))
             .background {
                 Circle()
-                    .fill(configuration.isPressed ? Stillness.nowTint : .clear)
+                    .fill(configuration.isPressed ? Stillness.nowTint : (filled ? Stillness.surface : .clear))
+                    .overlay {
+                        if filled {
+                            Circle().strokeBorder(Stillness.hairline, lineWidth: 1)
+                        }
+                    }
                     .frame(width: diameter, height: diameter)
             }
             .contentShape(Circle())
@@ -188,6 +244,10 @@ struct IconButtonStyle: ButtonStyle {
 struct RowButtonStyle: ButtonStyle {
     var background: Color = .clear
     var pressedBackground: Color = Stillness.nowTint
+    /// Runs on touch-down, e.g. to prefetch what the row opens. Read from the
+    /// press state rather than a zero-length long press, which would keep a
+    /// drag that starts on the row from scrolling its list.
+    var onPress: (() -> Void)? = nil
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
@@ -196,6 +256,9 @@ struct RowButtonStyle: ButtonStyle {
                 in: RoundedRectangle(cornerRadius: StillnessSpacing.cardRadius, style: .continuous)
             )
             .contentShape(RoundedRectangle(cornerRadius: StillnessSpacing.cardRadius, style: .continuous))
+            .onChange(of: configuration.isPressed) { _, isPressed in
+                if isPressed { onPress?() }
+            }
     }
 }
 
@@ -203,9 +266,9 @@ extension View {
     /// A quiet surface grouping rows: settings, the connections prompt.
     func emberSurface() -> some View {
         background(Stillness.surface)
-        .clipShape(RoundedRectangle(cornerRadius: StillnessSpacing.cardRadius, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: StillnessSpacing.surfaceRadius, style: .continuous))
         .overlay {
-            RoundedRectangle(cornerRadius: StillnessSpacing.cardRadius, style: .continuous)
+            RoundedRectangle(cornerRadius: StillnessSpacing.surfaceRadius, style: .continuous)
                 .strokeBorder(Stillness.hairline, lineWidth: 1)
         }
     }
@@ -215,6 +278,9 @@ extension View {
 /// the right. Both open settings; the wordmark keeps the tap it always had.
 struct HomeHeader: View {
     var count: Int?
+    /// Capture's way down to the shelf (the visible half of the pull-down
+    /// gesture), beside settings.
+    var onShowShelf: (() -> Void)?
     let onOpenSettings: () -> Void
 
     var body: some View {
@@ -230,19 +296,43 @@ struct HomeHeader: View {
 
             Spacer()
 
+            if let onShowShelf {
+                Button(action: onShowShelf) {
+                    Text("Thoughts")
+                        .font(StillnessType.control)
+                        .foregroundStyle(Stillness.chromeText)
+                        .padding(.horizontal, 14)
+                        .frame(height: StillnessSpacing.headerControl)
+                        .background(Stillness.surface, in: Capsule())
+                        .overlay { Capsule().strokeBorder(Stillness.hairline, lineWidth: 1) }
+                        .frame(minHeight: 44)
+                        .padding(.trailing, 6)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Show thoughts")
+            }
+
             if let count, count > 0 {
                 Badge(text: "\(count) \(count == 1 ? "thought" : "thoughts")", size: .medium)
                     .padding(.trailing, 4)
             }
 
             Button(action: onOpenSettings) {
-                EmberIcon(.gearSix, size: 18)
+                EmberIcon(.gearSix, size: 17)
+                    .foregroundStyle(Stillness.chromeText)
+                    .frame(width: StillnessSpacing.headerControl, height: StillnessSpacing.headerControl)
+                    .background(Stillness.surface, in: Circle())
+                    .overlay { Circle().strokeBorder(Stillness.hairline, lineWidth: 1) }
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
             }
-            .buttonStyle(IconButtonStyle(diameter: 36))
+            .buttonStyle(.plain)
             .accessibilityLabel("Settings")
         }
-        .padding(.leading, 22)
-        .padding(.trailing, 10)
+        // The circle's edge, not its 44pt tap frame, sits on the gutter.
+        .padding(.leading, StillnessSpacing.gutter)
+        .padding(.trailing, StillnessSpacing.gutter - (44 - StillnessSpacing.headerControl) / 2)
         .frame(height: 56)
     }
 }

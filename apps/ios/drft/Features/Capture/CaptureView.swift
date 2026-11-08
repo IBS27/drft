@@ -48,34 +48,41 @@ struct CaptureView: View {
             Stillness.page.ignoresSafeArea()
 
             VStack(spacing: 0) {
-                HomeHeader(onOpenSettings: openSettings)
+                HomeHeader(onShowShelf: showShelf, onOpenSettings: openSettings)
 
                 Spacer(minLength: 28)
+                    .frame(maxHeight: 56)
 
-                VStack(spacing: 22) {
-                    TimelineView(.periodic(from: .now, by: 15)) { context in
-                        Text(timestamp(for: context.date))
+                VStack(alignment: .leading, spacing: 22) {
+                    // The day only: the status bar already shows the time.
+                    TimelineView(.periodic(from: .now, by: 60)) { context in
+                        Text("\(context.date.formatted(.dateTime.weekday(.wide))) \(context.date.formatted(.dateTime.day())) \(context.date.formatted(.dateTime.month(.wide)))")
                             .font(StillnessType.meta)
-                            .monospacedDigit()
                             .foregroundStyle(Stillness.chromeLabel)
                     }
 
-                    TextField("", text: $model.text, axis: .vertical)
+                    TextField(
+                        "",
+                        text: $model.text,
+                        prompt: Text("Write a thought…")
+                            .foregroundStyle(Stillness.placeholder),
+                        axis: .vertical
+                    )
                         .textFieldStyle(.plain)
                         .textInputAutocapitalization(.never)
                         .font(StillnessType.captureThought)
                         .tracking(StillnessType.captureThoughtTracking)
                         .lineSpacing(StillnessType.captureThoughtLineSpacing)
-                        .multilineTextAlignment(.center)
+                        .multilineTextAlignment(.leading)
                         .foregroundStyle(Stillness.ink)
-                        .tint(Stillness.now)
+                        .tint(Stillness.caret)
                         .focused($inputIsFocused)
                         .lineLimit(1...(dynamicTypeSize.isAccessibilitySize ? 8 : 5))
                         .submitLabel(.return)
                         .accessibilityLabel("Thought")
                 }
-                .frame(maxWidth: 345)
-                .padding(.horizontal, 24)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, StillnessSpacing.gutter)
 
                 Spacer(minLength: 28)
             }
@@ -176,9 +183,14 @@ struct CaptureView: View {
                 convexService: convexService
             )
                 .presentationBackground(Stillness.page)
-                .presentationDragIndicator(.hidden)
-                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
         }
+    }
+
+    private func showShelf() {
+        inputIsFocused = false
+        model.stopDictation()
+        onRevealShelf()
     }
 
     private func openSettings() {
@@ -186,6 +198,8 @@ struct CaptureView: View {
         settingsArePresented = true
     }
 
+    // Speak at the leading edge, Keep at the trailing edge, under the
+    // left-aligned words.
     private var actionRow: some View {
         HStack(spacing: 12) {
             Button {
@@ -193,18 +207,24 @@ struct CaptureView: View {
             } label: {
                 speakLabel
             }
-            .buttonStyle(PillButtonStyle(kind: model.isListening ? .outline : .neutral))
+            .buttonStyle(PillButtonStyle(
+                kind: model.isListening ? .outline : .line,
+                edge: Stillness.controlEdge
+            ))
             .accessibilityLabel(model.isListening ? "Stop listening" : "Speak")
+
+            Spacer(minLength: 12)
 
             Button {
                 model.keep()
             } label: {
                 Text("Keep")
             }
-            .buttonStyle(PillButtonStyle(kind: .primary, horizontalPadding: 24))
+            .buttonStyle(PillButtonStyle(kind: .primary, horizontalPadding: 24, edge: Stillness.controlEdge))
             .disabled(!model.canKeep)
             .accessibilityLabel("Keep")
         }
+        .padding(.horizontal, StillnessSpacing.gutter)
         .padding(.bottom, 12)
         .opacity(model.isCaptureVisible ? 1 : 0)
         .animation(
@@ -265,7 +285,8 @@ struct CaptureView: View {
             }
         } else {
             HStack(spacing: 8) {
-                EmberIcon(.microphone, size: 16)
+                // A voice glyph, not a microphone: the keyboard's own dictation key sits just below.
+                EmberIcon(.waveform, size: 16)
                 Text("Speak")
             }
         }
@@ -288,9 +309,5 @@ struct CaptureView: View {
         withAnimation(.easeInOut(duration: 1.1).repeatForever(autoreverses: true)) {
             listeningPulse = true
         }
-    }
-
-    private func timestamp(for date: Date) -> String {
-        "\(ShelfFormatting.time(for: date).lowercased()), unfiled"
     }
 }

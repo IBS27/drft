@@ -1,12 +1,13 @@
 import { SignOutButton, useUser } from "@clerk/clerk-react";
-import { ArrowUpRight, EnvelopeSimple, SignOut } from "@phosphor-icons/react";
+import { ArrowUpRight, CaretDown, SignOut } from "@phosphor-icons/react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { clearRememberedSession } from "../features/auth/rememberedSession";
 import { DeleteAccount } from "../features/settings/DeleteAccount";
 import { PageHeader } from "../features/ui/PageHeader";
+import { Rail } from "../features/thoughts/Rail";
 
 export const Route = createFileRoute("/settings")({ component: Settings });
 
@@ -34,6 +35,11 @@ function Settings() {
   const connections = consent?.aiConnections ?? false;
 
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(Date.now()), 60_000);
+    return () => window.clearInterval(id);
+  }, []);
   // `undefined` is "not answered yet"; `null` is "no row — use the
   // default". Until the answer lands the page keeps its shape and simply
   // says nothing, rather than showing a time that may not be yours.
@@ -64,46 +70,72 @@ function Settings() {
   };
 
   return (
-    <main className="flex min-h-dvh flex-col">
-      <PageHeader title="Settings" />
-
-      <section className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-4 px-4 pt-6 pb-16 md:px-6">
-        <div className={SURFACE}>
-          <div className="flex items-center gap-3 px-4 py-3.5 text-[14px] text-pl">
-            <EnvelopeSimple aria-hidden="true" className="flex-none text-[18px]" />
+    <main className="min-h-dvh">
+      <Rail activeId={null} now={now} />
+      <div className="flex min-h-dvh flex-col lg:pl-72 xl:pl-80">
+      {/* Who you are is context, not a setting: the page's one line. */}
+      <PageHeader
+        title="Settings"
+        description={
+          <span className="flex min-w-0 items-center gap-1">
+            Signed in as
             {email ? (
-              <span className="min-w-0 truncate">{email}</span>
+              <span className="min-w-0 truncate text-pt">{email}</span>
             ) : (
               <span className="inline-block h-2 w-[20ch] max-w-full rounded-full bg-line" />
             )}
-          </div>
+          </span>
+        }
+      />
 
-          <div className="px-4 py-3.5">
-            <div className="flex items-center justify-between gap-4">
-              <label htmlFor="settings-send-time" className="text-[15px] text-ink">
-                Daily thought
-              </label>
-              <input
-                id="settings-send-time"
-                type="time"
-                value={shown}
-                onChange={(e) => change(e.target.value)}
-                className="h-9 rounded-full bg-pg px-3 text-[15px] text-ink tabular-nums ring-1 ring-line outline-none ring-inset focus:ring-dot-edge"
-              />
-            </div>
-            <div className="mt-1 text-[13px] text-pl">
-              One thought returns each morning, {timezone}
-            </div>
-            {failed && (
-              <div role="status" className="mt-1 text-[13px] text-dot-ink">
-                Couldn't save. Change it again to retry.
+      <section className="mx-auto flex w-full max-w-[688px] flex-1 flex-col gap-4 px-5 pt-0 pb-16 md:px-10">
+        <div className={SURFACE}>
+
+          {/* Words on the left, the control centred against the whole row. */}
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 px-4 py-3.5">
+            <label htmlFor="settings-send-time" className="col-start-1 row-start-1 text-[15px] text-ink">
+              Daily thought
+            </label>
+            <div className="col-span-2 row-start-2 sm:col-span-1">
+              <div className="mt-1 text-[14px] text-pretty text-pl">
+                One thought returns each morning, {timezone.split("/").pop()?.replaceAll("_", " ")} time
               </div>
-            )}
+              {failed && (
+                <div role="status" className="mt-1 text-[13px] text-dot-ink">
+                  Couldn't save. Change it again to retry.
+                </div>
+              )}
+            </div>
+              <span className="relative col-start-2 row-start-1 inline-flex flex-none items-center sm:row-span-2">
+              <select
+                id="settings-send-time"
+                value={shown}
+                disabled={!loaded}
+                onChange={(e) => change(e.target.value)}
+                className="h-8 cursor-pointer appearance-none rounded-full bg-pg pr-8 dark:bg-[color-mix(in_oklab,var(--scr)_88%,var(--ink))] pl-3.5 text-[14px] text-ink tabular-nums ring-1 ring-line outline-none ring-inset hover:ring-pl/50 focus-visible:ring-pl/50"
+              >
+                {timeOptions(shown).map((value) => (
+                  <option key={value} value={value}>
+                    {clockLabel(value)}
+                  </option>
+                ))}
+              </select>
+              <CaretDown aria-hidden="true" className="pointer-events-none absolute right-3 text-[13px] text-pl" />
+              </span>
           </div>
 
-          <div className="px-4 py-3.5">
-            <div className="flex items-center justify-between gap-4">
-              <span className="text-[15px] text-ink">Connections</span>
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 px-4 py-3.5">
+            <span className="col-start-1 row-start-1 text-[15px] text-ink">Connections</span>
+            <div className="col-span-2 row-start-2 sm:col-span-1">
+              <div className="mt-1 text-[14px] text-pretty text-pl">
+                Thought text is sent to OpenAI to find echoes
+              </div>
+              {connectionsFailed && (
+                <div role="status" className="mt-1 text-[13px] text-dot-ink">
+                  Couldn't save. Change it again to retry.
+                </div>
+              )}
+            </div>
               <button
                 type="button"
                 role="switch"
@@ -111,30 +143,22 @@ function Settings() {
                 aria-label="Connections"
                 disabled={consent === undefined}
                 onClick={toggleConnections}
-                className={`relative h-6 w-10 flex-none rounded-full transition-colors ${
+                className={`relative col-start-2 row-start-1 h-6 w-10 flex-none rounded-full transition-colors before:absolute before:-inset-x-1 before:-inset-y-2.5 before:content-[''] sm:row-span-2 ${
                   consent === undefined
                     ? "invisible"
                     : connections
-                      ? "bg-dot"
+                      ? "bg-switch"
                       : "bg-line ring-1 ring-pl ring-inset"
                 }`}
               >
                 <span
                   aria-hidden="true"
-                  className={`absolute top-0.5 left-0.5 size-5 rounded-full bg-pg shadow-[0_1px_3px_color-mix(in_oklab,var(--ink)_30%,transparent)] transition-transform ${
+                  className={`absolute top-0.5 left-0.5 flex size-5 items-center justify-center rounded-full bg-knob dark:ring-1 dark:ring-pl/60 shadow-[0_1px_3px_color-mix(in_oklab,var(--ink)_30%,transparent)] transition-transform ${
                     connections ? "translate-x-4" : ""
                   }`}
-                />
+                >
+                </span>
               </button>
-            </div>
-            <div className="mt-1 text-[13px] text-pl">
-              Thought text is sent to OpenAI to find echoes
-            </div>
-            {connectionsFailed && (
-              <div role="status" className="mt-1 text-[13px] text-dot-ink">
-                Couldn't save. Change it again to retry.
-              </div>
-            )}
           </div>
         </div>
 
@@ -151,16 +175,34 @@ function Settings() {
           </SignOutButton>
         </div>
 
-        <div className={SURFACE}>
+        <div className={`${SURFACE} mt-4`}>
           <DeleteAccount />
         </div>
       </section>
+      </div>
     </main>
   );
 }
 
+// Every half hour of the day, plus the saved time if it falls between
+// (set to the minute on iOS), so the picker always shows what is stored.
+function timeOptions(current: string): string[] {
+  const options = Array.from({ length: 48 }, (_, i) => {
+    const hours = String(Math.floor(i / 2)).padStart(2, "0");
+    return `${hours}:${i % 2 === 0 ? "00" : "30"}`;
+  });
+  if (current && !options.includes(current)) options.push(current);
+  return options.sort();
+}
+
+// "08:00" reads "8:00 am", as times do everywhere else in the room.
+function clockLabel(value: string): string {
+  const [h, m] = value.split(":").map(Number);
+  return `${h % 12 === 0 ? 12 : h % 12}:${String(m).padStart(2, "0")} ${h < 12 ? "am" : "pm"}`;
+}
+
 // Settings groups its rows on quiet surfaces, divided by hairlines.
 const SURFACE =
-  "divide-y divide-line rounded-card border border-line bg-scr";
+  "divide-y divide-line rounded-[14px] border border-line bg-scr";
 const LINK_ROW =
-  "flex w-full items-center justify-between gap-4 px-4 py-3.5 text-left text-[15px] text-ink transition-colors first:rounded-t-[9px] last:rounded-b-[9px] hover:bg-tint";
+  "flex w-full items-center justify-between gap-4 px-4 py-3.5 text-left text-[15px] text-ink transition-colors first:rounded-t-[13px] last:rounded-b-[13px] hover:bg-tint";

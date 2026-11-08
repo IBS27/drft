@@ -1,4 +1,4 @@
-import { Check } from "@phosphor-icons/react";
+import { Check, PencilSimpleLine } from "@phosphor-icons/react";
 import { useMutation } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
@@ -10,11 +10,9 @@ const NOTES_LIMIT = 20_000;
 
 // Your own writing next to the thought: one field, no save button. What you
 // type is the truth while you type it — the server is only told, a moment
-// after you pause, and never talks back into a field you are in. On wide
-// screens (xl) the field lives in the right margin opposite the rail, so
-// the thought never moves however much is written; narrower, it folds in
-// under the thought. Either way it is written onto ruled lines (`.ruled`
-// in index.css), which grow with the field. A quiet status beside the label
+// after you pause, and never talks back into a field you are in. It sits
+// in a plain field under the thought (`.notes-field` in index.css), in the
+// same column as everything else, growing with the words. A quiet status beside the label
 // says "Saving…" while words wait to be sent and "Saved" once the latest
 // ones are; it only reports, and never holds up a save.
 export function NotesField({
@@ -42,6 +40,7 @@ export function NotesField({
   const [text, setText] = useState(notes);
   const [failed, setFailed] = useState(false);
   const [status, setStatus] = useState<"idle" | "saving" | "saved">("idle");
+  const [editing, setEditing] = useState(false);
   const field = useRef<HTMLTextAreaElement>(null);
   const focused = useRef(false);
   // The last text the server accepted (null after a failure: unknown, so
@@ -129,10 +128,8 @@ export function NotesField({
     };
   }, []);
 
-  // Grows with its content, and re-measures when its width changes (the
-  // column is a different width on each side of xl); the page scrolls,
-  // never the field. The measure includes the ruled padding below the
-  // text, so there are always empty lines left to write on.
+  // Grows with its content, and re-measures when its width changes; the page scrolls,
+  // never the field. The measure includes the field's padding.
   useLayoutEffect(() => {
     const el = field.current;
     if (!el) return;
@@ -144,14 +141,16 @@ export function NotesField({
     const observer = new ResizeObserver(fit);
     observer.observe(el);
     return () => observer.disconnect();
-  }, [text]);
+  }, [text, editing]);
+
+  const reading = !editing && text.trim() !== "";
 
   return (
-    <div className="group mt-9 flex w-full max-w-[36ch] flex-col gap-2.5 xl:fixed xl:inset-y-0 xl:right-0 xl:mt-0 xl:w-80 xl:max-w-none xl:overflow-y-auto xl:border-l xl:border-line xl:bg-scr xl:px-[22px] xl:pt-6 xl:pb-10">
-      <div className="flex h-6 items-center justify-between gap-3 pl-[18px]">
+    <div className="group mt-8 flex w-full flex-col gap-3">
+      <div className="flex h-6 items-center justify-between gap-3">
         <label
           htmlFor="thought-notes"
-          className="text-[14px] font-medium text-pt transition-colors group-focus-within:text-ink"
+          className="inline-flex cursor-text items-center gap-1.5 text-[14px] font-medium text-pt transition-colors group-focus-within:text-ink"
         >
           Notes
         </label>
@@ -169,6 +168,27 @@ export function NotesField({
           ) : null}
         </span>
       </div>
+      {/* The pencil sits in the field it edits, and steps away once you're in. */}
+      <div className="relative">
+      {/* Reading: the notes as paragraphs. The field stays in the page (and
+          in the tab order) underneath, so the label, Tab and a click all
+          land in it. */}
+      {reading && (
+        <div
+          aria-hidden="true"
+          onMouseDown={(e) => {
+            e.preventDefault();
+            field.current?.focus();
+          }}
+          className="notes-field cursor-text space-y-1.5 rounded-card bg-scr text-[15px] text-ink ring-1 ring-line ring-inset transition-shadow hover:ring-pl/30"
+        >
+          {text.split("\n").map((line, i) => (
+            <p key={i} className="min-h-[1.6em] whitespace-pre-wrap">
+              {line}
+            </p>
+          ))}
+        </div>
+      )}
       <textarea
         id="thought-notes"
         ref={field}
@@ -178,9 +198,11 @@ export function NotesField({
         onChange={(e) => change(e.target.value)}
         onFocus={() => {
           focused.current = true;
+          setEditing(true);
         }}
         onBlur={() => {
           focused.current = false;
+          setEditing(false);
           // Whitespace alone is nothing — the server keeps no row for it —
           // so once the field is left, it shows nothing too. Sent as its own
           // write, so a failure is still caught and offered for retry.
@@ -190,8 +212,21 @@ export function NotesField({
           }
           save();
         }}
-        className="ruled w-full resize-none overflow-hidden text-[15px] text-ink outline-none"
+        placeholder="Write around it…"
+        className={`notes-field w-full resize-none overflow-hidden rounded-card bg-scr ${reading ? "sr-only" : ""} text-[15px] text-ink ring-1 ring-line outline-none ring-inset transition-shadow placeholder:text-ph hover:ring-pl/30 focus:ring-pl/50`}
       />
+      {/* A real target for the pencil (the whole field is one too); out of
+          the tab order, since the field itself takes focus. */}
+      <button
+        type="button"
+        tabIndex={-1}
+        aria-hidden="true"
+        onClick={() => field.current?.focus()}
+        className="absolute top-1.5 right-1.5 flex size-8 items-center justify-center rounded-full text-[16px] text-pt transition-[opacity,background-color,color] group-focus-within:pointer-events-none group-focus-within:opacity-0 hover:bg-tint hover:text-ink"
+      >
+        <PencilSimpleLine />
+      </button>
+      </div>
       {failed && (
         <div
           role="status"

@@ -5,6 +5,8 @@ import {
   GearSix,
   Graph,
   MagnifyingGlass,
+  Moon,
+  PencilSimpleLine,
 } from "@phosphor-icons/react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useConvexAuth } from "convex/react";
@@ -18,11 +20,10 @@ import {
   useThoughtSearch,
   type Hit,
 } from "../search/useThoughtSearch";
-import { Badge } from "../ui/Badge";
 import { Kbd } from "../ui/Kbd";
 import { Skeleton } from "../ui/Skeleton";
 import { Wordmark } from "../ui/Wordmark";
-import { ageLabel, localDate, orderRows, type Group, GROUP_LABEL } from "./format";
+import { ageLabel, clip, localDate, orderRows, type Group, GROUP_LABEL } from "./format";
 import { useCachedQuery } from "./useCachedQuery";
 import { useThoughtPrewarm } from "./useThoughtPrewarm";
 
@@ -45,8 +46,8 @@ type RailThought = {
 // tinted "Back today" strip; the open thought is held by a deeper tint and
 // a vermilion bar.
 // Held thoughts carry a small bookmark; hovering a row offers to hold it
-// or let go without opening it. The Held page sits under Find while
-// anything is held.
+// or let go without opening it. Held, Resting and Connections sit under
+// New thought; Settings is the gear beside the wordmark.
 // Also owns the collection's keyboard: j/k move between thoughts (j enters
 // the top from home), Esc returns to the door — home, or the Held page
 // when the thought was opened from there.
@@ -71,14 +72,9 @@ export const Rail = memo(function Rail({
     isAuthenticated ? {} : "skip",
     "resting",
   );
-  const held = useCachedQuery(
-    api.thoughts.held,
-    isAuthenticated ? {} : "skip",
-    "held",
-  );
-  const heldCount = held?.length ?? 0;
-  const onHeld = useRouterState({ select: (s) => s.location.pathname === "/held" });
   const toggleHold = useHold();
+  // On home the day's thought has the main column; the rail doesn't repeat it.
+  const onHome = useRouterState({ select: (s) => s.location.pathname === "/" });
   const search = backTo === "/held" ? FROM_HELD : FROM_HOME;
   const [restingOpen, setRestingOpen] = useState(false);
   const navigate = useNavigate();
@@ -216,12 +212,22 @@ export const Rail = memo(function Rail({
   return (
     <nav
       aria-label="workspace"
-      className="fixed inset-y-0 left-0 hidden w-72 flex-col border-r border-line bg-scr lg:flex xl:w-80"
+      data-finding={finding || undefined}
+      className="fixed inset-y-0 left-0 hidden w-72 flex-col border-r border-line bg-rail lg:flex xl:w-80"
     >
-      <div className="flex flex-none flex-col gap-[18px] px-5 pt-6 pb-4">
-        <Link to="/" aria-label="drft, home" className="self-start rounded-card">
-          <Wordmark />
-        </Link>
+      <div className="flex flex-none flex-col gap-[18px] px-3 pt-6 pb-4">
+        <div className="flex items-center justify-between">
+          <Link to="/" aria-label="drft, home" className="rounded-card px-3">
+            <Wordmark />
+          </Link>
+          <Link
+            to="/settings"
+            aria-label="Settings"
+            className="-my-1.5 flex size-8 items-center justify-center rounded-full text-[17px] text-pl transition-colors hover:bg-tint hover:text-ink aria-[current=page]:bg-line/55 aria-[current=page]:text-ink"
+          >
+            <GearSix aria-hidden="true" />
+          </Link>
+        </div>
         {findOpen ? (
           <div
             data-rail-find
@@ -254,7 +260,7 @@ export const Rail = memo(function Rail({
               aria-label="close find"
               className="flex-none"
             >
-              <Kbd className="bg-scr text-pt ring-1 ring-line ring-inset transition-colors hover:text-ink">
+              <Kbd className="bg-pg text-pt ring-1 ring-line ring-inset transition-colors hover:text-ink">
                 esc
               </Kbd>
             </button>
@@ -264,44 +270,46 @@ export const Rail = memo(function Rail({
             data-rail-find
             type="button"
             onClick={() => setFindOpen(true)}
-            className="flex h-10 items-center gap-2.5 rounded-card bg-pg pr-2 pl-3 text-left text-[14px] text-pl ring-1 ring-line ring-inset transition-shadow hover:ring-dot-edge"
+            className="flex h-10 items-center gap-2.5 rounded-card bg-pg pr-2 pl-3 text-left text-[14px] text-pl ring-1 ring-line ring-inset transition-shadow hover:ring-pl/50"
           >
             <MagnifyingGlass aria-hidden="true" className="flex-none text-[16px] text-pt" />
             <span className="flex-1">Find a thought</span>
-            <Kbd className="bg-scr text-pt ring-1 ring-line ring-inset">⌘K</Kbd>
+            <Kbd className="bg-pg text-pt ring-1 ring-line ring-inset">⌘K</Kbd>
           </button>
         )}
-        {(heldCount > 0 || onHeld) && (
-          <Link
-            to="/held"
-            aria-current={onHeld ? "page" : undefined}
-            className={`-mt-2.5 flex h-10 items-center gap-2.5 rounded-card px-3 text-[14px] font-medium transition-colors ${
-              onHeld ? "bg-tint text-ink" : "text-pt hover:bg-tint hover:text-ink"
-            }`}
-          >
-            <BookmarkSimple
-              aria-hidden="true"
-              weight="fill"
-              className={`text-[16px] ${onHeld ? "text-dot-ink" : ""}`}
-            />
-            <span className="flex-1">Held</span>
-            {heldCount > 0 && (
-              <span className="inline-flex h-[18px] items-center rounded-full px-[7px] text-[11.5px] font-medium text-pl tabular-nums ring-1 ring-line ring-inset">
-                {heldCount}
-              </span>
-            )}
+        {/* The places sit with the controls, so the collection runs on to
+            the bottom edge like any list that keeps going. */}
+        <div className="-mt-2.5 flex flex-col">
+          <Link to="/" activeOptions={{ exact: true }} className={PLACE_BASE}>
+            <PencilSimpleLine aria-hidden="true" className="text-[16px]" />
+            New thought
           </Link>
-        )}
+          <Link to="/held" className={PLACE}>
+            <BookmarkSimple aria-hidden="true" className="text-[16px]" />
+            Held
+          </Link>
+          <Link to="/resting" className={PLACE}>
+            <Moon aria-hidden="true" className="text-[16px]" />
+            Resting
+          </Link>
+          <Link to="/connections" className={PLACE}>
+            <Graph aria-hidden="true" className="text-[16px]" />
+            Connections
+          </Link>
+        </div>
       </div>
 
+      {/* Edge to edge with the search field and the cards below. */}
+      <div aria-hidden="true" className="mx-3 h-px flex-none bg-line" />
       <div
         role="region"
         aria-label="collection"
         aria-busy={loading}
-        className="min-h-0 flex-1 overflow-y-auto px-3 pt-1 pb-4 [scrollbar-gutter:stable]"
+        className="min-h-0 flex-1 overflow-y-auto px-3 pt-4 pb-10 [scrollbar-width:none] [mask-image:linear-gradient(to_bottom,#000_calc(100%-40px),transparent)]"
       >
         {finding ? (
           <FindResults
+            query={query}
             hits={hits}
             active={active}
             setActive={setActive}
@@ -314,7 +322,7 @@ export const Rail = memo(function Rail({
           <RailSkeleton />
         ) : (
           <>
-            {ordered.pinned && (
+            {ordered.pinned && !onHome && (
               <BackToday
                 t={ordered.pinned}
                 active={ordered.pinned._id === activeId}
@@ -322,9 +330,9 @@ export const Rail = memo(function Rail({
                 search={search}
               />
             )}
-            {ordered.groups.map(({ group, rows }) => (
+            {ordered.groups.map(({ group, rows }, gi) => (
               <div key={group}>
-                <GroupHeader group={group} count={rows.length} />
+                <GroupHeader group={group} first={gi === 0 && !(ordered.pinned && !onHome)} />
                 {rows.map((t) => (
                   <RailRow
                     key={t._id}
@@ -375,39 +383,29 @@ export const Rail = memo(function Rail({
         )}
       </div>
 
-      <div className="flex flex-none flex-col gap-0.5 border-t border-line px-3 pt-2.5 pb-3.5">
-        <Link
-          to="/connections"
-          className="flex items-center gap-2.5 rounded-card px-3 py-2 text-[14px] text-pt transition-colors hover:bg-tint hover:text-ink"
-        >
-          <Graph aria-hidden="true" className="text-[17px]" />
-          Connections
-        </Link>
-        <Link
-          to="/settings"
-          className="flex items-center gap-2.5 rounded-card px-3 py-2 text-[14px] text-pt transition-colors hover:bg-tint hover:text-ink"
-        >
-          <GearSix aria-hidden="true" className="text-[17px]" />
-          Settings
-        </Link>
-      </div>
     </nav>
   );
 });
 
 
-function GroupHeader({ group, count }: { group: Group; count: number }) {
+// The first heading sits close under the controls, so the list starts at
+// the same height whether or not the day's thought is above it.
+function GroupHeader({ group, first }: { group: Group; first: boolean }) {
   return (
-    <div className="flex items-center gap-2 px-3 pt-[18px] pb-1.5 text-[13px] font-medium text-pt">
+    <div className={`px-3 pb-1.5 text-[13px] font-medium text-pl ${first ? "pt-2" : "pt-6"}`}>
       {GROUP_LABEL[group]}
-      <Badge>{count}</Badge>
     </div>
   );
 }
 
-// The open row: a deeper tint and a vermilion bar down its left edge.
-const ACTIVE_BAR =
-  "bg-tint-2 before:absolute before:inset-y-2 before:left-0 before:w-[3px] before:rounded-full before:bg-dot";
+// A place in the rail (New thought, Held, Resting, Connections).
+// New thought is home itself, so it never wears the "you are here" wash.
+const PLACE_BASE =
+  "flex h-9 items-center gap-2.5 rounded-card px-3 text-[14.5px] text-ink transition-colors hover:bg-tint";
+const PLACE = `${PLACE_BASE} aria-[current=page]:bg-line/55 aria-[current=page]:font-medium aria-[current=page]:text-ink`;
+
+// The open row: a neutral wash, nothing louder.
+const ACTIVE_BAR = "bg-line/55";
 
 function RailSkeleton() {
   return (
@@ -425,11 +423,11 @@ function RailSkeleton() {
 // Varied lengths so the placeholder reads as thoughts, not as a table.
 const SKELETON_WIDTHS = ["w-[78%]", "w-[56%]", "w-[70%]", "w-[48%]", "w-[64%]"];
 
-// One rail row to the pixel: a 14.5px line box inside py-2, time at right.
+// One rail row to the pixel: a 15px line box inside py-[9px], time at right.
 function RailSkeletonRow({ width }: { width: string }) {
   return (
-    <div className="flex items-center gap-2.5 px-3 py-2">
-      <span className="flex h-[21px] min-w-0 flex-1 items-center">
+    <div className="flex items-center gap-2.5 px-3 py-[9px]">
+      <span className="flex h-[22px] min-w-0 flex-1 items-center">
         <Skeleton className={`h-[9px] ${width}`} />
       </span>
       <Skeleton className="h-[9px] w-7" />
@@ -461,18 +459,16 @@ const BackToday = memo(function BackToday({
       onPointerDown={() => prewarm(t._id)}
       onFocus={() => prewarm(t._id)}
       aria-current={active ? "page" : undefined}
-      className={`relative mb-1.5 flex flex-col gap-[5px] rounded-card px-3.5 py-3 transition-colors hover:bg-tint-2 ${
-        active ? ACTIVE_BAR : "bg-tint"
+      className={`relative mb-2 flex flex-col rounded-card px-3 py-2.5 ring-1 ring-(--back-edge) ring-inset transition-colors ${
+        active ? ACTIVE_BAR : "bg-(--back-wash) hover:bg-tint"
       }`}
     >
       <span className="flex items-center gap-1.5 text-[12.5px] font-medium text-dot-ink">
-        <ArrowBendUpLeft aria-hidden="true" className="text-[14px]" />
+        <ArrowBendUpLeft aria-hidden="true" className="text-[13px]" />
         <span className="sr-only">returned today: </span>
         <span aria-hidden="true">Back today</span>
       </span>
-      <span className="line-clamp-2 text-[14.5px] leading-[1.45] text-ink">
-        {t.preview}
-      </span>
+      <span className="mt-1 line-clamp-2 text-[14.5px] leading-[1.45] text-ink">{t.preview}</span>
     </Link>
   );
 });
@@ -510,26 +506,25 @@ const RailRow = memo(function RailRow({
       onPointerDown={() => prewarm(t._id)}
       onFocus={() => prewarm(t._id)}
       aria-current={active ? "page" : undefined}
-      className={`relative flex items-baseline gap-2.5 rounded-card px-3 py-2 transition-colors ${
+      className={`group/row relative flex items-baseline gap-4 rounded-card px-3 py-2 transition-colors ${
         active ? ACTIVE_BAR : "hover:bg-tint"
       }`}
     >
-      <span className="min-w-0 flex-1 truncate text-[14.5px] text-ink">
-        {t.preview}
+      {/* A step quieter than the page it sits beside; full ink when in hand. */}
+      <span
+        className={`line-clamp-2 min-w-0 flex-1 text-[14px] leading-[1.45] ${active ? "text-ink" : "text-pt group-hover/row:text-ink"}`}
+      >
+        {clip(t.preview, 58)}
       </span>
-      {held && (
-        <BookmarkSimple
-          weight="fill"
-          aria-label="held"
-          className="flex-none self-center text-[12px] text-pt"
-        />
-      )}
-      {time && (
+      {(time || held) && (
         <span
-          className={`flex-none text-[12.5px] tabular-nums ${active ? "text-dot-ink" : "text-pl"} ${
+          className={`inline-flex min-w-12 flex-none items-baseline justify-end gap-1 text-[12.5px] tabular-nums text-pl ${
             toggleHold ? "group-hover:invisible [@media(hover:none)]:visible" : ""
           }`}
         >
+          {held && (
+            <BookmarkSimple weight="fill" aria-label="held" className="translate-y-[1px] text-[10px] text-faint" />
+          )}
           {time}
         </span>
       )}

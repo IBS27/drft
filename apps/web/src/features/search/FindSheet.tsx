@@ -107,14 +107,14 @@ function Sheet({ close }: { close: () => void }) {
       role="dialog"
       aria-modal="true"
       aria-label="find a thought"
-      className="fixed inset-0 z-50"
+      className="fixed inset-0 z-50 bg-ink/10 max-lg:bg-pg"
       onKeyDown={trapTab}
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) close();
       }}
     >
-      <div className="border-b border-line bg-scr shadow-[0_18px_40px_-28px_color-mix(in_oklab,var(--ink)_40%,transparent)]">
-        <div className="mx-auto w-full max-w-xl px-4">
+      <div className="border-b border-line bg-scr shadow-[0_18px_40px_-28px_color-mix(in_oklab,var(--ink)_40%,transparent)] max-lg:h-dvh max-lg:border-b-0 max-lg:bg-pg max-lg:shadow-none">
+        <div className="mx-auto w-full max-w-xl px-5">
           <div className="flex items-center gap-2.5 py-3">
             <div className="flex h-11 min-w-0 flex-1 items-center gap-2.5 rounded-card bg-pg pr-2 pl-3 ring-1 ring-dot-edge ring-inset">
               <MagnifyingGlass aria-hidden="true" className="flex-none text-[17px] text-pt" />
@@ -135,16 +135,24 @@ function Sheet({ close }: { close: () => void }) {
                 }
                 className="min-w-0 flex-1 bg-transparent text-[16px] text-ink outline-none placeholder:text-pl"
               />
-              <button type="button" onClick={close} aria-label="close find" className="flex-none">
+              <button type="button" onClick={close} aria-label="close find" className="hidden flex-none lg:block">
                 <Kbd className="bg-scr text-pt ring-1 ring-line ring-inset transition-colors hover:text-ink">
                   esc
                 </Kbd>
               </button>
             </div>
+            <button
+              type="button"
+              onClick={close}
+              className="-mr-2 flex h-11 flex-none items-center rounded-full px-3 text-[15px] font-medium text-pt transition-colors hover:text-ink lg:hidden"
+            >
+              Cancel
+            </button>
           </div>
           {query.trim() !== "" && (
-            <div className="max-h-[60dvh] overflow-y-auto pb-3">
+            <div className="-mx-3 max-h-[60dvh] overflow-y-auto pb-3 max-lg:max-h-[calc(100dvh-68px)]">
               <FindResults
+                query={query}
                 hits={hits}
                 active={active}
                 setActive={setActive}

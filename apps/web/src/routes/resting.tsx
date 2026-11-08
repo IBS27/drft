@@ -1,11 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useConvexAuth } from "convex/react";
+import { Sun } from "@phosphor-icons/react";
+import { useConvexAuth, useMutation } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
 import { useState } from "react";
 import { ageLabel } from "../features/thoughts/format";
 import { useCachedQuery } from "../features/thoughts/useCachedQuery";
 import { useThoughtPrewarm } from "../features/thoughts/useThoughtPrewarm";
 import { PageHeader } from "../features/ui/PageHeader";
+import { Rail } from "../features/thoughts/Rail";
 import { SkeletonRows } from "../features/ui/Skeleton";
 
 export const Route = createFileRoute("/resting")({ component: Resting });
@@ -21,42 +23,75 @@ function Resting() {
   );
   const [now] = useState(() => Date.now());
   const prewarm = useThoughtPrewarm();
+  // Waking from the list leaves it at once; Convex confirms behind it.
+  const wake = useMutation(api.thoughts.wake).withOptimisticUpdate(
+    (localStore, { thoughtId }) => {
+      const current = localStore.getQuery(api.thoughts.resting, {});
+      if (current)
+        localStore.setQuery(
+          api.thoughts.resting,
+          {},
+          current.filter((row) => row._id !== thoughtId),
+        );
+    },
+  );
 
   return (
-    <main className="flex min-h-dvh flex-col">
-      <PageHeader title="Resting" />
+    <main className="min-h-dvh">
+      <Rail activeId={null} now={now} />
+      <div className="flex min-h-dvh flex-col lg:pl-72 xl:pl-80">
+      <PageHeader title="Resting" description="Set down for now. Any of them can wake." />
 
-      <section className="mx-auto w-full max-w-2xl flex-1 px-4 pt-8 pb-16 md:px-6">
+      <section className="mx-auto w-full max-w-[688px] flex-1 px-5 pt-0 pb-16 md:px-10">
         {rows === undefined ? (
           <SkeletonRows count={4} />
+        ) : rows.length === 0 ? (
+          <p className="rounded-[14px] bg-scr px-5 py-8 text-center text-[15px] text-pl ring-1 ring-line ring-inset">
+            Nothing is resting.
+          </p>
         ) : (
-          rows.map((t) => (
-            <Link
+          <div className="border-t border-line">
+          {rows.map((t, i) => (
+            <div
               key={t._id}
-              to="/thought/$thoughtId"
-              params={{ thoughtId: t._id }}
-              onPointerEnter={() => prewarm(t._id)}
-              onPointerDown={() => prewarm(t._id)}
-              onFocus={() => prewarm(t._id)}
-              className="block rounded-card px-2.5 py-3.5 transition-colors hover:bg-tint [a+&]:shadow-[0_-1px_0_var(--line)] hover:shadow-none! [a:hover+&]:shadow-none!"
+              className={`-mx-2.5 flex items-center gap-2 rounded-card pr-2.5 transition-colors hover:bg-tint ${i > 0 ? "divided" : ""}`}
             >
-              <div className="flex items-baseline gap-3">
-                <span className="min-w-0 flex-1 truncate text-[16px] text-ink">
+              <Link
+                to="/thought/$thoughtId"
+                params={{ thoughtId: t._id }}
+                onPointerEnter={() => prewarm(t._id)}
+                onPointerDown={() => prewarm(t._id)}
+                onFocus={() => prewarm(t._id)}
+                className="block min-w-0 flex-1 rounded-card py-3.5 pl-2.5"
+              >
+                <span className="line-clamp-2 text-[16px] leading-[1.4] text-balance text-ink">
                   {t.preview}
                 </span>
-                <span className="flex-none text-[13px] text-pl tabular-nums">
-                  {t.restedAt ? ageLabel(t.restedAt, now) : ""}
+                <span className="mt-1 flex items-center gap-1.5 text-[13px] text-pl">
+                  {t.restedAt && (
+                    <span className="inline-flex flex-none items-center gap-1 tabular-nums">
+                      Set down {ageLabel(t.restedAt, now)}
+                    </span>
+                  )}
+                  {t.restingNote && (
+                    <span className="min-w-0 truncate">· {t.restingNote}</span>
+                  )}
                 </span>
-              </div>
-              {t.restingNote && (
-                <div className="mt-1 truncate text-[13.5px] text-pl">
-                  {t.restingNote}
-                </div>
-              )}
-            </Link>
-          ))
+              </Link>
+              <button
+                type="button"
+                onClick={() => void wake({ thoughtId: t._id }).catch(() => {})}
+                className="inline-flex h-8 flex-none items-center gap-1.5 rounded-full bg-scr px-3 text-[13px] font-medium text-pt ring-1 ring-line ring-inset transition-[color,box-shadow] hover:text-ink hover:ring-dot-edge [@media(hover:none)]:h-9"
+              >
+                <Sun aria-hidden="true" className="text-[14px]" />
+                Wake
+              </button>
+            </div>
+          ))}
+          </div>
         )}
       </section>
+      </div>
     </main>
   );
 }

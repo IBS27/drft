@@ -1,6 +1,12 @@
 import SwiftUI
 
 struct SettingsView: View {
+    /// The device's timezone as a place ("Chicago"), not a database id.
+    private static var placeName: String {
+        (TimeZone.current.identifier.split(separator: "/").last.map(String.init) ?? "Local")
+            .replacingOccurrences(of: "_", with: " ")
+    }
+
     @ObservedObject private var authService: AuthService
     @ObservedObject private var convexService: ConvexService
     @Environment(\.dismiss) private var dismiss
@@ -12,6 +18,14 @@ struct SettingsView: View {
     @State private var isDeletingAccount = false
     @State private var deletionFailed = false
     @State private var pendingConnections: Bool?
+    @State private var timePickerSize: CGSize = .zero
+    @State private var headerHeight: CGFloat = 0
+    @State private var contentHeight: CGFloat = 0
+    /// Opens hugging its content; the guess only stands until the first
+    /// measurement, which lands before the sheet is on screen.
+    @State private var detent = PresentationDetent.height(Self.estimatedHeight)
+
+    private static let estimatedHeight: CGFloat = 640
 
     init(authService: AuthService, convexService: ConvexService) {
         self.authService = authService
@@ -30,8 +44,11 @@ struct SettingsView: View {
             VStack(spacing: 0) {
                 ZStack {
                     Text("Settings")
-                        .font(StillnessType.headerTitle)
-                        .foregroundStyle(Stillness.chromeText)
+                        .font(.geist(22, .semibold, relativeTo: .title2))
+                        .tracking(-0.3)
+                        .foregroundStyle(Stillness.ink)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.leading, 8)
                         .accessibilityAddTraits(.isHeader)
 
                     HStack {
@@ -40,89 +57,91 @@ struct SettingsView: View {
                         Button {
                             dismiss()
                         } label: {
-                            EmberIcon(.x, size: 18)
+                            EmberIcon(.x, size: 14)
                         }
-                        .buttonStyle(IconButtonStyle())
+                        .buttonStyle(IconButtonStyle(diameter: 30, filled: true))
                         .accessibilityLabel("Close settings")
                     }
                 }
                 .padding(.horizontal, 8)
-                .padding(.top, 8)
-                .frame(minHeight: 64)
+                // Clear of the grabber; the title then sits close over the
+                // "Signed in as" line, as a page title does on web.
+                .padding(.top, 20)
+                .onGeometryChange(for: CGFloat.self) { $0.size.height } action: {
+                    headerHeight = $0
+                }
 
                 ScrollView {
                     VStack(spacing: 16) {
-                        VStack(spacing: 0) {
-                            if let email = authService.email {
-                                HStack(spacing: 12) {
-                                    EmberIcon(.envelopeSimple, size: 18)
-                                    Text(email)
-                                        .font(.geist(14, relativeTo: .subheadline))
-                                        .lineLimit(1)
-                                        .truncationMode(.middle)
-                                }
+                        // Who you are is context, not a setting: a quiet
+                        // line above the cards.
+                        if let email = authService.email {
+                            (Text("Signed in as ") + Text(email).foregroundStyle(Stillness.chromeText))
+                                .font(StillnessType.caption)
                                 .foregroundStyle(Stillness.chromeLabel)
+                                .lineLimit(1)
+                                .truncationMode(.middle)
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 14)
+                                .padding(.bottom, 6)
+                        }
 
-                                Hairline()
-                            }
+                        VStack(spacing: 0) {
 
-                            VStack(alignment: .leading, spacing: 4) {
-                                HStack(spacing: 16) {
-                                    Text("Daily thought")
-                                        .font(StillnessType.body)
-                                        .foregroundStyle(Stillness.ink)
-
-                                    Spacer(minLength: 12)
-
+                            SettingRow(
+                                detail: "One thought returns each morning, \(Self.placeName) time"
+                            ) {
+                                Text("Daily thought")
+                            } control: {
+                                HStack(spacing: 6) {
                                     Text(dailyThoughtTimeText)
                                         .font(StillnessType.body)
                                         .monospacedDigit()
                                         .foregroundStyle(Stillness.ink)
-                                        .padding(.horizontal, 12)
-                                        .frame(minHeight: 36)
-                                        .background(Stillness.page, in: Capsule())
-                                        .overlay {
-                                            Capsule().strokeBorder(Stillness.hairline, lineWidth: 1)
-                                        }
-                                        .accessibilityHidden(true)
-                                        .overlay {
-                                            DatePicker(
-                                                "Daily thought",
-                                                selection: $dailyThoughtTime,
-                                                displayedComponents: .hourAndMinute
-                                            )
-                                            .labelsHidden()
-                                            .datePickerStyle(.compact)
-                                            .tint(Stillness.now)
-                                            .colorMultiply(.clear)
-                                        }
+                                    EmberIcon(.caretDown, size: 11)
+                                        .foregroundStyle(Stillness.chromeLabel)
                                 }
-
-                                Text("One thought returns each morning, \(TimeZone.current.identifier)")
-                                    .font(StillnessType.caption)
-                                    .foregroundStyle(Stillness.chromeLabel)
-                                    .fixedSize(horizontal: false, vertical: true)
+                                .padding(.leading, 14)
+                                .padding(.trailing, 11)
+                                .frame(minHeight: 36)
+                                .background(Stillness.controlFill, in: Capsule())
+                                .overlay {
+                                    Capsule().strokeBorder(Stillness.hairline, lineWidth: 1)
+                                }
+                                .accessibilityHidden(true)
+                                .overlay {
+                                    GeometryReader { pill in
+                                        DatePicker(
+                                            "Daily thought",
+                                            selection: $dailyThoughtTime,
+                                            displayedComponents: .hourAndMinute
+                                        )
+                                        .labelsHidden()
+                                        .datePickerStyle(.compact)
+                                        .tint(Stillness.now)
+                                        .colorMultiply(.clear)
+                                        .onGeometryChange(for: CGSize.self) { $0.size } action: {
+                                            timePickerSize = $0
+                                        }
+                                        // The invisible picker stretched over the whole
+                                        // pill and to 44pt tall, so all of it opens it.
+                                        .scaleEffect(
+                                            x: Self.stretch(timePickerSize.width, to: max(pill.size.width, 44)),
+                                            y: Self.stretch(timePickerSize.height, to: 44)
+                                        )
+                                        .frame(width: pill.size.width, height: pill.size.height)
+                                    }
+                                }
                             }
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 14)
 
                             Hairline()
 
-                            VStack(alignment: .leading, spacing: 4) {
-                                Toggle("Connections", isOn: connections)
-                                    .toggleStyle(EmberSwitchStyle())
-                                    .disabled(convexService.consent == .unknown)
-
-                                Text("Thought text is sent to OpenAI to find echoes")
-                                    .font(StillnessType.caption)
-                                    .foregroundStyle(Stillness.chromeLabel)
-                                    .fixedSize(horizontal: false, vertical: true)
+                            Toggle(isOn: connections) {
+                                Text("Connections")
                             }
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 10)
+                            .toggleStyle(EmberSwitchStyle(
+                                detail: "Thought text is sent to OpenAI to find echoes"
+                            ))
+                            .disabled(convexService.consent == .unknown)
                         }
                         .emberSurface()
 
@@ -151,12 +170,17 @@ struct SettingsView: View {
                             Button {
                                 deletionIsConfirming = true
                             } label: {
-                                Text(isDeletingAccount ? "Deleting…" : "Delete account")
-                                    .font(StillnessType.body)
-                                    .foregroundStyle(Stillness.nowInk)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .padding(.horizontal, 16)
-                                    .padding(.vertical, 14)
+                                HStack(spacing: 16) {
+                                    settingText(
+                                        isDeletingAccount ? "Deleting…" : "Delete account",
+                                        detail: "Removes your thoughts and notes for good"
+                                    )
+                                    Spacer(minLength: 12)
+                                    trailingGlyph(.caretRight)
+                                }
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 14)
                             }
                             .buttonStyle(SettingsRowButtonStyle())
                             .disabled(isDeletingAccount)
@@ -170,18 +194,32 @@ struct SettingsView: View {
                             }
                         }
                         .emberSurface()
+                        // Set apart from the everyday settings, as on web.
+                        .padding(.top, 24)
+
+                        // Right under the last card, not stranded at the
+                        // foot of the sheet.
+                        Text(versionText)
+                            .font(StillnessType.caption)
+                            .foregroundStyle(Stillness.chromeLabel)
+                            .frame(maxWidth: .infinity)
+                            .padding(.top, -4)
                     }
                     .padding(.horizontal, 16)
-                    .padding(.top, 8)
-                    .padding(.bottom, 24)
+                    .padding(.top, 4)
+                    .padding(.bottom, 16)
+                    .onGeometryChange(for: CGFloat.self) { $0.size.height } action: {
+                        contentHeight = $0
+                    }
                 }
-
-                Text(versionText)
-                    .font(StillnessType.caption)
-                    .foregroundStyle(Stillness.chromeLabel)
-                    .padding(.horizontal, 16)
-                    .padding(.bottom, 18)
+                .scrollBounceBehavior(.basedOnSize)
             }
+        }
+        .presentationDetents([fittedDetent, .large], selection: $detent)
+        .onChange(of: fittedDetent) { oldDetent, newDetent in
+            // Follow the content (an error line appearing) unless the
+            // sheet was pulled up to full height.
+            if detent == oldDetent { detent = newDetent }
         }
         .interactiveDismissDisabled(isDeletingAccount)
         // The one irreversible act in the product: asked once, plainly.
@@ -231,6 +269,27 @@ struct SettingsView: View {
         }
     }
 
+    private var fittedDetent: PresentationDetent {
+        let measured = headerHeight + contentHeight
+        return .height(contentHeight > 0 ? ceil(measured) : Self.estimatedHeight)
+    }
+
+    /// A setting's name over its one-line description, a fixed 4pt apart
+    /// whatever the trailing control.
+    private func settingText(_ title: String, detail: String) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title)
+                .font(StillnessType.body)
+                .foregroundStyle(Stillness.ink)
+            BalancedWrap {
+                Text(detail)
+                    .font(StillnessType.caption)
+                    .foregroundStyle(Stillness.chromeLabel)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+
     private func linkRow(_ title: String, icon: PhosphorIcon) -> some View {
         HStack(spacing: 16) {
             Text(title)
@@ -239,12 +298,26 @@ struct SettingsView: View {
 
             Spacer(minLength: 12)
 
-            EmberIcon(icon, size: 16)
-                .foregroundStyle(Stillness.chromeLabel)
+            trailingGlyph(icon)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
         .contentShape(Rectangle())
+    }
+
+    /// Every row's trailing mark (↗, sign out, ›) in one colour at one
+    /// optical size (about 14pt): Phosphor draws the sign-out door large in
+    /// its box and the arrow and chevron small, so each is nudged until
+    /// their ink stands about 10pt tall.
+    private func trailingGlyph(_ icon: PhosphorIcon) -> some View {
+        let size: CGFloat = switch icon {
+        case .signOut: 13
+        case .arrowUpRight, .caretRight: 15
+        default: 14
+        }
+        return EmberIcon(icon, size: size)
+            .frame(width: 16, height: 16)
+            .foregroundStyle(Stillness.chromeLabel)
     }
 
     private func deleteAccount() {
@@ -283,9 +356,9 @@ struct SettingsView: View {
     }
 
     private var dailyThoughtTimeText: String {
-        dailyThoughtTime
-            .formatted(date: .omitted, time: .shortened)
-            .lowercased()
+        ShelfFormatting.plainSpaces(
+            dailyThoughtTime.formatted(date: .omitted, time: .shortened)
+        ).lowercased()
     }
 
     private static var defaultDailyThoughtTime: Date {
@@ -296,6 +369,11 @@ struct SettingsView: View {
             second: 0,
             of: .now
         ) ?? .now
+    }
+
+    /// The scale that grows a length to at least the target.
+    private static func stretch(_ length: CGFloat, to target: CGFloat) -> CGFloat {
+        length > 0 ? max(1, target / length) : 1
     }
 
     private static func date(from sendTime: String) -> Date? {
@@ -334,7 +412,7 @@ struct SettingsView: View {
         let build = Bundle.main.object(
             forInfoDictionaryKey: "CFBundleVersion"
         ) as? String ?? "1"
-        return "drft \(version) · \(build)"
+        return "Version \(version) (\(build))"
     }
 }
 
@@ -353,20 +431,18 @@ private struct SettingsRowButtonStyle: ButtonStyle {
 private struct EmberSwitchStyle: ToggleStyle {
     @Environment(\.isEnabled) private var isEnabled
 
+    let detail: String
+
     func makeBody(configuration: Configuration) -> some View {
         Button {
             configuration.isOn.toggle()
         } label: {
-            HStack(spacing: 16) {
+            SettingRow(detail: detail) {
                 configuration.label
-                    .font(StillnessType.body)
-                    .foregroundStyle(Stillness.ink)
-
-                Spacer(minLength: 12)
-
+            } control: {
                 ZStack(alignment: configuration.isOn ? .trailing : .leading) {
                     Capsule()
-                        .fill(configuration.isOn ? Stillness.now : Stillness.hairline)
+                        .fill(configuration.isOn ? Stillness.switchOn : Stillness.hairline)
                         .overlay {
                             if !configuration.isOn {
                                 Capsule().strokeBorder(Stillness.chromeLabel, lineWidth: 1)
@@ -374,9 +450,10 @@ private struct EmberSwitchStyle: ToggleStyle {
                         }
 
                     Circle()
-                        .fill(Stillness.page)
+                        .fill(Stillness.switchKnob)
+                        .overlay { Circle().strokeBorder(Stillness.switchKnobRing, lineWidth: 1) }
                         .frame(width: 20, height: 20)
-                        .shadow(color: Stillness.ink.opacity(0.3), radius: 1.5, y: 1)
+                        .shadow(color: Stillness.switchKnobShadow, radius: 1.5, y: 1)
                         .padding(2)
                 }
                 .frame(width: 40, height: 24)
@@ -384,11 +461,43 @@ private struct EmberSwitchStyle: ToggleStyle {
                 .animation(.easeOut(duration: 0.18), value: configuration.isOn)
                 .accessibilityHidden(true)
             }
-            .frame(minHeight: 44)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .accessibilityValue(configuration.isOn ? "on" : "off")
         .accessibilityAddTraits(.isToggle)
+    }
+}
+
+/// A setting whose control shares the title's line; the description runs
+/// full width beneath, so it never wraps beside the control.
+private struct SettingRow<Title: View, Control: View>: View {
+    let detail: String
+    @ViewBuilder let title: Title
+    @ViewBuilder let control: Control
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: 16) {
+                title
+                    .font(StillnessType.body)
+                    .foregroundStyle(Stillness.ink)
+                Spacer(minLength: 12)
+                control
+            }
+            // The time pill's height, so both rows keep one rhythm.
+            .frame(minHeight: 36)
+
+            BalancedWrap {
+                Text(detail)
+                    .font(StillnessType.caption)
+                    .foregroundStyle(Stillness.chromeLabel)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 10)
+        .padding(.bottom, 14)
     }
 }

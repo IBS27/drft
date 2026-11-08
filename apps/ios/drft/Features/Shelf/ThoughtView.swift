@@ -91,16 +91,21 @@ struct ThoughtView: View {
 
                     if let thought = model.thought {
                         Text(ShelfFormatting.captureLine(for: thought.createdAt))
-                            .font(StillnessType.headerDate)
-                            .foregroundStyle(Stillness.chromeText)
+                            .font(StillnessType.meta)
+                            .foregroundStyle(Stillness.chromeLabel)
                             .lineLimit(1)
-                            .padding(.horizontal, 52)
+                            // Beside the way back, as on the web.
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.leading, 48)
                             .allowsHitTesting(false)
                             .opacity(isLeaving ? 0 : 1)
                             .animation(.easeOut(duration: 0.24), value: isLeaving)
                     }
                 }
-                .padding(.horizontal, 8)
+                // The arrow's tip (2pt inside its 20pt icon, centred in a
+                // 44pt tap frame) lands on the 24pt gutter.
+                .padding(.leading, StillnessSpacing.gutter - 14)
+                .padding(.trailing, 8)
                 .frame(height: 56)
 
                 GeometryReader { geometry in
@@ -148,14 +153,22 @@ struct ThoughtView: View {
         minimumHeight: CGFloat
     ) -> some View {
         VStack(spacing: 0) {
-            Spacer(minLength: 42)
+            // Your words start near the top, where reading starts; what
+            // it's near and what you can do with it follow directly.
+            Color.clear.frame(height: 24)
 
             // Your words, exactly as captured, left-aligned as on the web's
             // phone layout.
+            // Longer thoughts step down a size, so a paragraph reads as
+            // writing rather than a headline.
             Text(thought.text)
-                .font(StillnessType.readingThought)
-                .tracking(StillnessType.readingThoughtTracking)
-                .lineSpacing(StillnessType.readingThoughtLineSpacing)
+                .font(thought.text.count > 240
+                    ? .geist(19, relativeTo: .body)
+                    : thought.text.count > 90
+                        ? .geist(23, relativeTo: .title3)
+                        : StillnessType.readingThought)
+                .tracking(thought.text.count > 90 ? -0.2 : StillnessType.readingThoughtTracking)
+                .lineSpacing(thought.text.count > 240 ? 6 : StillnessType.readingThoughtLineSpacing)
                 .multilineTextAlignment(.leading)
                 .foregroundStyle(Stillness.ink)
                 .textSelection(.enabled)
@@ -164,10 +177,18 @@ struct ThoughtView: View {
             if thought.lastReturnedAt != nil || thought.status == .resting {
                 HStack(spacing: 8) {
                     if let lastReturnedAt = thought.lastReturnedAt {
-                        Chip(kind: .now) {
+                        // History, not a control: plain words in the accent.
+                        HStack(spacing: 6) {
                             EmberIcon(.arrowBendUpLeft, size: 14)
                             Text(returnedLabel(for: lastReturnedAt))
                         }
+                        .font(StillnessType.caption)
+                        .foregroundStyle(
+                            ShelfFormatting.group(for: lastReturnedAt, now: .now) == .today
+                                ? Stillness.nowInk
+                                : Stillness.chromeLabel
+                        )
+                        .frame(minHeight: 28)
                     }
 
                     if thought.status == .resting {
@@ -196,12 +217,43 @@ struct ThoughtView: View {
                     .padding(.top, 12)
             }
 
+            // What you can do with it, right under it.
+            if thought.status == .open {
+                // On the pill's own baseline: the label is centred in the
+                // pill, so Held sits on its centreline at any text size.
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    // Held is set on the web; here it is shown, not changed.
+                    if let heldAt = thought.heldAt {
+                        // Read-only here, so it reads as a fact, not a control:
+                        // only "Let it rest" looks pressable.
+                        HStack(spacing: 6) {
+                            EmberIcon(.bookmarkSimpleFill, size: 13)
+                            Text("Held · \(heldAge(heldAt))")
+                        }
+                        .font(.geist(14.5, .regular, relativeTo: .subheadline))
+                        .foregroundStyle(Stillness.chromeLabel)
+                        .padding(.trailing, 10)
+                        .accessibilityElement(children: .combine)
+                    }
+                    restControls
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.top, 20)
+            }
+
             let connections = displayedConnections(for: thought)
             if !connections.isEmpty {
                 relatedThoughts(
                     connections,
                     width: max(0, availableWidth - 48)
                 )
+            } else {
+                // Said plainly, so the page doesn't look half-loaded.
+                Text("No echoes yet")
+                    .font(StillnessType.caption)
+                    .foregroundStyle(Stillness.chromeLabel)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.top, 32)
             }
 
             if let setAside {
@@ -209,14 +261,7 @@ struct ThoughtView: View {
                     .padding(.top, 12)
             }
 
-            Spacer(minLength: 42)
-
-            if thought.status == .open {
-                restControls
-                    .padding(.bottom, 34)
-            } else {
-                Spacer(minLength: 34)
-            }
+            Spacer(minLength: 34)
         }
         .frame(maxWidth: .infinity)
         .frame(minHeight: minimumHeight)
@@ -224,9 +269,12 @@ struct ThoughtView: View {
     }
 
     private func returnedLabel(for milliseconds: Double) -> String {
-        let age = ShelfFormatting.group(for: milliseconds, now: .now) == .today
-            ? "today"
-            : ShelfFormatting.ageLabel(for: milliseconds)
+        let date = Date(timeIntervalSince1970: milliseconds / 1000)
+        let age = switch ShelfFormatting.group(for: milliseconds, now: .now) {
+        case .today: "today"
+        case .thisWeek: date.formatted(.dateTime.weekday(.wide))
+        case .earlier: ShelfFormatting.ageLabel(for: milliseconds)
+        }
         return "Returned \(age)"
     }
 
@@ -254,40 +302,38 @@ struct ThoughtView: View {
         _ connections: [ConvexService.Connection],
         width: CGFloat
     ) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
-            HStack(spacing: 8) {
-                Text("Related thoughts")
-                    .font(StillnessType.sectionTitle)
-                    .foregroundStyle(Stillness.ink)
-                Badge(text: "\(connections.count)")
-            }
-            .padding(.bottom, 6)
-            .accessibilityElement(children: .combine)
-            .accessibilityAddTraits(.isHeader)
+        // Secondary navigation, not another card: a plain divided list on
+        // the page, its text on the title's left edge.
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Related thoughts")
+                .font(StillnessType.groupLabel)
+                .foregroundStyle(Stillness.chromeText)
+                .accessibilityAddTraits(.isHeader)
 
-            ForEach(Array(connections.enumerated()), id: \.element._id) { index, connection in
-                if index > 0 {
-                    Hairline()
+            VStack(alignment: .leading, spacing: 0) {
+                ForEach(Array(connections.enumerated()), id: \.element._id) { index, connection in
+                    Hairline(thickness: Hairline.separatorThickness)
+
+                    RelatedThoughtRow(
+                        connection: connection,
+                        width: width,
+                        metadata: connection.otherStatus == .resting
+                            ? nil
+                            : ShelfFormatting.ageLabel(
+                                for: connection.otherCreatedAt
+                            ),
+                        onPrefetch: {
+                            convexService.prewarmThought(id: connection.otherId)
+                        },
+                        onOpen: { openRelatedThought(connection.otherId) },
+                        onSetAside: { setRelatedThoughtAside(connection, index: index) }
+                    )
                 }
-
-                RelatedThoughtRow(
-                    connection: connection,
-                    width: width,
-                    metadata: connection.otherStatus == .resting
-                        ? nil
-                        : ShelfFormatting.ageLabel(
-                            for: connection.otherCreatedAt
-                        ),
-                    onPrefetch: {
-                        convexService.prewarmThought(id: connection.otherId)
-                    },
-                    onOpen: { openRelatedThought(connection.otherId) },
-                    onSetAside: { setRelatedThoughtAside(connection, index: index) }
-                )
             }
+            .frame(width: width)
         }
-        .frame(width: width)
-        .padding(.top, 40)
+        .frame(width: width, alignment: .leading)
+        .padding(.top, 32)
     }
 
     private func setAsideStatus(_ state: SetAsideState) -> some View {
@@ -459,7 +505,7 @@ struct ThoughtView: View {
                     Text("Let it rest")
                 }
             }
-            .buttonStyle(PillButtonStyle(kind: .outline))
+            .buttonStyle(PillButtonStyle(kind: .neutral))
         }
     }
 
@@ -524,37 +570,42 @@ private struct RelatedThoughtRow: View {
     private let actionWidth: CGFloat = 112
 
     var body: some View {
-        HStack(alignment: .center, spacing: 16) {
-            Text(connection.otherText)
+        // The date and chevron sit on the first line, in one fixed column,
+        // so a two-line thought doesn't float them between its lines.
+        HStack(alignment: .firstTextBaseline, spacing: 12) {
+            WordTruncatedText(text: connection.otherText)
                 .font(StillnessType.body)
                 .lineSpacing(StillnessType.bodyLineSpacing)
                 .foregroundStyle(Stillness.ink)
                 .multilineTextAlignment(.leading)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-            if let metadata {
-                Text(metadata)
-                    .font(StillnessType.caption)
-                    .monospacedDigit()
-                    .foregroundStyle(Stillness.chromeLabel)
-                    .lineLimit(1)
-            } else {
-                Text("Set down")
-                    .font(.geist(12, relativeTo: .caption))
-                    .foregroundStyle(Stillness.chromeText)
-                    .lineLimit(1)
-                    .padding(.horizontal, 9)
-                    .frame(minHeight: 22)
-                    .overlay {
-                        Capsule().strokeBorder(Stillness.hairline, lineWidth: 1)
+            HStack(alignment: .firstTextBaseline, spacing: 12) {
+                if let metadata {
+                    Text(metadata)
+                        .monospacedDigit()
+                } else {
+                    HStack(alignment: .firstTextBaseline, spacing: 4) {
+                        CaptionLineIcon(icon: .moon, size: 13)
+                        Text("Set down")
                     }
+                }
+
+                CaptionLineIcon(icon: .caretRight, size: 12)
+                    .foregroundStyle(Stillness.faint)
             }
+            .font(StillnessType.caption)
+            .foregroundStyle(Stillness.chromeLabel)
+            .lineLimit(1)
+            .frame(minWidth: 96, alignment: .trailing)
         }
-        .padding(.vertical, 13)
+        .padding(.vertical, 14)
+        .padding(.trailing, 2)
         .contentShape(Rectangle())
         .onTapGesture(perform: onOpen)
         .frame(width: width, alignment: .leading)
         .fixedSize(horizontal: false, vertical: true)
+        // The page itself, so the row covers its swipe action at rest.
         .background(Stillness.page)
         // One element per row; without this each text child carried the
         // row's label and VoiceOver read every related thought twice. The
@@ -638,4 +689,21 @@ private struct RelatedThoughtRow: View {
                 }
             }
     }
+}
+
+// How long a thought has been held, in the web's words: "today",
+// "3 days", "2 weeks".
+private func heldAge(_ heldAt: Double, now: Date = .now) -> String {
+    let calendar = Calendar.current
+    let days = calendar.dateComponents(
+        [.day],
+        from: calendar.startOfDay(for: Date(timeIntervalSince1970: heldAt / 1000)),
+        to: calendar.startOfDay(for: now)
+    ).day ?? 0
+    func unit(_ n: Int, _ word: String) -> String { "\(n) \(word)\(n == 1 ? "" : "s")" }
+    if days <= 0 { return "today" }
+    if days < 7 { return unit(days, "day") }
+    if days < 30 { return unit(days / 7, "week") }
+    if days < 365 { return unit(days / 30, "month") }
+    return unit(days / 365, "year")
 }

@@ -40,8 +40,8 @@ enum StillnessType {
     static let captureThoughtLineSpacing: CGFloat = 4
 
     /// A thought being re-read: a step below capture.
-    static let readingThought = Font.geist(25, relativeTo: .title2)
-    static let readingThoughtTracking: CGFloat = -0.5
+    static let readingThought = Font.geist(28, relativeTo: .title2)
+    static let readingThoughtTracking: CGFloat = -0.6
     static let readingThoughtLineSpacing: CGFloat = 2
 
     /// A page's name or a thought's date, centered in its header.
@@ -59,6 +59,8 @@ enum StillnessType {
 
     /// Solid vermilion actions (Keep, Allow, Set it down).
     static let primaryButton = Font.geist(15, .semibold, relativeTo: .subheadline)
+    /// The same action waiting for words (an empty Keep).
+    static let primaryButtonResting = Font.geist(15, .medium, relativeTo: .subheadline)
     /// Outlined and quiet pill controls.
     static let control = Font.geist(14.5, .medium, relativeTo: .subheadline)
 
