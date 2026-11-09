@@ -126,34 +126,21 @@ final class ConvexService: ObservableObject {
             }
     }
 
+    /// Needs a backend that knows `clientId` and `createdAt` (deploy Convex
+    /// first). An older one rejects the call, and the capture waits in the
+    /// queue, retrying, until it is updated.
     func capture(_ capture: PendingCapture) async throws -> String {
-        do {
-            return try await client.mutation(
-                "thoughts:capture",
-                with: [
-                    "text": capture.text,
-                    // Sent again after a lost reply, it returns the same thought.
-                    "clientId": capture.clientID,
-                    // When it was kept, not when it reached the server. A Double:
-                    // ConvexMobile sends an Int as int64, which v.number() rejects.
-                    "createdAt": (capture.createdAt.timeIntervalSince1970 * 1000).rounded(),
-                ]
-            )
-        } catch ClientError.ServerError(let message)
-            where Self.rejectsCaptureArguments(message)
-        {
-            // A dev backend from before these arguments existed. Nothing was
-            // stored, so the thought goes up the way it always did.
-            return try await client.mutation("thoughts:capture", with: ["text": capture.text])
-        }
-    }
-
-    /// Convex's complaint about an argument its validator doesn't know.
-    /// Production redacts it to "Server Error", so there the backend ships
-    /// first; until it has, captures wait in the queue and retry.
-    static func rejectsCaptureArguments(_ message: String) -> Bool {
-        message.contains("extra field `clientId`")
-            || message.contains("extra field `createdAt`")
+        try await client.mutation(
+            "thoughts:capture",
+            with: [
+                "text": capture.text,
+                // Sent again after a lost reply, it returns the same thought.
+                "clientId": capture.clientID,
+                // When it was kept, not when it reached the server. A Double:
+                // ConvexMobile sends an Int as int64, which v.number() rejects.
+                "createdAt": (capture.createdAt.timeIntervalSince1970 * 1000).rounded(),
+            ]
+        )
     }
 
     func collection(date: String) -> AnyPublisher<Collection, ClientError> {
