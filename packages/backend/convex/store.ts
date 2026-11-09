@@ -67,6 +67,7 @@ export const enriched = internalMutation({
     if (!thought || !(await allowsAiConnections(ctx, thought.userId))) return;
     await saveEmbedding(ctx, thought, embedding);
 
+    const seen = new Set<Id<"thoughts">>();
     let weighed = 0;
     let linked = 0;
     for (const hit of [...neighbours].sort((a, b) => b.score - a.score)) {
@@ -81,7 +82,10 @@ export const enriched = internalMutation({
           ? hit.thoughtId
           : (await ctx.db.get(hit.embeddingId))?.thoughtId;
       // A thought enriched again finds itself first; that is not a neighbour.
-      if (toId === thoughtId) continue;
+      // Nor is one already weighed: while embeddings are being moved, the
+      // same thought can come back from both searches.
+      if (toId === thoughtId || (toId && seen.has(toId))) continue;
+      if (toId) seen.add(toId);
       weighed += 1;
       if (toId && (await link(ctx, thought, toId, hit.score))) linked += 1;
     }

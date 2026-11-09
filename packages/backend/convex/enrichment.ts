@@ -56,15 +56,11 @@ async function enrichThoughts(ctx: ActionCtx, thoughtIds: Id<"thoughts">[]) {
   for (let i = 0; i < thoughts.length; i++) {
     const { _id: thoughtId, userId } = thoughts[i];
     const vector = embeddings[i];
-    // Resting thoughts stay searchable so older thinking can still connect.
-    const hits = await ctx.vectorSearch("thoughtEmbeddings", "by_embedding", {
-      vector,
-      limit: SEARCH_LIMIT,
-      filter: (q) => q.eq("userId", userId),
-    });
     // Until the backfill has moved them (migrationState.ts), older
-    // embeddings are still on their thoughts; the strongest of both
-    // searches are the strongest overall.
+    // embeddings are still on their thoughts. That index is searched
+    // first: an embedding only ever moves from there to the new table, so
+    // one the backfill moves between the two searches is seen by the
+    // second (possibly by both — the write counts a thought once).
     const legacyHits = searchLegacyIndex
       ? await ctx.vectorSearch("thoughts", "by_embedding", {
           vector,
@@ -72,15 +68,19 @@ async function enrichThoughts(ctx: ActionCtx, thoughtIds: Id<"thoughts">[]) {
           filter: (q) => q.eq("userId", userId),
         })
       : [];
+    // Resting thoughts stay searchable so older thinking can still connect.
+    const hits = await ctx.vectorSearch("thoughtEmbeddings", "by_embedding", {
+      vector,
+      limit: SEARCH_LIMIT,
+      filter: (q) => q.eq("userId", userId),
+    });
     await ctx.runMutation(internal.store.enriched, {
       thoughtId,
       embedding: vector,
       neighbours: [
-        ...hits.map((hit) => ({ embeddingId: hit._id, score: hit._score })),
         ...legacyHits.map((hit) => ({ thoughtId: hit._id, score: hit._score })),
-      ]
-        .sort((a, b) => b.score - a.score)
-        .slice(0, SEARCH_LIMIT),
+        ...hits.map((hit) => ({ embeddingId: hit._id, score: hit._score })),
+      ],
     });
   }
 }

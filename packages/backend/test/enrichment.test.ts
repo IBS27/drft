@@ -293,9 +293,11 @@ describe("enrichment before the backfill has moved older embeddings", () => {
 
     const id = await capture(t, A, "new", toward(1));
 
+    // Old home first: an embedding moved between the two searches is
+    // then still found by the second.
     expect(backend.searches).toEqual([
-      "thoughtEmbeddings.by_embedding",
       "thoughts.by_embedding",
+      "thoughtEmbeddings.by_embedding",
     ]);
     expect(await links(t)).toEqual([
       { fromId: id, toId: moved, score: 0.95, userId: A },
@@ -306,6 +308,45 @@ describe("enrichment before the backfill has moved older embeddings", () => {
       inline: undefined,
       rows: [{ userId: A, embedding: toward(1) }],
     });
+  });
+
+  it("weighs a thought once when both searches return it", async () => {
+    const t = convexTest(schema, modules);
+    await allow(t, A);
+    const id = await embedded(t, A, "new", toward(1));
+    // Moved between the two searches: the old index and the new both saw it.
+    const moved = await embedded(t, A, "moved mid-search", toward(0.99));
+    const movedRow = await t.run(async (ctx) => {
+      await ctx.db.insert("connections", { fromId: moved, toId: id, score: 0.99, userId: A });
+      const row = await ctx.db
+        .query("thoughtEmbeddings")
+        .withIndex("by_thought", (q) => q.eq("thoughtId", moved))
+        .first();
+      return row!._id;
+    });
+    // Five more already linked, so the seventh candidate is the first that can be.
+    const linked = [];
+    for (let i = 0; i < 5; i++) {
+      const other = await embedded(t, A, `linked ${i}`, toward(0.9 - i / 100));
+      await t.run((ctx) =>
+        ctx.db.insert("connections", { fromId: id, toId: other, score: 0.9, userId: A }),
+      );
+      linked.push({ thoughtId: other, score: 0.9 - i / 100 });
+    }
+    const last = await embedded(t, A, "seventh", toward(0.6));
+
+    await t.mutation(internal.store.enriched, {
+      thoughtId: id,
+      embedding: toward(1),
+      neighbours: [
+        { thoughtId: moved, score: 0.99 },
+        { embeddingId: movedRow, score: 0.99 },
+        ...linked,
+        { thoughtId: last, score: 0.6 },
+      ],
+    });
+
+    expect(await links(t)).toContainEqual({ fromId: id, toId: last, score: 0.6, userId: A });
   });
 
   it("moves a legacy thought's embedding when it is enriched again", async () => {
