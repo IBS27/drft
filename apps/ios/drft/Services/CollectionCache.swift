@@ -33,14 +33,20 @@ actor CollectionCache {
         fileURL = directoryURL.appendingPathComponent("collection.json")
     }
 
+    /// The thoughts last seen for this person, whatever day that was, so the
+    /// first open of a day paints at once. The returned thought belongs to
+    /// the day it was cached for; on any other day it waits for live data.
     func load(userID: String, date: String) -> ConvexService.Collection? {
         guard let data = try? Data(contentsOf: fileURL),
             let entry = try? JSONDecoder().decode(Entry.self, from: data),
-            entry.userID == userID,
-            entry.date == date
+            entry.userID == userID
         else { return nil }
+        guard entry.date != date else { return entry.collection }
 
-        return entry.collection
+        return ConvexService.Collection(
+            thoughts: entry.collection.thoughts,
+            resurfacedId: nil
+        )
     }
 
     func store(

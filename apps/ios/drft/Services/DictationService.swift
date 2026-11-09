@@ -111,6 +111,9 @@ final class DictationService {
         if let generation, activeGeneration != generation {
             return
         }
+        // Nothing was started, so there is no engine to stop and no audio
+        // session to hand back. Asking either is slow enough to stall a Keep.
+        guard activeGeneration != nil else { return }
 
         activeGeneration = nil
         isSessionRunning = false

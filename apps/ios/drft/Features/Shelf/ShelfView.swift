@@ -326,11 +326,13 @@ struct ShelfView: View {
                     }
                     .foregroundStyle(Stillness.nowInk)
 
-                    WordTruncatedText(text: thought.preview)
-                        .font(StillnessType.body)
-                        .lineSpacing(StillnessType.bodyLineSpacing)
-                        .foregroundStyle(Stillness.ink)
-                        .multilineTextAlignment(.leading)
+                    WordTruncatedText(
+                        text: thought.preview,
+                        face: StillnessType.bodyFace,
+                        lineSpacing: StillnessType.bodyLineSpacing
+                    )
+                    .foregroundStyle(Stillness.ink)
+                    .multilineTextAlignment(.leading)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -400,11 +402,13 @@ private struct ShelfRowLabel: View {
 
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 20) {
-            WordTruncatedText(text: thought.preview, onLastLineDescends: { lastLineDescends = $0 })
-                .font(StillnessType.row)
-                .lineSpacing(3)
-                .foregroundStyle(Stillness.ink)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            WordTruncatedText(
+                text: thought.preview,
+                face: StillnessType.rowFace,
+                lineSpacing: 3,
+                onLastLineDescends: { lastLineDescends = $0 }
+            )
+            .foregroundStyle(Stillness.ink)
 
             HStack(alignment: .firstTextBaseline, spacing: 4) {
                 if thought.heldAt != nil {

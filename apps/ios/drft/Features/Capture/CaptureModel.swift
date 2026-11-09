@@ -24,19 +24,19 @@ final class CaptureModel: ObservableObject {
 
     private let captureQueue: CaptureQueue
     private let ownerIDProvider: @MainActor () -> String?
-    private let dictationService: DictationService
+    /// Made on the first Speak tap: the audio engine and speech recogniser
+    /// are slow to set up, and most captures are typed.
+    private var dictationService: DictationService?
     private var confirmationTask: Task<Void, Never>?
     private var dictationTask: Task<Void, Never>?
     private var isApplyingTranscript = false
 
     init(
         captureQueue: CaptureQueue,
-        ownerIDProvider: @escaping @MainActor () -> String?,
-        dictationService: DictationService = DictationService()
+        ownerIDProvider: @escaping @MainActor () -> String?
     ) {
         self.captureQueue = captureQueue
         self.ownerIDProvider = ownerIDProvider
-        self.dictationService = dictationService
     }
 
     var canKeep: Bool {
@@ -69,6 +69,9 @@ final class CaptureModel: ObservableObject {
         let separator = existingText.isEmpty || existingText.last?.isWhitespace == true ? "" : " "
         isListening = true
 
+        let dictationService = dictationService ?? DictationService()
+        self.dictationService = dictationService
+
         dictationTask?.cancel()
         dictationTask = Task { [weak self] in
             guard let self else { return }
@@ -98,7 +101,7 @@ final class CaptureModel: ObservableObject {
     func stopDictation() {
         dictationTask?.cancel()
         dictationTask = nil
-        dictationService.stop()
+        dictationService?.stop()
         isListening = false
     }
 

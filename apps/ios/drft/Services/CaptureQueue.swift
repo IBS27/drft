@@ -3,6 +3,15 @@ import Network
 import os
 import UIKit
 
+/// A kept thought on its way to the server. `clientID` is the queue item's
+/// id, written to disk with it, so every retry of one capture, across
+/// launches too, names the same thought and the server stores it once.
+struct PendingCapture: Sendable {
+    let clientID: String
+    let text: String
+    let createdAt: Date
+}
+
 private struct CaptureQueueItem: Codable, Sendable {
     let id: UUID
     let text: String
@@ -39,6 +48,10 @@ private struct CaptureQueueItem: Codable, Sendable {
         createdAt = try container.decode(Date.self, forKey: .createdAt)
         ownerID = try container.decodeIfPresent(String.self, forKey: .ownerID)
         sequence = try container.decodeIfPresent(UInt64.self, forKey: .sequence) ?? 0
+    }
+
+    var pendingCapture: PendingCapture {
+        PendingCapture(clientID: id.uuidString, text: text, createdAt: createdAt)
     }
 
     func owned(by ownerID: String) -> CaptureQueueItem {
@@ -354,7 +367,7 @@ private final class CaptureQueueStore: @unchecked Sendable {
 
 @MainActor
 final class CaptureQueue {
-    typealias Sender = @MainActor @Sendable (String) async throws -> String
+    typealias Sender = @MainActor @Sendable (PendingCapture) async throws -> String
 
     private static let appGroup = "group.com.srinivasib.drft"
     private static let directoryName = "CaptureQueue"
@@ -372,6 +385,7 @@ final class CaptureQueue {
     private var retryDelay: Int64 = 1
     private var retryTask: Task<Void, Never>?
     private var activeTask: Task<Void, Never>?
+    private var backgroundTask: UIBackgroundTaskIdentifier = .invalid
 
     init(
         deploymentUrl: String,
@@ -428,6 +442,15 @@ final class CaptureQueue {
         retryTask?.cancel()
         retryTask = nil
 
+        // Keep, then straight out of the app: the upload still gets the
+        // half minute iOS allows before it suspends us.
+        beginBackgroundTask()
+        await sendQueuedItems()
+        endBackgroundTask()
+        isFlushing = false
+    }
+
+    private func sendQueuedItems() async {
         repeat {
             flushAgain = false
 
@@ -436,7 +459,6 @@ final class CaptureQueue {
                 store.adoptOrphanedItems(ownerID: ownerID)
             }) {
                 scheduleRetry()
-                isFlushing = false
                 return
             }
             while authenticatedUserID == ownerID,
@@ -445,7 +467,10 @@ final class CaptureQueue {
                 })
             {
                 do {
-                    _ = try await send(item.text)
+                    // The item leaves the queue only once the server has
+                    // answered. A reply lost on the way back means a resend,
+                    // which the server recognises by the item's id.
+                    _ = try await send(item.pendingCapture)
                     guard authenticatedUserID == ownerID else {
                         flushAgain = authenticatedUserID != nil
                         break
@@ -454,7 +479,6 @@ final class CaptureQueue {
                         store.acknowledge(id: item.id)
                     }) else {
                         scheduleRetry()
-                        isFlushing = false
                         return
                     }
                     retryDelay = 1
@@ -462,14 +486,27 @@ final class CaptureQueue {
                     if authenticatedUserID == ownerID {
                         scheduleRetry()
                     }
-                    isFlushing = false
                     return
                 }
             }
         } while flushAgain
 
-        isFlushing = false
         retryDelay = 1
+    }
+
+    private func beginBackgroundTask() {
+        backgroundTask = UIApplication.shared.beginBackgroundTask(
+            withName: "Capture upload"
+        ) { [weak self] in
+            // Out of time. Whatever is unsent stays queued for the next open.
+            self?.endBackgroundTask()
+        }
+    }
+
+    private func endBackgroundTask() {
+        guard backgroundTask != .invalid else { return }
+        UIApplication.shared.endBackgroundTask(backgroundTask)
+        backgroundTask = .invalid
     }
 
     private func offMain<T: Sendable>(

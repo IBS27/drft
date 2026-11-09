@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// Geist, bundled from Stillness/Fonts and registered via `UIAppFonts`.
 /// Referenced by PostScript name so each weight resolves to its own file.
@@ -26,6 +27,51 @@ extension Font {
     }
 }
 
+/// A Geist face in both forms: `font` for SwiftUI, `uiFont(at:)` for the
+/// few places that measure text outside it. Both follow Dynamic Type to
+/// the same size.
+struct GeistFace {
+    let size: CGFloat
+    var weight: GeistWeight = .regular
+    let style: Font.TextStyle
+
+    var font: Font {
+        .geist(size, weight, relativeTo: style)
+    }
+
+    func uiFont(at dynamicTypeSize: DynamicTypeSize) -> UIFont {
+        let scaled = UIFontMetrics(forTextStyle: style.uiTextStyle).scaledValue(
+            for: size,
+            compatibleWith: UITraitCollection(
+                preferredContentSizeCategory: UIContentSizeCategory(dynamicTypeSize)
+            )
+        )
+        // SwiftUI sets a scaled custom font at a whole number of points.
+        let pointSize = scaled.rounded()
+        return UIFont(name: weight.postScriptName, size: pointSize)
+            ?? .systemFont(ofSize: pointSize)
+    }
+}
+
+private extension Font.TextStyle {
+    var uiTextStyle: UIFont.TextStyle {
+        switch self {
+        case .largeTitle: .largeTitle
+        case .title: .title1
+        case .title2: .title2
+        case .title3: .title3
+        case .headline: .headline
+        case .subheadline: .subheadline
+        case .body: .body
+        case .callout: .callout
+        case .footnote: .footnote
+        case .caption: .caption1
+        case .caption2: .caption2
+        @unknown default: .body
+        }
+    }
+}
+
 /// Ember's type scale (docs/vivid.html#ember): Geist at a readable weight,
 /// sentence case, 13pt minimum for anything you need to read. Sizes follow
 /// the web's phone layout. Geist's natural line height is 1.3em, so line
@@ -50,8 +96,10 @@ enum StillnessType {
 
     static let groupLabel = Font.geist(13, .medium, relativeTo: .footnote)
     static let sectionTitle = Font.geist(15, .medium, relativeTo: .subheadline)
-    static let row = Font.geist(16, relativeTo: .body)
-    static let body = Font.geist(15, relativeTo: .subheadline)
+    static let rowFace = GeistFace(size: 16, style: .body)
+    static let row = rowFace.font
+    static let bodyFace = GeistFace(size: 15, style: .subheadline)
+    static let body = bodyFace.font
     static let bodyLineSpacing: CGFloat = 2
     static let meta = Font.geist(13.5, relativeTo: .footnote)
     static let caption = Font.geist(13, relativeTo: .footnote)
