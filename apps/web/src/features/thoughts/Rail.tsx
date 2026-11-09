@@ -11,7 +11,7 @@ import {
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useConvexAuth } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
-import { memo, useCallback, useEffect, useId, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import type { Id } from "@drft/backend/convex/_generated/dataModel";
 import { useHold, type ToggleHold } from "../held/useHold";
 import { FindResults } from "../search/FindResults";
@@ -25,6 +25,7 @@ import { Skeleton } from "../ui/Skeleton";
 import { Wordmark } from "../ui/Wordmark";
 import { ageLabel, clip, localDate, orderRows, type Group, GROUP_LABEL } from "./format";
 import { useCachedQuery } from "./useCachedQuery";
+import { useCollection } from "./useCollection";
 import { useThoughtPrewarm } from "./useThoughtPrewarm";
 
 // Carried on every move between thoughts while you came from the Held
@@ -51,22 +52,35 @@ type RailThought = {
 // Also owns the collection's keyboard: j/k move between thoughts (j enters
 // the top from home), Esc returns to the door — home, or the Held page
 // when the thought was opened from there.
-export const Rail = memo(function Rail({
-  activeId,
-  now,
-  backTo = "/",
-}: {
-  activeId: Id<"thoughts"> | null;
-  now: number;
-  backTo?: "/" | "/held";
-}) {
+// One rail serves every page (routes/__root): it stays mounted as you move
+// between them, so its rows, its scroll and an open find all stay put, and
+// it reads the open thought from the route. Below `desktop` it draws
+// nothing — the pages carry the collection there — but keeps the keyboard.
+export const Rail = memo(function Rail({ desktop }: { desktop: boolean }) {
+  // Epoch milliseconds, not a Date: a primitive keeps the every-30s tick
+  // from invalidating the memo of every row it passes through.
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(Date.now()), 30_000);
+    return () => window.clearInterval(id);
+  }, []);
+  const activeId = useRouterState({
+    select: (s) =>
+      (s.matches.find((match) => match.routeId === "/thought/$thoughtId")
+        ?.params.thoughtId ?? null) as Id<"thoughts"> | null,
+  });
+  const fromHeld = useRouterState({
+    select: (s) =>
+      s.matches.some(
+        (match) =>
+          match.routeId === "/thought/$thoughtId" &&
+          match.search.from === "held",
+      ),
+  });
+  const backTo = fromHeld ? "/held" : "/";
   const { isAuthenticated } = useConvexAuth();
   const date = useMemo(() => localDate(now), [now]);
-  const data = useCachedQuery(
-    api.thoughts.collection,
-    isAuthenticated ? { date } : "skip",
-    `collection:${date}`,
-  );
+  const data = useCollection(date);
   const resting = useCachedQuery(
     api.thoughts.resting,
     isAuthenticated ? {} : "skip",
@@ -75,7 +89,7 @@ export const Rail = memo(function Rail({
   const toggleHold = useHold();
   // On home the day's thought has the main column; the rail doesn't repeat it.
   const onHome = useRouterState({ select: (s) => s.location.pathname === "/" });
-  const search = backTo === "/held" ? FROM_HELD : FROM_HOME;
+  const search = fromHeld ? FROM_HELD : FROM_HOME;
   const [restingOpen, setRestingOpen] = useState(false);
   const navigate = useNavigate();
   const prewarm = useThoughtPrewarm();
@@ -91,12 +105,18 @@ export const Rail = memo(function Rail({
     setFindOpen(false);
     setQuery("");
   }, []);
+  // Read through a ref, so moving between thoughts hands every row the
+  // same function and only the two rows that changed hands redraw.
+  const activeRef = useRef(activeId);
+  useEffect(() => {
+    activeRef.current = activeId;
+  }, [activeId]);
   const prepareNavigation = useCallback(
     (thoughtId: Id<"thoughts">) => {
-      if (activeId) prewarm(activeId);
+      if (activeRef.current) prewarm(activeRef.current);
       prewarm(thoughtId);
     },
-    [activeId, prewarm],
+    [prewarm],
   );
   const goHit = useCallback(
     (hit: Hit) => {
@@ -207,13 +227,14 @@ export const Rail = memo(function Rail({
     if (activeResting) setRestingOpen(true);
   }, [activeResting]);
 
+  if (!desktop) return null;
   const loading = data === undefined;
   const finding = findOpen && query.trim() !== "";
   return (
     <nav
       aria-label="workspace"
       data-finding={finding || undefined}
-      className="fixed inset-y-0 left-0 hidden w-72 flex-col border-r border-line bg-rail lg:flex xl:w-80"
+      className="fixed inset-y-0 left-0 flex w-72 flex-col border-r border-line bg-rail xl:w-80"
     >
       <div className="flex flex-none flex-col gap-[18px] px-3 pt-6 pb-4">
         <div className="flex items-center justify-between">
@@ -324,7 +345,9 @@ export const Rail = memo(function Rail({
           <>
             {ordered.pinned && !onHome && (
               <BackToday
-                t={ordered.pinned}
+                id={ordered.pinned._id}
+                preview={ordered.pinned.preview}
+                heldAt={ordered.pinned.heldAt}
                 active={ordered.pinned._id === activeId}
                 prewarm={prepareNavigation}
                 search={search}
@@ -336,7 +359,8 @@ export const Rail = memo(function Rail({
                 {rows.map((t) => (
                   <RailRow
                     key={t._id}
-                    t={t}
+                    id={t._id}
+                    preview={t.preview}
                     time={ageLabel(t.createdAt, now)}
                     active={t._id === activeId}
                     prewarm={prepareNavigation}
@@ -368,7 +392,8 @@ export const Rail = memo(function Rail({
                     {resting.map((thought) => (
                       <RailRow
                         key={thought._id}
-                        t={thought}
+                        id={thought._id}
+                        preview={thought.preview}
                         time={thought.restedAt ? ageLabel(thought.restedAt, now) : ""}
                         active={thought._id === activeId}
                         prewarm={prepareNavigation}
@@ -437,12 +462,16 @@ function RailSkeletonRow({ width }: { width: string }) {
 
 // Today's returned thought, held apart at the top of the rail.
 const BackToday = memo(function BackToday({
-  t,
+  id,
+  preview,
+  heldAt,
   active,
   prewarm,
   search,
 }: {
-  t: RailThought;
+  id: Id<"thoughts">;
+  preview: string;
+  heldAt?: number;
   active: boolean;
   prewarm: (thoughtId: Id<"thoughts">) => void;
   search: ThoughtSearch;
@@ -450,14 +479,14 @@ const BackToday = memo(function BackToday({
   return (
     <Link
       to="/thought/$thoughtId"
-      params={{ thoughtId: t._id }}
+      params={{ thoughtId: id }}
       search={search}
-      data-hold-id={t._id}
-      data-held-at={t.heldAt ?? ""}
+      data-hold-id={id}
+      data-held-at={heldAt ?? ""}
       data-hold-notice=""
-      onPointerEnter={() => prewarm(t._id)}
-      onPointerDown={() => prewarm(t._id)}
-      onFocus={() => prewarm(t._id)}
+      onPointerEnter={() => prewarm(id)}
+      onPointerDown={() => prewarm(id)}
+      onFocus={() => prewarm(id)}
       aria-current={active ? "page" : undefined}
       className={`relative mb-2 flex flex-col rounded-card px-3 py-2.5 ring-1 ring-(--back-edge) ring-inset transition-colors ${
         active ? ACTIVE_BAR : "bg-(--back-wash) hover:bg-tint"
@@ -468,19 +497,22 @@ const BackToday = memo(function BackToday({
         <span className="sr-only">returned today: </span>
         <span aria-hidden="true">Back today</span>
       </span>
-      <span className="mt-1 line-clamp-2 text-[14.5px] leading-[1.45] text-ink">{t.preview}</span>
+      <span className="mt-1 line-clamp-2 text-[14.5px] leading-[1.45] text-ink">{preview}</span>
     </Link>
   );
 });
 
-// The time arrives as a string, so the 30s tick re-renders only the rows
-// whose label actually changed; memo holds every other row still.
+// Every prop is a plain value — the time a string, the thought its id and
+// its words — so memo holds a row still through the 30s tick and through
+// each fresh answer from the server (which arrives as all-new objects)
+// unless what the row shows has actually changed.
 // Collection rows can be held (`toggleHold`): a held row carries a small
 // bookmark, and on hover the time gives way to a button that holds or
 // lets go (h does the same on the focused or hovered row). Resting rows
 // can't be held.
 const RailRow = memo(function RailRow({
-  t,
+  id,
+  preview,
   time,
   active,
   prewarm,
@@ -488,7 +520,8 @@ const RailRow = memo(function RailRow({
   heldAt,
   toggleHold,
 }: {
-  t: { _id: Id<"thoughts">; preview: string };
+  id: Id<"thoughts">;
+  preview: string;
   time: string;
   active: boolean;
   prewarm: (thoughtId: Id<"thoughts">) => void;
@@ -500,11 +533,11 @@ const RailRow = memo(function RailRow({
   const link = (
     <Link
       to="/thought/$thoughtId"
-      params={{ thoughtId: t._id }}
+      params={{ thoughtId: id }}
       search={search}
-      onPointerEnter={() => prewarm(t._id)}
-      onPointerDown={() => prewarm(t._id)}
-      onFocus={() => prewarm(t._id)}
+      onPointerEnter={() => prewarm(id)}
+      onPointerDown={() => prewarm(id)}
+      onFocus={() => prewarm(id)}
       aria-current={active ? "page" : undefined}
       className={`group/row relative flex items-baseline gap-4 rounded-card px-3 py-2 transition-colors ${
         active ? ACTIVE_BAR : "hover:bg-tint"
@@ -514,7 +547,7 @@ const RailRow = memo(function RailRow({
       <span
         className={`line-clamp-2 min-w-0 flex-1 text-[14px] leading-[1.45] ${active ? "text-ink" : "text-pt group-hover/row:text-ink"}`}
       >
-        {clip(t.preview, 58)}
+        {clip(preview, 58)}
       </span>
       {(time || held) && (
         <span
@@ -534,7 +567,7 @@ const RailRow = memo(function RailRow({
   return (
     <div
       className="group relative"
-      data-hold-id={t._id}
+      data-hold-id={id}
       data-held-at={heldAt ?? ""}
       data-hold-notice=""
     >
@@ -544,7 +577,7 @@ const RailRow = memo(function RailRow({
       <button
         type="button"
         tabIndex={-1}
-        onClick={() => toggleHold(t._id, heldAt, { notice: true })}
+        onClick={() => toggleHold(id, heldAt, { notice: true })}
         aria-label={held ? "Let go" : "Hold"}
         title={held ? "Let go (h)" : "Hold (h)"}
         className="absolute top-1/2 right-1.5 flex size-7 -translate-y-1/2 items-center justify-center rounded-full bg-tint-2 text-[13px] text-pt opacity-0 transition-[opacity,color] group-hover:opacity-100 hover:text-ink [@media(hover:none)]:hidden"

@@ -10,7 +10,10 @@ import { ConnectionsPrompt } from "../features/consent/ConnectionsPrompt";
 import { HoldLayer } from "../features/held/HoldLayer";
 import { FindSheet } from "../features/search/FindSheet";
 import { useEnsureSettings } from "../features/settings/useEnsureSettings";
+import { Rail } from "../features/thoughts/Rail";
+import { useRailAllowed } from "../features/thoughts/railPresence";
 import { OfflineNote } from "../features/ui/OfflineNote";
+import { useDesktop } from "../features/ui/useDesktop";
 import { Waiting } from "../features/ui/Waiting";
 
 // A returning visitor has already proven who they are; proving it again
@@ -24,11 +27,27 @@ import { Waiting } from "../features/ui/Waiting";
 
 export const Route = createRootRoute({ component: Root });
 
+// The pages the rail stands beside. Connections has it on wide screens
+// only (routes/connections); the sign-in callback and a page that isn't
+// there have none.
+const RAIL_PAGES: ReadonlySet<string> = new Set([
+  "/",
+  "/thought/$thoughtId",
+  "/held",
+  "/resting",
+  "/settings",
+]);
+
 function Root() {
   // The OAuth callback must render while still unauthenticated.
   const onCallback = useRouterState({
     select: (s) => s.location.pathname === "/sso-callback",
   });
+  const page = useRouterState({
+    select: (s) => s.matches[s.matches.length - 1]?.routeId,
+  });
+  const desktop = useDesktop();
+  const railAllowed = useRailAllowed();
   const { isLoading, isAuthenticated } = useConvexAuth();
   const { userId } = useAuth();
   // Read once per load: the flag is written as auth resolves, and the
@@ -52,8 +71,14 @@ function Root() {
   if (!open) return isLoading ? <Waiting /> : <SignIn />;
   if (isAuthenticated && consent === null) return <ConnectionsPrompt />;
 
+  const rail =
+    railAllowed &&
+    page !== undefined &&
+    (RAIL_PAGES.has(page) || (page === "/connections" && desktop));
   return (
     <>
+      {/* Outside the pages, so moving between them leaves it mounted. */}
+      {rail && <Rail desktop={desktop} />}
       <Outlet />
       <FindSheet />
       <HoldLayer />

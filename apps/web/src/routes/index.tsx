@@ -6,16 +6,14 @@ import {
   MagnifyingGlass,
 } from "@phosphor-icons/react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useConvexAuth } from "convex/react";
-import { api } from "@drft/backend/convex/_generated/api";
 import { memo, useEffect, useMemo, useState } from "react";
 import { openSearch } from "../features/search/openSearch";
 import { CaptureField } from "../features/thoughts/CaptureField";
-import { Rail } from "../features/thoughts/Rail";
 import { ageLabel, localDate, orderRows, GROUP_LABEL } from "../features/thoughts/format";
-import { useCachedQuery } from "../features/thoughts/useCachedQuery";
+import { useCollection } from "../features/thoughts/useCollection";
 import { useThoughtPrewarm } from "../features/thoughts/useThoughtPrewarm";
 import { SkeletonRows } from "../features/ui/Skeleton";
+import { useDesktop } from "../features/ui/useDesktop";
 import { Wordmark } from "../features/ui/Wordmark";
 import type { Id } from "@drft/backend/convex/_generated/dataModel";
 
@@ -38,11 +36,14 @@ type Row = {
   heldAt?: number;
 };
 
-// One room: on wide screens the collection lives in the edge rail and
-// capture sits alone at the center; narrower, capture at the top with
-// the collection stacked below: today's returned thought, then today /
-// this week / earlier, first line verbatim.
+// One room: on wide screens the collection lives in the edge rail
+// (routes/__root) and capture sits alone at the center; narrower, capture
+// at the top with the collection stacked below: today's returned thought,
+// then today / this week / earlier, first line verbatim. Only the one in
+// use is rendered — a collection drawn twice, half of it hidden, is twice
+// the rows to build and keep.
 function Collection() {
+  const desktop = useDesktop();
   // Epoch milliseconds, not a Date: a primitive keeps the every-30s tick
   // from invalidating the memo of every row it passes through.
   const [now, setNow] = useState(() => Date.now());
@@ -51,13 +52,8 @@ function Collection() {
     return () => window.clearInterval(id);
   }, []);
 
-  const { isAuthenticated } = useConvexAuth();
   const date = useMemo(() => localDate(now), [now]);
-  const data = useCachedQuery(
-    api.thoughts.collection,
-    isAuthenticated ? { date } : "skip",
-    `collection:${date}`,
-  );
+  const data = useCollection(date);
 
   // One prewarm cache for the whole list, not one per row.
   const prewarm = useThoughtPrewarm();
@@ -107,9 +103,6 @@ function Collection() {
         </span>
       </header>
 
-      <Rail activeId={null} now={now} />
-
-
       <div className="flex flex-1 flex-col lg:pl-72 xl:pl-80">
         {/* Capture is the first thing on screen, before any query answers:
             the field is focused and typeable at 0ms. */}
@@ -121,14 +114,14 @@ function Collection() {
           }
         >
           <CaptureField now={now} />
-          {pinned && (
+          {desktop && pinned && (
             <div data-capture className="mt-6 hidden w-full max-w-[608px] lg:block">
               <BackToday t={pinned} prewarm={prewarm} wide />
             </div>
           )}
         </section>
 
-        {hasList && (
+        {hasList && !desktop && (
           <section className="mx-auto w-full max-w-2xl flex-1 px-1 pt-4 pb-10 sm:px-6 lg:hidden">
             {loading ? (
               <SkeletonRows heading count={5} />
@@ -143,8 +136,10 @@ function Collection() {
                     {rows.map((t, i) => (
                       <ThoughtRow
                         key={t._id}
-                        t={t}
-                        now={now}
+                        id={t._id}
+                        preview={t.preview}
+                        held={t.heldAt !== undefined}
+                        time={ageLabel(t.createdAt, now)}
                         divided={i > 0}
                         prewarm={prewarm}
                       />
@@ -203,37 +198,43 @@ function BackToday({
   );
 }
 
-// Memoized so the tick redraws only what the clock actually moves: the
-// age at the end of each row. Rows after the first in a group are parted
-// by a hairline, which steps aside on either edge of a hovered row.
+// Memoized on plain values — the thought's id and words, its age as a
+// string — so the tick redraws only the rows whose age reads differently,
+// and a fresh answer from the server (all-new objects) only the rows that
+// changed. Rows after the first in a group are parted by a hairline, which
+// steps aside on either edge of a hovered row.
 const ThoughtRow = memo(function ThoughtRow({
-  t,
-  now,
+  id,
+  preview,
+  held,
+  time,
   divided,
   prewarm,
 }: {
-  t: Row;
-  now: number;
+  id: Id<"thoughts">;
+  preview: string;
+  held: boolean;
+  time: string;
   divided: boolean;
   prewarm: (thoughtId: Id<"thoughts">) => void;
 }) {
   return (
     <Link
       to="/thought/$thoughtId"
-      params={{ thoughtId: t._id }}
-      onPointerEnter={() => prewarm(t._id)}
-      onPointerDown={() => prewarm(t._id)}
-      onFocus={() => prewarm(t._id)}
+      params={{ thoughtId: id }}
+      onPointerEnter={() => prewarm(id)}
+      onPointerDown={() => prewarm(id)}
+      onFocus={() => prewarm(id)}
       className={`flex items-baseline gap-5 rounded-card px-4 py-3.5 text-[16px] text-ink transition-colors hover:bg-tint [--inset:16px] ${
         divided ? "divided" : ""
       }`}
     >
-      <span className="line-clamp-2 min-w-0 flex-1 leading-[1.4] text-balance">{t.preview}</span>
+      <span className="line-clamp-2 min-w-0 flex-1 leading-[1.4] text-balance">{preview}</span>
       <span className="inline-flex min-w-[4.5rem] flex-none items-baseline justify-end gap-1 text-[13px] text-pl tabular-nums">
-        {t.heldAt !== undefined && (
+        {held && (
           <BookmarkSimple weight="fill" aria-label="held" className="translate-y-[1px] text-[10px] text-faint" />
         )}
-        {ageLabel(t.createdAt, now)}
+        {time}
       </span>
     </Link>
   );

@@ -11,7 +11,6 @@ import {
   type HeldMode,
 } from "../features/held/layout";
 import { useHold } from "../features/held/useHold";
-import { Rail } from "../features/thoughts/Rail";
 import { useCachedQuery } from "../features/thoughts/useCachedQuery";
 import { useThoughtPrewarm } from "../features/thoughts/useThoughtPrewarm";
 import { PageHeader } from "../features/ui/PageHeader";
@@ -56,7 +55,6 @@ function Held() {
 
   return (
     <main className="min-h-dvh">
-      <Rail activeId={null} now={now} />
       <div className="flex min-h-dvh flex-col lg:pl-72 xl:pl-80">
         <PageHeader
           title="Held"

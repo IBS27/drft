@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "build:deploy": "bun run --cwd ../landing build && tsc -b && vite build && cp -R ../landing/dist/_astro dist/_astro && cp ../landing/dist/robots.txt dist/robots.txt && cp ../landing/dist/index.html dist/landing.html && cp ../landing/dist/privacy/index.html dist/privacy.html",
+    "build:deploy": "bun run --cwd ../landing build && tsc -b && vite build && cp -R ../landing/dist/_astro dist/_astro && cp ../landing/dist/robots.txt dist/robots.txt && cp ../landing/dist/index.html dist/landing.html && cp ../landing/dist/privacy/index.html dist/privacy.html && mv dist/index.html dist/app.html",
     "lint": "oxlint",
     "typecheck": "tsc -b",
     "preview": "vite preview"
@@ -19,7 +19,6 @@
     "@phosphor-icons/react": "^2.1.10",
     "@tanstack/react-router": "^1.114.0",
     "@vercel/analytics": "^2.0.1",
-    "@vercel/edge": "^1.2.0",
     "convex": "^1.28.0",
     "d3-force": "^3.0.0",
     "react": "^19.2.7",

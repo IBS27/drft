@@ -13,10 +13,16 @@ export const localDate = (now: Now) => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 };
 
+// Formatters are built once: a list asks for a label per row, and building
+// one costs far more than using it.
+const CLOCK = new Intl.DateTimeFormat([], { hour: "numeric", minute: "2-digit" });
+const WEEKDAY_SHORT = new Intl.DateTimeFormat("en-US", { weekday: "short" });
+const WEEKDAY_LONG = new Intl.DateTimeFormat("en-US", { weekday: "long" });
+const MONTH_SHORT = new Intl.DateTimeFormat("en-US", { month: "short" });
+
 // hour cycle follows the viewer's locale — "9:41" or "9:41 am" alike;
 // lowercase like the rest of the shorthand ("tue", "8 jul").
-const time = (d: Date) =>
-  d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }).toLowerCase();
+const time = (d: Date) => CLOCK.format(d).toLowerCase();
 
 export type Group = "today" | "this week" | "earlier";
 export const GROUPS: Group[] = ["today", "this week", "earlier"];
@@ -39,9 +45,8 @@ export function ageLabel(at: number, now: Now): string {
   const d = new Date(at);
   const group = groupOf(at, now);
   if (group === "today") return time(d);
-  if (group === "this week")
-    return d.toLocaleDateString("en-US", { weekday: "short" });
-  const dayMonth = `${d.getDate()} ${d.toLocaleDateString("en-US", { month: "short" })}`;
+  if (group === "this week") return WEEKDAY_SHORT.format(d);
+  const dayMonth = `${d.getDate()} ${MONTH_SHORT.format(d)}`;
   return d.getFullYear() === n.getFullYear()
     ? dayMonth
     : `${dayMonth} ${String(d.getFullYear()).slice(2)}`;
@@ -51,8 +56,7 @@ export function ageLabel(at: number, now: Now): string {
 export function returnedLabel(at: number, now: Now): string {
   const group = groupOf(at, now);
   if (group === "today") return "today";
-  if (group === "this week")
-    return new Date(at).toLocaleDateString("en-US", { weekday: "long" });
+  if (group === "this week") return WEEKDAY_LONG.format(new Date(at));
   return ageLabel(at, now);
 }
 
@@ -63,12 +67,11 @@ export function dateLine(at: number, now: Now): string {
   const d = new Date(at);
   let day: string;
   if (groupOf(at, now) === "earlier") {
-    const month = d.toLocaleDateString("en-US", { month: "short" });
-    day = `${d.getDate()} ${month}`;
+    day = `${d.getDate()} ${MONTH_SHORT.format(d)}`;
     if (d.getFullYear() !== new Date(now).getFullYear())
       day += ` ${String(d.getFullYear()).slice(2)}`;
   } else {
-    day = d.toLocaleDateString("en-US", { weekday: "long" });
+    day = WEEKDAY_LONG.format(d);
   }
   return `${day} · ${time(d)}`;
 }

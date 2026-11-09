@@ -10,17 +10,19 @@ import { useEffect } from "react";
 // belongs to the session, not to one route — a visitor who arrives on the
 // email's deep link and never opens the collection still gets both.
 // Idempotent, so StrictMode's double effect is harmless.
+// Clerk hands out a new `user` object whenever it refreshes the session, so
+// the effect keys on what the call actually sends — who, which email, which
+// timezone — and fires once per real change rather than once per refresh.
 export function useEnsureSettings(): void {
   const { isAuthenticated } = useConvexAuth();
   const ensure = useMutation(api.settings.ensure);
   const { user } = useUser();
+  const userId = user?.id;
   const email = user?.primaryEmailAddress?.emailAddress;
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
   useEffect(() => {
-    if (!isAuthenticated || !user) return;
-    void ensure({
-      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-      email,
-    });
-  }, [ensure, isAuthenticated, user, email]);
+    if (!isAuthenticated || !userId) return;
+    void ensure({ timezone, email });
+  }, [ensure, isAuthenticated, userId, email, timezone]);
 }
