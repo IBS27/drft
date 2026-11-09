@@ -54,6 +54,7 @@ export const tick = internalMutation({
     for (const settings of due.page) {
       await ctx.scheduler.runAfter(0, internal.resurfacing.forUser, {
         userId: settings.userId,
+        now,
       });
     }
     if (!due.isDone) {
@@ -77,14 +78,16 @@ export const tick = internalMutation({
 // eligible sooner moves it up: settings.ts (time or timezone changed),
 // thoughts.wake, and a capture made offline long ago (thoughts.capture).
 export const forUser = internalMutation({
-  args: { userId: v.string() },
-  handler: async (ctx, { userId }) => {
+  // `now` is the tick's own instant. The run decides by it, not by
+  // whenever the scheduler reached this user: a tick at 23:45 belongs to
+  // that day even if its work starts a moment after midnight.
+  args: { userId: v.string(), now: v.optional(v.number()) },
+  handler: async (ctx, { userId, now = Date.now() }) => {
     const settings = await ctx.db
       .query("settings")
       .withIndex("by_user", (q) => q.eq("userId", userId))
       .first();
     if (!settings) return;
-    const now = Date.now();
     const nextDueAt = await returnToday(ctx, settings, now);
     // "Still due" needs no write when the row already says so — an
     // undelivered day would otherwise rewrite settings every tick.

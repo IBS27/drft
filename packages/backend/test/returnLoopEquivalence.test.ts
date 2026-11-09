@@ -10,8 +10,9 @@ import type { Setup } from "./helpers";
 
 // The return loop used to ask every user, every quarter hour, whether
 // today's thought was due. It now asks only the users whose `nextDueAt`
-// has come. This file holds the two to the same behaviour: the old tick,
-// kept here word for word as the reference, runs beside the new one
+// has come. This file holds the two to the same behaviour: the old tick's
+// control flow, kept here as the reference (it shares selection.ts's
+// clock and ordering helpers with the new one), runs beside the new one
 // through days of random activity, and after every tick both must have
 // returned the same thoughts on the same dates and handed the same number
 // of rows to delivery.

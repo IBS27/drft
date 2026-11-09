@@ -138,6 +138,19 @@ describe.each([
     expect(await returned(t, A)).toEqual([{ date: "2026-11-02", thoughtId: id }]);
   });
 
+  it("decides by the tick's time, however late the user's run starts", async () => {
+    const t = await start("23:45");
+    const id = await thought(t, A, at(-10));
+
+    vi.setSystemTime(at(0, 23, 45));
+    await t.mutation(internal.resurfacing.tick, {});
+    // The scheduler gets to this user after midnight.
+    vi.setSystemTime(at(1, 0, 1));
+    await settle(t);
+
+    expect(await returned(t, A)).toEqual([{ date: "2026-11-02", thoughtId: id }]);
+  });
+
   it("returns a thought that comes of age during the day at that tick", async () => {
     const t = await start();
     // Three days old at 13:07 today.
