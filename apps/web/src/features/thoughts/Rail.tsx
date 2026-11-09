@@ -105,6 +105,11 @@ export const Rail = memo(function Rail({ desktop }: { desktop: boolean }) {
     setFindOpen(false);
     setQuery("");
   }, []);
+  // The rail is not drawn below desktop; a find left open across a resize
+  // would go on owning Esc and j/k from where no one can see it.
+  useEffect(() => {
+    if (!desktop) closeFind();
+  }, [desktop, closeFind]);
   // Read through a ref, so moving between thoughts hands every row the
   // same function and only the two rows that changed hands redraw.
   const activeRef = useRef(activeId);
