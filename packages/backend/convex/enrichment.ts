@@ -1,12 +1,13 @@
 "use node";
 
 import { v } from "convex/values";
-import { embed, embedMany } from "ai";
+import { embedMany } from "ai";
 import { internalAction } from "./_generated/server";
+import type { ActionCtx } from "./_generated/server";
 import { internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
 import { EMBEDDING_MODEL, openaiProvider } from "./ai/models";
-import { LINK_THRESHOLD, MAX_LINKS_PER_ENRICH } from "./ai/limits";
+import { LINK_CANDIDATES } from "./ai/limits";
 
 type BackfillEmbeddingsResult = {
   embedded: number;
@@ -14,62 +15,75 @@ type BackfillEmbeddingsResult = {
 };
 
 const BACKFILL_PAGE_SIZE = 100;
+// One more than the linker weighs: a thought that already has an
+// embedding finds itself first.
+const SEARCH_LIMIT = LINK_CANDIDATES + 1;
 
 // The silent work after every capture: embed, search for resonant older
 // thinking, and link related thoughts. Nothing here notifies anyone.
-// Permission is re-checked here, right before the text leaves for OpenAI,
-// so a capture scheduled before the user turned connections off never
-// sends.
+// One read (which also re-checks permission, right before the text leaves
+// for OpenAI), the embedding, the search, one write.
 export const enrich = internalAction({
   args: { thoughtId: v.id("thoughts") },
   handler: async (ctx, { thoughtId }) => {
-    const thought = await ctx.runQuery(internal.store.getThought, { thoughtId });
-    if (!thought) return;
-    const allowed = await ctx.runQuery(internal.consent.allowed, {
-      userId: thought.userId,
-    });
-    if (!allowed) return;
-    const openai = openaiProvider();
-
-    const { embedding } = await embed({
-      model: openai.textEmbedding(EMBEDDING_MODEL),
-      value: thought.text,
-    });
-    await ctx.runMutation(internal.store.patchThoughtEmbedding, {
-      thoughtId,
-      embedding,
-    });
-
-    // Resting thoughts stay searchable so older thinking can still connect.
-    const thoughtHits = await ctx.vectorSearch("thoughts", "by_embedding", {
-      vector: embedding,
-      limit: 8,
-      filter: (q) => q.eq("userId", thought.userId),
-    });
-
-    const byThought = new Map<Id<"thoughts">, number>();
-    for (const hit of thoughtHits) {
-      byThought.set(hit._id, Math.max(byThought.get(hit._id) ?? 0, hit._score));
-    }
-    byThought.delete(thoughtId);
-
-    // alreadyLinked includes dismissed pairs — a dismissed link is never
-    // re-offered.
-    const alreadyLinked = new Set(
-      await ctx.runQuery(internal.store.linkedThoughtIds, { thoughtId }),
-    );
-    const offerable = [...byThought.entries()]
-      .filter(([id, score]) => score >= LINK_THRESHOLD && !alreadyLinked.has(id))
-      .sort((a, b) => b[1] - a[1]);
-    for (const [toId, score] of offerable.slice(0, MAX_LINKS_PER_ENRICH)) {
-      await ctx.runMutation(internal.store.insertConnection, {
-        fromId: thoughtId,
-        toId,
-        score,
-      });
-    }
+    await enrichThoughts(ctx, [thoughtId]);
   },
 });
+
+// The same for a page of thoughts at once — what was captured while
+// permission was missing (consent.catchUp). One request embeds them all;
+// each is then searched and written in turn, so a thought can link to the
+// ones before it in the same page.
+export const enrichMany = internalAction({
+  args: { thoughtIds: v.array(v.id("thoughts")) },
+  handler: async (ctx, { thoughtIds }) => {
+    await enrichThoughts(ctx, thoughtIds);
+  },
+});
+
+async function enrichThoughts(ctx: ActionCtx, thoughtIds: Id<"thoughts">[]) {
+  const { thoughts, searchLegacyIndex } = await ctx.runQuery(
+    internal.store.enrichmentContext,
+    { thoughtIds },
+  );
+  if (thoughts.length === 0) return;
+  const openai = openaiProvider();
+  const { embeddings } = await embedMany({
+    model: openai.textEmbedding(EMBEDDING_MODEL),
+    values: thoughts.map((t) => t.text),
+  });
+
+  for (let i = 0; i < thoughts.length; i++) {
+    const { _id: thoughtId, userId } = thoughts[i];
+    const vector = embeddings[i];
+    // Resting thoughts stay searchable so older thinking can still connect.
+    const hits = await ctx.vectorSearch("thoughtEmbeddings", "by_embedding", {
+      vector,
+      limit: SEARCH_LIMIT,
+      filter: (q) => q.eq("userId", userId),
+    });
+    // Until the backfill has moved them (migrationState.ts), older
+    // embeddings are still on their thoughts; the strongest of both
+    // searches are the strongest overall.
+    const legacyHits = searchLegacyIndex
+      ? await ctx.vectorSearch("thoughts", "by_embedding", {
+          vector,
+          limit: SEARCH_LIMIT,
+          filter: (q) => q.eq("userId", userId),
+        })
+      : [];
+    await ctx.runMutation(internal.store.enriched, {
+      thoughtId,
+      embedding: vector,
+      neighbours: [
+        ...hits.map((hit) => ({ embeddingId: hit._id, score: hit._score })),
+        ...legacyHits.map((hit) => ({ thoughtId: hit._id, score: hit._score })),
+      ]
+        .sort((a, b) => b.score - a.score)
+        .slice(0, SEARCH_LIMIT),
+    });
+  }
+}
 
 // One-time catch-up for thoughts captured before embeddings were introduced.
 // Only thoughts whose owner allowed connections are sent (store.unembedded).

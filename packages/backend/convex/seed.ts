@@ -1,6 +1,8 @@
 import { v } from "convex/values";
 import { internalMutation } from "./_generated/server";
 import { internal } from "./_generated/api";
+import type { MutationCtx } from "./_generated/server";
+import { markReturned, returnNoLaterThan } from "./resurfacing";
 
 // Dev-only. Seeding plants the design doc's sample fragments (aged across
 // today / this week / earlier) and lets real enrichment embed and link them.
@@ -74,6 +76,9 @@ export const run = internalMutation({
       )
       .order("desc")
       .collect();
+    // Planted thoughts arrive already aged, and a fabricated return shifts
+    // the rotation: either way the return loop should look again.
+    await dueNow(ctx, [userId]);
     if (open.length === 0) return `planted ${planted.length}; no open thoughts`;
     const existing = await ctx.db
       .query("resurfacings")
@@ -84,19 +89,27 @@ export const run = internalMutation({
     // deliveredAt is stamped (channel deliberately absent) so the email
     // adapter never fires for a fabricated row — the tick only retries
     // rows without it.
-    await ctx.db.insert("resurfacings", {
+    const resurfacingId = await ctx.db.insert("resurfacings", {
       thoughtId: resurfaced._id,
       date,
       userId,
       deliveredAt: Date.now(),
     });
+    await markReturned(ctx, resurfaced._id, resurfacingId);
     return `planted ${planted.length} sample thoughts (enrichment scheduled); resurfaced "${resurfaced.text.slice(0, 40)}" for ${date}`;
   },
 });
 
-// Removes everything seeding created: sample thoughts, connections, and
-// resurfacings, plus legacy fabricated connections the old seed left on real
-// thoughts. Real captures and their real enrichment are untouched.
+// The return loop only looks at a user when it expects something to have
+// changed (resurfacing.ts); seeding changes things behind its back.
+async function dueNow(ctx: MutationCtx, userIds: string[]) {
+  for (const userId of userIds) await returnNoLaterThan(ctx, userId, Date.now());
+}
+
+// Removes everything seeding created: sample thoughts, their embeddings,
+// connections, and resurfacings, plus legacy fabricated connections the
+// old seed left on real thoughts. Real captures and their real enrichment
+// are untouched.
 export const clear = internalMutation({
   args: {},
   handler: async (ctx) => {
@@ -118,10 +131,33 @@ export const clear = internalMutation({
     // Only fabricated history: rows on sample thoughts, plus legacy
     // pre-phase-5 fakes (no userId). Real delivery history survives —
     // it feeds the cooldown and the one-per-day guards.
+    // A real thought that loses a fabricated return goes back to where
+    // its real ones leave it in the rotation.
+    const lostReturn = new Set<string>();
+    const lastReal = new Map<string, number>();
     for (const r of await ctx.db.query("resurfacings").collect()) {
-      if (sampleIds.has(r.thoughtId) || r.userId === undefined)
+      if (sampleIds.has(r.thoughtId) || r.userId === undefined) {
         await ctx.db.delete(r._id);
+        lostReturn.add(r.thoughtId);
+      } else {
+        lastReal.set(
+          r.thoughtId,
+          Math.max(lastReal.get(r.thoughtId) ?? 0, r._creationTime),
+        );
+      }
     }
+    for (const t of thoughts) {
+      if (lostReturn.has(t._id) && !sampleIds.has(t._id))
+        await ctx.db.patch(t._id, { lastReturnedAt: lastReal.get(t._id) });
+    }
+    for (const thoughtId of sampleIds) {
+      const embeddings = await ctx.db
+        .query("thoughtEmbeddings")
+        .withIndex("by_thought", (q) => q.eq("thoughtId", thoughtId))
+        .collect();
+      for (const e of embeddings) await ctx.db.delete(e._id);
+    }
+    await dueNow(ctx, [...new Set(thoughts.map((t) => t.userId))]);
     for (const n of await ctx.db.query("notes").collect()) {
       if (sampleIds.has(n.thoughtId)) await ctx.db.delete(n._id);
     }

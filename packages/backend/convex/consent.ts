@@ -8,6 +8,7 @@ import {
 import type { QueryCtx } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { isAccountDeleting } from "./account";
+import { hasEmbedding } from "./embeddings";
 
 // Connections need each thought's text sent to OpenAI for an embedding.
 // That only happens with the user's explicit permission (App Store
@@ -72,6 +73,8 @@ export const setAiConnections = mutation({
   },
 });
 
+// Only the previous `enrich` action calls this (see the note at the end of
+// store.ts); remove it with those.
 export const allowed = internalQuery({
   args: { userId: v.string() },
   returns: v.boolean(),
@@ -79,8 +82,8 @@ export const allowed = internalQuery({
 });
 
 // Enriches what was captured while permission was missing, a page at a
-// time. Re-checks permission on every page so turning it off mid-way stops
-// the walk.
+// time — one enrichment action per page, not per thought. Re-checks
+// permission on every page so turning it off mid-way stops the walk.
 export const catchUp = internalMutation({
   args: { userId: v.string(), cursor: v.union(v.string(), v.null()) },
   returns: v.null(),
@@ -90,10 +93,13 @@ export const catchUp = internalMutation({
       .query("thoughts")
       .withIndex("by_user", (q) => q.eq("userId", userId))
       .paginate({ cursor, numItems: CATCH_UP_PAGE_SIZE });
+    const thoughtIds = [];
     for (const thought of result.page) {
-      if (thought.embedding !== undefined) continue;
-      await ctx.scheduler.runAfter(0, internal.enrichment.enrich, {
-        thoughtId: thought._id,
+      if (!(await hasEmbedding(ctx, thought))) thoughtIds.push(thought._id);
+    }
+    if (thoughtIds.length > 0) {
+      await ctx.scheduler.runAfter(0, internal.enrichment.enrichMany, {
+        thoughtIds,
       });
     }
     if (!result.isDone) {

@@ -9,6 +9,9 @@ import type { Doc, Id } from "./_generated/dataModel";
 import { internal } from "./_generated/api";
 import { isAccountDeleting } from "./account";
 import { allowsAiConnections } from "./consent";
+import { migrated } from "./migrationState";
+import { returnNoLaterThan } from "./resurfacing";
+import { CAPTURE_LAG_MS, MIN_AGE_MS, eligibleAt } from "./selection";
 
 const CONNECTIONS_PER_DIRECTION_LIMIT = 50;
 const CONNECTIONS_PER_GRAPH_THOUGHT_LIMIT = 50;
@@ -17,6 +20,8 @@ const PREVIEW_LIMIT = 160;
 const NOTES_LIMIT = 20_000;
 const HELD_LIMIT = 200;
 const HELD_NOTES_EXCERPT_LIMIT = 400;
+// A device's id for one capture is a UUID; anything much longer isn't one.
+const CLIENT_ID_LIMIT = 64;
 
 const collectionRowValidator = v.object({
   _id: v.id("thoughts"),
@@ -84,23 +89,57 @@ async function ownedThought(ctx: QueryCtx, thoughtId: Id<"thoughts">) {
 // Capture stays dumb: insert text + timestamp, return. Embedding and linking
 // happen asynchronously in enrichment.ts, and only with the user's
 // permission to send thought text to OpenAI (consent.ts).
+//
+// A device that queues captures offline sends two things more. `clientId`
+// names the capture, so sending it again (the reply was lost, the app was
+// killed mid-send) returns the thought already kept instead of keeping it
+// twice. `createdAt` is when the thought was actually had: the collection
+// should show it where it belongs, not at the moment the phone found
+// signal. It can't be in the future, and a value that isn't a time at all
+// is ignored rather than refused — capture never fails over bookkeeping.
 export const capture = mutation({
-  args: { text: v.string() },
+  args: {
+    text: v.string(),
+    clientId: v.optional(v.string()),
+    createdAt: v.optional(v.number()),
+  },
   returns: v.id("thoughts"),
-  handler: async (ctx, { text }) => {
+  handler: async (ctx, { text, clientId, createdAt: capturedAt }) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error("Not signed in");
-    if (await isAccountDeleting(ctx, identity.subject))
+    const userId = identity.subject;
+    if (await isAccountDeleting(ctx, userId))
       throw new Error("Account is being deleted");
     const trimmed = text.trim();
     if (!trimmed) throw new Error("Empty thought");
+    if (clientId !== undefined) {
+      if (clientId.length === 0 || clientId.length > CLIENT_ID_LIMIT)
+        throw new Error("Invalid clientId");
+      const kept = await ctx.db
+        .query("thoughts")
+        .withIndex("by_user_clientId", (q) =>
+          q.eq("userId", userId).eq("clientId", clientId),
+        )
+        .first();
+      if (kept) return kept._id;
+    }
+    const now = Date.now();
+    const createdAt =
+      capturedAt !== undefined && Number.isFinite(capturedAt) && capturedAt > 0
+        ? Math.min(capturedAt, now)
+        : now;
     const thoughtId = await ctx.db.insert("thoughts", {
-      userId: identity.subject,
+      userId,
       text: trimmed,
-      createdAt: Date.now(),
+      createdAt,
       status: "open",
+      ...(clientId !== undefined ? { clientId } : {}),
     });
-    if (await allowsAiConnections(ctx, identity.subject)) {
+    // A thought that waited on the device may already be old enough to
+    // come back; the return loop isn't expecting one (selection.ts).
+    if (createdAt < now - CAPTURE_LAG_MS)
+      await returnNoLaterThan(ctx, userId, createdAt + MIN_AGE_MS);
+    if (await allowsAiConnections(ctx, userId)) {
       await ctx.scheduler.runAfter(0, internal.enrichment.enrich, { thoughtId });
     }
     return thoughtId;
@@ -154,7 +193,10 @@ export const collection = query({
 // Every thought and every live resonance, page by page, for the desktop
 // connections field. A link is returned with its source thought, so walking
 // the user's indexed thought pages also walks the graph without scanning the
-// global connections table or adding ownership data to every existing edge.
+// global connections table. An edge carries its owner, so a link is known
+// to be the user's without reading the thought at its far end; edges from
+// before that are checked the old way until the backfill has stamped them
+// (migrationState.ts).
 export const connectionGraph = query({
   args: { paginationOpts: paginationOptsValidator },
   returns: paginationResultValidator(graphThoughtValidator),
@@ -172,6 +214,7 @@ export const connectionGraph = query({
       .withIndex("by_user", (q) => q.eq("userId", identity.subject))
       .order("desc")
       .paginate(paginationOpts);
+    const edgesCarryOwner = await migrated(ctx, "connectionOwners");
 
     const page = await Promise.all(
       result.page.map(async (thought) => {
@@ -181,16 +224,17 @@ export const connectionGraph = query({
             q.eq("fromId", thought._id).eq("dismissedAt", undefined),
           )
           .take(CONNECTIONS_PER_GRAPH_THOUGHT_LIMIT);
-        const connections = (
-          await Promise.all(
-            candidates.map(async (connection) => {
-              const other = await ctx.db.get(connection.toId);
-              return other?.userId === identity.subject
-                ? { _id: connection._id, toId: connection.toId }
-                : null;
-            }),
-          )
-        ).filter((connection) => connection !== null);
+        const owned = edgesCarryOwner
+          ? candidates.filter((c) => c.userId === identity.subject)
+          : (
+              await Promise.all(
+                candidates.map(async (connection) => {
+                  const other = await ctx.db.get(connection.toId);
+                  return other?.userId === identity.subject ? connection : null;
+                }),
+              )
+            ).filter((connection) => connection !== null);
+        const connections = owned.map((c) => ({ _id: c._id, toId: c.toId }));
         return {
           _id: thought._id,
           text: thought.text,
@@ -336,6 +380,13 @@ export const wake = mutation({
       restedAt: undefined,
       restingNote: undefined,
     });
+    // Back in the rotation, perhaps long since due: let the return loop
+    // know it has something to consider sooner than it planned.
+    await returnNoLaterThan(
+      ctx,
+      thought.userId,
+      eligibleAt(thought.createdAt, thought.lastReturnedAt),
+    );
   },
 });
 
