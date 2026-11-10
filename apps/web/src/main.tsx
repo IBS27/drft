@@ -35,6 +35,28 @@ if (origin) {
   document.head.appendChild(link);
 }
 
+// A tab left open across a deploy asks for chunks the new deployment no
+// longer has; they 404 (vercel.json keeps /assets/ out of the app-shell
+// fallback) and the navigation dies. Reloading fetches the current shell and
+// its chunks. TanStack Router does this itself for a route's own module, but
+// not for the CSS and shared chunks that module preloads — this covers every
+// import. The error is left to propagate so the router suspends rather than
+// rendering a half-loaded route while the reload is under way.
+// The timestamp limits it to once a minute, so a chunk that is missing for
+// some other reason surfaces its error instead of reloading forever — and if
+// the timestamp can't be kept, no reload is attempted.
+const CHUNK_RELOAD_KEY = "drft.chunkReloadAt";
+window.addEventListener("vite:preloadError", () => {
+  try {
+    const last = Number(sessionStorage.getItem(CHUNK_RELOAD_KEY));
+    if (Date.now() - last < 60_000) return;
+    sessionStorage.setItem(CHUNK_RELOAD_KEY, String(Date.now()));
+  } catch {
+    return;
+  }
+  window.location.reload();
+});
+
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL);
 // Scroll to the top on navigation (and restore on back/forward) — without
 // this, moving between thoughts keeps the old scroll offset, so the new

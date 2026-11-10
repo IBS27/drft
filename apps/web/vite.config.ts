@@ -11,7 +11,7 @@ const landingRoot = fileURLToPath(new URL('../landing', import.meta.url))
 const landingDist = path.join(landingRoot, 'dist')
 
 // Landing pages and assets served alongside the app in production: the
-// privacy page (vercel.json rewrite) and the build assets build:deploy copies.
+// privacy page (a vercel.json rewrite) and the build assets build:deploy copies.
 const LANDING_PAGES: Partial<Record<string, string>> = { '/privacy': '/privacy/index.html' }
 const LANDING_ASSETS = /^\/(_astro\/|robots\.txt$)/
 
@@ -31,7 +31,7 @@ const MIME: Record<string, string> = {
   '.woff2': 'font/woff2',
 }
 
-// Dev mirror of middleware.ts and vercel.json: signed-out "/" gets the Astro
+// Dev mirror of the rewrites in vercel.json: signed-out "/" gets the Astro
 // landing page, "/privacy" its privacy page, "/_astro/*" and "/robots.txt"
 // its build assets, and "/?signin" bypasses the landing so its CTA reaches
 // the app's sign-in screen. The landing is served from apps/landing/dist —
@@ -109,7 +109,11 @@ function landingSite(): Plugin {
   }
 }
 
-// Keep in sync with isSignedIn in middleware.ts.
+// Clerk maintains a `__client_uat` cookie on the root domain; "0" means signed
+// out. This is only a routing hint — real auth stays with ClerkJS and Convex.
+// Keep in sync with the "/" rewrite in vercel.json, whose `missing` cookie
+// condition is the same test: `(?!0$).+` matches the whole value, so an
+// absent, empty or "0" cookie is signed out and anything else signed in.
 function isSignedIn(cookieHeader: string | undefined): boolean {
   const uat = cookieHeader?.match(/(?:^|;\s*)__client_uat=([^;]*)/)?.[1]
   return uat !== undefined && uat !== '' && uat !== '0'

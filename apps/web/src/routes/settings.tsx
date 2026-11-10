@@ -3,11 +3,10 @@ import { ArrowUpRight, CaretDown, SignOut } from "@phosphor-icons/react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { clearRememberedSession } from "../features/auth/rememberedSession";
 import { DeleteAccount } from "../features/settings/DeleteAccount";
 import { PageHeader } from "../features/ui/PageHeader";
-import { Rail } from "../features/thoughts/Rail";
 
 export const Route = createFileRoute("/settings")({ component: Settings });
 
@@ -35,11 +34,6 @@ function Settings() {
   const connections = consent?.aiConnections ?? false;
 
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    const id = window.setInterval(() => setNow(Date.now()), 60_000);
-    return () => window.clearInterval(id);
-  }, []);
   // `undefined` is "not answered yet"; `null` is "no row — use the
   // default". Until the answer lands the page keeps its shape and simply
   // says nothing, rather than showing a time that may not be yours.
@@ -71,7 +65,6 @@ function Settings() {
 
   return (
     <main className="min-h-dvh">
-      <Rail activeId={null} now={now} />
       <div className="flex min-h-dvh flex-col lg:pl-72 xl:pl-80">
       {/* Who you are is context, not a setting: the page's one line. */}
       <PageHeader

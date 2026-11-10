@@ -12,7 +12,8 @@ import { revokeAppleGrant } from "./appleRevocation";
 import { fetchWithTimeout } from "./fetchWithTimeout";
 
 // Account deletion: the Clerk user and everything stored for them —
-// thoughts, connections, notes, resurfacings, settings, consent.
+// thoughts, their embeddings, connections, notes, resurfacings, settings,
+// consent.
 //
 // The user's confirmation commits the deletion. From then on the server
 // drives it to completion on its own: the purge is scheduled in the same
@@ -32,11 +33,12 @@ import { fetchWithTimeout } from "./fetchWithTimeout";
 declare const process: { env: Record<string, string | undefined> };
 
 // Per purge transaction: a document count, and a byte estimate for
-// thoughts (text plus a 1536-float embedding), kept well inside Convex's
-// read limits however long a single thought is.
+// thoughts and their embeddings, kept well inside Convex's read limits
+// however long a single thought is. Convex counts nine bytes for a stored
+// float (a type tag and the eight-byte value).
 const PURGE_DOCUMENT_BUDGET = 1_000;
 const PURGE_THOUGHT_BYTES_BUDGET = 4_000_000;
-const EMBEDDING_BYTES = 1536 * 8;
+const EMBEDDING_BYTES = 1536 * 9;
 
 const CLERK_RETRY_BASE_MS = 60_000;
 const CLERK_RETRY_MAX_MS = 3_600_000;
@@ -145,17 +147,27 @@ export const purge = internalMutation({
         .first();
       if (!thought) break;
       const thoughtId = thought._id;
+      // One row per thought; counted whether it is here or still inline
+      // on a thought the backfill has not reached.
+      const embeddings = await ctx.db
+        .query("thoughtEmbeddings")
+        .withIndex("by_thought", (q) => q.eq("thoughtId", thoughtId))
+        .take(documents);
+      thoughtBytes -=
+        thought.text.length * 4 +
+        (embeddings.length + (thought.embedding ? 1 : 0)) * EMBEDDING_BYTES;
       if (
+        (await drop(embeddings)) ||
         (await drop(
           await ctx.db
             .query("connections")
-            .withIndex("by_from", (q) => q.eq("fromId", thoughtId))
+            .withIndex("by_from_and_dismissedAt", (q) => q.eq("fromId", thoughtId))
             .take(documents),
         )) ||
         (await drop(
           await ctx.db
             .query("connections")
-            .withIndex("by_to", (q) => q.eq("toId", thoughtId))
+            .withIndex("by_to_and_dismissedAt", (q) => q.eq("toId", thoughtId))
             .take(documents),
         )) ||
         (await drop(
@@ -172,7 +184,6 @@ export const purge = internalMutation({
         ))
       )
         return await continueLater();
-      thoughtBytes -= thought.text.length * 4 + EMBEDDING_BYTES;
       if (await drop([thought])) return await continueLater();
     }
     if (thoughtBytes <= 0) return await continueLater();

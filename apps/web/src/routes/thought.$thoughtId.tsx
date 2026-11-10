@@ -6,7 +6,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useHold } from "../features/held/useHold";
 import { ageLabel, dateLine, heldAge, returnedLabel } from "../features/thoughts/format";
 import { NotesField } from "../features/thoughts/NotesField";
-import { Rail } from "../features/thoughts/Rail";
+import { useWithoutRail } from "../features/thoughts/railPresence";
 import { useThoughtPrewarm } from "../features/thoughts/useThoughtPrewarm";
 import { BackLink } from "../features/ui/BackLink";
 import { Skeleton } from "../features/ui/Skeleton";
@@ -28,6 +28,7 @@ type ThoughtData = NonNullable<FunctionReturnType<typeof api.thoughts.view>>;
 type Connection = ThoughtData["connections"][number];
 
 function NotHere() {
+  useWithoutRail();
   return (
     <main className="flex min-h-dvh flex-col">
       <BackHeader />
@@ -152,8 +153,6 @@ function ThoughtView() {
 
   return (
     <main className="flex min-h-dvh flex-col">
-      <Rail activeId={id} now={now} backTo={backTo} />
-
       <div className="flex flex-1 flex-col lg:pl-72 xl:pl-80">
         <BackHeader
           label={view ? dateLine(view.createdAt, now) : undefined}

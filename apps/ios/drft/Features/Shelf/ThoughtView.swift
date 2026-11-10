@@ -573,12 +573,12 @@ private struct RelatedThoughtRow: View {
         // The date and chevron sit on the first line, in one fixed column,
         // so a two-line thought doesn't float them between its lines.
         HStack(alignment: .firstTextBaseline, spacing: 12) {
-            WordTruncatedText(text: connection.otherText)
-                .font(StillnessType.body)
-                .lineSpacing(StillnessType.bodyLineSpacing)
-                .foregroundStyle(Stillness.ink)
-                .multilineTextAlignment(.leading)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            WordTruncatedText(
+                text: connection.otherText,
+                face: StillnessType.bodyFace,
+                lineSpacing: StillnessType.bodyLineSpacing
+            )
+            .foregroundStyle(Stillness.ink)
 
             HStack(alignment: .firstTextBaseline, spacing: 12) {
                 if let metadata {

@@ -5,6 +5,8 @@
 // captures, not intuition.
 export const LINK_THRESHOLD = 0.42;
 export const MAX_LINKS_PER_ENRICH = 2;
+// How many of a thought's nearest neighbours the linker weighs at all.
+export const LINK_CANDIDATES = 7;
 
 // The return loop. "Never the newest": a thought must sit at least this
 // long before it can come back. And once resurfaced, it rests out of the

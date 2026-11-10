@@ -130,18 +130,21 @@ export function NotesField({
 
   // Grows with its content, and re-measures when its width changes; the page scrolls,
   // never the field. The measure includes the field's padding.
+  const fit = () => {
+    const el = field.current;
+    if (!el) return;
+    el.style.height = "0px";
+    el.style.height = `${el.scrollHeight}px`;
+  };
+  useLayoutEffect(fit, [text, editing]);
+  // One observer for the field's life, not one per keystroke.
   useLayoutEffect(() => {
     const el = field.current;
     if (!el) return;
-    const fit = () => {
-      el.style.height = "0px";
-      el.style.height = `${el.scrollHeight}px`;
-    };
-    fit();
     const observer = new ResizeObserver(fit);
     observer.observe(el);
     return () => observer.disconnect();
-  }, [text, editing]);
+  }, []);
 
   const reading = !editing && text.trim() !== "";
 

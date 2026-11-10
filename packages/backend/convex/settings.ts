@@ -44,18 +44,31 @@ async function upsert(
   const email = identity.email ?? existing?.email ?? args.email;
   if (!email) throw new Error("No email available for this account");
 
-  if (existing) {
-    await ctx.db.patch(existing._id, {
-      email,
-      timezone: args.timezone,
-      ...(args.sendTime !== undefined ? { sendTime: args.sendTime } : {}),
-    });
-  } else {
+  // A changed time or timezone changes when today's thought is due, so the
+  // return loop looks again at its next tick (resurfacing.ts) rather than
+  // whenever the old values said.
+  const now = Date.now();
+  if (!existing) {
     await ctx.db.insert("settings", {
       userId: identity.subject,
       email,
       sendTime: args.sendTime ?? DEFAULT_SEND_TIME,
       timezone: args.timezone,
+      nextDueAt: now,
+    });
+    return identity.subject;
+  }
+  const sendTime = args.sendTime ?? existing.sendTime;
+  const rescheduled =
+    sendTime !== existing.sendTime || args.timezone !== existing.timezone;
+  // `ensure` runs on every load and almost always finds nothing to change;
+  // writing anyway would re-run every settings subscription each time.
+  if (rescheduled || email !== existing.email) {
+    await ctx.db.patch(existing._id, {
+      email,
+      sendTime,
+      timezone: args.timezone,
+      ...(rescheduled ? { nextDueAt: now } : {}),
     });
   }
   return identity.subject;

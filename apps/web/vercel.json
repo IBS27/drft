@@ -1,7 +1,21 @@
 {
   "buildCommand": "bun run build:deploy",
+  "headers": [
+    {
+      "source": "/(assets|_astro)/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+    }
+  ],
   "rewrites": [
+    {
+      "source": "/",
+      "missing": [
+        { "type": "query", "key": "signin" },
+        { "type": "cookie", "key": "__client_uat", "value": "(?!0$).+" }
+      ],
+      "destination": "/landing.html"
+    },
     { "source": "/privacy", "destination": "/privacy.html" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/((?!assets/|_astro/).*)", "destination": "/app.html" }
   ]
 }

@@ -28,5 +28,10 @@ bun run build
   mutation with undo.
 - Keyboard: `⌘K` or `/` opens search; on a thought, `j`/`k` move through
   the collection and `Esc` returns to it.
-- `middleware.ts` is a Vercel edge middleware (production only) that
-  rewrites signed-out `/` to the landing deployment; `/?signin` bypasses.
+- Production routing is the rewrites in `vercel.json` (mirrored in dev by
+  `landingSite` in `vite.config.ts`): signed-out `/` serves the landing
+  page, `/?signin` bypasses it, everything else falls back to the app
+  shell, which `build:deploy` ships as `app.html` — as `index.html` it
+  would be served for `/` before any rewrite ran.
+- `/assets/` and `/_astro/` are cached immutably, so only content-hashed
+  files belong there (not `public/assets/`).

@@ -25,7 +25,7 @@ function storageKey(userId: string, name: string): string {
   return `${PREFIX}${userId}:${name}`;
 }
 
-function read<T>(userId: string, name: string): T | undefined {
+export function readCached<T>(userId: string, name: string): T | undefined {
   try {
     const raw = window.localStorage.getItem(storageKey(userId, name));
     // Our own versioned write, so the shape is the query's return type.
@@ -35,7 +35,7 @@ function read<T>(userId: string, name: string): T | undefined {
   }
 }
 
-function write(userId: string, name: string, value: unknown): void {
+export function writeCached(userId: string, name: string, value: unknown): void {
   try {
     window.localStorage.setItem(storageKey(userId, name), JSON.stringify(value));
   } catch {
@@ -56,6 +56,19 @@ export function clearCachedQueries(): void {
   }
 }
 
+// Whose stored answers may paint, and who new ones are stored for.
+export function useCacheOwner(): {
+  readAs: string | null | undefined;
+  writeAs: string | null | undefined;
+} {
+  const { isLoaded, userId } = useAuth();
+  // The remembered owner enables the first paint only while Clerk is loading.
+  // Once Clerk resolves, its identity is authoritative; switching accounts
+  // can never leave the previous owner's cached rows on screen.
+  const [rememberedUserId] = useState(() => readSeenUser());
+  return { readAs: isLoaded ? userId : rememberedUserId, writeAs: userId };
+}
+
 // useQuery, with its last answer while the live one is on its way. `name`
 // keys the stored copy and must uniquely identify the query arguments.
 export function useCachedQuery<Query extends FunctionReference<"query">>(
@@ -63,25 +76,18 @@ export function useCachedQuery<Query extends FunctionReference<"query">>(
   args: FunctionArgs<Query> | "skip",
   name: string,
 ): FunctionReturnType<Query> | undefined {
-  const { isLoaded, userId } = useAuth();
-  // The remembered owner enables the first paint only while Clerk is loading.
-  // Once Clerk resolves, its identity is authoritative; switching accounts
-  // can never leave the previous owner's cached rows on screen.
-  const [rememberedUserId] = useState(() => readSeenUser());
-  const cacheUserId = isLoaded ? userId : rememberedUserId;
+  const { readAs, writeAs } = useCacheOwner();
   // The tuple satisfies useQuery's conditional rest type, which a plain
   // union argument cannot narrow to.
   const live = useQuery(query, ...([args] as OptionalRestArgsOrSkip<Query>));
   const cached = useMemo(
     () =>
-      cacheUserId
-        ? read<FunctionReturnType<Query>>(cacheUserId, name)
-        : undefined,
-    [cacheUserId, name],
+      readAs ? readCached<FunctionReturnType<Query>>(readAs, name) : undefined,
+    [readAs, name],
   );
   useEffect(() => {
-    if (live !== undefined && userId) write(userId, name, live);
-  }, [live, name, userId]);
+    if (live !== undefined && writeAs) writeCached(writeAs, name, live);
+  }, [live, name, writeAs]);
   // `??` would hide a legitimate null answer behind a stale copy.
   return live !== undefined ? live : cached;
 }

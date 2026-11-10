@@ -1,5 +1,11 @@
-// Run with `bunx convex run migrations:clearPartnerData` (add `--prod` for
-// production before removing the legacy schema field).
+// One-time data moves, each run by hand with `bunx convex run` (add
+// `--prod` for production):
+//
+//   migrations:backfillFastPaths — after deploying the release that moved
+//     embeddings off thoughts; `migrations:fastPathStatus` shows when it
+//     has finished. See the note above it.
+//   migrations:clearPartnerData — before removing the legacy partner
+//     field from the schema.
 
 import { defineSchema, defineTable } from "convex/server";
 import type {
@@ -8,10 +14,19 @@ import type {
 } from "convex/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
-import { internalMutation } from "./_generated/server";
+import { internalMutation, internalQuery } from "./_generated/server";
+import { saveEmbedding } from "./embeddings";
+import { markMigrated, migrated } from "./migrationState";
 
 const MAX_BATCH_SIZE = 100;
 const MAX_PAGE_BYTES_READ = 4_000_000;
+// A thought still carrying its embedding is ~14 KB, read here and written
+// again to its new home: fifty a transaction is about a megabyte each way,
+// a small part of what one may read. Should a run of unusually long
+// thoughts ever exceed that, the batch fails as a whole and nothing is
+// lost: run it again with a smaller `batchSize`.
+const FAST_PATH_THOUGHT_BATCH_SIZE = 50;
+const FAST_PATH_CONNECTION_BATCH_SIZE = 200;
 const LEGACY_DELETE_BATCH_SIZE = 1;
 const MAX_LEGACY_PAGE_BYTES_READ = 2_000_000;
 
@@ -197,4 +212,111 @@ export const clearPartnerData = internalMutation({
       scheduledNextBatch: true,
     };
   },
+});
+
+// Carries rows written before this release over to the shapes its fast
+// paths read, then marks each one finished (migrationState.ts) so the
+// readers stop taking the old path:
+//
+//   thoughts — the inline embedding moves to `thoughtEmbeddings` (in the
+//     same transaction it leaves the thought, so it is always in exactly
+//     one place), and `lastReturnedAt` is set from the thought's returns.
+//   connections — each edge gets its owner.
+//
+// Safe while the app is live: every writer already uses the new shapes,
+// so a row this has passed never goes back. Safe to interrupt and to run
+// again: it restarts from the first row and skips whatever is already
+// carried over. A deployment with nothing to move finishes at once.
+export const backfillFastPaths = internalMutation({
+  args: {
+    phase: v.optional(v.union(v.literal("thoughts"), v.literal("connections"))),
+    cursor: v.optional(v.string()),
+    batchSize: v.optional(v.number()),
+  },
+  returns: v.object({
+    phase: v.union(v.literal("thoughts"), v.literal("connections")),
+    changed: v.number(),
+    done: v.boolean(),
+  }),
+  handler: async (ctx, { phase = "thoughts", cursor, batchSize }) => {
+    const largest =
+      phase === "thoughts"
+        ? FAST_PATH_THOUGHT_BATCH_SIZE
+        : FAST_PATH_CONNECTION_BATCH_SIZE;
+    const numItems = Math.max(1, Math.min(largest, Math.floor(batchSize ?? largest)));
+    const paging = { cursor: cursor ?? null, numItems };
+    const page =
+      phase === "thoughts"
+        ? { phase, ...(await ctx.db.query("thoughts").paginate(paging)) }
+        : { phase, ...(await ctx.db.query("connections").paginate(paging)) };
+
+    let changed = 0;
+    if (page.phase === "thoughts") {
+      for (const thought of page.page) {
+        const returns = await ctx.db
+          .query("resurfacings")
+          .withIndex("by_thought", (q) => q.eq("thoughtId", thought._id))
+          .collect();
+        const lastReturnedAt =
+          returns.length > 0
+            ? Math.max(...returns.map((r) => r._creationTime))
+            : undefined;
+        if (thought.embedding !== undefined)
+          await saveEmbedding(ctx, thought, thought.embedding);
+        if (lastReturnedAt !== thought.lastReturnedAt)
+          await ctx.db.patch(thought._id, { lastReturnedAt });
+        if (
+          thought.embedding !== undefined ||
+          lastReturnedAt !== thought.lastReturnedAt
+        )
+          changed += 1;
+      }
+    } else {
+      for (const connection of page.page) {
+        if (connection.userId !== undefined) continue;
+        const from = await ctx.db.get(connection.fromId);
+        const to = await ctx.db.get(connection.toId);
+        // An edge with a missing end, or ends with different owners, was
+        // never shown to anyone (every reader checked both). It stays as
+        // it is, without an owner, and stays unshown.
+        if (!from || !to || from.userId !== to.userId) continue;
+        await ctx.db.patch(connection._id, { userId: from.userId });
+        changed += 1;
+      }
+    }
+
+    if (!page.isDone) {
+      await ctx.scheduler.runAfter(0, internal.migrations.backfillFastPaths, {
+        phase,
+        cursor: page.continueCursor,
+        batchSize: numItems,
+      });
+      return { phase, changed, done: false };
+    }
+    if (phase === "thoughts") {
+      await markMigrated(ctx, "embeddingsMoved");
+      await markMigrated(ctx, "lastReturnedAt");
+      await ctx.scheduler.runAfter(0, internal.migrations.backfillFastPaths, {
+        phase: "connections",
+      });
+      return { phase, changed, done: false };
+    }
+    await markMigrated(ctx, "connectionOwners");
+    return { phase, changed, done: true };
+  },
+});
+
+// All three true = the backfill above has finished on this deployment.
+export const fastPathStatus = internalQuery({
+  args: {},
+  returns: v.object({
+    embeddingsMoved: v.boolean(),
+    lastReturnedAt: v.boolean(),
+    connectionOwners: v.boolean(),
+  }),
+  handler: async (ctx) => ({
+    embeddingsMoved: await migrated(ctx, "embeddingsMoved"),
+    lastReturnedAt: await migrated(ctx, "lastReturnedAt"),
+    connectionOwners: await migrated(ctx, "connectionOwners"),
+  }),
 });

@@ -6,6 +6,8 @@ import { api, internal } from "../convex/_generated/api";
 import type { Id } from "../convex/_generated/dataModel";
 import schema from "../convex/schema";
 
+import { scheduled } from "./helpers";
+
 const modules = import.meta.glob("../convex/**/*.ts");
 
 const A = "user_a";
@@ -14,6 +16,7 @@ const B = "user_b";
 type Setup = ReturnType<typeof convexTest>;
 
 // A user with everything the product stores: open and resting thoughts,
+// their embeddings (one still inline, as before `thoughtEmbeddings`),
 // connections both ways (one dismissed), a note, resurfacings, settings,
 // consent.
 async function seedUser(t: Setup, userId: string) {
@@ -27,9 +30,17 @@ async function seedUser(t: Setup, userId: string) {
           text: `${userId} thought ${i}`,
           createdAt: now - i,
           status: i === 2 ? "resting" : "open",
+          ...(i === 2 ? { embedding: [0.1, 0.2] } : {}),
         }),
       );
-    await ctx.db.insert("connections", { fromId: ids[0], toId: ids[1], score: 0.8 });
+    for (const thoughtId of [ids[0], ids[1]])
+      await ctx.db.insert("thoughtEmbeddings", { thoughtId, userId, embedding: [0.3, 0.4] });
+    await ctx.db.insert("connections", {
+      fromId: ids[0],
+      toId: ids[1],
+      score: 0.8,
+      userId,
+    });
     await ctx.db.insert("connections", {
       fromId: ids[2],
       toId: ids[0],
@@ -57,6 +68,7 @@ async function seedUser(t: Setup, userId: string) {
 async function counts(t: Setup) {
   return await t.run(async (ctx) => ({
     thoughts: (await ctx.db.query("thoughts").collect()).length,
+    thoughtEmbeddings: (await ctx.db.query("thoughtEmbeddings").collect()).length,
     connections: (await ctx.db.query("connections").collect()).length,
     notes: (await ctx.db.query("notes").collect()).length,
     resurfacings: (await ctx.db.query("resurfacings").collect()).length,
@@ -109,6 +121,7 @@ describe("account deletion", () => {
     // B's data is intact; nothing of A remains, tombstone included.
     expect(await counts(t)).toEqual({
       thoughts: 3,
+      thoughtEmbeddings: 2,
       connections: 2,
       notes: 1,
       resurfacings: 1,
@@ -134,6 +147,37 @@ describe("account deletion", () => {
     await t.withIdentity({ subject: A }).action(api.account.deleteAccount, {});
     await t.finishAllScheduledFunctions(vi.runAllTimers);
     expect((await counts(t)).thoughts).toBe(0);
+  });
+
+  it("purges real-sized embeddings, moved or not, inside Convex's limits", async () => {
+    const t = convexTest({ schema, modules, transactionLimits: true });
+    const embedding = Array.from({ length: 1536 }, (_, i) => Math.cos(i));
+    // 800 embeddings is 11 MB: more than one transaction may read twice.
+    await t.run(async (ctx) => {
+      for (let i = 0; i < 400; i++) {
+        const thoughtId = await ctx.db.insert("thoughts", {
+          userId: A,
+          text: `moved ${i}`,
+          createdAt: i,
+          status: "open",
+        });
+        await ctx.db.insert("thoughtEmbeddings", { thoughtId, userId: A, embedding });
+      }
+    });
+    await t.run(async (ctx) => {
+      for (let i = 0; i < 400; i++)
+        await ctx.db.insert("thoughts", {
+          userId: A,
+          text: `inline ${i}`,
+          createdAt: 1_000 + i,
+          status: "open",
+          embedding,
+        });
+    });
+    await t.withIdentity({ subject: A }).action(api.account.deleteAccount, {});
+    await t.finishAllScheduledFunctions(vi.runAllTimers);
+    expect(await counts(t)).toMatchObject({ thoughts: 0, thoughtEmbeddings: 0 });
+    expect(await scheduled(t, "account:purge")).toBeGreaterThan(2);
   });
 
   it("refuses new writes while the deletion is in progress", async () => {
@@ -169,7 +213,7 @@ describe("account deletion", () => {
     const links = await t.run((ctx) =>
       ctx.db
         .query("connections")
-        .withIndex("by_from", (q) => q.eq("fromId", first))
+        .withIndex("by_from_and_dismissedAt", (q) => q.eq("fromId", first))
         .collect(),
     );
     expect(links.some((c) => c.toId === second)).toBe(true); // only the seeded one
@@ -188,6 +232,7 @@ describe("account deletion", () => {
     await t.finishAllScheduledFunctions(vi.runAllTimers);
     expect(await counts(t)).toEqual({
       thoughts: 0,
+      thoughtEmbeddings: 0,
       connections: 0,
       notes: 0,
       resurfacings: 0,

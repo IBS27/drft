@@ -1,3 +1,4 @@
+import { clearGroupLayouts } from "../connections/layoutStore";
 import { clearCachedQueries } from "../thoughts/useCachedQuery";
 import { discardPendingCaptures } from "../thoughts/pendingCaptures";
 import { writeSeenUser } from "./seenUser";
@@ -7,6 +8,7 @@ import { writeSeenUser } from "./seenUser";
 export function clearRememberedSession(): void {
   writeSeenUser(null);
   clearCachedQueries();
+  clearGroupLayouts();
 }
 
 // A deleted account leaves nothing in this browser: on top of sign-out's
