@@ -75,8 +75,13 @@ const closing = "A home for thoughts that aren't anything yet";
         /* A view timeline needs a box of its own to measure. */
         display: inline-block;
         animation: take-ink linear both;
-        animation-timeline: view();
         animation-range: cover calc(24% + var(--w) * 2.6%) cover calc(42% + var(--w) * 2.6%);
+      }
+      /* The timeline sits in a rule of its own, under a different selector:
+         in one rule with the shorthand, the build's minifier folds it into
+         `animation`, which browsers then reject whole. */
+      .never .never-word {
+        animation-timeline: view();
       }
     }
   }
@@ -145,13 +150,16 @@ const closing = "A home for thoughts that aren't anything yet";
     @media (prefers-reduced-motion: no-preference) {
       .horizon-sun {
         animation: sunrise linear both;
-        animation-timeline: --horizon;
         animation-range: entry 10% entry 100%;
       }
       .horizon-glow {
         animation: glow-in linear both;
-        animation-timeline: --horizon;
         animation-range: entry 0% entry 90%;
+      }
+      /* Apart from the shorthand, as above. */
+      .horizon .horizon-sun,
+      .horizon .horizon-glow {
+        animation-timeline: --horizon;
       }
     }
   }
