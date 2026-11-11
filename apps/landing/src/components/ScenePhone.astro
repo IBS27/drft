@@ -1,0 +1,324 @@
+---
+// 9:41, Tuesday: the iPhone capture screen. A thought is typed and kept (the
+// app's vermilion dot confirms it), then the older thoughts it echoes are
+// linked to it, with nothing asked.
+import Microphone from "@phosphor-icons/core/assets/regular/microphone.svg";
+
+interface Props {
+  thought: string;
+  echoes: { text: string; kept: string }[];
+}
+const { thought, echoes } = Astro.props;
+---
+
+<!-- No phase is the finished picture: written, kept and linked. The script
+     plays the phases in turn. -->
+<div data-phone class="phone-scene" aria-hidden="true">
+  <div class="phone">
+    <div class="flex h-12 flex-none items-center justify-between pr-7 pl-8">
+      <span class="text-[14px] font-semibold tracking-[-0.01em] text-ink tabular-nums">9:41</span>
+      <span class="island"></span>
+      <span class="w-8"></span>
+    </div>
+
+    <div class="phone-capture flex flex-1 flex-col px-6 pt-9">
+      <span class="text-[13px] text-pl">Tuesday 20 October</span>
+      <p class="mt-4 text-[21px] leading-[1.4] tracking-[-0.014em] text-ink">
+        <span data-phone-typed>{thought}</span><span class="phone-caret"></span>
+      </p>
+    </div>
+
+    <span class="now-dot"></span>
+
+    <div class="phone-actions flex flex-none items-center justify-between px-5 pb-3">
+      <span
+        class="inline-flex h-10 items-center gap-1.5 rounded-full px-3.5 text-[14px] font-medium text-pt ring-1 ring-line ring-inset"
+      >
+        <Microphone class="size-[15px]" />
+        Speak
+      </span>
+      <span class="phone-keep inline-flex h-10 items-center rounded-full px-6 text-[14.5px] font-semibold">
+        Keep
+      </span>
+    </div>
+    <span class="mx-auto mb-2 h-1 w-24 flex-none rounded-full bg-ink/20"></span>
+  </div>
+
+  <div class="echoes">
+    <svg class="echo-links" viewBox="0 0 72 220" preserveAspectRatio="none" fill="none">
+      <path d="M0,110 C40,110 30,46 72,46" pathLength="1"></path>
+      <path d="M0,110 C40,110 30,174 72,174" pathLength="1"></path>
+    </svg>
+    <span class="echo-stem"></span>
+    <span class="echo-origin"></span>
+    <ul>
+      {
+        echoes.map((echo, i) => (
+          <li style={`--i:${i}`}>
+            <span class="echo-node" />
+            <span class="block text-[14px] leading-[1.42] text-pt">{echo.text}</span>
+            <span class="mt-1 block text-[12.5px] text-pl tabular-nums">{echo.kept}</span>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</div>
+
+<style>
+  .phone-scene {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+
+  .phone {
+    position: relative;
+    display: flex;
+    flex: none;
+    flex-direction: column;
+    width: 15.25rem;
+    aspect-ratio: 300 / 600;
+    overflow: hidden;
+    border-radius: 2.75rem;
+    background: var(--scr);
+    box-shadow:
+      inset 0 0 0 1px color-mix(in oklab, var(--line), var(--ink) 8%),
+      inset 0 0 0 6px var(--pg),
+      inset 0 0 0 7px var(--line),
+      var(--lift),
+      0 30px 60px -30px color-mix(in oklab, #3a2c1c 30%, transparent);
+  }
+  .island {
+    width: 5rem;
+    height: 1.5rem;
+    border-radius: 9999px;
+    background: var(--island);
+  }
+
+  .phone-capture {
+    transition: opacity 250ms ease;
+  }
+  .phone-caret {
+    display: none;
+    width: 2px;
+    height: 1.1em;
+    margin: 0 -2px 0 1px;
+    border-radius: 1px;
+    background: var(--dot);
+    vertical-align: -0.18em;
+  }
+  .phone-keep {
+    background: var(--dot);
+    color: var(--on-dot);
+    transition:
+      scale 160ms var(--ease-out),
+      filter 160ms,
+      opacity 250ms;
+  }
+
+  /* The app's confirmation: the screen clears and the dot lands. */
+  .now-dot {
+    position: absolute;
+    top: 42%;
+    left: 50%;
+    width: 15px;
+    height: 15px;
+    margin: -7.5px;
+    border-radius: 9999px;
+    background: var(--dot);
+    opacity: 0;
+    scale: 0.4;
+    transition:
+      opacity 250ms ease,
+      scale 250ms ease;
+  }
+
+  .phone-scene[data-phase="typing"] .phone-caret {
+    display: inline-block;
+  }
+  .phone-scene[data-pressing] .phone-keep {
+    scale: 0.94;
+    filter: brightness(0.94);
+  }
+  .phone-scene[data-phase="kept"] .phone-capture,
+  .phone-scene[data-phase="kept"] .phone-actions {
+    opacity: 0;
+  }
+  .phone-actions {
+    transition: opacity 250ms ease;
+  }
+  .phone-scene[data-phase="kept"] .now-dot {
+    opacity: 1;
+    scale: 1;
+    transition:
+      opacity 150ms ease,
+      scale 700ms var(--ease-spring);
+  }
+
+  /* The echoes: below the phone on small screens, beside it on wide ones,
+     joined to it the way the app's map joins thoughts. */
+  .echoes {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 17rem;
+    padding-top: 2.75rem;
+  }
+  .echo-links {
+    display: none;
+  }
+  .echo-links path {
+    stroke: color-mix(in oklab, var(--line) 85%, var(--mut));
+    stroke-width: 1;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
+    vector-effect: non-scaling-stroke;
+    transition: stroke-dashoffset 1s var(--ease-out);
+  }
+  .echo-stem {
+    position: absolute;
+    top: 0.5rem;
+    left: 50%;
+    width: 1px;
+    height: 1.75rem;
+    background: color-mix(in oklab, var(--line) 85%, var(--mut));
+    transform-origin: top;
+    transition: transform 0.7s var(--ease-out);
+  }
+  .echo-origin {
+    position: absolute;
+    top: 0.25rem;
+    left: 50%;
+    width: 9px;
+    height: 9px;
+    margin-left: -4.5px;
+    border-radius: 9999px;
+    background: var(--dot);
+    box-shadow: 0 0 0 4px color-mix(in oklab, var(--dot) 15%, transparent);
+    transition:
+      opacity 300ms,
+      scale 600ms var(--ease-spring);
+  }
+  .echoes ul {
+    display: grid;
+    gap: 1rem;
+    width: 100%;
+  }
+  .echoes li {
+    position: relative;
+    padding-left: 1.25rem;
+    transition:
+      opacity 0.7s var(--ease-out),
+      transform 0.7s var(--ease-out);
+    transition-delay: calc(0.35s + var(--i) * 0.14s);
+  }
+  .echo-node {
+    position: absolute;
+    top: 0.45rem;
+    left: 0;
+    width: 7px;
+    height: 7px;
+    border-radius: 9999px;
+    background: var(--mut);
+  }
+
+  .phone-scene[data-phase="typing"] .echoes li,
+  .phone-scene[data-phase="kept"] .echoes li {
+    opacity: 0;
+    transform: translateY(8px);
+    transition-duration: 0.3s;
+    transition-delay: 0s;
+  }
+  .phone-scene[data-phase="typing"] .echo-origin,
+  .phone-scene[data-phase="kept"] .echo-origin {
+    opacity: 0;
+    scale: 0;
+  }
+  .phone-scene[data-phase="typing"] .echo-stem,
+  .phone-scene[data-phase="kept"] .echo-stem {
+    transform: scaleY(0);
+    transition-duration: 0.2s;
+  }
+  .phone-scene[data-phase="typing"] .echo-links path,
+  .phone-scene[data-phase="kept"] .echo-links path {
+    stroke-dashoffset: 1;
+    transition-duration: 0.2s;
+  }
+
+  @media (min-width: 1024px) {
+    .phone-scene {
+      flex-direction: row;
+      justify-content: center;
+      height: 100%;
+    }
+    .phone {
+      width: auto;
+      height: min(100%, 31rem);
+    }
+    .echoes {
+      flex-direction: row;
+      width: auto;
+      max-width: none;
+      height: 13.75rem;
+      padding-top: 0;
+    }
+    .echo-stem {
+      display: none;
+    }
+    .echo-links {
+      display: block;
+      flex: none;
+      width: 3.5rem;
+      height: 100%;
+    }
+    .echo-origin {
+      top: 50%;
+      left: 0;
+      margin: -4.5px 0 0 -4.5px;
+    }
+    .echoes ul {
+      display: block;
+      position: relative;
+      width: 10.5rem;
+      height: 100%;
+    }
+    /* Each echo's node sits where its line ends. */
+    .echoes li {
+      position: absolute;
+      left: 0;
+      padding-left: 1rem;
+    }
+    .echoes li:nth-child(1) {
+      top: calc(46 / 220 * 100% - 0.62rem);
+    }
+    .echoes li:nth-child(2) {
+      top: calc(174 / 220 * 100% - 0.62rem);
+    }
+    .echo-node {
+      top: 0.4rem;
+      left: -3.5px;
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .phone {
+      height: min(100%, 35rem);
+    }
+    .echo-links {
+      width: 4.5rem;
+    }
+    .echoes ul {
+      width: 12.5rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .phone-scene * {
+      transition: none !important;
+    }
+  }
+</style>

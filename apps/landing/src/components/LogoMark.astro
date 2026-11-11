@@ -1,0 +1,13 @@
+---
+// The dot and caret from the app icon, cropped to the glyph. Both shapes sit
+// on the bottom edge, so in a baseline-aligned row they rest on the baseline.
+interface Props {
+  class?: string;
+}
+const { class: className } = Astro.props;
+---
+
+<svg aria-hidden="true" viewBox="0 0 20 26" class:list={["flex-none overflow-visible", className]}>
+  <circle cx="6" cy="20" r="6" class="mark-dot fill-dot"></circle>
+  <rect x="16" width="4" height="26" rx="1.5" fill="currentColor" class="mark-caret"></rect>
+</svg>

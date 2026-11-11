@@ -60,6 +60,6 @@ Account deletion (`convex/account.ts`, settings on web and iOS) needs `CLERK_SEC
 
 - Bun for packages and scripts; never npm/yarn.
 - TypeScript: no `any`.
-- Web UI follows Ember (`docs/vivid.html#ember`): the Stillness palette from `docs/design.html` with Geist, sentence-case labels (no tiny spaced capitals), Phosphor icons (`@phosphor-icons/react`), 10px surfaces and pill controls, and the vermilion as the accent for "now" (tokens in `apps/web/src/index.css`). iOS follows Ember too (tokens in `apps/ios/drft/Shared/Stillness`, components in `apps/ios/drft/Shared/Ember`).
+- Web UI follows Ember (`docs/vivid.html#ember`): the Stillness palette from `docs/design.html` with Geist, sentence-case labels (no tiny spaced capitals), Phosphor icons (`@phosphor-icons/react`), 10px surfaces and pill controls, and the vermilion as the accent for "now" (tokens in `apps/web/src/tokens.css`, which the landing site imports too, so the two never drift apart). iOS follows Ember too (tokens in `apps/ios/drft/Shared/Stillness`, components in `apps/ios/drft/Shared/Ember`).
 - UI copy (web, iOS, email): never "done", "complete", "archive", "inbox", "process" or "task" — thoughts are *kept*, *revisited*, *held*, *set down* (`docs/experience.html`). No congratulating, streaks or nudges.
 - Capture never fails visibly and never asks for anything: no error, spinner, retry or extra field on the capture path. Offline captures queue on-device and still confirm; the user's words are stored verbatim.

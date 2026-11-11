@@ -1,44 +1,48 @@
+@import "@fontsource-variable/geist";
+@import "@fontsource-variable/geist-mono";
 @import "tailwindcss";
+/* The app's own tokens (Stillness worn the Ember way): one source, so the
+   landing always wears what the room wears. */
+@import "../../../web/src/tokens.css";
 
-/* Stillness tokens — docs/design.html. Same room, day and night. */
 :root {
-  --pg: #fafaf8;
-  --scr: #fcfcfb;
-  --ink: #2b2b28;
-  --mut: #75756f;
-  --faint: #9e9e98;
-  --line: #e8e8e4;
-  --dot: #c73e1d;
-  /* page-chrome text & labels — higher contrast than the mockup grays */
-  --pt: #45453f;
-  --pl: #6b6b65;
+  /* Motion: one settle curve for everything that arrives, one spring for
+     the dot. */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: linear(
+    0,
+    0.009,
+    0.035 2.1%,
+    0.141 4.4%,
+    0.723 12.9%,
+    0.938 16.7%,
+    1.017,
+    1.077,
+    1.121,
+    1.149 24.3%,
+    1.159,
+    1.163,
+    1.161,
+    1.154 29.9%,
+    1.129 32.8%,
+    1.051 39.6%,
+    1.017 43.1%,
+    0.991,
+    0.977 51%,
+    0.974 53.8%,
+    0.975 57.1%,
+    0.997 69.8%,
+    1.003 76.9%,
+    1
+  );
+  /* A phone's sensor housing: near-black in both rooms. */
+  --island: #1d1b18;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --pg: #131311;
-    --scr: #181816;
-    --ink: #eaeae5;
-    --mut: #a0a099;
-    --faint: #74746d;
-    --line: #2b2b28;
-    --dot: #d9502a;
-    --pt: #c9c9c2;
-    --pl: #97978f;
+    --island: #0b0b0a;
   }
-}
-
-@theme inline {
-  --color-pg: var(--pg);
-  --color-scr: var(--scr);
-  --color-ink: var(--ink);
-  --color-mut: var(--mut);
-  --color-faint: var(--faint);
-  --color-line: var(--line);
-  --color-dot: var(--dot);
-  --color-pt: var(--pt);
-  --color-pl: var(--pl);
-  --font-sans: "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
 }
 
 html {
@@ -47,5 +51,92 @@ html {
 }
 
 body {
-  @apply bg-pg font-sans font-light text-ink;
+  @apply bg-pg font-sans font-normal text-ink;
+}
+
+::selection {
+  background: var(--tint-2);
+  color: var(--ink);
+}
+
+/* Keyboard focus is "now", so it wears the dot's color. */
+:focus-visible {
+  outline: 1px solid var(--dot);
+  outline-offset: 4px;
+}
+
+/* The one filled control: Keep in the app, Get started here. */
+.btn-primary {
+  @apply inline-flex h-12 items-center gap-2 rounded-full bg-dot pr-5 pl-6 text-[15.5px] font-semibold whitespace-nowrap text-on-dot;
+  box-shadow: 0 6px 18px -10px color-mix(in oklab, var(--dot) 70%, transparent);
+  transition:
+    scale 200ms var(--ease-out),
+    filter 200ms,
+    box-shadow 300ms var(--ease-out);
+}
+.btn-primary svg {
+  width: 1.05em;
+  height: 1.05em;
+  transition: translate 300ms var(--ease-out);
+}
+.btn-primary:hover {
+  filter: brightness(1.06);
+  box-shadow: 0 10px 24px -10px color-mix(in oklab, var(--dot) 80%, transparent);
+}
+.btn-primary:hover svg {
+  translate: 3px 0;
+}
+.btn-primary:active {
+  scale: 0.98;
+}
+
+/* A quiet text control with a full pill target. */
+.btn-ghost {
+  @apply inline-flex h-10 items-center rounded-full px-4 text-[14.5px] font-medium whitespace-nowrap text-pt;
+  transition:
+    background-color 200ms,
+    color 200ms;
+}
+.btn-ghost:hover {
+  background: var(--tint);
+  color: var(--ink);
+}
+
+/* The room's caret: vermilion, blinking in steps like a real one. */
+@keyframes caret-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Arrivals. Hidden only once the script is known to be running (html.js),
+   so a page without it is simply all there. */
+.js [data-reveal] {
+  opacity: 0;
+  transform: translateY(18px);
+  filter: blur(6px);
+  transition:
+    opacity 0.9s var(--ease-out),
+    transform 0.9s var(--ease-out),
+    filter 0.9s var(--ease-out);
+  transition-delay: var(--d, 0s);
+}
+.js [data-reveal][data-state="in"] {
+  opacity: 1;
+  transform: none;
+  filter: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .js [data-reveal] {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    transition: none;
+  }
 }

@@ -1,0 +1,182 @@
+---
+// The promise: three things drft will never be, inked in word by word as
+// they're read, then the one thing it is, with morning coming up under it.
+import ArrowRight from "@phosphor-icons/core/assets/bold/arrow-right-bold.svg";
+import LogoMark from "./LogoMark.astro";
+
+const nevers = ["Never a feed.", "Never a pile.", "Never “you have 12 unprocessed thoughts.”"];
+const closing = "A home for thoughts that aren't anything yet";
+---
+
+<section class="promise relative isolate overflow-clip px-5 pt-32 sm:px-8 lg:px-10 lg:pt-52">
+  <div class="mx-auto max-w-[1180px] text-center">
+    <div class="nevers mx-auto">
+      {
+        nevers.map((line) => (
+          <p class="never" data-reveal>
+            {line.split(" ").map((word, i, all) => (
+              <>
+                <span class="never-word" style={`--w:${i}`}>
+                  {word}
+                </span>
+                {i < all.length - 1 && " "}
+              </>
+            ))}
+          </p>
+        ))
+      }
+    </div>
+
+    <p class="closing mx-auto mt-32 font-semibold text-ink lg:mt-48" data-reveal>
+      {closing}<span class="closing-mark"><span class="sr-only">.</span><LogoMark class="h-[0.72em]" /></span>
+    </p>
+    <div class="mt-11" data-reveal style="--d:0.15s">
+      <a href="/?signin" class="btn-primary">
+        Get started
+        <ArrowRight aria-hidden="true" />
+      </a>
+    </div>
+  </div>
+
+  <!-- morning: the dot, come up over the edge of the page -->
+  <div aria-hidden="true" class="horizon">
+    <span class="horizon-glow"></span>
+    <span class="horizon-sun"></span>
+  </div>
+</section>
+
+<style>
+  .never {
+    color: var(--ink);
+    font-size: clamp(1.7rem, 4.4vw, 3.4rem);
+    font-weight: 600;
+    line-height: 1.14;
+    letter-spacing: -0.035em;
+    text-wrap: balance;
+  }
+  .never + .never {
+    margin-top: 0.42em;
+  }
+  .nevers {
+    max-width: 62rem;
+  }
+
+  /* Where the browser can tie animation to scroll, each word takes ink as
+     it rises through the viewport, a beat after the one before it. Elsewhere
+     the lines simply arrive (data-reveal). */
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      :global(.js) .never[data-reveal] {
+        opacity: 1;
+        transform: none;
+        filter: none;
+      }
+      .never-word {
+        /* A view timeline needs a box of its own to measure. */
+        display: inline-block;
+        animation: take-ink linear both;
+        animation-range: cover calc(24% + var(--w) * 2.6%) cover calc(42% + var(--w) * 2.6%);
+      }
+      /* The timeline sits in a rule of its own, under a different selector:
+         in one rule with the shorthand, the build's minifier folds it into
+         `animation`, which browsers then reject whole. */
+      .never .never-word {
+        animation-timeline: view();
+      }
+    }
+  }
+  @keyframes take-ink {
+    from {
+      opacity: 0.14;
+    }
+  }
+
+  .closing {
+    max-width: 15.5ch;
+    font-size: clamp(2.3rem, 6.4vw, 5rem);
+    line-height: 1.02;
+    letter-spacing: -0.042em;
+    text-wrap: balance;
+  }
+  .closing-mark {
+    display: inline-block;
+    margin-left: 0.09em;
+    white-space: nowrap;
+  }
+  .closing-mark :global(svg) {
+    display: inline-block;
+    vertical-align: baseline;
+  }
+  /* The sentence isn't finished either: its caret is still blinking. */
+  .closing-mark :global(.mark-caret) {
+    animation: caret-blink 1.1s steps(1) infinite;
+  }
+
+  .horizon {
+    position: relative;
+    z-index: -1;
+    height: clamp(15rem, 34vw, 26rem);
+    margin-inline: -2.5rem;
+    margin-top: -2rem;
+    /* clip, not hidden: a hidden box would become the scroller these
+       scroll-driven animations measure against, and it never scrolls. */
+    overflow: clip;
+    view-timeline-name: --horizon;
+  }
+  .horizon-glow {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      60% 95% at 50% 100%,
+      color-mix(in oklab, var(--dot) 30%, transparent),
+      color-mix(in oklab, var(--dot) 9%, transparent) 55%,
+      transparent 78%
+    );
+  }
+  .horizon-sun {
+    position: absolute;
+    top: 62%;
+    left: 50%;
+    width: clamp(20rem, 46vw, 38rem);
+    aspect-ratio: 1;
+    margin-left: calc(clamp(20rem, 46vw, 38rem) / -2);
+    border-radius: 9999px;
+    background: var(--dot);
+    box-shadow: 0 0 5rem 0.5rem color-mix(in oklab, var(--dot) 30%, transparent);
+  }
+
+  /* It rises as the page ends. */
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .horizon-sun {
+        animation: sunrise linear both;
+        animation-range: entry 10% entry 100%;
+      }
+      .horizon-glow {
+        animation: glow-in linear both;
+        animation-range: entry 0% entry 90%;
+      }
+      /* Apart from the shorthand, as above. */
+      .horizon .horizon-sun,
+      .horizon .horizon-glow {
+        animation-timeline: --horizon;
+      }
+    }
+  }
+  @keyframes sunrise {
+    from {
+      transform: translateY(38%);
+    }
+  }
+  @keyframes glow-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .closing-mark :global(.mark-caret) {
+      animation: none;
+    }
+  }
+</style>
