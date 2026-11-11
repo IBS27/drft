@@ -1,0 +1,118 @@
+---
+// The one bar on every landing page. It rides over the page clear, takes a
+// frosted surface once you leave the top, and (on the home page) carries
+// Get started along after the hero's own has scrolled away.
+import Wordmark from "./Wordmark.astro";
+
+interface Props {
+  /** The wordmark links home everywhere but on the home page itself. */
+  home?: boolean;
+}
+const { home = false } = Astro.props;
+---
+
+<div data-nav-top aria-hidden="true" class="absolute top-0 h-6 w-px"></div>
+<header data-nav class="nav fixed inset-x-0 top-0 z-40">
+  <div class="mx-auto flex h-16 max-w-[1280px] items-center justify-between pr-2 pl-5 sm:pr-4 sm:pl-8 lg:pr-6 lg:pl-10">
+    <Wordmark href={home ? undefined : "/"} />
+    <nav aria-label="Account" class="flex items-center gap-1.5">
+      {
+        home && (
+          <a href="/?signin" data-nav-cta class="nav-cta">
+            Get started
+          </a>
+        )
+      }
+      <a href="/?signin" class="btn-ghost">Sign in</a>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .nav {
+    transition:
+      background-color 400ms,
+      box-shadow 400ms;
+  }
+  .nav[data-scrolled] {
+    background: color-mix(in oklab, var(--pg) 78%, transparent);
+    backdrop-filter: blur(16px) saturate(1.4);
+    -webkit-backdrop-filter: blur(16px) saturate(1.4);
+    box-shadow: 0 1px 0 color-mix(in oklab, var(--line) 80%, transparent);
+  }
+
+  /* Sits before Sign in, so arriving moves nothing. */
+  .nav-cta {
+    display: inline-flex;
+    height: 2.25rem;
+    align-items: center;
+    border-radius: 9999px;
+    background: var(--dot);
+    padding-inline: 1rem;
+    color: var(--on-dot);
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-6px) scale(0.96);
+    transition:
+      opacity 300ms,
+      transform 500ms var(--ease-out),
+      visibility 0s 300ms,
+      filter 200ms;
+  }
+  .nav-cta[data-shown] {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    transition:
+      opacity 400ms,
+      transform 500ms var(--ease-out),
+      visibility 0s,
+      filter 200ms;
+  }
+  .nav-cta:hover {
+    filter: brightness(1.06);
+  }
+  .nav-cta:active {
+    transform: scale(0.97);
+  }
+
+  @media (prefers-reduced-transparency: reduce) {
+    .nav[data-scrolled] {
+      background: var(--pg);
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nav-cta {
+      transform: none;
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  const nav = document.querySelector<HTMLElement>("[data-nav]");
+  const top = document.querySelector<HTMLElement>("[data-nav-top]");
+  const cta = document.querySelector<HTMLElement>("[data-nav-cta]");
+  const heroCta = document.querySelector<HTMLElement>("[data-hero-cta]");
+
+  if (nav && top) {
+    new IntersectionObserver(([entry]) => {
+      if (entry) nav.toggleAttribute("data-scrolled", !entry.isIntersecting);
+    }).observe(top);
+  }
+
+  if (cta && heroCta) {
+    new IntersectionObserver(([entry]) => {
+      if (!entry) return;
+      // Only once the hero's button has left by the top, never before it arrives.
+      const gone = !entry.isIntersecting && entry.boundingClientRect.top < 0;
+      cta.toggleAttribute("data-shown", gone);
+    }).observe(heroCta);
+  }
+</script>

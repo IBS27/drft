@@ -1,0 +1,100 @@
+---
+// 7:00, three weeks later: the morning email. One thought, in your own
+// words, and one link. Morning comes up behind it.
+import ArrowUpRight from "@phosphor-icons/core/assets/regular/arrow-up-right.svg";
+import LogoMark from "./LogoMark.astro";
+
+interface Props {
+  thought: string;
+}
+const { thought } = Astro.props;
+---
+
+<div class="mail-scene" aria-hidden="true">
+  <span class="mail-dawn"></span>
+  <article class="mail relative w-full rounded-[14px] bg-scr shadow-lift ring-1 ring-line ring-inset">
+    <header class="mail-part flex items-center gap-3 px-6 pt-5 pb-4 sm:px-8 sm:pt-7" style="--i:0">
+      <span class="flex size-10 flex-none items-center justify-center rounded-[11px] bg-pg text-ink ring-1 ring-line ring-inset">
+        <LogoMark class="h-[15px]" />
+      </span>
+      <span class="flex min-w-0 flex-1 flex-col">
+        <span class="text-[14.5px] font-semibold tracking-[-0.01em] text-ink">drft</span>
+        <span class="text-[13px] text-pl">to me</span>
+      </span>
+      <span class="text-[13px] text-pl tabular-nums">7:00 am</span>
+    </header>
+    <p
+      class="mail-part px-6 text-[20px] leading-[1.36] font-medium tracking-[-0.018em] text-balance text-ink sm:px-8 sm:text-[22px]"
+      style="--i:1"
+    >
+      {thought}
+    </p>
+    <div class="mail-part mx-6 mt-6 border-t border-line pt-5 pb-6 sm:mx-8 sm:pb-8" style="--i:2">
+      <p class="text-[15.5px] leading-[1.6] text-pt">You kept this three weeks ago.</p>
+      <span class="mail-open mt-4 inline-flex items-center gap-1.5 text-[14.5px] font-medium text-dot-ink">
+        Open in drft
+        <ArrowUpRight class="size-[15px]" />
+      </span>
+    </div>
+  </article>
+</div>
+
+<style>
+  .mail-scene {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 29rem;
+    margin-inline: auto;
+  }
+
+  /* The sun, coming up behind the letter. */
+  .mail-dawn {
+    position: absolute;
+    left: 50%;
+    bottom: -22%;
+    width: min(34rem, 130%);
+    aspect-ratio: 1;
+    border-radius: 9999px;
+    translate: -50% 0;
+    background: radial-gradient(
+      circle,
+      color-mix(in oklab, var(--dot) 30%, transparent) 0%,
+      color-mix(in oklab, var(--dot) 13%, transparent) 36%,
+      transparent 68%
+    );
+    transition:
+      opacity 1.6s ease,
+      transform 2.2s var(--ease-out);
+  }
+
+  .mail-part {
+    transition:
+      opacity 0.8s var(--ease-out),
+      transform 0.8s var(--ease-out);
+    transition-delay: calc(0.25s + var(--i) * 0.13s);
+  }
+
+  /* Until its scene is the active one, the letter's lines wait just below
+     their places and the sun is still down. */
+  :global(.js .scene:not([data-active])) .mail-part {
+    opacity: 0;
+    transform: translateY(12px);
+    transition-delay: 0s;
+  }
+  :global(.js .scene:not([data-active])) .mail-dawn {
+    opacity: 0;
+    transform: translateY(28%);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mail-part,
+    .mail-dawn {
+      opacity: 1 !important;
+      transform: none !important;
+      transition: none;
+    }
+  }
+</style>

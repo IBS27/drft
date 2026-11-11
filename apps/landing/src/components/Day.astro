@@ -1,0 +1,524 @@
+---
+// A day with drft: three moments down a timeline, each with the real screen
+// it happens on. On wide screens the words scroll past a stage that stays
+// put, and the screens change places as each moment arrives; on small ones
+// every moment is followed by its screen. One thought runs through all three.
+import SceneEmail from "./SceneEmail.astro";
+import ScenePhone from "./ScenePhone.astro";
+import SceneThought from "./SceneThought.astro";
+
+interface Props {
+  thought: string;
+}
+const { thought } = Astro.props;
+
+// The older thoughts this one turns out to echo.
+const related = [
+  { text: "i never really met anyone on our old street", kept: "14 Sep" },
+  { text: "host something small once a month", kept: "2 Oct" },
+  { text: "a cookbook of only our family recipes", kept: "8 Jul" },
+];
+---
+
+<section data-day class="relative overflow-x-clip px-5 pt-24 pb-10 sm:px-8 lg:px-10 lg:pt-36 lg:pb-0">
+  <div class="mx-auto max-w-[1180px]">
+    <h2
+      data-reveal
+      class="text-[clamp(1.9rem,3.6vw,2.75rem)] leading-[1.05] font-semibold tracking-[-0.035em] text-ink"
+    >
+      A day with drft
+    </h2>
+
+    <div data-timeline class="day-grid relative mt-14 lg:mt-4">
+      <span aria-hidden="true" class="rail"></span>
+      <span aria-hidden="true" class="rail rail-progress"></span>
+      <span aria-hidden="true" class="rail-dot"></span>
+
+      <!-- 1 · capture -->
+      <div data-step="0" data-active class="step">
+        <div class="step-body" data-reveal>
+          <span aria-hidden="true" data-station class="station"></span>
+          <p class="step-when"><strong>9:41</strong> Tuesday</p>
+          <h3 class="step-title">A thought occurs at the worst possible time.</h3>
+          <p class="step-text">
+            From the lock screen, you type or speak. No filing, no tags, no deciding where it goes. Ten
+            seconds and it's out of your head.
+          </p>
+          <p class="step-text">
+            Behind the screen, drft finds the older thoughts it echoes and links them for you. Nothing to
+            confirm, nothing to name.
+          </p>
+        </div>
+      </div>
+      <div data-scene="0" data-active class="scene">
+        <p class="sr-only">
+          On the phone: "{thought}" is typed, kept, and linked to two older thoughts it echoes.
+        </p>
+        <ScenePhone thought={thought} echoes={related.slice(0, 2)} />
+      </div>
+
+      <!-- 2 · return -->
+      <div data-step="1" class="step">
+        <div class="step-body" data-reveal>
+          <span aria-hidden="true" data-station class="station"></span>
+          <p class="step-when"><strong>7:00</strong> Three weeks later</p>
+          <h3 class="step-title">One of them comes back.</h3>
+          <p class="step-text">
+            Every morning, one email: a single thought you kept, in your own words. You read it. That's it.
+            Nothing to answer, nothing to file.
+          </p>
+          <p class="step-text">
+            If it itches, that one link opens your collection: the thought, the older ones it turned out to
+            echo, and a quiet way to set it down when it's done being thought about.
+          </p>
+        </div>
+      </div>
+      <div data-scene="1" class="scene">
+        <p class="sr-only">The email from drft: "{thought}". You kept this three weeks ago. Open in drft.</p>
+        <SceneEmail thought={thought} />
+      </div>
+
+      <!-- 3 · develop -->
+      <div data-step="2" class="step">
+        <div class="step-body" data-reveal>
+          <span aria-hidden="true" data-station class="station"></span>
+          <p class="step-when"><strong>Sunday</strong> When you're ready</p>
+          <h3 class="step-title">You sit down with it.</h3>
+          <p class="step-text">
+            On the web, open a thought and follow the older fragments it echoes. Search your collection, set
+            a connection aside, or let the thought rest.
+          </p>
+          <p class="step-text font-medium text-ink!">Nothing writes back.</p>
+        </div>
+      </div>
+      <div data-scene="2" class="scene">
+        <p class="sr-only">
+          The thought's page on the web, with the three related thoughts it echoes and its place on the
+          connections map.
+        </p>
+        <SceneThought thought={thought} related={related} />
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .day-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    /* Where the timeline runs, measured to the middle of its dots. */
+    --rail-x: 4px;
+  }
+
+  .step {
+    padding-left: 2.25rem;
+  }
+  .step-body {
+    position: relative;
+  }
+  .step-when {
+    color: var(--pl);
+    font-size: 14.5px;
+    transition: color 400ms;
+  }
+  .step-when strong {
+    margin-right: 0.35em;
+    color: var(--ink);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    transition: color 400ms;
+  }
+  .step-title {
+    margin-top: 0.9rem;
+    max-width: 16ch;
+    font-size: clamp(1.6rem, 2.7vw, 2.15rem);
+    font-weight: 600;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    text-wrap: balance;
+  }
+  .step-text {
+    margin-top: 1.1rem;
+    max-width: 26.5rem;
+    color: var(--pt);
+    font-size: 16.5px;
+    line-height: 1.6;
+    text-wrap: pretty;
+  }
+
+  /* The timeline: a hairline, the vermilion that has been travelled, and
+     the dot that keeps pace with the reader. */
+  /* It runs from the first moment to the last; the script measures where
+     those are (--rail-top, --rail-height). */
+  .rail {
+    position: absolute;
+    top: var(--rail-top, 0.5rem);
+    height: var(--rail-height, calc(100% - 3.5rem));
+    left: var(--rail-x);
+    width: 1px;
+    margin-left: -0.5px;
+    background: var(--line);
+  }
+  .rail-progress {
+    background: var(--dot);
+    transform: scaleY(var(--progress, 0));
+    transform-origin: top;
+  }
+  .rail-dot {
+    position: absolute;
+    top: var(--rail-top, 0.5rem);
+    left: var(--rail-x);
+    z-index: 2;
+    width: 9px;
+    height: 9px;
+    margin: -4.5px 0 0 -4.5px;
+    border-radius: 9999px;
+    background: var(--dot);
+    box-shadow: 0 0 0 4px color-mix(in oklab, var(--dot) 16%, transparent);
+    transform: translateY(var(--travel, 0px));
+  }
+  /* Nothing travels without the script to move it. */
+  :global(html:not(.js)) .rail-progress,
+  :global(html:not(.js)) .rail-dot {
+    display: none;
+  }
+  .station {
+    position: absolute;
+    top: 0.42rem;
+    left: calc(-2.25rem + var(--rail-x));
+    z-index: 1;
+    width: 7px;
+    height: 7px;
+    margin-left: -3.5px;
+    border-radius: 9999px;
+    background: var(--pg);
+    box-shadow: inset 0 0 0 1.5px color-mix(in oklab, var(--line), var(--mut) 45%);
+    transition:
+      background-color 300ms,
+      box-shadow 300ms;
+  }
+  .station[data-passed] {
+    background: var(--dot);
+    box-shadow: none;
+  }
+
+  .scene {
+    margin-block: 2.75rem 5.5rem;
+    padding-left: 2.25rem;
+  }
+
+  @media (min-width: 1024px) {
+    .day-grid {
+      grid-template-columns: minmax(0, 25rem) minmax(0, 1fr);
+      column-gap: 3.5rem;
+      --stage-h: min(38rem, 78dvh);
+    }
+    .step {
+      display: flex;
+      grid-column: 1;
+      align-items: center;
+      min-height: 86dvh;
+      padding-left: 3rem;
+    }
+    /* The first moment starts right under the title. */
+    .step[data-step="0"] {
+      align-items: flex-start;
+      min-height: 66dvh;
+      padding-top: 4.5rem;
+    }
+    .station {
+      left: calc(-3rem + var(--rail-x));
+    }
+
+    .scene {
+      display: flex;
+      grid-column: 2;
+      align-items: center;
+      justify-content: center;
+      margin: 0;
+      padding: 0;
+    }
+    .scene[data-scene="0"] {
+      grid-row: 1;
+    }
+    .scene[data-scene="1"] {
+      grid-row: 2;
+    }
+    .scene[data-scene="2"] {
+      grid-row: 3;
+    }
+
+    /* With the script running, the three screens share one stage that
+       stays centred while the words scroll by, and trade places. */
+    :global(.js) .scene {
+      position: sticky;
+      top: calc(50dvh - var(--stage-h) / 2 + 1.75rem);
+      grid-row: 1 / span 3;
+      align-self: start;
+      height: var(--stage-h);
+      transition:
+        opacity 0.6s ease,
+        transform 0.9s var(--ease-out),
+        filter 0.6s ease,
+        visibility 0s;
+    }
+    :global(.js) .scene:not([data-active]) {
+      visibility: hidden;
+      opacity: 0;
+      transform: translateY(26px) scale(0.975);
+      filter: blur(10px);
+      transition:
+        opacity 0.4s ease,
+        transform 0.5s ease,
+        filter 0.4s ease,
+        visibility 0s 0.5s;
+    }
+
+    /* The moment being read is in ink; the others wait. */
+    :global(.js) .step {
+      transition: opacity 500ms ease;
+    }
+    :global(.js) .step:not([data-active]) {
+      opacity: 0.34;
+    }
+    :global(.js) .step[data-active] .step-when strong {
+      color: var(--dot-ink);
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .day-grid {
+      grid-template-columns: minmax(0, 27.5rem) minmax(0, 1fr);
+      column-gap: 5rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rail-progress,
+    .rail-dot {
+      display: none;
+    }
+    :global(.js) .scene,
+    :global(.js) .scene:not([data-active]) {
+      transform: none;
+      filter: none;
+      transition: opacity 0.2s;
+    }
+  }
+</style>
+
+<script>
+  import { loopWhile, reducedMotion, sleep, typeInto } from "../scripts/motion";
+
+  const section = document.querySelector<HTMLElement>("[data-day]");
+  const timeline = document.querySelector<HTMLElement>("[data-timeline]");
+
+  if (section && timeline) {
+    const steps = Array.from(timeline.querySelectorAll<HTMLElement>("[data-step]"));
+    const scenes = Array.from(timeline.querySelectorAll<HTMLElement>("[data-scene]"));
+    const stations = Array.from(timeline.querySelectorAll<HTMLElement>("[data-station]"));
+    const rail = timeline.querySelector<HTMLElement>(".rail");
+    const wide = window.matchMedia("(min-width: 1024px)");
+    const reduced = reducedMotion();
+
+    // What each scene's own choreography keys off: it is the active one
+    // (data-active) and it is actually on screen.
+    const inView = new Set<Element>();
+    const live = (scene: HTMLElement | undefined) =>
+      scene !== undefined && scene.hasAttribute("data-active") && inView.has(scene) && !document.hidden;
+    const sceneLoops: (() => void)[] = [];
+    const refresh = () => {
+      for (const update of sceneLoops) update();
+    };
+
+    const activate = (index: number) => {
+      steps.forEach((step, i) => step.toggleAttribute("data-active", i === index));
+      scenes.forEach((scene, i) => scene.toggleAttribute("data-active", i === index));
+      refresh();
+    };
+
+    // Wide: the step crossing the middle of the viewport owns the stage. The
+    // one-pixel band there is given in pixels, measured again when the
+    // viewport's height changes: the spec resolves percentage root margins
+    // against the root's width, whatever browsers do for top and bottom.
+    let stepObserver: IntersectionObserver | undefined;
+    let watchedHeight = 0;
+    const watchSteps = () => {
+      const height = window.innerHeight;
+      if (height === watchedHeight) return;
+      watchedHeight = height;
+      stepObserver?.disconnect();
+      stepObserver = new IntersectionObserver(
+        (entries) => {
+          if (!wide.matches) return;
+          for (const entry of entries) {
+            if (entry.isIntersecting) activate(steps.indexOf(entry.target as HTMLElement));
+          }
+        },
+        { rootMargin: `-${Math.floor(height / 2)}px 0px -${Math.ceil(height / 2) - 1}px 0px` },
+      );
+      for (const step of steps) stepObserver.observe(step);
+    };
+    watchSteps();
+    window.addEventListener("resize", watchSteps);
+
+    // Narrow: each screen comes alive as it arrives, and stays.
+    const sceneObserver = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) inView.add(entry.target);
+          else inView.delete(entry.target);
+          if (!wide.matches && entry.isIntersecting) entry.target.setAttribute("data-active", "");
+        }
+        refresh();
+      },
+      { threshold: 0.3 },
+    );
+    for (const scene of scenes) sceneObserver.observe(scene);
+
+    const arrange = () => {
+      if (wide.matches) {
+        if (!scenes.some((scene, i) => scene.hasAttribute("data-active") && steps[i]?.hasAttribute("data-active")))
+          activate(0);
+      } else {
+        // Small screens show every moment in ink; a screen wakes on arrival.
+        for (const step of steps) step.setAttribute("data-active", "");
+        scenes.forEach((scene) => scene.toggleAttribute("data-active", inView.has(scene)));
+        refresh();
+      }
+    };
+    wide.addEventListener("change", arrange);
+    arrange();
+    document.addEventListener("visibilitychange", refresh);
+
+    // The dot keeps pace with the middle of the viewport, leaving vermilion
+    // behind it. Measured only while the section is on screen.
+    // The line runs from the first station to the last.
+    const first = stations[0];
+    const last = stations[stations.length - 1];
+    const layRail = () => {
+      if (!first || !last) return;
+      // Layout offsets, not client rects: a moment that hasn't arrived yet
+      // is still shifted by its reveal.
+      const centre = (el: HTMLElement) => {
+        let top = el.offsetHeight / 2;
+        for (let node: HTMLElement | null = el; node && node !== timeline; node = node.offsetParent as HTMLElement | null)
+          top += node.offsetTop;
+        return top;
+      };
+      timeline.style.setProperty("--rail-top", `${centre(first).toFixed(1)}px`);
+      timeline.style.setProperty("--rail-height", `${(centre(last) - centre(first)).toFixed(1)}px`);
+    };
+    layRail();
+    new ResizeObserver(layRail).observe(timeline);
+
+    if (rail && !reduced) {
+      let frame: number | undefined;
+      const measure = () => {
+        frame = undefined;
+        const rect = rail.getBoundingClientRect();
+        const progress = Math.min(1, Math.max(0, (window.innerHeight * 0.5 - rect.top) / Math.max(rect.height, 1)));
+        timeline.style.setProperty("--progress", progress.toFixed(4));
+        timeline.style.setProperty("--travel", `${(rect.height * progress).toFixed(1)}px`);
+        const reach = rect.top + rect.height * progress;
+        for (const station of stations) {
+          const at = station.getBoundingClientRect();
+          station.toggleAttribute("data-passed", reach >= at.top + at.height / 2 - 1);
+        }
+      };
+      const request = () => {
+        frame ??= window.requestAnimationFrame(measure);
+      };
+      new IntersectionObserver(([entry]) => {
+        if (!entry) return;
+        if (entry.isIntersecting) {
+          window.addEventListener("scroll", request, { passive: true });
+          window.addEventListener("resize", request);
+          request();
+        } else {
+          window.removeEventListener("scroll", request);
+          window.removeEventListener("resize", request);
+        }
+      }).observe(section);
+    }
+
+    // Scene 1: the phone writes the thought, keeps it, and the echoes link.
+    const phone = timeline.querySelector<HTMLElement>("[data-phone]");
+    const phoneTyped = timeline.querySelector<HTMLElement>("[data-phone-typed]");
+    if (phone && phoneTyped && !reduced) {
+      const thought = phoneTyped.textContent ?? "";
+      sceneLoops.push(
+        loopWhile(
+          () => live(scenes[0]),
+          async (signal) => {
+            phoneTyped.textContent = "";
+            phone.dataset.phase = "typing";
+            await sleep(900, signal);
+            await typeInto(phoneTyped, thought, signal);
+            await sleep(650, signal);
+            phone.setAttribute("data-pressing", "");
+            await sleep(160, signal);
+            phone.removeAttribute("data-pressing");
+            phone.dataset.phase = "kept";
+            await sleep(1500, signal);
+            phone.dataset.phase = "linked";
+            await sleep(6500, signal);
+          },
+          () => {
+            // Back to the finished picture.
+            phoneTyped.textContent = thought;
+            phone.removeAttribute("data-pressing");
+            delete phone.dataset.phase;
+          },
+        ),
+      );
+    }
+
+    // Scene 3: each related thought takes a turn in focus, on the page and
+    // on the map at once. A pointer on a row takes over.
+    const page = timeline.querySelector<HTMLElement>("[data-thought-scene]");
+    if (page) {
+      const rows = Array.from(page.querySelectorAll<HTMLElement>(".row"));
+      let hovering = false;
+      const focus = (index: number | null) => {
+        page.toggleAttribute("data-focusing", index !== null);
+        for (const el of page.querySelectorAll<HTMLElement>("[data-i]")) {
+          el.toggleAttribute("data-on", index !== null && el.dataset.i === String(index));
+        }
+      };
+      rows.forEach((row, i) => {
+        row.addEventListener("pointerenter", () => {
+          hovering = true;
+          focus(i);
+          refresh();
+        });
+        row.addEventListener("pointerleave", () => {
+          hovering = false;
+          focus(null);
+          refresh();
+        });
+      });
+      if (!reduced) {
+        sceneLoops.push(
+          loopWhile(
+            () => live(scenes[2]) && !hovering,
+            async (signal) => {
+              await sleep(2200, signal);
+              for (let i = 0; i < rows.length; i++) {
+                focus(i);
+                await sleep(1900, signal);
+              }
+              focus(null);
+              await sleep(1600, signal);
+            },
+            () => {
+              if (!hovering) focus(null);
+            },
+          ),
+        );
+      }
+    }
+
+    refresh();
+  }
+</script>

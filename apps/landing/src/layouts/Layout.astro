@@ -21,9 +21,13 @@ const { title, description } = Astro.props;
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
     <meta property="og:url" content={Astro.site} />
-    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#fafaf8" />
-    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131311" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f5f3ee" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#181715" />
     <meta name="generator" content={Astro.generator} />
+    <!-- Motion's starting states apply only once this has run. -->
+    <script is:inline>
+      document.documentElement.classList.add("js");
+    </script>
   </head>
   <body>
     <slot />
