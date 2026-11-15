@@ -13,6 +13,13 @@ import { internal } from "./_generated/api";
 // right for a single-user product. Without RESEND_API_KEY the adapter is
 // dormant (the resurfacing still appears on the web); the tick retries
 // until the send succeeds, so setting the key mid-morning still delivers.
+//
+// The key alone never enables delivery: only a deployment that also sets
+// RETURN_EMAIL_ALLOWED=1 (production) may send. Every deployment runs the
+// same cron over its own copy of the user's settings, so a dev deployment
+// that merely has the key — copied env, or left over from an email test —
+// would otherwise send a second daily email to the same inbox. Fail-closed,
+// like SEED_ALLOWED in seed.ts.
 
 declare const process: { env: Record<string, string | undefined> };
 
@@ -46,6 +53,12 @@ const escapeHtml = (s: string) =>
 export const deliver = internalAction({
   args: { resurfacingId: v.id("resurfacings") },
   handler: async (ctx, { resurfacingId }) => {
+    if (process.env.RETURN_EMAIL_ALLOWED !== "1") {
+      console.log(
+        "[email] RETURN_EMAIL_ALLOWED is not 1 — this deployment never sends the daily email",
+      );
+      return;
+    }
     const apiKey = process.env.RESEND_API_KEY;
     if (!apiKey) {
       console.log("[email] RESEND_API_KEY not set — delivery dormant");

@@ -356,6 +356,7 @@ describe.each([
 
 describe("delivery", () => {
   it("clears the stored email once it is delivered, and replays it exactly until then", async () => {
+    vi.stubEnv("RETURN_EMAIL_ALLOWED", "1");
     vi.stubEnv("RESEND_API_KEY", "re_test");
     vi.spyOn(console, "error").mockImplementation(() => {});
     let status = 500;
@@ -388,6 +389,34 @@ describe("delivery", () => {
     await ticks(t, at(0, 8, 30), at(0, 12));
     await t.action(internal.email.deliver, { resurfacingId: (await row())._id });
     expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("never sends from a deployment without RETURN_EMAIL_ALLOWED, key or not", async () => {
+    // A dev deployment with a copied RESEND_API_KEY: selection still runs
+    // (the thought shows on the web), but delivery must stay silent.
+    vi.stubEnv("RESEND_API_KEY", "re_test");
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    const fetchMock = vi.fn(async () => new Response("{}", { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const t = await migratedDeployment();
+    await as(t, A).mutation(api.settings.save, { sendTime: "08:00", timezone: "UTC" });
+    await thought(t, A, at(-10));
+
+    await ticks(t, at(0, 8), at(0, 12));
+    expect(fetchMock).not.toHaveBeenCalled();
+    const row = await t.run((ctx) => ctx.db.query("resurfacings").first());
+    expect(row).not.toBeNull();
+    expect(row?.deliveredAt).toBeUndefined();
+    expect(row?.emailPayload).toBeUndefined();
+
+    // Opting in delivers that same day's thought — a deliberate dev
+    // email test is one env var away, and unsetting it silences again.
+    vi.stubEnv("RETURN_EMAIL_ALLOWED", "1");
+    await tick(t, at(0, 12, 15));
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const delivered = await t.run((ctx) => ctx.db.query("resurfacings").first());
+    expect(delivered?.deliveredAt).toBe(at(0, 12, 15));
   });
 });
 
