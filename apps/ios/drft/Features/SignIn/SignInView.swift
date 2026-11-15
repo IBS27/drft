@@ -38,9 +38,9 @@ struct SignInView: View {
 
                 VStack(spacing: 12) {
                     // Apple first: App Review expects it to be at least as prominent.
-                    providerButton(.apple, label: "Continue with Apple")
-                    providerButton(.google, label: "Continue with Google")
-                    providerButton(.github, label: "Continue with GitHub")
+                    ForEach(Self.providers, id: \.label) { entry in
+                        providerButton(entry.provider, label: entry.label)
+                    }
                 }
                 .frame(maxWidth: 288)
                 .padding(.top, 48)
@@ -67,6 +67,12 @@ struct SignInView: View {
         }
     }
 
+    private static let providers: [(provider: OAuthProvider, label: String)] = [
+        (.apple, "Continue with Apple"),
+        (.google, "Continue with Google"),
+        (.github, "Continue with GitHub"),
+    ]
+
     private func providerButton(
         _ provider: OAuthProvider,
         label: String
@@ -74,16 +80,20 @@ struct SignInView: View {
         Button {
             start(provider)
         } label: {
-            // Marks in one column at the leading edge; the label centred.
-            HStack(spacing: 0) {
+            // Marks share a column and labels a leading edge, with that block
+            // centred in every pill: each label reserves the widest one's width.
+            HStack(spacing: 12) {
                 providerIcon(provider)
                     .frame(width: 22)
-                Spacer(minLength: 8)
-                Text(label)
-                Spacer(minLength: 8)
-                Color.clear.frame(width: 22, height: 0)
+                ZStack(alignment: .leading) {
+                    ForEach(Self.providers, id: \.label) { other in
+                        Text(other.label).hidden()
+                    }
+                    Text(label)
+                }
             }
             .padding(.horizontal, 16)
+            .padding(.vertical, 8)
             .frame(maxWidth: .infinity)
         }
         .buttonStyle(ProviderButtonStyle(provider: provider, pending: pending))

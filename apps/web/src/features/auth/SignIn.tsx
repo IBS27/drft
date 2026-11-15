@@ -43,22 +43,26 @@ export function SignIn() {
       <h1 className="mt-7 text-[34px] font-semibold tracking-[-0.03em] text-ink">drft</h1>
       <p className="mt-2 text-[17px] text-pt">A space for unfinished thoughts</p>
 
-      <div className="mt-11 flex w-[300px] max-w-full flex-col gap-3">
+      {/* Subgrid columns: marks share a column and labels a left edge, with
+          that block centred in every pill (sized to the widest label). */}
+      <div className="mt-11 grid w-[300px] max-w-full grid-cols-[1fr_22px_max-content_1fr] gap-x-3 gap-y-3">
         {PROVIDERS.map(({ strategy, label, Icon }) => (
           <button
             key={strategy}
             type="button"
             disabled={!isLoaded || pending !== null}
             onClick={() => start(strategy)}
-            className={`grid h-12 w-full grid-cols-[22px_1fr] items-center gap-3 rounded-full pr-5 pl-6 text-[15px] font-medium text-ink ring-1 transition-[background-color,box-shadow,opacity,scale] ring-inset hover:bg-tint hover:ring-dot-edge active:scale-[0.98] disabled:cursor-default ${
+            className={`col-span-4 grid h-12 grid-cols-subgrid items-center rounded-full px-5 text-[15px] font-medium text-ink ring-1 transition-[background-color,box-shadow,opacity,scale] ring-inset hover:bg-tint hover:ring-dot-edge active:scale-[0.98] disabled:cursor-default ${
               pending === strategy ? "bg-tint ring-dot-edge" : "bg-scr shadow-lift ring-[color-mix(in_oklab,var(--line),var(--ink)_10%)]"
             } ${pending && pending !== strategy ? "opacity-40" : ""}`}
           >
-            {strategy === "oauth_google" ? (
-              <GoogleMark />
-            ) : (
-              <Icon aria-hidden="true" weight="fill" className="text-[19px]" />
-            )}
+            <span className="col-start-2 flex justify-center">
+              {strategy === "oauth_google" ? (
+                <GoogleMark />
+              ) : (
+                <Icon aria-hidden="true" weight="fill" className="text-[19px]" />
+              )}
+            </span>
             <span className="text-left">{label}</span>
           </button>
         ))}
