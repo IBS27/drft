@@ -1,10 +1,10 @@
-import { ClerkProvider, useAuth } from "@clerk/clerk-react";
+import { ClerkProvider } from "@clerk/clerk-react";
 import { createRouter, RouterProvider } from "@tanstack/react-router";
 import { Analytics } from "@vercel/analytics/react";
 import { ConvexReactClient } from "convex/react";
-import { ConvexProviderWithClerk } from "convex/react-clerk";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import { ConvexClerkProvider } from "./features/auth/ConvexClerkProvider";
 import { routeTree } from "./routeTree.gen";
 import "./index.css";
 
@@ -78,9 +78,9 @@ declare module "@tanstack/react-router" {
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ClerkProvider publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY}>
-      <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
+      <ConvexClerkProvider client={convex}>
         <RouterProvider router={router} />
-      </ConvexProviderWithClerk>
+      </ConvexClerkProvider>
       <Analytics />
     </ClerkProvider>
   </StrictMode>,
