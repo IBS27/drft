@@ -69,7 +69,8 @@ const REARM_INTERVAL = 30_000;
 // still turn fresh tokens away (a tab frozen between fetching one and
 // sending it). Clerk signed in with Convex settled on "not authenticated"
 // is that state: hand the session back once, and after that only when the
-// tab is returned to or the network comes back — never in a loop.
+// tab is returned to or the network comes back — never in a loop, and no
+// more often than the interval (a wake inside it goes when it ends).
 function Rearm() {
   const { isSignedIn } = useAuth();
   const { isLoading, isAuthenticated } = useConvexAuth();
@@ -78,9 +79,10 @@ function Rearm() {
   const attempts = useRef(0);
   const lastAt = useRef(0);
 
+  // A new episode — and a new sign-in is one — gets its own first try.
   useEffect(() => {
-    if (isAuthenticated) attempts.current = 0;
-  }, [isAuthenticated]);
+    if (isAuthenticated || !isSignedIn) attempts.current = 0;
+  }, [isAuthenticated, isSignedIn]);
 
   useEffect(() => {
     if (!dropped) return;
@@ -91,17 +93,20 @@ function Rearm() {
       rearm();
     };
     if (attempts.current === 0) {
-      const timer = window.setTimeout(() => go("dropped"), REARM_GRACE);
-      return () => window.clearTimeout(timer);
+      const grace = window.setTimeout(() => go("dropped"), REARM_GRACE);
+      return () => window.clearTimeout(grace);
     }
+    let timer: number | undefined;
     const onWake = () => {
       if (document.visibilityState !== "visible") return;
-      if (Date.now() - lastAt.current < REARM_INTERVAL) return;
-      go("wake");
+      const wait = REARM_INTERVAL - (Date.now() - lastAt.current);
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => go("wake"), Math.max(0, wait));
     };
     document.addEventListener("visibilitychange", onWake);
     window.addEventListener("online", onWake);
     return () => {
+      window.clearTimeout(timer);
       document.removeEventListener("visibilitychange", onWake);
       window.removeEventListener("online", onWake);
     };

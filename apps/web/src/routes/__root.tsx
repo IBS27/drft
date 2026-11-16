@@ -80,7 +80,14 @@ function Root() {
   if (signedOut) return <SignIn />;
   // Open on trust while auth is still in flight; fall back to the caret
   // only for a browser that has never been signed in here.
-  if (!isAuthenticated && !seen) return <Waiting />;
+  // Signed in but never opened here, the caret can still say it is stuck.
+  if (!isAuthenticated && !seen)
+    return (
+      <>
+        <Waiting />
+        {isSignedIn && <ConnectionNote />}
+      </>
+    );
   if (isAuthenticated && consent === null) return <ConnectionsPrompt />;
 
   const rail =
