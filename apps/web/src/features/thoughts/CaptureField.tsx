@@ -1,10 +1,11 @@
 import { useAuth } from "@clerk/clerk-react";
 import { Check } from "@phosphor-icons/react";
-import { useConvexAuth, useMutation } from "convex/react";
+import { useMutation } from "convex/react";
 import { api } from "@drft/backend/convex/_generated/api";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { Id } from "@drft/backend/convex/_generated/dataModel";
 import { readSeenUser } from "../auth/seenUser";
+import { useSession } from "../auth/useSession";
 import { drain, queue } from "./pendingCaptures";
 import { localDate, previewOf } from "./format";
 
@@ -16,7 +17,14 @@ const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
 // no questions asked. Verbatim in; Keep is a vermilion button you can see
 // from across the room, and a brief "Kept" acknowledges.
 export function CaptureField({ now }: { now: number }) {
-  const { isAuthenticated } = useConvexAuth();
+  // Only a connection that is carrying the session takes a thought; any
+  // other moment — a handshake, a token being refreshed — it goes on the
+  // queue, which a closed tab cannot lose.
+  const ready = useSession() === "ready";
+  const readyRef = useRef(ready);
+  useEffect(() => {
+    readyRef.current = ready;
+  }, [ready]);
   const { userId } = useAuth();
   // Who a queued thought belongs to: the signed-in user once Clerk has
   // one, else whoever this browser last belonged to — the only person the
@@ -63,13 +71,23 @@ export function CaptureField({ now }: { now: number }) {
     textRef.current = text;
   }, [text]);
 
+  const mountedRef = useRef(false);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
   // A failed send must never eat what you have started typing since — and
   // must never quietly drop its own words either. Back into the field if
   // it is free (claimed synchronously, so two failures can't both take
-  // it); otherwise back onto the queue, which outlives this screen.
-  const recover = useCallback((trimmed: string) => {
-    if (textRef.current !== "") {
-      queue(trimmed, ownerRef.current);
+  // it); otherwise back onto the queue, which outlives this screen. The
+  // queue too when the field is gone, or when the send failed for want of
+  // a session: those words go again by themselves once there is one.
+  const recover = useCallback((trimmed: string, owner: string | null) => {
+    if (!mountedRef.current || !readyRef.current || textRef.current !== "") {
+      queue(trimmed, owner);
       return;
     }
     textRef.current = trimmed;
@@ -78,9 +96,13 @@ export function CaptureField({ now }: { now: number }) {
 
   const send = useCallback(
     (trimmed: string) => {
+      // Whose words these are is settled now, not whenever a failure lands.
+      const owner = ownerRef.current;
       // Fire and forget: Convex queues the mutation if offline. Capture
       // must never fail visibly.
-      void captureRef.current({ text: trimmed }).catch(() => recover(trimmed));
+      void captureRef
+        .current({ text: trimmed })
+        .catch(() => recover(trimmed, owner));
     },
     [recover],
   );
@@ -89,9 +111,9 @@ export function CaptureField({ now }: { now: number }) {
   // from a previous visit): everything this user kept in the meantime
   // goes now.
   useEffect(() => {
-    if (!isAuthenticated || !userId) return;
+    if (!ready || !userId) return;
     for (const trimmed of drain(userId)) send(trimmed);
-  }, [isAuthenticated, userId, send]);
+  }, [ready, userId, send]);
 
   // The field grows with the thought, and shrinks back when it leaves.
   useLayoutEffect(() => {
@@ -108,7 +130,7 @@ export function CaptureField({ now }: { now: number }) {
     setText("");
     setKept(true);
     window.setTimeout(() => setKept(false), 1100);
-    if (isAuthenticated) send(trimmed);
+    if (ready) send(trimmed);
     else queue(trimmed, ownerRef.current);
   };
 

@@ -9,6 +9,7 @@
     "build:deploy": "bun run --cwd ../landing build && tsc -b && vite build && cp -R ../landing/dist/_astro dist/_astro && cp ../landing/dist/robots.txt dist/robots.txt && cp ../landing/dist/index.html dist/landing.html && cp ../landing/dist/privacy/index.html dist/privacy.html && mv dist/index.html dist/app.html",
     "lint": "oxlint",
     "typecheck": "tsc -b",
+    "test": "vitest run",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -35,6 +36,7 @@
     "oxlint": "^1.71.0",
     "tailwindcss": "^4.1.0",
     "typescript": "~6.0.2",
-    "vite": "^8.1.1"
+    "vite": "^8.1.1",
+    "vitest": "^3.2.4"
   }
 }

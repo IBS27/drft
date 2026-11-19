@@ -13,7 +13,7 @@ A space for unfinished thoughts — instant capture on iOS, a quiet collection o
 
 ## Commands
 
-From `apps/web`: `bun dev` · `bun run build` · `bun run lint` · `bun run typecheck`
+From `apps/web`: `bun dev` · `bun run build` · `bun run lint` · `bun run typecheck` · `bun run test`
 From `apps/landing`: `bun dev` · `bun run build` · `bun run typecheck`
 The web dev server mirrors production routing (see `landingSite` in `apps/web/vite.config.ts`; keep its `isSignedIn` in step with the `/` rewrite in `apps/web/vercel.json`): signed-out `/` serves the landing site, `/privacy` the privacy policy, `/?signin` bypasses the landing. It builds `apps/landing` on start and rebuilds + reloads on landing source changes — no second dev server needed; use `bun dev` in `apps/landing` only for focused landing work with HMR.
 From `packages/backend`: `bun run dev` (convex dev) · `bun run typecheck`
@@ -45,6 +45,8 @@ One-time embedding catch-up for thoughts captured before enrichment existed: `bu
 Web env lives in `apps/web/.env.local` (see `.env.example`): `VITE_CONVEX_URL`, `VITE_CLERK_PUBLISHABLE_KEY`. The Convex deployment needs `CLERK_JWT_ISSUER_DOMAIN` set (Clerk JWT template named `convex`) and `OPENAI_API_KEY` (enrichment: embeddings + auto-linking — model routing in `convex/ai/models.ts`). The daily return email (phase 5) needs `RETURN_EMAIL_ALLOWED=1` **and** `RESEND_API_KEY`: set both only in production, and set the flag *before* deploying backend code that checks it. The flag is fail-closed (like `SEED_ALLOWED`, inverted) because every deployment runs the same cron over its own `settings` rows — a dev deployment with just a copied `RESEND_API_KEY` would send a second daily email to the same inbox. Without either, delivery is dormant — selection still runs and the web shows the day's thought; temporary opt-in on dev is the way to test email end to end. Optional: `DRFT_FROM_EMAIL` (defaults to the Resend sandbox `drft <onboarding@resend.dev>`, which can only send to the Resend account owner's address) and `DRFT_APP_URL` (link target in the email, defaults to `http://localhost:5173`). The send time is per-user in the `settings` table, written from web or iOS settings.
 
 Account deletion (`convex/account.ts`, settings on web and iOS) needs `CLERK_SECRET_KEY` on the Convex deployment — the secret key of the same Clerk instance as `CLERK_JWT_ISSUER_DOMAIN` (a key from another instance is caught by comparing JWKS before a 404 is trusted). Revoking Sign in with Apple on iOS deletion needs `APPLE_TEAM_ID`, `APPLE_KEY_ID`, `APPLE_PRIVATE_KEY` (the Sign in with Apple `.p8` key; `APPLE_CLIENT_ID` defaults to the bundle id `com.srinivasib.drft`); without them revocation is skipped and logged. Backend tests: `bun run test` in `packages/backend`.
+
+Web auth: only Clerk decides that nobody is signed in. Convex not carrying the session is "connecting", never signed-out — the shell stays open and `features/auth/ConvexClerkProvider` (used instead of `convex/react-clerk`, which signs the tab out of Convex for good on one failed token fetch) keeps fetching a token and hands the session back. To explain a tab that lost its session, read the last auth events it kept: `JSON.parse(localStorage.getItem("drft:auth-log"))` (events and connection state only — no tokens, ids or thoughts).
 
 ## Production deployment
 
